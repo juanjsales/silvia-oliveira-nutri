@@ -50,13 +50,26 @@ function setupDatabase() {
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
     }
+
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(schemas[sheetName]);
       sheet.getRange(1, 1, 1, schemas[sheetName].length).setFontWeight("bold").setBackground("#203528").setFontColor("#ffffff");
+    } else {
+      // AUTO MIGRATION: Adiciona automaticamente novas colunas como 'senha_pin' caso a aba já existisse
+      const currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const targetHeaders = schemas[sheetName];
+
+      targetHeaders.forEach(header => {
+        if (!currentHeaders.includes(header)) {
+          const newColIdx = currentHeaders.length + 1;
+          sheet.getRange(1, newColIdx).setValue(header).setFontWeight("bold").setBackground("#203528").setFontColor("#ffffff");
+          currentHeaders.push(header);
+        }
+      });
     }
   });
 
-  Logger.log("Database Setup Completed Successfully!");
+  Logger.log("Database Setup & Auto-Migration Completed Successfully!");
 }
 
 /**
