@@ -110,8 +110,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .section-divider { border-top: 1px solid var(--border-sage); margin: 22px 0 16px; padding-top: 14px; font-weight: 700; font-size: 0.82rem; color: var(--sage-light); text-transform: uppercase; letter-spacing: 1px; }
 
-.card-box { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-sage); border-radius: 12px; padding: 14px; margin-bottom: 12px; position: relative; }
-.btn-remove { position: absolute; top: 10px; right: 10px; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; font-weight: bold; cursor: pointer; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; }
+.card-box { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-sage); border-radius: 16px; padding: 20px; margin-bottom: 16px; position: relative; display: flex; flex-direction: column; gap: 14px; transition: var(--tr); }
+.card-box:hover { border-color: var(--sage-light); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.btn-remove { position: absolute; top: 14px; right: 14px; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.35); color: #f87171; font-weight: 700; cursor: pointer; font-size: 0.78rem; padding: 6px 14px; border-radius: 8px; transition: var(--tr); white-space: nowrap; }
 .btn-remove:hover { background: #f87171; color: #fff; }
 
 .btn-action { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 13px 20px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; width: 100%; transition: all 0.25s; margin-top: 10px; }
@@ -830,9 +831,9 @@ function renderInputs() {
   refeicoes.forEach((m, idx) => {
     mContainer.innerHTML += `
       <div class="card-box">
-        <button class="btn-remove" onclick="removeMeal(${idx})">✖</button>
+        <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remover</button>
         <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
-        <div class="form-group"><label>Alimentos</label><textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar();">${m.itens}</textarea></div>
+        <div class="form-group"><label>Alimentos &amp; Quantidades</label><textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar();">${m.itens}</textarea></div>
         <div class="form-row">
           <div class="form-group"><label>Calorias</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar();"></div>
           <div class="form-group"><label>Proteínas</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar();"></div>

@@ -71,17 +71,17 @@ body { background: var(--forest-deep); color: var(--text-light); font-family: 'P
 
 .section-divider { border-top: 1px dashed var(--border-sage); margin: 16px 0 10px; padding-top: 14px; font-weight: 800; font-size: 0.78rem; color: var(--sage-light); text-transform: uppercase; letter-spacing: 1.2px; display: flex; align-items: center; gap: 8px; }
 
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sage-light); }
-.form-control { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-forest); padding: 12px 14px; border-radius: 12px; color: #fff; font-family: inherit; font-size: 0.88rem; outline: none; transition: var(--tr); }
-.form-control:focus { border-color: var(--sage-light); box-shadow: 0 0 0 3px rgba(140, 164, 129, 0.2); background: rgba(0, 0, 0, 0.5); }
-textarea.form-control { min-height: 85px; resize: vertical; line-height: 1.5; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-size: 0.76rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sage-light); }
+.form-control { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-forest); padding: 12px 14px; border-radius: 12px; color: #fff; font-family: inherit; font-size: 0.9rem; outline: none; transition: var(--tr); width: 100%; box-sizing: border-box; }
+.form-control:focus { border-color: var(--sage-light); box-shadow: 0 0 0 3px rgba(140, 164, 129, 0.2); background: rgba(0, 0, 0, 0.6); }
+textarea.form-control { min-height: 115px; resize: vertical; line-height: 1.6; }
 
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-.card-box { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-sage); border-radius: 14px; padding: 16px; margin-bottom: 12px; position: relative; transition: var(--tr); }
-.card-box:hover { border-color: var(--sage-light); }
-.btn-remove { position: absolute; top: 12px; right: 12px; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; font-weight: bold; cursor: pointer; font-size: 0.72rem; padding: 4px 10px; border-radius: 8px; transition: var(--tr); }
+.card-box { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-sage); border-radius: 16px; padding: 20px; margin-bottom: 16px; position: relative; display: flex; flex-direction: column; gap: 14px; transition: var(--tr); }
+.card-box:hover { border-color: var(--sage-light); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.btn-remove { position: absolute; top: 14px; right: 14px; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.35); color: #f87171; font-weight: 700; cursor: pointer; font-size: 0.78rem; padding: 6px 14px; border-radius: 8px; transition: var(--tr); white-space: nowrap; }
 .btn-remove:hover { background: #f87171; color: #fff; }
 
 .btn-action { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 14px 20px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; width: 100%; transition: all 0.25s; margin-top: 10px; box-shadow: 0 4px 14px rgba(140,164,129,0.2); }
@@ -471,7 +471,7 @@ function renderInputs() {
   refeicoes.forEach((m, idx) => {
     mContainer.innerHTML += `
       <div class="card-box">
-        <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remov</button>
+        <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remover</button>
         <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
         <div class="form-group"><label>Alimentos &amp; Quantidades</label><textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar();">${m.itens}</textarea></div>
         <div class="form-row">
