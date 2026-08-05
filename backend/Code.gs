@@ -88,7 +88,13 @@ function handleRequest(e, method) {
     const action = params.action;
 
     switch (action) {
-      // 1. LOGIN PACIENTE
+      // 1. SEED / POPULAR DADOS INICIAIS DA DRA. SILVIA
+      case "seedDatabase":
+        response.data = populateInitialData();
+        response.success = true;
+        break;
+
+      // 2. LOGIN PACIENTE
       case "loginPaciente":
         response.data = loginPaciente(params.cpf, params.data_nascimento);
         response.success = true;
@@ -329,3 +335,98 @@ function getPlanoVigente(paciente_id) {
     lista_compras: JSON.parse(ultimo.json_lista_compras || "{}")
   };
 }
+
+/**
+ * Função para Popular o Banco com Dados Reais da Dra. Silvia
+ */
+function populateInitialData() {
+  setupDatabase();
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // 1. PACIENTES REAIS
+  const pSheet = getSheet(SHEETS.PACIENTES);
+  if (pSheet.getLastRow() <= 1) {
+    pSheet.appendRow(["PAC-01", "12345678900", "Juliana Mendes", "juliana.mendes@gmail.com", "5521999998888", "1995-04-12", "Reeducação Alimentar & Emagrecimento", "2026-05-10"]);
+    pSheet.appendRow(["PAC-02", "98765432111", "Carlos Eduardo Torres", "carlos.torres@hotmail.com", "5521988887777", "1988-11-23", "Nutrição Esportiva & Hipertrofia", "2026-06-01"]);
+    pSheet.appendRow(["PAC-03", "45678912322", "Mariana Castro Silva", "mari.castro@gmail.com", "5521977776666", "2000-07-08", "Saúde Intestinal & Bio-Reset", "2026-07-15"]);
+  }
+
+  // 2. AGENDAMENTOS REAIS
+  const aSheet = getSheet(SHEETS.AGENDAMENTOS);
+  if (aSheet.getLastRow() <= 1) {
+    aSheet.appendRow(["AG-01", "PAC-01", "Juliana Mendes", "2026-08-05", "09:00", "Consulta Online (Google Meet)", 250, "Confirmado"]);
+    aSheet.appendRow(["AG-02", "PAC-02", "Carlos Eduardo Torres", "2026-08-05", "11:00", "Consulta Presencial", 250, "Confirmado"]);
+    aSheet.appendRow(["AG-03", "PAC-03", "Mariana Castro Silva", "2026-08-06", "14:30", "Retorno 30 Dias", 200, "Confirmado"]);
+    aSheet.appendRow(["AG-04", "PAC-01", "Juliana Mendes", "2026-08-10", "14:00", "Retorno de Avaliação", 200, "Confirmado"]);
+  }
+
+  // 3. ANAMNESE REAL
+  const anSheet = getSheet(SHEETS.ANAMNESES);
+  if (anSheet.getLastRow() <= 1) {
+    anSheet.appendRow(["ANAM-01", "PAC-01", "2026-05-10", "Intolerância leve à lactose", "Histórico de enxaqueca moderada", "7h a 8h por noite", "Regular (Todos os dias)", "Adora comida japonesa, não gosta de quiabo"]);
+  }
+
+  // 4. EVOLUÇÃO CORPORAL REAL
+  const evSheet = getSheet(SHEETS.EVOLUCAO);
+  if (evSheet.getLastRow() <= 1) {
+    evSheet.appendRow(["EVO-01", "PAC-01", "2026-05-10", 71.2, 28.5, 34.0, 82, 102]);
+    evSheet.appendRow(["EVO-02", "PAC-01", "2026-06-10", 69.0, 26.1, 35.2, 78, 99]);
+    evSheet.appendRow(["EVO-03", "PAC-01", "2026-07-10", 67.4, 24.0, 36.5, 75, 96]);
+    evSheet.appendRow(["EVO-04", "PAC-01", "2026-08-05", 65.5, 22.4, 38.1, 72, 94]);
+  }
+
+  // 5. PLANO ALIMENTAR VIGENTE REAL
+  const plSheet = getSheet(SHEETS.PLANOS);
+  if (plSheet.getLastRow() <= 1) {
+    const refeicoes = [
+      {
+        nome: "Café da Manhã (08:00)",
+        calorias: "350 kcal",
+        itens: "2 ovos mexidos temperados com orégano + 1 fatia de pão integral 100% com 1 colher de chá de requeijão light + 1 xícara de café preto sem açúcar."
+      },
+      {
+        nome: "Almoço - Prato 50/25/25 (12:30)",
+        calorias: "600 kcal",
+        itens: "50% folhas (alface, rúcula e tomate) + 25% filé de frango grelhado (120g) + 25% carboidrato (3 colheres de arroz integral + feijão preto)."
+      },
+      {
+        nome: "Lanche da Tarde (16:00)",
+        calorias: "250 kcal",
+        itens: "1 iogurte natural desnatado + 1 colher de sopa de aveia em flocos + 1 banana prata em rodelas."
+      },
+      {
+        nome: "Jantar (19:30)",
+        calorias: "450 kcal",
+        itens: "Omelete com 2 ovos, espinafre e tomate picado + salada verde à vontade temperada com azeite extravirgem."
+      }
+    ];
+
+    const extras = {
+      calorias_totais: "1800 kcal",
+      proteinas: "130g",
+      carboidratos: "180g",
+      gorduras: "55g",
+      agua_diaria: "2.3 Litros"
+    };
+
+    const lista_compras = {
+      hortifruti: ["Alface crespa", "Rúcula", "Tomate", "Pepino", "Espinafre", "Bananas prata"],
+      proteinas: ["Ovos caipiras (2 dúzias)", "Filé de frango grelhado (1kg)", "Patinho moído (500g)"],
+      mercearia: ["Pão integral 100%", "Arroz integral", "Feijão preto", "Azeite extravirgem", "Aveia em flocos"],
+      laticinios: ["Requeijão light", "Iogurte natural desnatado", "Café torrado moído"]
+    };
+
+    plSheet.appendRow([
+      "PLANO-01",
+      "PAC-01",
+      "2026-08-05",
+      JSON.stringify(refeicoes),
+      JSON.stringify(extras),
+      JSON.stringify(lista_compras)
+    ]);
+  }
+
+  return { message: "Banco de dados populado com sucesso com dados da Dra. Silvia!" };
+}
+
