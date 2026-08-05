@@ -3,4 +3,4 @@ Allow: /
 Disallow: /app-nutri.html
 Disallow: /backend/
 
-Sitemap: https://silviaoliveira.nutri.br/sitemap.xml
+Sitemap: https://silviaoliveira.vercel.app/sitemap.xml
