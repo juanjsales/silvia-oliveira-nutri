@@ -205,6 +205,39 @@ textarea.form-control { min-height: 85px; resize: vertical; line-height: 1.5; }
       <input type="text" id="inNome" class="form-control" value="ANYCELLI V.C. DOS SANTOS" oninput="salvarELocal(); atualizar();">
     </div>
 
+    <div class="section-divider">🧮 Calculadora Clínica (TMB &amp; VET)</div>
+    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-sage); padding: 14px; border-radius: 12px; margin-bottom: 16px;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Peso (kg)</label>
+          <input type="number" id="calcMetaPeso" class="form-control" value="65" oninput="calcularMetaVET()">
+        </div>
+        <div class="form-group">
+          <label>Altura (cm)</label>
+          <input type="number" id="calcMetaAltura" class="form-control" value="168" oninput="calcularMetaVET()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Idade (anos)</label>
+          <input type="number" id="calcMetaIdade" class="form-control" value="28" oninput="calcularMetaVET()">
+        </div>
+        <div class="form-group">
+          <label>Fator Atividade (FA)</label>
+          <select id="calcMetaFA" class="form-control" onchange="calcularMetaVET()">
+            <option value="1.2">Sedentário (1.2)</option>
+            <option value="1.375" selected>Leve (1.375)</option>
+            <option value="1.55">Moderado (1.55)</option>
+            <option value="1.725">Intenso (1.725)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.78rem; font-weight: 800; color: var(--sage-light); background: rgba(140,164,129,0.12); padding: 8px 12px; border-radius: 8px;">
+        <span>TMB: <strong id="dispTMB" style="color:#fff;">1420 kcal</strong></span>
+        <span>VET Alvo: <strong id="dispVET" style="color:#fff;">1952 kcal</strong></span>
+      </div>
+    </div>
+
     <div class="section-divider">📖 Capa &amp; Apresentação</div>
     <div class="form-group">
       <label>Texto de Apresentação</label>
@@ -590,10 +623,34 @@ async function salvarPlanoNoBancoSheets() {
   }
 }
 
+// CALCULADORA CLÍNICA DE TMB & VET (MIFFLIN-ST JEOR)
+function calcularMetaVET() {
+  const elPeso = document.getElementById('calcMetaPeso');
+  const elAlt = document.getElementById('calcMetaAltura');
+  const elIdade = document.getElementById('calcMetaIdade');
+  const elFA = document.getElementById('calcMetaFA');
+
+  const peso = parseFloat(elPeso ? elPeso.value : 65) || 65;
+  const altura = parseFloat(elAlt ? elAlt.value : 168) || 168;
+  const idade = parseFloat(elIdade ? elIdade.value : 28) || 28;
+  const fa = parseFloat(elFA ? elFA.value : 1.375) || 1.375;
+
+  // Fórmula de Mifflin-St Jeor (Feminino)
+  const tmb = (10 * peso) + (6.25 * altura) - (5 * idade) - 161;
+  const vet = tmb * fa;
+
+  const dispTMB = document.getElementById('dispTMB');
+  const dispVET = document.getElementById('dispVET');
+
+  if (dispTMB) dispTMB.innerText = Math.round(tmb) + " kcal";
+  if (dispVET) dispVET.innerText = Math.round(vet) + " kcal";
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   carregarLocalStorage();
   renderInputs();
   atualizar();
+  calcularMetaVET();
 });
 </script>
 </body>
