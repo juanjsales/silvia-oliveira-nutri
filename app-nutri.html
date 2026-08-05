@@ -166,9 +166,18 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   <header class="top-header no-print">
     <div class="page-title" id="pageTitle">Agenda &amp; KPIs Diários</div>
     
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <a href="index.html" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.8rem;">🌐 Ver Site Institucional</a>
-      <a href="portal-paciente.html" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.8rem;">🔑 Portal do Paciente</a>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button class="btn btn-secondary" onclick="testarConexaoDB()" style="padding: 6px 12px; font-size: 0.78rem; border-color: var(--sage-light); color: var(--sage-light);" title="Testar comunicação com o banco Google Sheets">
+        🧪 Testar Sincronização DB
+      </button>
+      
+      <div id="dbStatusBadge" style="font-size: 0.75rem; font-weight: 800; color: #8ca481; background: rgba(140,164,129,0.15); border: 1px solid var(--sage-light); padding: 4px 10px; border-radius: 8px;">
+        🟢 DB Conectado (Google Sheets)
+      </div>
+
+      <a href="index.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">🌐 Ver Site</a>
+      <a href="portal-paciente.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">🔑 Portal Paciente</a>
+      
       <div class="top-user">
         <img src="assets/silvia-hero.webp" alt="Dra. Silvia Lemos" class="top-avatar" loading="lazy" decoding="async">
         <span>Dra. Silvia de Oliveira Lemos</span>
@@ -397,6 +406,37 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 <script>
 const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+
+// COMUNICAÇÃO DE DADOS EM TEMPO REAL COM GOOGLE SHEETS
+async function apiCall(action, payload = {}) {
+  const bodyData = { action, ...payload };
+  try {
+    const res = await fetch(KOS_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(bodyData)
+    });
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error("Erro na comunicação com o banco:", err);
+    return { success: false, error: err.toString() };
+  }
+}
+
+async function testarConexaoDB() {
+  const statusBadge = document.getElementById('dbStatusBadge');
+  if (statusBadge) statusBadge.innerText = '🟡 Testando Conexão...';
+  
+  const res = await apiCall('getPacientes');
+  if (res && res.success) {
+    if (statusBadge) statusBadge.innerText = '🟢 DB Conectado (Google Sheets)';
+    alert(`⚡ TESTE DE SINCRONIZAÇÃO EM TEMPO REAL: SUCESSO!\n\nO banco de dados (Google Sheets) respondeu com sucesso.\nTotal de pacientes cadastrados na Planilha: ${res.data ? res.data.length : 0}`);
+  } else {
+    if (statusBadge) statusBadge.innerText = '🔴 Erro de Conexão DB';
+    alert('Atenção: Não foi possível comunicar com o Google Sheets.');
+  }
+}
 
 function autenticarAdmin(e) {
   e.preventDefault();
