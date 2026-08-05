@@ -3,4 +3,4 @@ Allow: /
 Disallow: /app-nutri.html
 Disallow: /backend/
 
-Sitemap: https://juanjsales.github.io/silvia-oliveira-nutri/sitemap.xml
+Sitemap: https://silviaoliveira.nutri.br/sitemap.xml

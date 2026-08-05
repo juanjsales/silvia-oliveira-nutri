@@ -92,17 +92,90 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .pdf-meal-card { background: #fff; border: 1px solid #e2ebd8; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
 .pdf-meal-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--forest-dark); margin-bottom: 12px; display: flex; justify-content: space-between; }
 
-/* ADMIN LOCKSCREEN OVERLAY */
-.admin-lock-overlay { position: fixed; inset: 0; background: var(--forest-deep); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.admin-lock-card { background: var(--forest-card); border: 1.5px solid var(--sage-light); border-radius: 28px; padding: 40px 32px; width: 100%; max-width: 420px; text-align: center; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
-.admin-lock-logo { width: 64px; height: 64px; background: var(--sage-dim); border: 1.5px solid var(--sage-light); border-radius: 50%; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+/* MEAL PLAN GENERATOR V3 EDITORIAL STYLES */
+:root {
+  --sage-bg: #92a988;
+  --border-sage: rgba(140, 164, 129, 0.35);
+  --paper-bg: #f8faf6;
+  --card-white: #ffffff;
+  --text-dark: #192b20;
+  --border-light: #dce4d8;
+}
+
+.preset-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.btn-preset { background: rgba(140, 164, 129, 0.12); border: 1px solid var(--border-sage); color: #eef4e5; padding: 8px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.25s; text-align: center; }
+.btn-preset:hover { background: var(--sage-light); color: var(--forest-dark); }
+.btn-preset-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
+.btn-preset-danger:hover { background: #f87171; color: #fff; }
+
+.section-divider { border-top: 1px solid var(--border-sage); margin: 22px 0 16px; padding-top: 14px; font-weight: 700; font-size: 0.82rem; color: var(--sage-light); text-transform: uppercase; letter-spacing: 1px; }
+
+.card-box { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-sage); border-radius: 12px; padding: 14px; margin-bottom: 12px; position: relative; }
+.btn-remove { position: absolute; top: 10px; right: 10px; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; font-weight: bold; cursor: pointer; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; }
+.btn-remove:hover { background: #f87171; color: #fff; }
+
+.btn-action { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 13px 20px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; width: 100%; transition: all 0.25s; margin-top: 10px; }
+.btn-action:hover { background: #eef4e5; transform: translateY(-2px); }
+.btn-add { background: rgba(140, 164, 129, 0.12); color: var(--sage-light); border: 1px dashed var(--sage-light); }
+.btn-add:hover { background: rgba(140, 164, 129, 0.25); color: #fff; transform: none; }
+
+.pdf-page { width: 210mm; min-height: 297mm; padding: 18mm 20mm; background: var(--paper-bg); color: var(--text-dark); box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: column; justify-content: space-between; position: relative; border-radius: 4px; margin-bottom: 30px; }
+.cover-top-bar { background: var(--forest-dark); color: #eef4e5; padding: 12px; text-align: center; font-size: 0.75rem; font-weight: 700; letter-spacing: 2.5px; border-radius: 8px; text-transform: uppercase; }
+.cover-body { text-align: center; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; }
+.cover-main-title { font-family: 'Playfair Display', serif; font-size: 3.4rem; color: var(--forest-dark); letter-spacing: 2px; line-height: 1.15; margin-bottom: 20px; font-weight: 600; }
+.cover-patient-name { font-size: 0.95rem; font-weight: 800; letter-spacing: 2.5px; color: var(--sage-bg); text-transform: uppercase; margin-bottom: 35px; background: rgba(146, 169, 136, 0.12); padding: 8px 24px; border-radius: 100px; border: 1px solid var(--border-sage); }
+.cover-plan-box { background: #ffffff; border: 1px solid var(--border-light); border-radius: 16px; padding: 30px; text-align: left; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.03); }
+.cover-plan-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--forest-dark); margin-bottom: 10px; border-bottom: 2px solid var(--sage-light); padding-bottom: 6px; display: inline-block; font-weight: 600; }
+.cover-plan-desc { font-size: 0.9rem; color: var(--text-dark); line-height: 1.7; }
+.page-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--sage-light); padding-bottom: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 1.2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 25px; }
+.meals-grid { display: flex; flex-direction: column; gap: 18px; }
+.meal-card { background: var(--card-white); border: 1px solid var(--border-light); border-left: 5px solid var(--forest-dark); border-radius: 12px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+.meal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f4ef; padding-bottom: 10px; margin-bottom: 12px; }
+.meal-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--forest-dark); font-weight: 600; }
+.meal-items-list { font-size: 0.92rem; color: var(--text-dark); line-height: 1.7; white-space: pre-line; }
+.meal-stats-badges { display: flex; gap: 10px; font-weight: 700; font-size: 0.8rem; }
+.badge-stat { background: rgba(146, 169, 136, 0.15); color: var(--forest-dark); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-sage); }
+.meal-obs-text { font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8e0; }
+.extra-card { background: #fff; border: 1px solid var(--border-light); border-radius: 14px; padding: 22px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+.extra-card-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--forest-dark); margin-bottom: 10px; border-bottom: 1.5px solid var(--sage-light); padding-bottom: 6px; font-weight: 600; }
+.extra-card-content { font-size: 0.9rem; color: var(--text-dark); line-height: 1.7; white-space: pre-line; }
+.page-ftr { text-align: center; font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 12px; margin-top: 30px; }
+
+.plano-editor-grid { display: grid; grid-template-columns: 420px 1fr; gap: 24px; width: 100%; align-items: start; }
+
+/* MEDIA QUERIES PARA RESPONSIVIDADE MOBILE E TABLET */
+@media screen and (max-width: 1024px) {
+  body { flex-direction: column !important; height: auto !important; min-height: 100vh !important; overflow-y: auto !important; overflow-x: hidden !important; }
+  .sidebar { width: 100% !important; height: auto !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; border-right: none !important; border-bottom: 1px solid var(--border-forest) !important; padding: 12px 16px !important; flex-wrap: wrap !important; }
+  .nav-menu { flex-direction: row !important; overflow-x: auto !important; width: 100% !important; justify-content: flex-start !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
+  .nav-item { white-space: nowrap !important; flex-shrink: 0 !important; padding: 8px 12px !important; font-size: 0.82rem !important; }
+  .main-wrapper { flex: 1 !important; overflow: visible !important; width: 100% !important; }
+  .top-header { height: auto !important; padding: 14px 16px !important; flex-wrap: wrap !important; gap: 12px !important; justify-content: space-between !important; }
+  .content-area { padding: 16px 12px !important; gap: 20px !important; width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+  .plano-editor-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .form-panel-wrapper { width: 100% !important; }
+  .preview-panel { width: 100% !important; max-width: 100% !important; overflow-x: auto !important; }
+  .pdf-page { width: 100% !important; max-width: 100% !important; min-height: auto !important; padding: 20px 14px !important; box-sizing: border-box !important; margin-bottom: 20px !important; }
+  .cover-main-title { font-size: 2.2rem !important; }
+  .cover-body { padding: 30px 10px !important; }
+}
+
+@media screen and (max-width: 600px) {
+  .kpi-grid { grid-template-columns: 1fr !important; }
+  .top-header { flex-direction: column !alignment: flex-start !important; align-items: flex-start !important; }
+  .top-user { font-size: 0.78rem !important; }
+  .brand-crn { display: none !important; }
+  .preset-bar { grid-template-columns: 1fr !important; gap: 6px !important; }
+}
 
 /* IMPRESSÃO A4 */
 @media print {
-  body { background: #fff !important; color: #000 !important; }
-  .sidebar, .top-header, .btn, .no-print, .admin-lock-overlay { display: none !important; }
-  .main-wrapper, .content-area, .view-panel { padding: 0 !important; overflow: visible !important; }
-  .pdf-preview { padding: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+  body { background: none !important; padding: 0 !important; color: #000 !important; }
+  .sidebar, .top-header, .btn, .no-print, .admin-lock-overlay, .form-panel-wrapper { display: none !important; }
+  .main-wrapper, .content-area, .view-panel { padding: 0 !important; overflow: visible !important; display: block !important; }
+  .pdf-page { box-shadow: none !important; width: 100% !important; min-height: 100vh !important; border-radius: 0 !important; padding: 15mm 18mm !important; page-break-after: always !important; margin-bottom: 0 !important; }
 }
 </style>
 </head>
@@ -287,105 +360,56 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
 
-    <!-- 3. GERADOR DE PLANO ALIMENTAR & LISTA DE COMPRAS PDF -->
+    <!-- 3. GERADOR DE PLANO ALIMENTAR & LISTA DE COMPRAS PDF (EDITORIAL CLEAN) -->
     <div class="view-panel" id="planoView">
-      <div class="card no-print">
-        <div class="card-header">
-          <div class="card-title">🥗 Prescrição Nutricional &amp; Gerador PDF</div>
-          <button class="btn" onclick="window.print()">🖨️ Exportar / Imprimir PDF A4</button>
-        </div>
+      <div class="plano-editor-grid">
+        <!-- PAINEL FIXO DE GERENCIAMENTO -->
+        <div class="form-panel-wrapper no-print">
+          <div class="form-panel">
+            <h2>Painel da Nutri</h2>
+            <p>Gerenciador de Plano Alimentar em Tempo Real</p>
 
-        <div class="grid-3">
-          <div class="form-group">
-            <label>Selecione o Paciente</label>
-            <select class="form-control" id="selPacientePlano">
-              <option value="PAC-01">Juliana Mendes (CPF: 123.456.789-00)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Preset Rápido de Macronutrientes</label>
-            <select class="form-control" onchange="aplicarPreset(this.value)">
-              <option value="EMAGRECIMENTO">Reeducação Alimentar / Emagrecimento (1800 kcal)</option>
-              <option value="HIPERTROFIA">Hipertrofia Esportiva (2400 kcal)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Meta Calórica Diária</label>
-            <input type="text" class="form-control" id="inpCalorias" value="1800 kcal">
-          </div>
-        </div>
-      </div>
-
-      <!-- PREVIEW IMPRESSÃO EDITORIAL A4 -->
-      <div class="pdf-preview" id="pdfArea">
-        <div class="pdf-header">
-          <div>
-            <div class="pdf-brand">Dra. Silvia de Oliveira Lemos</div>
-            <div style="font-size: 0.85rem; color: #555; margin-top: 2px;">Nutricionista • CRN-4 24987/P • (21) 98738-5146</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-weight: 800; font-size: 1rem; color: var(--forest-dark);">PLANO ALIMENTAR</div>
-            <div style="font-size: 0.8rem; color: #666;" id="pdfData">Data: 05/08/2026</div>
-          </div>
-        </div>
-
-        <div class="pdf-patient-info">
-          <strong>Paciente:</strong> Juliana Mendes | <strong>Objetivo:</strong> Reeducação Alimentar &amp; Emagrecimento<br>
-          <strong>Meta Diária:</strong> 1800 kcal (Proteínas: 130g | Carbos: 180g | Gorduras: 55g) | <strong>Meta de Água:</strong> 2.3 Litros/dia
-        </div>
-
-        <div id="pdfRefeicoes">
-          <div class="pdf-meal-card">
-            <div class="pdf-meal-title">
-              <span>🍳 Café da Manhã (08:00)</span>
-              <span style="font-size:0.85rem; color:#666;">~350 kcal</span>
-            </div>
-            <p style="font-size: 0.92rem; line-height: 1.6; color: #333;">
-              • 2 ovos mexidos (ou cozidos) temperados com orégano e pitada de sal rosa.<br>
-              • 1 fatia de pão integral 100% grãos com 1 colher de chá de requeijão light.<br>
-              • 1 xícara de café preto sem açúcar (opcional: adoçante stevia).
-            </p>
-          </div>
-
-          <div class="pdf-meal-card">
-            <div class="pdf-meal-title">
-              <span>🥗 Almoço - Regra do Prato 50/25/25 (12:30)</span>
-              <span style="font-size:0.85rem; color:#666;">~600 kcal</span>
-            </div>
-            <p style="font-size: 0.92rem; line-height: 1.6; color: #333;">
-              • <strong>50% Salada/Vegetais:</strong> Alface crespa, rúcula, tomate assado e pepino temperados com azeite extravirgem.<br>
-              • <strong>25% Proteína Magra:</strong> 120g de filé de frango grelhado (ou patinho moído).<br>
-              • <strong>25% Carboidrato Complexo:</strong> 3 colheres de sopa de arroz integral + 1 concha média de feijão preto.
-            </p>
-          </div>
-        </div>
-
-        <!-- LISTA DE COMPRAS CATEGORIZADA AUTO-GERADA -->
-        <div style="background: #fff; border: 1.5px solid var(--forest-dark); border-radius: 12px; padding: 24px; margin-top: 10px;">
-          <div style="font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--forest-dark); margin-bottom: 16px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">
-            🛒 Lista de Compras Categorizada
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.88rem; line-height: 1.7;">
-            <div>
-              <strong style="color: var(--forest-dark);">🥬 Hortifrúti:</strong>
-              <p>Alface crespa, Rúcula, Tomate, Pepino, Bananas, Limão.</p>
-
-              <strong style="color: var(--forest-dark); display:block; margin-top:10px;">🥩 Proteínas &amp; Ovos:</strong>
-              <p>Ovos caipiras (2 dúzias), Filé de frango (1kg), Patinho moído (500g).</p>
+            <div class="preset-bar">
+              <button class="btn-preset" onclick="carregarPreset('hipertrofia')">⚡ Hipertrofia</button>
+              <button class="btn-preset" onclick="carregarPreset('emagrecimento')">🔥 Emagrecer</button>
+              <button class="btn-preset btn-preset-danger" onclick="limparTudo()">🗑️ Limpar</button>
             </div>
 
-            <div>
-              <strong style="color: var(--forest-dark);">🌾 Mercearia &amp; Grãos:</strong>
-              <p>Pão integral 100%, Arroz integral, Feijão preto, Azeite extravirgem, Aveia.</p>
-
-              <strong style="color: var(--forest-dark); display:block; margin-top:10px;">🥛 Laticínios &amp; Bebidas:</strong>
-              <p>Requeijão light, Café torrado moído.</p>
+            <div class="form-group">
+              <label>Nome da Paciente</label>
+              <input type="text" id="inNome" class="form-control" value="ANYCELLI V.C. DOS SANTOS" oninput="salvarELocal(); atualizar();">
             </div>
+
+            <div class="section-divider">Página Inicial</div>
+            <div class="form-group">
+              <label>Texto de Apresentação</label>
+              <textarea id="inApresentacao" class="form-control" oninput="salvarELocal(); atualizar();">Este plano alimentar foi desenvolvido pensando nas suas necessidades específicas. Alcançar as metas e objetivos propostos é o caminho para conquistar os resultados desejados de forma duradoura.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Objetivo Principal</label>
+              <input type="text" id="inObjetivo" class="form-control" value="Preservar e aumentar massa muscular com alto aporte proteico, distribuição equilibrada de carboidratos e gorduras saudáveis." oninput="salvarELocal(); atualizar();">
+            </div>
+
+            <div class="section-divider">Refeições (Cards)</div>
+            <div id="mealsInputs"></div>
+            <button type="button" class="btn-action btn-add" onclick="addMeal()">➕ Adicionar Refeição</button>
+
+            <div class="section-divider">Páginas Extras de Orientação</div>
+            <div id="extrasInputs"></div>
+            <button type="button" class="btn-action btn-add" onclick="addExtraPage()">📄 Adicionar Página Extra</button>
+
+            <button class="btn-action" style="margin-top: 20px; background: #8ca481; color: #203528;" onclick="salvarPlanoNoBancoSheets()">
+              💾 Salvar Plano no Banco (Google Sheets)
+            </button>
+
+            <button class="btn-action" style="margin-top: 10px;" onclick="window.print()">
+              🖨️ Imprimir / Salvar em PDF
+            </button>
           </div>
         </div>
+
+        <!-- VISUALIZAÇÃO FORMATO CLEAN EDITORIAL -->
+        <div class="preview-panel" id="pagesPreview"></div>
       </div>
     </div>
 
@@ -669,6 +693,310 @@ async function registrarEvolucao() {
   }
 }
 
+// ==========================================
+// GERADOR DE PLANO ALIMENTAR V3 (EDITORIAL CLEAN)
+// ==========================================
+let refeicoes = [];
+let paginasExtras = [];
+
+const presetHipertrofia = {
+  nome: "ANYCELLI V.C. DOS SANTOS",
+  apresentacao: "Este plano alimentar foi desenvolvido pensando nas suas necessidades específicas. Alcançar as metas propostas é o caminho para conquistar os resultados desejados de forma duradoura.",
+  objetivo: "Preservar e aumentar massa muscular com alto aporte proteico, distribuição equilibrada de carboidratos e gorduras saudáveis.",
+  refeicoes: [
+    { titulo: 'CAFÉ DA MANHÃ', itens: '• 2 ovos inteiros mexidos\n• 2 fatias de pão integral\n• 1 colher (sopa) de chia\n• 1 banana média\n• Café sem açúcar ou com adoçante (stévia)', calorias: '330 kcal', proteina: '20g', obs: 'Pode substituir o pão integral por pão francês ou torrada integral. Pode incluir queijo ou requeijão.' },
+    { titulo: 'LANCHE DA MANHÃ', itens: '• 1 maçã média\n• 10 amêndoas\n• 1 colher (sopa) de granola sem açúcar', calorias: '180 kcal', proteina: '4g', obs: 'Pode substituir as amêndoas por nozes ou castanhas. Pode incluir iogurte natural.' },
+    { titulo: 'ALMOÇO', itens: '• 120g de peito de frango grelhado\n• 3 colheres (sopa) de arroz integral ou branco\n• 1 concha pequena de feijão\n• Salada verde à vontade + 1 col. (chá) de azeite', calorias: '400 kcal', proteina: '40g', obs: 'Pode substituir o frango por peixe, carne bovina ou suína magra.' },
+    { titulo: 'LANCHE DA TARDE', itens: '• Vitamina: 200ml de bebida vegetal (amêndoas/coco) + 1 scoop de Whey Protein isolado + 1 colher (sopa) de aveia + canela', calorias: '220 kcal', proteina: '28g', obs: 'Pode substituir por crepioca, tapioca ou cuscuz de milho com ovos.' }
+  ],
+  extras: [
+    { 
+      tituloPagina: 'RECOMENDAÇÕES & SUPLEMENTAÇÃO', 
+      blocos: [
+        { titulo: 'SUPLEMENTAÇÃO DIÁRIA', conteudo: '• Whey Protein Isolado: 1 scoop no lanche da tarde ou pós-treino.\n• Creatina: 3g por dia em horário fixo.' },
+        { titulo: 'CHÁS NOTURNOS', conteudo: 'Alternar entre: Camomila, Erva-doce, Melissa e Capim-cidreira (sem açúcar).' },
+        { titulo: 'META DE HIDRATAÇÃO', conteudo: 'Meta recomendada: 2,0 a 2,5 Litros de água por dia.' }
+      ] 
+    }
+  ]
+};
+
+const presetEmagrecimento = {
+  nome: "NOME DA PACIENTE",
+  apresentacao: "Foco em reeducação alimentar, aumento de saciedade e déficit calórico controlado.",
+  objetivo: "Emagrecimento saudável preservando massa magra.",
+  refeicoes: [
+    { titulo: 'CAFÉ DA MANHÃ', itens: '• 2 ovos mexidos com orégano\n• 1 fatia de pão integral\n• Mamão papaia (1/2 unidade)', calorias: '240 kcal', proteina: '14g', obs: '' },
+    { titulo: 'ALMOÇO', itens: '• 150g de peito de frango ou peixe\n• Salada de folhas verdes abundante (50% do prato)\n• 2 colheres de arroz integral + 1 concha de feijão', calorias: '310 kcal', proteina: '35g', obs: '' }
+  ],
+  extras: [
+    { tituloPagina: 'ORIENTAÇÕES GERAIS', blocos: [{ titulo: 'HIDRATAÇÃO', conteudo: 'Mínimo de 2.5L de água por dia.' }] }
+  ]
+};
+
+function carregarPreset(tipo) {
+  const p = tipo === 'hipertrofia' ? presetHipertrofia : presetEmagrecimento;
+  const elNome = document.getElementById('inNome');
+  const elApres = document.getElementById('inApresentacao');
+  const elObj = document.getElementById('inObjetivo');
+  if (elNome) elNome.value = p.nome;
+  if (elApres) elApres.value = p.apresentacao;
+  if (elObj) elObj.value = p.objetivo;
+  refeicoes = JSON.parse(JSON.stringify(p.refeicoes));
+  paginasExtras = JSON.parse(JSON.stringify(p.extras));
+  renderInputs();
+  salvarELocal();
+  atualizar();
+}
+
+function limparTudo() {
+  const elNome = document.getElementById('inNome');
+  const elApres = document.getElementById('inApresentacao');
+  const elObj = document.getElementById('inObjetivo');
+  if (elNome) elNome.value = '';
+  if (elApres) elApres.value = '';
+  if (elObj) elObj.value = '';
+  refeicoes = [];
+  paginasExtras = [];
+  renderInputs();
+  salvarELocal();
+  atualizar();
+}
+
+function salvarELocal() {
+  const elNome = document.getElementById('inNome');
+  const elApres = document.getElementById('inApresentacao');
+  const elObj = document.getElementById('inObjetivo');
+  const dados = {
+    nome: elNome ? elNome.value : '',
+    apresentacao: elApres ? elApres.value : '',
+    objetivo: elObj ? elObj.value : '',
+    refeicoes: refeicoes,
+    paginasExtras: paginasExtras
+  };
+  localStorage.setItem('planoSilviaDataV3', JSON.stringify(dados));
+}
+
+function carregarLocalStorage() {
+  const salvo = localStorage.getItem('planoSilviaDataV3');
+  if (salvo) {
+    const d = JSON.parse(salvo);
+    const elNome = document.getElementById('inNome');
+    const elApres = document.getElementById('inApresentacao');
+    const elObj = document.getElementById('inObjetivo');
+    if (elNome) elNome.value = d.nome || '';
+    if (elApres) elApres.value = d.apresentacao || '';
+    if (elObj) elObj.value = d.objetivo || '';
+    refeicoes = d.refeicoes || [];
+    paginasExtras = d.paginasExtras || [];
+  } else {
+    carregarPreset('hipertrofia');
+  }
+}
+
+function renderInputs() {
+  const mContainer = document.getElementById('mealsInputs');
+  if (!mContainer) return;
+  mContainer.innerHTML = '';
+  refeicoes.forEach((m, idx) => {
+    mContainer.innerHTML += `
+      <div class="card-box">
+        <button class="btn-remove" onclick="removeMeal(${idx})">✖</button>
+        <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
+        <div class="form-group"><label>Alimentos</label><textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar();">${m.itens}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Calorias</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar();"></div>
+          <div class="form-group"><label>Proteínas</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar();"></div>
+        </div>
+        <div class="form-group" style="margin:0;"><label>Substituições / Obs</label><input type="text" class="form-control" value="${m.obs}" oninput="refeicoes[${idx}].obs=this.value; salvarELocal(); atualizar();"></div>
+      </div>
+    `;
+  });
+
+  const eContainer = document.getElementById('extrasInputs');
+  if (!eContainer) return;
+  eContainer.innerHTML = '';
+  paginasExtras.forEach((p, pIdx) => {
+    let blocosHTML = '';
+    p.blocos.forEach((b, bIdx) => {
+      blocosHTML += `
+        <div style="border-top:1px dashed rgba(140,164,129,0.3); padding-top:8px; margin-top:8px;">
+          <div class="form-group"><label>Título do Tópico</label><input type="text" class="form-control" value="${b.titulo}" oninput="paginasExtras[${pIdx}].blocos[${bIdx}].titulo=this.value; salvarELocal(); atualizar();"></div>
+          <div class="form-group"><label>Conteúdo</label><textarea class="form-control" oninput="paginasExtras[${pIdx}].blocos[${bIdx}].conteudo=this.value; salvarELocal(); atualizar();">${b.conteudo}</textarea></div>
+        </div>
+      `;
+    });
+
+    eContainer.innerHTML += `
+      <div class="card-box">
+        <button class="btn-remove" onclick="removeExtraPage(${pIdx})">✖ Página</button>
+        <div class="form-group"><label>Título da Página Extra</label><input type="text" class="form-control" value="${p.tituloPagina}" oninput="paginasExtras[${pIdx}].tituloPagina=this.value; salvarELocal(); atualizar();"></div>
+        ${blocosHTML}
+        <button type="button" class="btn-action btn-add" style="margin-top:8px; font-size:0.75rem;" onclick="addBlockToPage(${pIdx})">➕ Adicionar Tópico</button>
+      </div>
+    `;
+  });
+}
+
+function addMeal() {
+  refeicoes.push({ titulo: 'NOVA REFEIÇÃO', itens: '• Alimento 1\n• Alimento 2', calorias: '250 kcal', proteina: '15g', obs: '' });
+  renderInputs(); salvarELocal(); atualizar();
+}
+function removeMeal(idx) { refeicoes.splice(idx, 1); renderInputs(); salvarELocal(); atualizar(); }
+
+function addExtraPage() {
+  paginasExtras.push({
+    tituloPagina: 'NOVA PÁGINA INFORMATIVA',
+    blocos: [{ titulo: 'NOVO TÓPICO', conteudo: 'Informações gerais para a paciente...' }]
+  });
+  renderInputs(); salvarELocal(); atualizar();
+}
+function removeExtraPage(idx) { paginasExtras.splice(idx, 1); renderInputs(); salvarELocal(); }
+
+function addBlockToPage(pIdx) {
+  paginasExtras[pIdx].blocos.push({ titulo: 'NOVO TÓPICO', conteudo: 'Informação...' });
+  renderInputs(); salvarELocal(); atualizar();
+}
+
+function atualizar() {
+  const elNome = document.getElementById('inNome');
+  const elApres = document.getElementById('inApresentacao');
+  const elObj = document.getElementById('inObjetivo');
+
+  const nome = elNome ? elNome.value || 'PACIENTE' : 'PACIENTE';
+  const apresentacao = elApres ? elApres.value : '';
+  const objetivo = elObj ? elObj.value : '';
+
+  const preview = document.getElementById('pagesPreview');
+  if (!preview) return;
+  preview.innerHTML = '';
+
+  // 1. CAPA PRINCIPAL (ESTILO EDITORIAL CLEAN EM VERDE FLORESTA)
+  preview.innerHTML += `
+    <div class="pdf-page">
+      <div class="cover-top-bar">
+        NUTRICIONISTA SILVIA DE OLIVEIRA | CRN-4 24987/P
+      </div>
+
+      <div class="cover-body">
+        <div class="cover-main-title">
+          PLANO<br>ALIMENTAR
+        </div>
+        <div class="cover-patient-name">
+          ${nome}
+        </div>
+
+        <div class="cover-plan-box">
+          <div class="cover-plan-title">Plano de Ação</div>
+          <p class="cover-plan-desc">${apresentacao}</p>
+          
+          <div style="margin-top:16px; padding-top:12px; border-top:1px dashed var(--border-light);">
+            <strong style="font-size:0.8rem; color:var(--forest-dark); text-transform:uppercase;">Estratégia Nutricional:</strong>
+            <p style="font-size:0.88rem; color:var(--text-muted); margin-top:4px;">${objetivo}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-ftr">
+        "O sucesso é a soma de pequenos esforços repetidos dia após dia."
+      </div>
+    </div>
+  `;
+
+  // 2. PÁGINAS DE REFEIÇÕES EM CARDS (FLUIDO E FÁCIL DE LER)
+  if (refeicoes.length > 0) {
+    let mealsHTML = '';
+    refeicoes.forEach(m => {
+      mealsHTML += `
+        <div class="meal-card">
+          <div class="meal-header">
+            <div class="meal-title">${m.titulo}</div>
+            <div class="meal-stats-badges">
+              ${m.calorias ? `<span class="badge-stat">🔥 ${m.calorias}</span>` : ''}
+              ${m.proteina ? `<span class="badge-stat">💪 Prot: ${m.proteina}</span>` : ''}
+            </div>
+          </div>
+          <div class="meal-items-list">${m.itens}</div>
+          ${m.obs ? `<div class="meal-obs-text"><strong>Obs:</strong> ${m.obs}</div>` : ''}
+        </div>
+      `;
+    });
+
+    preview.innerHTML += `
+      <div class="pdf-page">
+        <div>
+          <div class="page-hdr">
+            <span>PLANO ALIMENTAR | ${nome}</span>
+            <span>DRA. SILVIA OLIVEIRA</span>
+          </div>
+
+          <div class="meals-grid">
+            ${mealsHTML}
+          </div>
+        </div>
+
+        <div class="page-ftr">
+          Dra. Silvia de Oliveira Lemos · Nutricionista · CRN-4 24987/P
+        </div>
+      </div>
+    `;
+  }
+
+  // 3. PÁGINAS EXTRAS INFORMATIVAS
+  paginasExtras.forEach(p => {
+    let blocosHTML = '';
+    p.blocos.forEach(b => {
+      blocosHTML += `
+        <div class="extra-card">
+          <div class="extra-card-title">${b.titulo}</div>
+          <div class="extra-card-content">${b.conteudo}</div>
+        </div>
+      `;
+    });
+
+    preview.innerHTML += `
+      <div class="pdf-page">
+        <div>
+          <div class="page-hdr">
+            <span>${p.tituloPagina} | ${nome}</span>
+            <span>DRA. SILVIA OLIVEIRA</span>
+          </div>
+
+          <div style="margin-top:10px;">
+            ${blocosHTML}
+          </div>
+        </div>
+
+        <div class="page-ftr">
+          Dra. Silvia de Oliveira Lemos · Nutricionista · CRN-4 24987/P
+        </div>
+      </div>
+    `;
+  });
+}
+
+// SALVAR NO BANCO GOOGLE SHEETS
+async function salvarPlanoNoBancoSheets() {
+  const nome = document.getElementById('inNome').value || 'ANYCELLI V.C. DOS SANTOS';
+  const apresentacao = document.getElementById('inApresentacao').value;
+  const objetivo = document.getElementById('inObjetivo').value;
+
+  const planoData = {
+    paciente_id: "PAC-01",
+    paciente_nome: nome,
+    refeicoes: refeicoes,
+    extras: { apresentacao, objetivo },
+    lista_compras: {}
+  };
+
+  const res = await apiCall('savePlano', { plano: planoData });
+  if (res && res.success) {
+    alert(`✅ Plano Alimentar de ${nome} salvo com sucesso no Google Sheets!`);
+  } else {
+    alert("Erro ao salvar plano no banco: " + (res.error || "Tente novamente."));
+  }
+}
+
 // INICIALIZAR GRÁFICO E DASHBOARD
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('kos_adm_auth') === 'true') {
@@ -677,6 +1005,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   carregarDadosDashboard();
+
+  // INICIALIZA GERADOR DE PLANO ALIMENTAR V3
+  carregarLocalStorage();
+  renderInputs();
+  atualizar();
 
   const ctx = document.getElementById('chartEvolucao');
   if (ctx) {
