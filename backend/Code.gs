@@ -21,7 +21,8 @@ const SHEETS = {
   EXAMES: "Exames_Laboratoriais",
   DOBRAS: "Dobras_Cutaneas",
   SUPLEMENTOS: "Prescricoes_Suplementos",
-  RECORDATORIO: "Recordatorio_24h"
+  RECORDATORIO: "Recordatorio_24h",
+  CONFIG: "Configuracoes"
 };
 
 /**
@@ -32,7 +33,7 @@ function setupDatabase() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   const schemas = {
-    [SHEETS.PACIENTES]: ["id", "cpf", "nome", "email", "whatsapp", "data_nascimento", "objetivo", "data_cadastro"],
+    [SHEETS.PACIENTES]: ["id", "cpf", "nome", "email", "whatsapp", "data_nascimento", "objetivo", "data_cadastro", "senha_pin"],
     [SHEETS.AGENDAMENTOS]: ["id", "paciente_id", "paciente_nome", "data", "hora", "tipo", "valor", "status"],
     [SHEETS.ANAMNESES]: ["id", "paciente_id", "data", "alergias", "historico_saude", "rotina_sono", "intestino", "preferencias"],
     [SHEETS.EVOLUCAO]: ["id", "paciente_id", "data", "peso", "percentual_gordura", "massa_magra", "cintura", "quadril"],
@@ -40,7 +41,8 @@ function setupDatabase() {
     [SHEETS.EXAMES]: ["id", "paciente_id", "data_exame", "glicemia", "hba1c", "insulina", "colesterol_total", "hdl", "ldl", "triglicerideos", "vitamina_d", "vitamina_b12", "ferritina", "tsh"],
     [SHEETS.DOBRAS]: ["id", "paciente_id", "data", "tricipital", "subescapular", "suprailiaca", "abdominal", "coxa", "braco_relaxado", "braco_contraido", "cintura", "quadril"],
     [SHEETS.SUPLEMENTOS]: ["id", "paciente_id", "data", "suplemento_nome", "dosagem", "posologia", "forma_farmaceutica"],
-    [SHEETS.RECORDATORIO]: ["id", "paciente_id", "data", "refeicao", "horario", "alimentos", "escala_bristol_tipo"]
+    [SHEETS.RECORDATORIO]: ["id", "paciente_id", "data", "refeicao", "horario", "alimentos", "escala_bristol_tipo"],
+    [SHEETS.CONFIG]: ["chave", "valor"]
   };
 
   Object.keys(schemas).forEach(sheetName => {
@@ -346,12 +348,21 @@ function populateInitialData() {
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // 1. PACIENTES REAIS
+  // 1. PACIENTES REAIS (COM SENHA_PIN)
   const pSheet = getSheet(SHEETS.PACIENTES);
   if (pSheet.getLastRow() <= 1) {
-    pSheet.appendRow(["PAC-01", "12345678900", "Juliana Mendes", "juliana.mendes@gmail.com", "5521999998888", "1995-04-12", "Reeducação Alimentar & Emagrecimento", "2026-05-10"]);
-    pSheet.appendRow(["PAC-02", "98765432111", "Carlos Eduardo Torres", "carlos.torres@hotmail.com", "5521988887777", "1988-11-23", "Nutrição Esportiva & Hipertrofia", "2026-06-01"]);
-    pSheet.appendRow(["PAC-03", "45678912322", "Mariana Castro Silva", "mari.castro@gmail.com", "5521977776666", "2000-07-08", "Saúde Intestinal & Bio-Reset", "2026-07-15"]);
+    pSheet.appendRow(["PAC-01", "12345678900", "Juliana Mendes", "juliana.mendes@gmail.com", "5521999998888", "1995-04-12", "Reeducação Alimentar & Emagrecimento", "2026-05-10", "123456"]);
+    pSheet.appendRow(["PAC-02", "98765432111", "Carlos Eduardo Torres", "carlos.torres@hotmail.com", "5521988887777", "1988-11-23", "Nutrição Esportiva & Hipertrofia", "2026-06-01", "123456"]);
+    pSheet.appendRow(["PAC-03", "45678912322", "Mariana Castro Silva", "mari.castro@gmail.com", "5521977776666", "2000-07-08", "Saúde Intestinal & Bio-Reset", "2026-07-15", "123456"]);
+  }
+
+  // 1.B CONFIGURAÇÕES ADMIN & SENHA MESTRA
+  const cfgSheet = getSheet(SHEETS.CONFIG);
+  if (cfgSheet.getLastRow() <= 1) {
+    cfgSheet.appendRow(["admin_email", "silviadeoliveira24.nutri@gmail.com"]);
+    cfgSheet.appendRow(["admin_senha", "silvia2026"]);
+    cfgSheet.appendRow(["clinica_nome", "Dra. Silvia de Oliveira Lemos Nutricionista"]);
+    cfgSheet.appendRow(["clinica_crn", "CRN-4 24987/P"]);
   }
 
   // 2. AGENDAMENTOS REAIS
