@@ -1009,14 +1009,17 @@ function atualizar() {
   });
 }
 
-// SALVAR NO BANCO GOOGLE SHEETS
+// SALVAR NO BANCO GOOGLE SHEETS COM VÍNCULO DINÂMICO DE PACIENTE
 async function salvarPlanoNoBancoSheets() {
   const nome = document.getElementById('inNome').value || 'ANYCELLI V.C. DOS SANTOS';
   const apresentacao = document.getElementById('inApresentacao').value;
   const objetivo = document.getElementById('inObjetivo').value;
 
+  const pacienteIdPrompt = prompt(`Digite o CPF ou ID do Paciente para vincular o plano de ${nome}:`, "PAC-01");
+  if (!pacienteIdPrompt) return;
+
   const planoData = {
-    paciente_id: "PAC-01",
+    paciente_id: pacienteIdPrompt.trim(),
     paciente_nome: nome,
     refeicoes: refeicoes,
     extras: { apresentacao, objetivo },
@@ -1025,7 +1028,7 @@ async function salvarPlanoNoBancoSheets() {
 
   const res = await apiCall('savePlano', { plano: planoData });
   if (res && res.success) {
-    alert(`✅ Plano Alimentar de ${nome} salvo com sucesso no Google Sheets!`);
+    alert(`✅ Plano Alimentar de ${nome} (Vínculo: ${pacienteIdPrompt}) salvo com sucesso no Google Sheets!`);
   } else {
     alert("Erro ao salvar plano no banco: " + (res.error || "Tente novamente."));
   }
