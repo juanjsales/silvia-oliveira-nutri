@@ -111,13 +111,19 @@ function handleRequest(e, method) {
 
       // 2. LOGIN PACIENTE
       case "loginPaciente":
-        response.data = loginPaciente(params.cpf, params.data_nascimento);
+        response.data = loginPaciente(params.cpf || params.identifierInput, params.data_nascimento || params.pinInput || params.senha);
         response.success = true;
         break;
 
-      // 2. PACIENTES
+      // 2.B LOGIN ADMIN
+      case "loginAdmin":
+        response.data = loginAdmin(params.emailInput || params.email, params.passInput || params.senha);
+        response.success = true;
+        break;
+
+      // 3. PACIENTES
       case "getPacientes":
-        response.data = getTableData(SHEETS.PACIENTES);
+        response.data = getPacientes();
         response.success = true;
         break;
 
@@ -126,7 +132,7 @@ function handleRequest(e, method) {
         response.success = true;
         break;
 
-      // 3. AGENDAMENTOS
+      // 4. AGENDAMENTOS
       case "getAgendamentos":
         response.data = getTableData(SHEETS.AGENDAMENTOS);
         response.success = true;
@@ -236,6 +242,11 @@ function hashPassword(plainPassword) {
     Utilities.Charset.UTF_8
   );
   return rawHash.map(b => (b < 0 ? b + 256 : b).toString(16).padStart(2, '0')).join('');
+}
+
+function getPacientes() {
+  const usuarios = getTableData(SHEETS.USUARIOS);
+  return usuarios.filter(u => !u.tipo || u.tipo === "PACIENTE");
 }
 
 function cleanCPF(cpf) {

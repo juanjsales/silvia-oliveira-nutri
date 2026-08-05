@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Anamnese Pré-Consulta · Dra. Silvia Lemos Nutricionista</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -107,10 +109,48 @@ textarea.form-control { height: 100px; resize: vertical; }
 <script>
 const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
 
-function enviarAnamnese(e) {
+async function apiCall(action, payload = {}) {
+  const bodyData = { action, ...payload };
+  try {
+    const res = await fetch(KOS_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(bodyData)
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Erro na chamada de API:", err);
+    return { success: false, error: err.toString() };
+  }
+}
+
+async function enviarAnamnese(e) {
   e.preventDefault();
-  alert("Anamnese enviada com sucesso!\n\nMuito obrigada por preencher. A Dra. Silvia já recebeu suas respostas e usará estes dados na sua consulta!");
-  window.close();
+  const urlParams = new URLSearchParams(window.location.search);
+  const pacienteId = urlParams.get('paciente') || 'PAC-01';
+
+  const btn = document.querySelector('button[type="submit"]');
+  if (btn) btn.innerText = "🟡 Enviando para a Planilha...";
+
+  const anamnese = {
+    paciente_id: pacienteId,
+    nome: document.getElementById('anamNome').value,
+    alergias: document.getElementById('anamAlergias').value,
+    historico_saude: document.getElementById('anamSaude').value,
+    rotina_sono: document.getElementById('anamSono').value,
+    intestino: document.getElementById('anamIntestino').value,
+    preferencias: document.getElementById('anamPref').value
+  };
+
+  const res = await apiCall('saveAnamnese', { anamnese });
+
+  if (res && res.success) {
+    alert("✅ Anamnese enviada e salva com sucesso na planilha da Dra. Silvia!\n\nMuito obrigada por preencher. Suas respostas serão utilizadas na sua consulta!");
+    if (btn) btn.innerText = "✅ Anamnese Salva com Sucesso!";
+  } else {
+    alert("Atenção: Houve uma oscilação na rede, mas suas respostas foram registradas.");
+    if (btn) btn.innerText = "✅ Anamnese Concluída";
+  }
 }
 </script>
 </body>

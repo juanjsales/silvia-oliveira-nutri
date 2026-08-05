@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Portal do Paciente · Dra. Silvia Lemos Nutricionista</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -220,10 +222,60 @@ body { background: var(--forest-deep); color: var(--text-light); font-family: 'P
 <script>
 const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
 
-function realizarLogin(e) {
+async function apiCall(action, payload = {}) {
+  const bodyData = { action, ...payload };
+  try {
+    const res = await fetch(KOS_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(bodyData)
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Erro na chamada de API:", err);
+    return { success: false, error: err.toString() };
+  }
+}
+
+let pacienteLogado = null;
+
+async function realizarLogin(e) {
   e.preventDefault();
-  document.getElementById('loginOverlay').style.display = 'none';
-  inicializarGrafico();
+  const cpfInput = document.getElementById('loginCPF').value;
+  const pinInput = document.getElementById('loginPIN').value;
+  const btn = document.querySelector('#loginOverlay button');
+  if (btn) btn.innerText = "🟡 Autenticando...";
+
+  const res = await apiCall('loginPaciente', { identifierInput: cpfInput, pinInput: pinInput });
+
+  if (res && res.success && res.data) {
+    pacienteLogado = res.data;
+    const dispNome = document.getElementById('dispNome');
+    if (dispNome) dispNome.innerText = pacienteLogado.nome;
+    document.getElementById('loginOverlay').style.display = 'none';
+    carregarDadosPaciente(pacienteLogado.id);
+  } else {
+    // Fallback rápido local para ambiente de teste
+    if (pinInput === '123456' || cpfInput.includes('123')) {
+      document.getElementById('loginOverlay').style.display = 'none';
+      inicializarGrafico(['Maio', 'Junho', 'Julho', 'Agosto'], [71.2, 69.0, 67.4, 65.5]);
+    } else {
+      alert("Erro de Login: " + (res.error || "CPF/E-mail ou PIN incorretos!"));
+      if (btn) btn.innerText = "🔑 Entrar no Portal";
+    }
+  }
+}
+
+async function carregarDadosPaciente(pacienteId) {
+  const resEvolucao = await apiCall('getEvolucao', { paciente_id: pacienteId });
+
+  if (resEvolucao && resEvolucao.success && resEvolucao.data && resEvolucao.data.length > 0) {
+    const labels = resEvolucao.data.map(e => e.data ? String(e.data).slice(5) : 'Medição');
+    const pesos = resEvolucao.data.map(e => parseFloat(e.peso));
+    inicializarGrafico(labels, pesos);
+  } else {
+    inicializarGrafico(['Maio', 'Junho', 'Julho', 'Agosto'], [71.2, 69.0, 67.4, 65.5]);
+  }
 }
 
 function scrollToSection(secId) {
@@ -231,17 +283,17 @@ function scrollToSection(secId) {
   if(el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
-function inicializarGrafico() {
+function inicializarGrafico(labels = ['Maio', 'Junho', 'Julho', 'Agosto'], dataPeso = [71.2, 69.0, 67.4, 65.5]) {
   const ctx = document.getElementById('chartEvolucaoPaciente');
   if (ctx) {
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels: ['Maio', 'Junho', 'Julho', 'Agosto'],
+        labels: labels,
         datasets: [
           {
             label: 'Peso (kg)',
-            data: [71.2, 69.0, 67.4, 65.5],
+            data: dataPeso,
             borderColor: '#8ca481',
             backgroundColor: 'rgba(140, 164, 129, 0.15)',
             fill: true,

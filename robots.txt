@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /app-nutri.html
+Disallow: /backend/
+
+Sitemap: https://juanjsales.github.io/silvia-oliveira-nutri/sitemap.xml

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KOS Nutrição · Painel da Nutricionista (Dra. Silvia Lemos)</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -462,32 +464,223 @@ async function autenticarAdmin(e) {
   }
 }
 
+// CARREGAR DADOS DINÂMICOS DA API AO INICIAR
+async function carregarDadosDashboard() {
+  const [resPacientes, resAgendamentos] = await Promise.all([
+    apiCall('getPacientes'),
+    apiCall('getAgendamentos')
+  ]);
+
+  if (resPacientes && resPacientes.success && resPacientes.data && resPacientes.data.length > 0) {
+    const selPlano = document.getElementById('selPacientePlano');
+    const tblPacientes = document.getElementById('tblPacientes');
+    if (selPlano) selPlano.innerHTML = '';
+    if (tblPacientes) tblPacientes.innerHTML = '';
+
+    resPacientes.data.forEach(p => {
+      if (selPlano) {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.nome} (CPF: ${p.cpf || 'N/I'})`;
+        selPlano.appendChild(opt);
+      }
+
+      if (tblPacientes) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.nome}</td>
+          <td>${p.cpf || '-'}</td>
+          <td>${p.whatsapp || '-'}</td>
+          <td>${p.objetivo || 'Reeducação Alimentar'}</td>
+          <td>
+            <button class="btn btn-secondary" onclick="copiarLinkAnamnese('${p.id}')" style="padding:6px 12px; font-size:0.75rem;">🔗 Copiar Link Anamnese</button>
+          </td>
+        `;
+        tblPacientes.appendChild(tr);
+      }
+    });
+  }
+
+  if (resAgendamentos && resAgendamentos.success && resAgendamentos.data && resAgendamentos.data.length > 0) {
+    const tblAg = document.getElementById('tblAgendamentos');
+    if (tblAg) tblAg.innerHTML = '';
+
+    let consultasHoje = 0, online = 0, presencial = 0, faturamento = 0;
+
+    resAgendamentos.data.forEach(ag => {
+      consultasHoje++;
+      const val = parseFloat(ag.valor) || 250;
+      faturamento += val;
+
+      const isOnline = String(ag.tipo || '').toLowerCase().includes('online');
+      if (isOnline) online++; else presencial++;
+
+      if (tblAg) {
+        const cleanWsp = String(ag.whatsapp || '5521999998888').replace(/\D/g, '');
+        const msgWsp = encodeURIComponent(`Olá ${ag.paciente_nome}! Lembrete da sua consulta hoje às ${ag.hora}.`);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${ag.hora || '--:--'}</td>
+          <td>${ag.paciente_nome}</td>
+          <td>${ag.tipo || 'Consulta Nutricional'}</td>
+          <td><span style="color: #8ca481; font-weight:800;">${ag.status || 'Confirmado'}</span></td>
+          <td>
+            <a href="https://wa.me/${cleanWsp}?text=${msgWsp}" target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">💬 Lembrete 1-Clique</a>
+          </td>
+        `;
+        tblAg.appendChild(tr);
+      }
+    });
+
+    const kpiC = document.getElementById('kpiConsultas');
+    const kpiOn = document.getElementById('kpiOnline');
+    const kpiPre = document.getElementById('kpiPresencial');
+    const kpiFat = document.getElementById('kpiFatura');
+
+    if (kpiC) kpiC.innerText = consultasHoje;
+    if (kpiOn) kpiOn.innerText = online;
+    if (kpiPre) kpiPre.innerText = presencial;
+    if (kpiFat) kpiFat.innerText = `R$ ${faturamento.toLocaleString('pt-BR')}`;
+  }
+}
+
+// MODAL & CADASTRO DE NOVO PACIENTE
+async function openPacienteModal() {
+  const nome = prompt("Digite o Nome Completo do Paciente:");
+  if (!nome) return;
+  const cpf = prompt("Digite o CPF do Paciente (apenas números ou formatado):") || "";
+  const whatsapp = prompt("Digite o WhatsApp com DDD (Ex: 21999998888):") || "";
+  const objetivo = prompt("Digite o Objetivo Principal (Ex: Emagrecimento / Hipertrofia):") || "Reeducação Alimentar";
+
+  const novoPaciente = { nome, cpf, whatsapp, objetivo, senha_pin: "123456" };
+  const res = await apiCall('savePaciente', { paciente: novoPaciente });
+
+  if (res && res.success) {
+    alert("✅ Paciente cadastrado com sucesso na planilha!");
+    carregarDadosDashboard();
+  } else {
+    alert("Erro ao cadastrar paciente: " + (res.error || "Tente novamente."));
+  }
+}
+
+// MODAL & AGENDAMENTO DE CONSULTA
+async function openAgendamentoModal() {
+  const paciente_nome = prompt("Digite o Nome do Paciente para o Agendamento:");
+  if (!paciente_nome) return;
+  const hora = prompt("Digite o Horário (Ex: 14:00):", "14:00") || "14:00";
+  const tipo = prompt("Digite o Tipo (Online / Presencial):", "Online (Google Meet)") || "Online (Google Meet)";
+  const valor = parseFloat(prompt("Digite o Valor da Consulta (R$):", "250") || "250");
+
+  const hoje = new Date().toISOString().split("T")[0];
+  const novoAgendamento = {
+    paciente_id: "PAC-" + Date.now(),
+    paciente_nome,
+    data: hoje,
+    hora,
+    tipo,
+    valor,
+    status: "Confirmado"
+  };
+
+  const res = await apiCall('saveAgendamento', { agendamento: novoAgendamento });
+  if (res && res.success) {
+    alert("✅ Agendamento registrado com sucesso na planilha!");
+    carregarDadosDashboard();
+  } else {
+    alert("Erro ao salvar agendamento: " + (res.error || "Tente novamente."));
+  }
+}
+
+// PRESETS DE MACRONUTRIENTES NO PLANO ALIMENTAR
+function aplicarPreset(preset) {
+  const inpCal = document.getElementById('inpCalorias');
+  const pdfRefeicoes = document.getElementById('pdfRefeicoes');
+
+  if (preset === 'HIPERTROFIA') {
+    if (inpCal) inpCal.value = "2400 kcal";
+    if (pdfRefeicoes) {
+      pdfRefeicoes.innerHTML = `
+        <div class="pdf-meal-card">
+          <div class="pdf-meal-title"><span>🍳 Café da Manhã Hipertrofia (07:30)</span><span>~550 kcal</span></div>
+          <p style="font-size: 0.92rem; line-height: 1.6; color: #333;">
+            • 4 ovos mexidos + 2 fatias de pão integral 100% com cottage + 1 banana com aveia e mel.<br>
+            • 1 xícara de café preto sem açúcar.
+          </p>
+        </div>
+        <div class="pdf-meal-card">
+          <div class="pdf-meal-title"><span>🍗 Almoço Proteico (12:30)</span><span>~850 kcal</span></div>
+          <p style="font-size: 0.92rem; line-height: 1.6; color: #333;">
+            • 180g de filé de frango ou patinho grelhado + 200g de arroz integral + 1 concha cheia de feijão + salada à vontade com azeite.
+          </p>
+        </div>
+      `;
+    }
+  } else {
+    if (inpCal) inpCal.value = "1800 kcal";
+    if (pdfRefeicoes) {
+      pdfRefeicoes.innerHTML = `
+        <div class="pdf-meal-card">
+          <div class="pdf-meal-title"><span>🍳 Café da Manhã (08:00)</span><span>~350 kcal</span></div>
+          <p style="font-size: 0.92rem; line-height: 1.6; color: #333;">
+            • 2 ovos mexidos temperados com orégano + 1 fatia de pão integral 100% com requeijão light.<br>
+            • 1 xícara de café preto sem açúcar.
+          </p>
+        </div>
+        <div class="pdf-meal-card">
+          <div class="pdf-meal-title"><span>🥗 Almoço - Regra do Prato 50/25/25 (12:30)</span><span>~600 kcal</span></div>
+          <p style="font-size: 0.92rem; line-height: 1.6; color: #333;">
+            • <strong>50% Salada/Vegetais:</strong> Alface, rúcula e tomate.<br>
+            • <strong>25% Proteína Magra:</strong> 120g de filé de frango grelhado.<br>
+            • <strong>25% Carboidrato:</strong> 3 colheres de arroz integral + feijão.
+          </p>
+        </div>
+      `;
+    }
+  }
+}
+
+// REGISTRAR NOVA MEDIÇÃO DE BIOIMPEDÂNCIA
+let chartInstance = null;
+async function registrarEvolucao() {
+  const peso = parseFloat(prompt("Digite o Peso Atual (kg):", "65.0") || "0");
+  if (!peso) return;
+  const percGordura = parseFloat(prompt("Digite o Percentual de Gordura (%):", "22.0") || "0");
+
+  const evolucao = {
+    paciente_id: "PAC-01",
+    peso: peso,
+    percentual_gordura: percGordura,
+    massa_magra: 38.5,
+    cintura: 71,
+    quadril: 93
+  };
+
+  const res = await apiCall('saveEvolucao', { evolucao });
+  if (res && res.success) {
+    alert("✅ Nova medição registrada com sucesso!");
+    if (chartInstance) {
+      chartInstance.data.labels.push('Hoje');
+      chartInstance.data.datasets[0].data.push(peso);
+      chartInstance.data.datasets[1].data.push(percGordura);
+      chartInstance.update();
+    }
+  } else {
+    alert("Erro ao registrar evolução: " + (res.error || "Tente novamente."));
+  }
+}
+
+// INICIALIZAR GRÁFICO E DASHBOARD
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('kos_adm_auth') === 'true') {
-    document.getElementById('adminLockscreen').style.display = 'none';
+    const lock = document.getElementById('adminLockscreen');
+    if (lock) lock.style.display = 'none';
   }
-});
 
-function switchView(viewId, navEl) {
-  document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  
-  document.getElementById(viewId).classList.add('active');
-  if(navEl) navEl.classList.add('active');
-}
+  carregarDadosDashboard();
 
-function copiarLinkAnamnese(pacienteId) {
-  const link = `${window.location.origin}${window.location.pathname.replace('app-nutri.html', '')}anamnese-publica.html?paciente=${pacienteId}`;
-  navigator.clipboard.writeText(link).then(() => {
-    alert("Link de Anamnese Copiado com Sucesso!\n\nLink: " + link);
-  });
-}
-
-// INICIALIZAR GRÁFICO DE EVOLUÇÃO (CHART.JS)
-window.addEventListener('DOMContentLoaded', () => {
   const ctx = document.getElementById('chartEvolucao');
   if (ctx) {
-    new Chart(ctx, {
+    chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Maio/26', 'Junho/26', 'Julho/26', 'Agosto/26'],
