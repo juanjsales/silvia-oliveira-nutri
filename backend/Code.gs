@@ -213,17 +213,19 @@ function cleanCPF(cpf) {
   return String(cpf || "").replace(/\D/g, "");
 }
 
-function loginPaciente(cpfInput, dataNascInput) {
-  const cleanInputCpf = cleanCPF(cpfInput);
+function loginPaciente(identifierInput, pinInput) {
+  const cleanInput = cleanCPF(identifierInput);
+  const rawInput = String(identifierInput || "").trim().toLowerCase();
   const pacientes = getTableData(SHEETS.PACIENTES);
 
   const paciente = pacientes.find(p => {
     const pCpf = cleanCPF(p.cpf);
-    return pCpf === cleanInputCpf;
+    const pEmail = String(p.email || "").trim().toLowerCase();
+    return (pCpf && pCpf === cleanInput) || (pEmail && pEmail === rawInput);
   });
 
   if (!paciente) {
-    throw new Error("Paciente não encontrado com o CPF informado.");
+    throw new Error("Paciente não encontrado com o CPF ou E-mail informado.");
   }
 
   return paciente;
