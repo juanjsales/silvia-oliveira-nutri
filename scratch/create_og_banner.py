@@ -48,7 +48,7 @@ except:
 # Textos do Card de Compartilhamento
 text_x = 580
 draw.text((text_x, 140), "Dra. Silvia Oliveira Lemos", fill="#ffffff", font=font_title)
-draw.text((text_x, 210), "NUTRICIONISTA • CRN-4 24987/P", fill="#8ca481", font=font_badge)
+draw.text((text_x, 210), "NUTRICIONISTA • CRN-4 25104731", fill="#8ca481", font=font_badge)
 
 draw.line([(text_x, 260), (text_x + 500, 260)], fill="#8ca481", width=2)
 

@@ -1,7 +1,7 @@
 /**
  * ====================================================================
  * KOS NUTRIÇÃO - BACKEND API SERVERLESS (GOOGLE APPS SCRIPT)
- * Dra. Silvia de Oliveira Lemos · CRN-4 24987/P
+ * Dra. Silvia de Oliveira Lemos · CRN-4 25104731
  * ====================================================================
  * Instruções de Deploy:
  * 1. Abra o Google Sheets e vá em Extensões > Apps Script.
@@ -454,7 +454,7 @@ function populateInitialData() {
     cfgSheet.appendRow(["admin_email", "silviadeoliveira24.nutri@gmail.com"]);
     cfgSheet.appendRow(["admin_senha", adminPassHash]);
     cfgSheet.appendRow(["clinica_nome", "Dra. Silvia de Oliveira Lemos Nutricionista"]);
-    cfgSheet.appendRow(["clinica_crn", "CRN-4 24987/P"]);
+    cfgSheet.appendRow(["clinica_crn", "CRN-4 25104731"]);
   }
 
   // 2. AGENDAMENTOS REAIS
