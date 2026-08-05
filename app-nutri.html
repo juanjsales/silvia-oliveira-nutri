@@ -932,43 +932,47 @@ function atualizar() {
     </div>
   `;
 
-  // 2. PÁGINAS DE REFEIÇÕES EM CARDS (FLUIDO E FÁCIL DE LER)
+  // 2. PÁGINAS DE REFEIÇÕES EM CARDS (2 REFEIÇÕES POR PÁGINA A4)
   if (refeicoes.length > 0) {
-    let mealsHTML = '';
-    refeicoes.forEach(m => {
-      mealsHTML += `
-        <div class="meal-card">
-          <div class="meal-header">
-            <div class="meal-title">${m.titulo}</div>
-            <div class="meal-stats-badges">
-              ${m.calorias ? `<span class="badge-stat">🔥 ${m.calorias}</span>` : ''}
-              ${m.proteina ? `<span class="badge-stat">💪 Prot: ${m.proteina}</span>` : ''}
+    const MEALS_PER_PAGE = 2;
+    for (let i = 0; i < refeicoes.length; i += MEALS_PER_PAGE) {
+      const chunk = refeicoes.slice(i, i + MEALS_PER_PAGE);
+      let chunkHTML = '';
+      chunk.forEach(m => {
+        chunkHTML += `
+          <div class="meal-card">
+            <div class="meal-header">
+              <div class="meal-title">${m.titulo}</div>
+              <div class="meal-stats-badges">
+                ${m.calorias ? `<span class="badge-stat">🔥 ${m.calorias}</span>` : ''}
+                ${m.proteina ? `<span class="badge-stat">💪 Prot: ${m.proteina}</span>` : ''}
+              </div>
+            </div>
+            <div class="meal-items-list">${m.itens}</div>
+            ${m.obs ? `<div class="meal-obs-text"><strong>Obs:</strong> ${m.obs}</div>` : ''}
+          </div>
+        `;
+      });
+
+      preview.innerHTML += `
+        <div class="pdf-page">
+          <div>
+            <div class="page-hdr">
+              <span>PLANO ALIMENTAR | ${nome}</span>
+              <span>DRA. SILVIA OLIVEIRA</span>
+            </div>
+
+            <div class="meals-grid">
+              ${chunkHTML}
             </div>
           </div>
-          <div class="meal-items-list">${m.itens}</div>
-          ${m.obs ? `<div class="meal-obs-text"><strong>Obs:</strong> ${m.obs}</div>` : ''}
+
+          <div class="page-ftr">
+            Dra. Silvia de Oliveira Lemos · Nutricionista · CRN-4 25104731
+          </div>
         </div>
       `;
-    });
-
-    preview.innerHTML += `
-      <div class="pdf-page">
-        <div>
-          <div class="page-hdr">
-            <span>PLANO ALIMENTAR | ${nome}</span>
-            <span>DRA. SILVIA OLIVEIRA</span>
-          </div>
-
-          <div class="meals-grid">
-            ${mealsHTML}
-          </div>
-        </div>
-
-        <div class="page-ftr">
-          Dra. Silvia de Oliveira Lemos · Nutricionista · CRN-4 25104731
-        </div>
-      </div>
-    `;
+    }
   }
 
   // 3. PÁGINAS EXTRAS INFORMATIVAS
