@@ -148,14 +148,65 @@ textarea.form-control { min-height: 85px; resize: vertical; line-height: 1.5; }
   .preset-bar { grid-template-columns: 1fr; }
 }
 
-/* IMPRESSÃO A4 PROFISSIONAL */
+/* IMPRESSÃO A4 PROFISSIONAL SEM QUEBRA DE CARDS */
+@page {
+  size: A4 portrait;
+  margin: 0mm;
+}
+
 @media print {
-  body { background: none !important; padding: 0 !important; color: #000 !important; }
-  .top-header, .mobile-tabs, .btn-nav, .no-print, .form-panel, .preview-bar { display: none !important; }
-  .manager-container { padding: 0 !important; display: block !important; }
-  .preview-panel { width: 100% !important; }
-  .view-tab-preview { display: block !important; }
-  .pdf-page { box-shadow: none !important; width: 100% !important; min-height: 100vh !important; border-radius: 0 !important; padding: 15mm 18mm !important; page-break-after: always !important; margin-bottom: 0 !important; }
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  .top-header, .mobile-tabs, .btn-nav, .no-print, .form-panel, .preview-bar, button {
+    display: none !important;
+  }
+  
+  .manager-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .preview-panel {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+  
+  .view-tab-preview {
+    display: block !important;
+  }
+  
+  .pdf-page {
+    box-shadow: none !important;
+    border: none !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    border-radius: 0 !important;
+    padding: 16mm 18mm !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    background: #f8faf6 !important;
+  }
+  
+  .meal-card, .extra-card, .cover-plan-box {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
+  }
 }
 </style>
 </head>

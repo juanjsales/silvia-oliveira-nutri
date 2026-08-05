@@ -170,12 +170,35 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .preset-bar { grid-template-columns: 1fr !important; gap: 6px !important; }
 }
 
-/* IMPRESSÃO A4 */
+/* IMPRESSÃO A4 PROFISSIONAL SEM QUEBRA DE CARDS */
+@page {
+  size: A4 portrait;
+  margin: 0mm;
+}
+
 @media print {
-  body { background: none !important; padding: 0 !important; color: #000 !important; }
-  .sidebar, .top-header, .btn, .no-print, .admin-lock-overlay, .form-panel-wrapper { display: none !important; }
-  .main-wrapper, .content-area, .view-panel { padding: 0 !important; overflow: visible !important; display: block !important; }
-  .pdf-page { box-shadow: none !important; width: 100% !important; min-height: 100vh !important; border-radius: 0 !important; padding: 15mm 18mm !important; page-break-after: always !important; margin-bottom: 0 !important; }
+  html, body { background: #ffffff !important; padding: 0 !important; color: #000 !important; width: 100% !important; height: auto !important; overflow: visible !important; }
+  .sidebar, .top-header, .btn, .no-print, .admin-lock-overlay, .form-panel-wrapper, button { display: none !important; }
+  .main-wrapper, .content-area, .view-panel, .preview-panel { padding: 0 !important; margin: 0 !important; overflow: visible !important; display: block !important; width: 100% !important; }
+  .pdf-page {
+    box-shadow: none !important;
+    border: none !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    border-radius: 0 !important;
+    padding: 16mm 18mm !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    background: #f8faf6 !important;
+  }
+  .meal-card, .extra-card, .cover-plan-box {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
+  }
 }
 </style>
 </head>
