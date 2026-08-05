@@ -438,14 +438,27 @@ async function testarConexaoDB() {
   }
 }
 
-function autenticarAdmin(e) {
+async function autenticarAdmin(e) {
   e.preventDefault();
+  const email = document.getElementById('admEmail').value;
   const pass = document.getElementById('admPass').value;
+  const btn = document.querySelector('#adminLockscreen button');
+  if (btn) btn.innerText = "🟡 Validando na Planilha...";
+
+  // Fallback rápido local ou consulta remota
   if (pass === 'silvia2026') {
     sessionStorage.setItem('kos_adm_auth', 'true');
     document.getElementById('adminLockscreen').style.display = 'none';
+    return;
+  }
+
+  const res = await apiCall('loginAdmin', { emailInput: email, passInput: pass });
+  if (res && res.success) {
+    sessionStorage.setItem('kos_adm_auth', 'true');
+    document.getElementById('adminLockscreen').style.display = 'none';
   } else {
-    alert("Senha incorreta! Tente novamente.");
+    alert("Erro de Autenticação: " + (res.error || "E-mail ou senha incorretos!"));
+    if (btn) btn.innerText = "🔑 Desbloquear Painel Admin";
   }
 }
 
