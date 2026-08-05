@@ -211,6 +211,20 @@ function getAllByField(sheetName, fieldName, val) {
   return items.filter(item => String(item[fieldName]).trim() === String(val).trim());
 }
 
+/**
+ * GERADOR DE HASH CRIPTOGRÁFICO SHA-256 (COM SALT DE SEGURANÇA)
+ */
+function hashPassword(plainPassword) {
+  if (!plainPassword) return "";
+  const salt = "KOS_NUTRI_SALT_2026_SILVIA_LEMOS_CRN";
+  const rawHash = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    String(plainPassword) + salt,
+    Utilities.Charset.UTF_8
+  );
+  return rawHash.map(b => (b < 0 ? b + 256 : b).toString(16).padStart(2, '0')).join('');
+}
+
 function cleanCPF(cpf) {
   return String(cpf || "").replace(/\D/g, "");
 }
@@ -218,6 +232,7 @@ function cleanCPF(cpf) {
 function loginPaciente(identifierInput, pinInput) {
   const cleanInput = cleanCPF(identifierInput);
   const rawInput = String(identifierInput || "").trim().toLowerCase();
+  const inputHash = hashPassword(pinInput);
   const pacientes = getTableData(SHEETS.PACIENTES);
 
   const paciente = pacientes.find(p => {
@@ -230,13 +245,39 @@ function loginPaciente(identifierInput, pinInput) {
     throw new Error("Paciente não encontrado com o CPF ou E-mail informado.");
   }
 
+  // VALIDAÇÃO COM HASH CRIPTOGRÁFICO SHA-256
+  if (paciente.senha_pin && paciente.senha_pin !== inputHash && paciente.senha_pin !== pinInput) {
+    throw new Error("Senha / PIN incorreto. Tente novamente.");
+  }
+
   return paciente;
+}
+
+function loginAdmin(emailInput, passInput) {
+  const configs = getTableData(SHEETS.CONFIG);
+  const adminEmailObj = configs.find(c => c.chave === 'admin_email');
+  const adminPassObj = configs.find(c => c.chave === 'admin_senha');
+
+  const targetEmail = adminEmailObj ? adminEmailObj.valor : "silviadeoliveira24.nutri@gmail.com";
+  const targetHash = adminPassObj ? adminPassObj.valor : hashPassword("silvia2026");
+
+  if (String(emailInput).trim().toLowerCase() !== targetEmail.trim().toLowerCase()) {
+    throw new Error("E-mail administrativo incorreto.");
+  }
+
+  const inputHash = hashPassword(passInput);
+  if (inputHash !== targetHash && passInput !== targetHash) {
+    throw new Error("Senha administrativa incorreta.");
+  }
+
+  return { authenticated: true, email: targetEmail };
 }
 
 function savePaciente(p) {
   const sheet = getSheet(SHEETS.PACIENTES);
   const id = p.id || "PAC-" + Date.now();
   const dataCad = p.data_cadastro || new Date().toISOString().split("T")[0];
+  const hashedPin = hashPassword(p.senha_pin || "123456");
 
   sheet.appendRow([
     id,
@@ -246,7 +287,8 @@ function savePaciente(p) {
     p.whatsapp || "",
     p.data_nascimento || "",
     p.objetivo || "Reeducação Alimentar",
-    dataCad
+    dataCad,
+    hashedPin
   ]);
 
   return { id: id, ...p };
@@ -348,19 +390,21 @@ function populateInitialData() {
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // 1. PACIENTES REAIS (COM SENHA_PIN)
+  // 1. PACIENTES REAIS (COM SENHA_PIN HASHADA SHA-256)
+  const defaultPinHash = hashPassword("123456");
   const pSheet = getSheet(SHEETS.PACIENTES);
   if (pSheet.getLastRow() <= 1) {
-    pSheet.appendRow(["PAC-01", "12345678900", "Juliana Mendes", "juliana.mendes@gmail.com", "5521999998888", "1995-04-12", "Reeducação Alimentar & Emagrecimento", "2026-05-10", "123456"]);
-    pSheet.appendRow(["PAC-02", "98765432111", "Carlos Eduardo Torres", "carlos.torres@hotmail.com", "5521988887777", "1988-11-23", "Nutrição Esportiva & Hipertrofia", "2026-06-01", "123456"]);
-    pSheet.appendRow(["PAC-03", "45678912322", "Mariana Castro Silva", "mari.castro@gmail.com", "5521977776666", "2000-07-08", "Saúde Intestinal & Bio-Reset", "2026-07-15", "123456"]);
+    pSheet.appendRow(["PAC-01", "12345678900", "Juliana Mendes", "juliana.mendes@gmail.com", "5521999998888", "1995-04-12", "Reeducação Alimentar & Emagrecimento", "2026-05-10", defaultPinHash]);
+    pSheet.appendRow(["PAC-02", "98765432111", "Carlos Eduardo Torres", "carlos.torres@hotmail.com", "5521988887777", "1988-11-23", "Nutrição Esportiva & Hipertrofia", "2026-06-01", defaultPinHash]);
+    pSheet.appendRow(["PAC-03", "45678912322", "Mariana Castro Silva", "mari.castro@gmail.com", "5521977776666", "2000-07-08", "Saúde Intestinal & Bio-Reset", "2026-07-15", defaultPinHash]);
   }
 
-  // 1.B CONFIGURAÇÕES ADMIN & SENHA MESTRA
+  // 1.B CONFIGURAÇÕES ADMIN & SENHA MESTRA (HASHADA SHA-256)
+  const adminPassHash = hashPassword("silvia2026");
   const cfgSheet = getSheet(SHEETS.CONFIG);
   if (cfgSheet.getLastRow() <= 1) {
     cfgSheet.appendRow(["admin_email", "silviadeoliveira24.nutri@gmail.com"]);
-    cfgSheet.appendRow(["admin_senha", "silvia2026"]);
+    cfgSheet.appendRow(["admin_senha", adminPassHash]);
     cfgSheet.appendRow(["clinica_nome", "Dra. Silvia de Oliveira Lemos Nutricionista"]);
     cfgSheet.appendRow(["clinica_crn", "CRN-4 24987/P"]);
   }
