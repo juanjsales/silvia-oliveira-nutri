@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Login · Dra. Silvia Lemos Nutricionista</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --forest-dark: #203528;
+  --forest-card: #182a1f;
+  --forest-deep: #0e1a12;
+  --sage-light: #8ca481;
+  --sage-dim: rgba(140, 164, 129, 0.2);
+  --paper-bg: #f8faf6;
+  --text-dark: #192b20;
+  --text-light: #eef4e5;
+  --text-muted: #a0b399;
+  --border-forest: rgba(140, 164, 129, 0.25);
+  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow-x: hidden; width: 100%; max-width: 100vw; }
+body {
+  background: var(--forest-deep);
+  color: var(--text-light);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  position: relative;
+}
+
+/* DECORAÇÃO DE FUNDO BOTÂNICA */
+.bg-glow {
+  position: absolute; width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(140, 164, 129, 0.15) 0%, rgba(14, 26, 18, 0) 70%);
+  top: 10%; left: 50%; transform: translateX(-50%); pointer-events: none;
+}
+
+/* CARTÃO CENTRAL DE LOGIN */
+.login-card {
+  background: var(--forest-card);
+  border: 1.5px solid var(--border-forest);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  z-index: 10;
+}
+
+.brand-header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.brand-logo {
+  width: 64px; height: 64px;
+  background: var(--sage-dim); border: 1.5px solid var(--sage-light);
+  border-radius: 50%; font-size: 1.8rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #fff; }
+.brand-sub { font-size: 0.8rem; color: var(--sage-light); font-weight: 700; letter-spacing: 0.05em; }
+
+/* SELETOR DE MODO (PACIENTE VS ADMIN) */
+.role-tabs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-forest);
+  padding: 4px; border-radius: 14px; gap: 4px;
+}
+.tab-btn {
+  padding: 10px; border-radius: 10px; border: none;
+  background: transparent; color: var(--text-muted);
+  font-family: inherit; font-size: 0.82rem; font-weight: 800;
+  cursor: pointer; transition: var(--tr); text-align: center;
+}
+.tab-btn.active {
+  background: var(--sage-light); color: var(--forest-dark);
+  box-shadow: 0 4px 12px rgba(140, 164, 129, 0.3);
+}
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+.form-control {
+  background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-forest);
+  padding: 14px 18px; border-radius: 12px; color: #fff;
+  font-family: inherit; font-size: 0.95rem; outline: none; transition: var(--tr); width: 100%;
+}
+.form-control:focus { border-color: var(--sage-light); box-shadow: 0 0 0 3px rgba(140, 164, 129, 0.15); }
+
+.btn-submit {
+  background: var(--sage-light); color: var(--forest-dark); border: none;
+  padding: 15px; border-radius: 12px; font-family: inherit; font-weight: 900;
+  font-size: 0.95rem; cursor: pointer; transition: var(--tr); width: 100%;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px;
+}
+.btn-submit:hover { background: #9bb590; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(140, 164, 129, 0.35); }
+
+.footer-links { text-align: center; display: flex; flex-direction: column; gap: 10px; font-size: 0.82rem; color: var(--text-muted); }
+.footer-links a { color: var(--sage-light); text-decoration: none; font-weight: 700; transition: var(--tr); }
+.footer-links a:hover { color: #fff; }
+
+.status-msg {
+  padding: 12px; border-radius: 10px; font-size: 0.82rem; text-align: center; display: none; font-weight: 700;
+}
+.status-msg.error { background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; }
+.status-msg.success { background: rgba(140, 164, 129, 0.15); border: 1px solid var(--sage-light); color: #eef4e5; }
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<main class="login-card">
+  <div class="brand-header">
+    <div class="brand-logo">🌿</div>
+    <div>
+      <div class="brand-title">Dra. Silvia Lemos</div>
+      <div class="brand-sub">NUTRICIONISTA · CRN-4 25104731</div>
+    </div>
+  </div>
+
+  <!-- SELETOR PACIENTE OU ADMIN -->
+  <div class="role-tabs">
+    <button class="tab-btn active" id="btnTabPaciente" onclick="setRole('paciente')">🔑 Paciente</button>
+    <button class="tab-btn" id="btnTabAdmin" onclick="setRole('admin')">🔐 Dra. Silvia (Nutri)</button>
+  </div>
+
+  <div id="statusBox" class="status-msg"></div>
+
+  <!-- FORMULÁRIO DE LOGIN DO PACIENTE -->
+  <form id="formPaciente" onsubmit="handlePacienteLogin(event)" style="display: flex; flex-direction: column; gap: 16px;">
+    <div class="form-group">
+      <label>CPF ou E-mail do Paciente</label>
+      <input type="text" id="pacienteCPF" class="form-control" placeholder="000.000.000-00 ou email@exemplo.com" value="123.456.789-00" required>
+    </div>
+
+    <div class="form-group">
+      <label>Sua Senha PIN</label>
+      <input type="password" id="pacientePIN" class="form-control" placeholder="Digite seu PIN de 6 dígitos" value="123456" required>
+    </div>
+
+    <button type="submit" class="btn-submit" id="btnPaciente">
+      🔑 Entrar no Portal do Paciente
+    </button>
+  </form>
+
+  <!-- FORMULÁRIO DE LOGIN ADMINISTRATIVO -->
+  <form id="formAdmin" onsubmit="handleAdminLogin(event)" style="display: none; flex-direction: column; gap: 16px;">
+    <div class="form-group">
+      <label>E-mail Administrativo</label>
+      <input type="email" id="adminEmail" class="form-control" placeholder="silviadeoliveira24.nutri@gmail.com" value="silviadeoliveira24.nutri@gmail.com" required>
+    </div>
+
+    <div class="form-group">
+      <label>Senha do Painel</label>
+      <input type="password" id="adminPass" class="form-control" placeholder="••••••••" value="silvia2026" required>
+    </div>
+
+    <button type="submit" class="btn-submit" id="btnAdmin">
+      🔐 Acessar Painel Nutri
+    </button>
+  </form>
+
+  <div class="footer-links">
+    <div>
+      Ainda não tem atendimento?
+      <a href="anamnese-publica.html">Preencha sua Anamnese Pré-Consulta 📋</a>
+    </div>
+    <div style="margin-top: 4px;">
+      <a href="index.html">🌐 Voltar ao Site Principal</a>
+    </div>
+  </div>
+</main>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+
+let activeRole = 'paciente';
+
+function setRole(role) {
+  activeRole = role;
+  const btnPac = document.getElementById('btnTabPaciente');
+  const btnAdm = document.getElementById('btnTabAdmin');
+  const formPac = document.getElementById('formPaciente');
+  const formAdm = document.getElementById('formAdmin');
+  const statusBox = document.getElementById('statusBox');
+
+  if (statusBox) statusBox.style.display = 'none';
+
+  if (role === 'paciente') {
+    btnPac.classList.add('active');
+    btnAdm.classList.remove('active');
+    formPac.style.display = 'flex';
+    formAdm.style.display = 'none';
+  } else {
+    btnAdm.classList.add('active');
+    btnPac.classList.remove('active');
+    formAdm.style.display = 'flex';
+    formPac.style.display = 'none';
+  }
+}
+
+function showStatus(msg, type = 'error') {
+  const statusBox = document.getElementById('statusBox');
+  if (statusBox) {
+    statusBox.innerText = msg;
+    statusBox.className = `status-msg ${type}`;
+    statusBox.style.display = 'block';
+  }
+}
+
+async function apiCall(action, payload = {}) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Erro na requisição API:", err);
+    return { success: false, error: "Falha de conexão com o servidor." };
+  }
+}
+
+// LOGIN PACIENTE
+async function handlePacienteLogin(e) {
+  e.preventDefault();
+  const cpf = document.getElementById('pacienteCPF').value.trim();
+  const pin = document.getElementById('pacientePIN').value.trim();
+
+  if (!cpf || !pin) {
+    showStatus("Por favor, informe seu CPF e PIN de acesso.");
+    return;
+  }
+
+  showStatus("Autenticando paciente...", "success");
+
+  const res = await apiCall('loginPaciente', { cpf, senha_pin: pin });
+  if (res && res.success) {
+    sessionStorage.setItem('kos_paciente_auth', 'true');
+    sessionStorage.setItem('kos_paciente_dados', JSON.stringify(res.paciente || { nome: cpf }));
+    showStatus("✅ Login realizado! Redirecionando...", "success");
+    setTimeout(() => {
+      window.location.href = "portal-paciente.html";
+    }, 600);
+  } else {
+    showStatus(res.error || "CPF/E-mail ou PIN incorreto. Tente novamente.");
+  }
+}
+
+// LOGIN ADMIN (DRA. SILVIA)
+async function handleAdminLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('adminEmail').value.trim();
+  const senha = document.getElementById('adminPass').value.trim();
+
+  if (!email || !senha) {
+    showStatus("Por favor, informe seu e-mail e senha de administrador.");
+    return;
+  }
+
+  showStatus("Autenticando Dra. Silvia...", "success");
+
+  const res = await apiCall('loginAdmin', { email, senha });
+  if (res && res.success) {
+    sessionStorage.setItem('kos_adm_auth', 'true');
+    showStatus("✅ Acesso autorizado! Redirecionando...", "success");
+    setTimeout(() => {
+      window.location.href = "gerenciador-plano.html";
+    }, 600);
+  } else {
+    // Fallback de segurança local
+    if (email === "silviadeoliveira24.nutri@gmail.com" && senha === "silvia2026") {
+      sessionStorage.setItem('kos_adm_auth', 'true');
+      showStatus("✅ Acesso autorizado (Modo Offline)! Redirecionando...", "success");
+      setTimeout(() => {
+        window.location.href = "gerenciador-plano.html";
+      }, 600);
+    } else {
+      showStatus(res.error || "Credenciais de administrador incorretas.");
+    }
+  }
+}
+</script>
+</body>
+</html>
