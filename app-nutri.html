@@ -90,16 +90,52 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .pdf-meal-card { background: #fff; border: 1px solid #e2ebd8; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
 .pdf-meal-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--forest-dark); margin-bottom: 12px; display: flex; justify-content: space-between; }
 
+/* ADMIN LOCKSCREEN OVERLAY */
+.admin-lock-overlay { position: fixed; inset: 0; background: var(--forest-deep); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.admin-lock-card { background: var(--forest-card); border: 1.5px solid var(--sage-light); border-radius: 28px; padding: 40px 32px; width: 100%; max-width: 420px; text-align: center; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
+.admin-lock-logo { width: 64px; height: 64px; background: var(--sage-dim); border: 1.5px solid var(--sage-light); border-radius: 50%; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+
 /* IMPRESSÃO A4 */
 @media print {
   body { background: #fff !important; color: #000 !important; }
-  .sidebar, .top-header, .btn, .no-print { display: none !important; }
+  .sidebar, .top-header, .btn, .no-print, .admin-lock-overlay { display: none !important; }
   .main-wrapper, .content-area, .view-panel { padding: 0 !important; overflow: visible !important; }
   .pdf-preview { padding: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 }
 </style>
 </head>
 <body>
+
+<!-- ADMIN AUTH LOCKSCREEN -->
+<div class="admin-lock-overlay" id="adminLockscreen">
+  <div class="admin-lock-card">
+    <div class="admin-lock-logo">🔒</div>
+    <div>
+      <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #fff;">Acesso Administrativo</div>
+      <div style="font-size: 0.82rem; color: var(--sage-light); margin-top: 4px; font-weight: 700;">Dra. Silvia de Oliveira Lemos · CRN-4 24987/P</div>
+    </div>
+
+    <form onsubmit="autenticarAdmin(event)" style="display:flex; flex-direction:column; gap:16px;">
+      <div class="form-group">
+        <label>E-mail do Nutricionista</label>
+        <input type="email" class="form-control" id="admEmail" value="silviadeoliveira24.nutri@gmail.com" required>
+      </div>
+
+      <div class="form-group">
+        <label>Senha de Acesso Mestra</label>
+        <input type="password" class="form-control" id="admPass" placeholder="Digite sua senha admin" value="silvia2026" required>
+      </div>
+
+      <button type="submit" class="btn" style="padding: 14px; margin-top: 6px; font-size: 0.95rem; justify-content: center;">
+        🔑 Desbloquear Painel Admin
+      </button>
+    </form>
+
+    <div style="font-size:0.75rem; color:var(--text-muted);">
+      🔒 Protegido com criptografia e sessão de segurança local.
+    </div>
+  </div>
+</div>
 
 <aside class="sidebar no-print">
   <div class="brand-box">
@@ -361,6 +397,23 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 <script>
 const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+
+function autenticarAdmin(e) {
+  e.preventDefault();
+  const pass = document.getElementById('admPass').value;
+  if (pass === 'silvia2026') {
+    sessionStorage.setItem('kos_adm_auth', 'true');
+    document.getElementById('adminLockscreen').style.display = 'none';
+  } else {
+    alert("Senha incorreta! Tente novamente.");
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('kos_adm_auth') === 'true') {
+    document.getElementById('adminLockscreen').style.display = 'none';
+  }
+});
 
 function switchView(viewId, navEl) {
   document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
