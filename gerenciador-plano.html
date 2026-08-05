@@ -29,100 +29,139 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* BARRA DE ROLAGEM PERSONALIZADA SLEEK */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+::-webkit-scrollbar-thumb { background: var(--sage-light); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #9bb590; }
+
 body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
-/* HEADER TOPO */
-.top-header { height: 70px; background: var(--forest-dark); border-bottom: 1px solid var(--border-forest); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
-.brand-box { display: flex; align-items: center; gap: 12px; }
-.brand-icon { width: 40px; height: 40px; background: var(--sage-dim); border: 1.5px solid var(--sage-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-.brand-name { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: #fff; }
-.brand-crn { font-size: 0.72rem; color: var(--sage-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+/* HEADER TOPO PREMIUM */
+.top-header { height: 72px; background: rgba(24, 42, 31, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-forest); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.brand-box { display: flex; align-items: center; gap: 14px; }
+.brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, rgba(140, 164, 129, 0.3), rgba(32, 53, 40, 0.8)); border: 1.5px solid var(--sage-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.brand-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: #fff; letter-spacing: 0.02em; }
+.brand-crn { font-size: 0.72rem; color: var(--sage-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
 
-.btn-nav { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 10px 18px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-.btn-nav:hover { background: #9bb590; transform: translateY(-1px); }
-.btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid var(--border-forest); }
-.btn-secondary:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.btn-nav { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 12px rgba(140, 164, 129, 0.25); }
+.btn-nav:hover { background: #9bb590; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(140, 164, 129, 0.4); }
+.btn-secondary { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid var(--border-forest); box-shadow: none; }
+.btn-secondary:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateY(-2px); }
+
+/* SELETOR DE ABAS MOBILE */
+.mobile-tabs { display: none; background: var(--forest-card); border-bottom: 1px solid var(--border-forest); padding: 8px 16px; gap: 8px; position: sticky; top: 72px; z-index: 990; }
+.tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border-forest); background: rgba(0,0,0,0.3); color: var(--text-muted); font-size: 0.85rem; font-weight: 700; cursor: pointer; text-align: center; transition: var(--tr); }
+.tab-btn.active { background: var(--sage-light); color: var(--forest-dark); border-color: var(--sage-light); }
 
 /* PAINEL DIVIDIDO: FORMULÁRIO vs EDITORIAL PREVIEW */
-.manager-container { padding: 24px 32px; display: grid; grid-template-columns: 420px 1fr; gap: 28px; width: 100%; align-items: start; }
+.manager-container { padding: 28px 36px; display: grid; grid-template-columns: 440px 1fr; gap: 32px; width: 100%; max-width: 1700px; margin: 0 auto; align-items: start; }
 
-.form-panel { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 94px; max-height: calc(100vh - 118px); overflow-y: auto; }
-.form-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #fff; }
-.form-panel p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+.form-panel { background: linear-gradient(180deg, var(--forest-card) 0%, rgba(20, 35, 26, 0.95) 100%); border: 1px solid var(--border-forest); border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 100px; max-height: calc(100vh - 124px); overflow-y: auto; box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+.form-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+.form-panel p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 4px; }
 
-.preset-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-.btn-preset { background: rgba(140, 164, 129, 0.12); border: 1px solid var(--border-sage); color: #eef4e5; padding: 8px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.25s; text-align: center; }
-.btn-preset:hover { background: var(--sage-light); color: var(--forest-dark); }
-.btn-preset-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
+.preset-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.btn-preset { background: rgba(140, 164, 129, 0.12); border: 1px solid var(--border-sage); color: #eef4e5; padding: 9px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.25s; text-align: center; }
+.btn-preset:hover { background: var(--sage-light); color: var(--forest-dark); transform: translateY(-1px); }
+.btn-preset-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08); }
 .btn-preset-danger:hover { background: #f87171; color: #fff; }
 
-.section-divider { border-top: 1px solid var(--border-sage); margin: 18px 0 12px; padding-top: 12px; font-weight: 700; font-size: 0.8rem; color: var(--sage-light); text-transform: uppercase; letter-spacing: 1px; }
+.section-divider { border-top: 1px dashed var(--border-sage); margin: 16px 0 10px; padding-top: 14px; font-weight: 800; font-size: 0.78rem; color: var(--sage-light); text-transform: uppercase; letter-spacing: 1.2px; display: flex; align-items: center; gap: 8px; }
 
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-group label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sage-light); }
-.form-control { background: rgba(0,0,0,0.3); border: 1px solid var(--border-forest); padding: 12px 14px; border-radius: 10px; color: #fff; font-family: inherit; font-size: 0.88rem; outline: none; transition: var(--tr); }
-.form-control:focus { border-color: var(--sage-light); }
-textarea.form-control { min-height: 80px; resize: vertical; }
+.form-control { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-forest); padding: 12px 14px; border-radius: 12px; color: #fff; font-family: inherit; font-size: 0.88rem; outline: none; transition: var(--tr); }
+.form-control:focus { border-color: var(--sage-light); box-shadow: 0 0 0 3px rgba(140, 164, 129, 0.2); background: rgba(0, 0, 0, 0.5); }
+textarea.form-control { min-height: 85px; resize: vertical; line-height: 1.5; }
 
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-.card-box { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-sage); border-radius: 12px; padding: 14px; margin-bottom: 12px; position: relative; }
-.btn-remove { position: absolute; top: 10px; right: 10px; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; font-weight: bold; cursor: pointer; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; }
+.card-box { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-sage); border-radius: 14px; padding: 16px; margin-bottom: 12px; position: relative; transition: var(--tr); }
+.card-box:hover { border-color: var(--sage-light); }
+.btn-remove { position: absolute; top: 12px; right: 12px; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; font-weight: bold; cursor: pointer; font-size: 0.72rem; padding: 4px 10px; border-radius: 8px; transition: var(--tr); }
 .btn-remove:hover { background: #f87171; color: #fff; }
 
-.btn-action { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 13px 20px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; width: 100%; transition: all 0.25s; margin-top: 10px; }
-.btn-action:hover { background: #eef4e5; transform: translateY(-2px); }
-.btn-add { background: rgba(140, 164, 129, 0.12); color: var(--sage-light); border: 1px dashed var(--sage-light); }
+.btn-action { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 14px 20px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; width: 100%; transition: all 0.25s; margin-top: 10px; box-shadow: 0 4px 14px rgba(140,164,129,0.2); }
+.btn-action:hover { background: #eef4e5; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(140,164,129,0.35); }
+.btn-add { background: rgba(140, 164, 129, 0.12); color: var(--sage-light); border: 1px dashed var(--sage-light); box-shadow: none; }
 .btn-add:hover { background: rgba(140, 164, 129, 0.25); color: #fff; transform: none; }
 
-/* VISUALIZAÇÃO A4 EDITORIAL CLEAN */
+/* PAINEL DE PRÉ-VISUALIZAÇÃO A4 */
 .preview-panel { display: flex; flex-direction: column; align-items: center; width: 100%; }
 
-.pdf-page { width: 210mm; min-height: 297mm; padding: 18mm 20mm; background: var(--paper-bg); color: var(--text-dark); box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: column; justify-content: space-between; position: relative; border-radius: 4px; margin-bottom: 30px; }
-.cover-top-bar { background: var(--forest-dark); color: #eef4e5; padding: 12px; text-align: center; font-size: 0.75rem; font-weight: 700; letter-spacing: 2.5px; border-radius: 8px; text-transform: uppercase; }
-.cover-body { text-align: center; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; }
-.cover-main-title { font-family: 'Playfair Display', serif; font-size: 3.4rem; color: var(--forest-dark); letter-spacing: 2px; line-height: 1.15; margin-bottom: 20px; font-weight: 600; }
-.cover-patient-name { font-size: 0.95rem; font-weight: 800; letter-spacing: 2.5px; color: var(--sage-bg); text-transform: uppercase; margin-bottom: 35px; background: rgba(146, 169, 136, 0.12); padding: 8px 24px; border-radius: 100px; border: 1px solid var(--border-sage); }
-.cover-plan-box { background: #ffffff; border: 1px solid var(--border-light); border-radius: 16px; padding: 30px; text-align: left; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.03); }
-.cover-plan-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--forest-dark); margin-bottom: 10px; border-bottom: 2px solid var(--sage-light); padding-bottom: 6px; display: inline-block; font-weight: 600; }
-.cover-plan-desc { font-size: 0.9rem; color: var(--text-dark); line-height: 1.7; }
-.page-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--sage-light); padding-bottom: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 1.2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 25px; }
-.meals-grid { display: flex; flex-direction: column; gap: 18px; }
-.meal-card { background: var(--card-white); border: 1px solid var(--border-light); border-left: 5px solid var(--forest-dark); border-radius: 12px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-.meal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f4ef; padding-bottom: 10px; margin-bottom: 12px; }
-.meal-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--forest-dark); font-weight: 600; }
-.meal-items-list { font-size: 0.92rem; color: var(--text-dark); line-height: 1.7; white-space: pre-line; }
-.meal-stats-badges { display: flex; gap: 10px; font-weight: 700; font-size: 0.8rem; }
-.badge-stat { background: rgba(146, 169, 136, 0.15); color: var(--forest-dark); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-sage); }
-.meal-obs-text { font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8e0; }
-.extra-card { background: #fff; border: 1px solid var(--border-light); border-radius: 14px; padding: 22px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-.extra-card-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--forest-dark); margin-bottom: 10px; border-bottom: 1.5px solid var(--sage-light); padding-bottom: 6px; font-weight: 600; }
-.extra-card-content { font-size: 0.9rem; color: var(--text-dark); line-height: 1.7; white-space: pre-line; }
-.page-ftr { text-align: center; font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 12px; margin-top: 30px; }
+.preview-bar { background: rgba(24, 42, 31, 0.8); border: 1px solid var(--border-forest); border-radius: 14px; padding: 12px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; width: 210mm; max-width: 100%; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+.preview-bar-info { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
-/* MEDIA QUERIES PARA MOBILE E TABLET */
+.pdf-page { width: 210mm; min-height: 297mm; padding: 20mm 22mm; background: var(--paper-bg); color: var(--text-dark); box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between; position: relative; border-radius: 6px; margin-bottom: 32px; transition: var(--tr); }
+.pdf-page:hover { box-shadow: 0 25px 60px rgba(0,0,0,0.65); }
+
+.cover-top-bar { background: var(--forest-dark); color: #eef4e5; padding: 14px; text-align: center; font-size: 0.75rem; font-weight: 700; letter-spacing: 2.5px; border-radius: 10px; text-transform: uppercase; }
+.cover-body { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; }
+.cover-main-title { font-family: 'Playfair Display', serif; font-size: 3.6rem; color: var(--forest-dark); letter-spacing: 2px; line-height: 1.15; margin-bottom: 24px; font-weight: 600; }
+.cover-patient-name { font-size: 0.95rem; font-weight: 800; letter-spacing: 2.5px; color: var(--sage-bg); text-transform: uppercase; margin-bottom: 40px; background: rgba(146, 169, 136, 0.12); padding: 10px 28px; border-radius: 100px; border: 1px solid var(--border-sage); }
+.cover-plan-box { background: #ffffff; border: 1px solid var(--border-light); border-radius: 18px; padding: 32px; text-align: left; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.03); }
+.cover-plan-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--forest-dark); margin-bottom: 12px; border-bottom: 2px solid var(--sage-light); padding-bottom: 6px; display: inline-block; font-weight: 600; }
+.cover-plan-desc { font-size: 0.92rem; color: var(--text-dark); line-height: 1.75; }
+
+.page-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--sage-light); padding-bottom: 10px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 28px; }
+.meals-grid { display: flex; flex-direction: column; gap: 20px; }
+.meal-card { background: var(--card-white); border: 1px solid var(--border-light); border-left: 5px solid var(--forest-dark); border-radius: 14px; padding: 22px 26px; box-shadow: 0 4px 14px rgba(0,0,0,0.03); }
+.meal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f4ef; padding-bottom: 12px; margin-bottom: 14px; }
+.meal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--forest-dark); font-weight: 600; }
+.meal-items-list { font-size: 0.94rem; color: var(--text-dark); line-height: 1.75; white-space: pre-line; }
+.meal-stats-badges { display: flex; gap: 10px; font-weight: 700; font-size: 0.8rem; }
+.badge-stat { background: rgba(146, 169, 136, 0.15); color: var(--forest-dark); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border-sage); }
+.meal-obs-text { font-size: 0.85rem; color: var(--text-muted); font-style: italic; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #e2e8e0; }
+
+.extra-card { background: #fff; border: 1px solid var(--border-light); border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.03); }
+.extra-card-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--forest-dark); margin-bottom: 12px; border-bottom: 1.5px solid var(--sage-light); padding-bottom: 6px; font-weight: 600; }
+.extra-card-content { font-size: 0.94rem; color: var(--text-dark); line-height: 1.75; white-space: pre-line; }
+
+.page-ftr { text-align: center; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 14px; margin-top: 32px; }
+
+/* MEDIA QUERIES PARA ADAPTAÇÃO TOTAL RESPONSIVA */
 @media screen and (max-width: 1024px) {
-  .top-header { padding: 12px 16px; flex-wrap: wrap; height: auto; gap: 10px; }
+  .top-header { padding: 12px 18px; flex-wrap: wrap; height: auto; gap: 12px; justify-content: space-between; }
+  .brand-name { font-size: 1.05rem; }
+  .mobile-tabs { display: flex; }
+  
   .manager-container { grid-template-columns: 1fr; padding: 16px 12px; gap: 20px; }
-  .form-panel { position: relative; top: 0; max-height: none; width: 100%; }
+  .form-panel { position: relative; top: 0; max-height: none; width: 100%; border-radius: 18px; padding: 18px; }
   .preview-panel { width: 100%; overflow-x: auto; }
+  .preview-bar { width: 100%; }
+  
   .pdf-page { width: 100% !important; max-width: 100% !important; min-height: auto !important; padding: 20px 14px !important; box-sizing: border-box !important; margin-bottom: 20px !important; }
-  .cover-main-title { font-size: 2.2rem !important; }
+  .cover-main-title { font-size: 2.3rem !important; }
+  .cover-body { padding: 30px 10px !important; }
+
+  /* Alternância de Abas no Mobile */
+  .view-tab-form { display: flex; }
+  .view-tab-preview { display: none; }
 }
 
-/* IMPRESSÃO A4 */
+@media screen and (max-width: 600px) {
+  .top-header { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; justify-content: space-between; }
+  .preset-bar { grid-template-columns: 1fr; }
+}
+
+/* IMPRESSÃO A4 PROFISSIONAL */
 @media print {
   body { background: none !important; padding: 0 !important; color: #000 !important; }
-  .top-header, .btn-nav, .no-print, .form-panel { display: none !important; }
+  .top-header, .mobile-tabs, .btn-nav, .no-print, .form-panel, .preview-bar { display: none !important; }
   .manager-container { padding: 0 !important; display: block !important; }
   .preview-panel { width: 100% !important; }
+  .view-tab-preview { display: block !important; }
   .pdf-page { box-shadow: none !important; width: 100% !important; min-height: 100vh !important; border-radius: 0 !important; padding: 15mm 18mm !important; page-break-after: always !important; margin-bottom: 0 !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- TOPO HEADER -->
+<!-- TOPO HEADER PREMIUM -->
 <header class="top-header no-print">
   <div class="brand-box">
     <div class="brand-icon">🥗</div>
@@ -132,22 +171,29 @@ textarea.form-control { min-height: 80px; resize: vertical; }
     </div>
   </div>
 
-  <div style="display: flex; align-items: center; gap: 10px;">
+  <div class="header-actions">
+    <a href="app-nutri.html" class="btn-nav btn-secondary">🔒 Painel Admin</a>
     <a href="index.html" class="btn-nav btn-secondary">🌐 Ver Site</a>
     
-    <button class="btn-nav" onclick="window.print()" style="background: var(--sage-light); color: var(--forest-dark);">
+    <button class="btn-nav" onclick="window.print()">
       🖨️ Exportar / Imprimir PDF
     </button>
   </div>
 </header>
 
-<!-- ÁREA PRINCIPAL -->
+<!-- SELETOR DE ABAS MOBILE -->
+<div class="mobile-tabs no-print">
+  <button class="tab-btn active" id="btnTabForm" onclick="switchMobileTab('form')">✏️ Editar Prescrição</button>
+  <button class="tab-btn" id="btnTabPreview" onclick="switchMobileTab('preview')">👁️ Ver PDF (Prévia)</button>
+</div>
+
+<!-- ÁREA PRINCIPAL CONTAINER -->
 <main class="manager-container">
   
   <!-- FORMULÁRIO LATERAL DE CONTROLE -->
-  <div class="form-panel no-print">
-    <h2>Prescrição Nutricional</h2>
-    <p>Monte o plano alimentar em tempo real e salve no banco ou imprima em PDF.</p>
+  <div class="form-panel no-print view-tab-form" id="formPanelBox">
+    <h2>✏️ Prescrição Nutricional</h2>
+    <p>Monte o plano alimentar em tempo real com pré-visualização A4 imediata.</p>
 
     <div class="preset-bar">
       <button class="btn-preset" onclick="carregarPreset('hipertrofia')">⚡ Hipertrofia</button>
@@ -160,7 +206,7 @@ textarea.form-control { min-height: 80px; resize: vertical; }
       <input type="text" id="inNome" class="form-control" value="ANYCELLI V.C. DOS SANTOS" oninput="salvarELocal(); atualizar();">
     </div>
 
-    <div class="section-divider">Página Inicial</div>
+    <div class="section-divider">📖 Capa &amp; Apresentação</div>
     <div class="form-group">
       <label>Texto de Apresentação</label>
       <textarea id="inApresentacao" class="form-control" oninput="salvarELocal(); atualizar();">Este plano alimentar foi desenvolvido pensando nas suas necessidades específicas. Alcançar as metas e objetivos propostos é o caminho para conquistar os resultados desejados de forma duradoura.</textarea>
@@ -170,11 +216,11 @@ textarea.form-control { min-height: 80px; resize: vertical; }
       <input type="text" id="inObjetivo" class="form-control" value="Preservar e aumentar massa muscular com alto aporte proteico, distribuição equilibrada de carboidratos e gorduras saudáveis." oninput="salvarELocal(); atualizar();">
     </div>
 
-    <div class="section-divider">Refeições (Cards)</div>
+    <div class="section-divider">🍳 Refeições (Cards)</div>
     <div id="mealsInputs"></div>
     <button type="button" class="btn-action btn-add" onclick="addMeal()">➕ Adicionar Refeição</button>
 
-    <div class="section-divider">Páginas Extras de Orientação</div>
+    <div class="section-divider">📄 Orientação &amp; Suplementação</div>
     <div id="extrasInputs"></div>
     <button type="button" class="btn-action btn-add" onclick="addExtraPage()">📄 Adicionar Página Extra</button>
 
@@ -188,7 +234,22 @@ textarea.form-control { min-height: 80px; resize: vertical; }
   </div>
 
   <!-- PRÉ-VISUALIZAÇÃO EDITORIAL CLEAN -->
-  <div class="preview-panel" id="pagesPreview"></div>
+  <div class="preview-panel view-tab-preview" id="previewPanelBox">
+    
+    <div class="preview-bar no-print">
+      <div class="preview-bar-info">
+        <span>📄 Modelo Editorial Clean A4</span>
+        <span style="opacity:0.5;">•</span>
+        <span id="pageCounterBadge">3 Páginas Geradas</span>
+      </div>
+
+      <button class="btn-nav" onclick="window.print()" style="padding: 6px 14px; font-size: 0.78rem;">
+        🖨️ Imprimir PDF
+      </button>
+    </div>
+
+    <div id="pagesPreview" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+  </div>
 
 </main>
 
@@ -207,6 +268,26 @@ async function apiCall(action, payload = {}) {
   } catch (err) {
     console.error("Erro API:", err);
     return { success: false, error: err.toString() };
+  }
+}
+
+// ALTERNÂNCIA DE ABAS NO MOBILE
+function switchMobileTab(tab) {
+  const fBox = document.getElementById('formPanelBox');
+  const pBox = document.getElementById('previewPanelBox');
+  const btnF = document.getElementById('btnTabForm');
+  const btnP = document.getElementById('btnTabPreview');
+
+  if (tab === 'form') {
+    if (fBox) fBox.style.display = 'flex';
+    if (pBox) pBox.style.display = 'none';
+    if (btnF) btnF.classList.add('active');
+    if (btnP) btnP.classList.remove('active');
+  } else {
+    if (fBox) fBox.style.display = 'none';
+    if (pBox) pBox.style.display = 'flex';
+    if (btnP) btnP.classList.add('active');
+    if (btnF) btnF.classList.remove('active');
   }
 }
 
@@ -315,9 +396,9 @@ function renderInputs() {
   refeicoes.forEach((m, idx) => {
     mContainer.innerHTML += `
       <div class="card-box">
-        <button class="btn-remove" onclick="removeMeal(${idx})">✖</button>
+        <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remov</button>
         <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
-        <div class="form-group"><label>Alimentos</label><textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar();">${m.itens}</textarea></div>
+        <div class="form-group"><label>Alimentos &amp; Quantidades</label><textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar();">${m.itens}</textarea></div>
         <div class="form-row">
           <div class="form-group"><label>Calorias</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar();"></div>
           <div class="form-group"><label>Proteínas</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar();"></div>
@@ -334,7 +415,7 @@ function renderInputs() {
     let blocosHTML = '';
     p.blocos.forEach((b, bIdx) => {
       blocosHTML += `
-        <div style="border-top:1px dashed rgba(140,164,129,0.3); padding-top:8px; margin-top:8px;">
+        <div style="border-top:1px dashed rgba(140,164,129,0.3); padding-top:10px; margin-top:10px;">
           <div class="form-group"><label>Título do Tópico</label><input type="text" class="form-control" value="${b.titulo}" oninput="paginasExtras[${pIdx}].blocos[${bIdx}].titulo=this.value; salvarELocal(); atualizar();"></div>
           <div class="form-group"><label>Conteúdo</label><textarea class="form-control" oninput="paginasExtras[${pIdx}].blocos[${bIdx}].conteudo=this.value; salvarELocal(); atualizar();">${b.conteudo}</textarea></div>
         </div>
@@ -346,7 +427,7 @@ function renderInputs() {
         <button class="btn-remove" onclick="removeExtraPage(${pIdx})">✖ Página</button>
         <div class="form-group"><label>Título da Página Extra</label><input type="text" class="form-control" value="${p.tituloPagina}" oninput="paginasExtras[${pIdx}].tituloPagina=this.value; salvarELocal(); atualizar();"></div>
         ${blocosHTML}
-        <button type="button" class="btn-action btn-add" style="margin-top:8px; font-size:0.75rem;" onclick="addBlockToPage(${pIdx})">➕ Adicionar Tópico</button>
+        <button type="button" class="btn-action btn-add" style="margin-top:10px; font-size:0.78rem;" onclick="addBlockToPage(${pIdx})">➕ Adicionar Tópico</button>
       </div>
     `;
   });
@@ -385,6 +466,8 @@ function atualizar() {
   if (!preview) return;
   preview.innerHTML = '';
 
+  let totalPages = 1;
+
   // 1. CAPA PRINCIPAL
   preview.innerHTML += `
     <div class="pdf-page">
@@ -404,9 +487,9 @@ function atualizar() {
           <div class="cover-plan-title">Plano de Ação</div>
           <p class="cover-plan-desc">${apresentacao}</p>
           
-          <div style="margin-top:16px; padding-top:12px; border-top:1px dashed var(--border-light);">
-            <strong style="font-size:0.8rem; color:var(--forest-dark); text-transform:uppercase;">Estratégia Nutricional:</strong>
-            <p style="font-size:0.88rem; color:var(--text-muted); margin-top:4px;">${objetivo}</p>
+          <div style="margin-top:18px; padding-top:14px; border-top:1px dashed var(--border-light);">
+            <strong style="font-size:0.82rem; color:var(--forest-dark); text-transform:uppercase; letter-spacing:0.05em;">Estratégia Nutricional:</strong>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-top:6px; line-height:1.6;">${objetivo}</p>
           </div>
         </div>
       </div>
@@ -419,6 +502,7 @@ function atualizar() {
 
   // 2. PÁGINAS DE REFEIÇÕES
   if (refeicoes.length > 0) {
+    totalPages++;
     let mealsHTML = '';
     refeicoes.forEach(m => {
       mealsHTML += `
@@ -458,6 +542,7 @@ function atualizar() {
 
   // 3. PÁGINAS EXTRAS INFORMATIVAS
   paginasExtras.forEach(p => {
+    totalPages++;
     let blocosHTML = '';
     p.blocos.forEach(b => {
       blocosHTML += `
@@ -476,7 +561,7 @@ function atualizar() {
             <span>DRA. SILVIA OLIVEIRA</span>
           </div>
 
-          <div style="margin-top:10px;">
+          <div style="margin-top:12px;">
             ${blocosHTML}
           </div>
         </div>
@@ -487,6 +572,9 @@ function atualizar() {
       </div>
     `;
   });
+
+  const counterBadge = document.getElementById('pageCounterBadge');
+  if (counterBadge) counterBadge.innerText = `${totalPages} Páginas Geradas`;
 }
 
 // SALVAR NO BANCO GOOGLE SHEETS
