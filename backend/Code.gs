@@ -13,7 +13,7 @@
 
 // Nomes das Abas do Banco de Dados
 const SHEETS = {
-  PACIENTES: "Pacientes",
+  USUARIOS: "Usuarios",
   AGENDAMENTOS: "Agendamentos",
   ANAMNESES: "Anamneses",
   EVOLUCAO: "Evolucao",
@@ -33,7 +33,7 @@ function setupDatabase() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   const schemas = {
-    [SHEETS.PACIENTES]: ["id", "cpf", "nome", "email", "whatsapp", "data_nascimento", "objetivo", "data_cadastro", "senha_pin"],
+    [SHEETS.USUARIOS]: ["id", "cpf", "nome", "email", "whatsapp", "data_nascimento", "objetivo", "tipo", "data_cadastro", "senha_pin"],
     [SHEETS.AGENDAMENTOS]: ["id", "paciente_id", "paciente_nome", "data", "hora", "tipo", "valor", "status"],
     [SHEETS.ANAMNESES]: ["id", "paciente_id", "data", "alergias", "historico_saude", "rotina_sono", "intestino", "preferencias"],
     [SHEETS.EVOLUCAO]: ["id", "paciente_id", "data", "peso", "percentual_gordura", "massa_magra", "cintura", "quadril"],
@@ -246,51 +246,69 @@ function loginPaciente(identifierInput, pinInput) {
   const cleanInput = cleanCPF(identifierInput);
   const rawInput = String(identifierInput || "").trim().toLowerCase();
   const inputHash = hashPassword(pinInput);
-  const pacientes = getTableData(SHEETS.PACIENTES);
+  const usuarios = getTableData(SHEETS.USUARIOS);
 
-  const paciente = pacientes.find(p => {
-    const pCpf = cleanCPF(p.cpf);
-    const pEmail = String(p.email || "").trim().toLowerCase();
-    return (pCpf && pCpf === cleanInput) || (pEmail && pEmail === rawInput);
+  const usuario = usuarios.find(u => {
+    const uCpf = cleanCPF(u.cpf);
+    const uEmail = String(u.email || "").trim().toLowerCase();
+    const isPaciente = !u.tipo || u.tipo === "PACIENTE";
+    return isPaciente && ((uCpf && uCpf === cleanInput) || (uEmail && uEmail === rawInput));
   });
 
-  if (!paciente) {
+  if (!usuario) {
     throw new Error("Paciente não encontrado com o CPF ou E-mail informado.");
   }
 
   // VALIDAÇÃO COM HASH CRIPTOGRÁFICO SHA-256
-  if (paciente.senha_pin && paciente.senha_pin !== inputHash && paciente.senha_pin !== pinInput) {
+  if (usuario.senha_pin && usuario.senha_pin !== inputHash && usuario.senha_pin !== pinInput) {
     throw new Error("Senha / PIN incorreto. Tente novamente.");
   }
 
-  return paciente;
+  return usuario;
 }
 
 function loginAdmin(emailInput, passInput) {
-  const configs = getTableData(SHEETS.CONFIG);
-  const adminEmailObj = configs.find(c => c.chave === 'admin_email');
-  const adminPassObj = configs.find(c => c.chave === 'admin_senha');
+  const usuarios = getTableData(SHEETS.USUARIOS);
+  const rawEmail = String(emailInput || "").trim().toLowerCase();
+  const inputHash = hashPassword(passInput);
 
-  const targetEmail = adminEmailObj ? adminEmailObj.valor : "silviadeoliveira24.nutri@gmail.com";
-  const targetHash = adminPassObj ? adminPassObj.valor : hashPassword("silvia2026");
+  // BUSCA USUÁRIO ADMIN NA TABELA DE USUÁRIOS OU NA TABELA DE CONFIGURAÇÕES
+  let admin = usuarios.find(u => {
+    const uEmail = String(u.email || "").trim().toLowerCase();
+    const isAdmin = u.tipo === "ADMIN";
+    return isAdmin && uEmail === rawEmail;
+  });
 
-  if (String(emailInput).trim().toLowerCase() !== targetEmail.trim().toLowerCase()) {
-    throw new Error("E-mail administrativo incorreto.");
+  if (!admin) {
+    // FALLBACK NA ABA CONFIG
+    const configs = getTableData(SHEETS.CONFIG);
+    const adminEmailObj = configs.find(c => c.chave === 'admin_email');
+    const adminPassObj = configs.find(c => c.chave === 'admin_senha');
+    const targetEmail = adminEmailObj ? adminEmailObj.valor : "silviadeoliveira24.nutri@gmail.com";
+    const targetHash = adminPassObj ? adminPassObj.valor : hashPassword("silvia2026");
+
+    if (rawEmail !== targetEmail.trim().toLowerCase()) {
+      throw new Error("E-mail administrativo incorreto.");
+    }
+    if (inputHash !== targetHash && passInput !== targetHash) {
+      throw new Error("Senha administrativa incorreta.");
+    }
+    return { authenticated: true, email: targetEmail, nome: "Dra. Silvia de Oliveira Lemos", tipo: "ADMIN" };
   }
 
-  const inputHash = hashPassword(passInput);
-  if (inputHash !== targetHash && passInput !== targetHash) {
+  if (admin.senha_pin && admin.senha_pin !== inputHash && admin.senha_pin !== passInput) {
     throw new Error("Senha administrativa incorreta.");
   }
 
-  return { authenticated: true, email: targetEmail };
+  return { authenticated: true, email: admin.email, nome: admin.nome, tipo: "ADMIN" };
 }
 
 function savePaciente(p) {
-  const sheet = getSheet(SHEETS.PACIENTES);
+  const sheet = getSheet(SHEETS.USUARIOS);
   const id = p.id || "PAC-" + Date.now();
   const dataCad = p.data_cadastro || new Date().toISOString().split("T")[0];
   const hashedPin = hashPassword(p.senha_pin || "123456");
+  const tipo = p.tipo || "PACIENTE";
 
   sheet.appendRow([
     id,
@@ -300,11 +318,12 @@ function savePaciente(p) {
     p.whatsapp || "",
     p.data_nascimento || "",
     p.objetivo || "Reeducação Alimentar",
+    tipo,
     dataCad,
     hashedPin
   ]);
 
-  return { id: id, ...p };
+  return { id: id, tipo: tipo, ...p };
 }
 
 function saveAgendamento(ag) {
@@ -403,17 +422,22 @@ function populateInitialData() {
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // 1. PACIENTES REAIS (COM SENHA_PIN HASHADA SHA-256)
+  // 1. USUÁRIOS REAIS (ADMIN & PACIENTES COM TIPO)
   const defaultPinHash = hashPassword("123456");
-  const pSheet = getSheet(SHEETS.PACIENTES);
-  if (pSheet.getLastRow() <= 1) {
-    pSheet.appendRow(["PAC-01", "12345678900", "Juliana Mendes", "juliana.mendes@gmail.com", "5521999998888", "1995-04-12", "Reeducação Alimentar & Emagrecimento", "2026-05-10", defaultPinHash]);
-    pSheet.appendRow(["PAC-02", "98765432111", "Carlos Eduardo Torres", "carlos.torres@hotmail.com", "5521988887777", "1988-11-23", "Nutrição Esportiva & Hipertrofia", "2026-06-01", defaultPinHash]);
-    pSheet.appendRow(["PAC-03", "45678912322", "Mariana Castro Silva", "mari.castro@gmail.com", "5521977776666", "2000-07-08", "Saúde Intestinal & Bio-Reset", "2026-07-15", defaultPinHash]);
+  const adminPassHash = hashPassword("silvia2026");
+
+  const uSheet = getSheet(SHEETS.USUARIOS);
+  if (uSheet.getLastRow() <= 1) {
+    // ADMIN NUTRICIONISTA
+    uSheet.appendRow(["ADM-01", "00000000000", "Dra. Silvia de Oliveira Lemos", "silviadeoliveira24.nutri@gmail.com", "5521987385146", "1985-01-01", "Nutrição Clínica & Esportiva", "ADMIN", "2026-01-01", adminPassHash]);
+
+    // PACIENTES
+    uSheet.appendRow(["PAC-01", "12345678900", "Juliana Mendes", "juliana.mendes@gmail.com", "5521999998888", "1995-04-12", "Reeducação Alimentar & Emagrecimento", "PACIENTE", "2026-05-10", defaultPinHash]);
+    uSheet.appendRow(["PAC-02", "98765432111", "Carlos Eduardo Torres", "carlos.torres@hotmail.com", "5521988887777", "1988-11-23", "Nutrição Esportiva & Hipertrofia", "PACIENTE", "2026-06-01", defaultPinHash]);
+    uSheet.appendRow(["PAC-03", "45678912322", "Mariana Castro Silva", "mari.castro@gmail.com", "5521977776666", "2000-07-08", "Saúde Intestinal & Bio-Reset", "PACIENTE", "2026-07-15", defaultPinHash]);
   }
 
-  // 1.B CONFIGURAÇÕES ADMIN & SENHA MESTRA (HASHADA SHA-256)
-  const adminPassHash = hashPassword("silvia2026");
+  // 1.B CONFIGURAÇÕES DA CLÍNICA
   const cfgSheet = getSheet(SHEETS.CONFIG);
   if (cfgSheet.getLastRow() <= 1) {
     cfgSheet.appendRow(["admin_email", "silviadeoliveira24.nutri@gmail.com"]);
