@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /app-nutri.html
+Disallow: /gerenciador-plano.html
 Disallow: /backend/
 
 Sitemap: https://silviaoliveira.vercel.app/sitemap.xml
