@@ -367,38 +367,53 @@ function maskPhone(v) {
     .slice(0, 15);
 }
 
-async function carregarPacientes() {
-  const res = await apiCall('getPacientes');
+let pacientesLista = [];
+
+function renderizarTabelaPacientes(lista) {
   const tbl = document.getElementById('tblPacientes');
   if (!tbl) return;
+  tbl.innerHTML = '';
+  const filtrados = (lista || []).filter(p => !p.tipo || String(p.tipo).toUpperCase() === "PACIENTE");
 
-  if (res && res.success && res.data) {
-    tbl.innerHTML = '';
-    res.data.forEach(p => {
-      const isPaciente = !p.tipo || p.tipo === "PACIENTE";
-      if (!isPaciente) return;
-
-      const cpfFmt = p.cpf ? maskCPF(p.cpf) : '--';
-      const wspFmt = p.whatsapp ? maskPhone(p.whatsapp) : '--';
-      const dtFmt = p.data_cadastro ? formatDateBR(p.data_cadastro) : '';
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="white-space:nowrap;"><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
-        <td style="white-space:nowrap;"><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
-        <td style="white-space:nowrap;">${cpfFmt}<br><span style="font-size:0.78rem; color:var(--text-muted);">${wspFmt}</span></td>
-        <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700; display:inline-block; white-space:nowrap;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
-        <td style="white-space:nowrap;">
-          <div style="display:flex; gap:6px; flex-wrap:nowrap; align-items:center;">
-            <button class="btn btn-secondary" onclick="verAnamnesePaciente('${p.id}', '${p.nome.replace(/'/g, "\\'")}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📋 Anamnese</button>
-            <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🥗 Cardápio</a>
-            <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</a>
-          </div>
-        </td>
-      `;
-      tbl.appendChild(tr);
-    });
+  if (filtrados.length === 0) {
+    tbl.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Nenhum paciente cadastrado.</td></tr>`;
+    return;
   }
+
+  filtrados.forEach(p => {
+    const cpfFmt = p.cpf ? maskCPF(p.cpf) : '--';
+    const wspFmt = p.whatsapp ? maskPhone(p.whatsapp) : '--';
+    const dtFmt = p.data_cadastro ? formatDateBR(p.data_cadastro) : '';
+    const nomeEscaped = (p.nome || '').replace(/'/g, "\\'");
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="white-space:nowrap;"><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
+      <td style="white-space:nowrap;"><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
+      <td style="white-space:nowrap;">${cpfFmt}<br><span style="font-size:0.78rem; color:var(--text-muted);">${wspFmt}</span></td>
+      <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700; display:inline-block; white-space:nowrap;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
+      <td style="white-space:nowrap;">
+        <div style="display:flex; gap:6px; flex-wrap:nowrap; align-items:center;">
+          <button class="btn btn-secondary" onclick="verAnamnesePaciente('${p.id}', '${nomeEscaped}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📋 Anamnese</button>
+          <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🥗 Cardápio</a>
+          <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</a>
+        </div>
+      </td>
+    `;
+    tbl.appendChild(tr);
+  });
+}
+
+async function carregarPacientes() {
+  const res = await apiCall('getPacientes');
+  if (res && res.success && Array.isArray(res.data)) {
+    pacientesLista = res.data;
+  } else if (res && Array.isArray(res)) {
+    pacientesLista = res;
+  } else {
+    pacientesLista = [];
+  }
+  renderizarTabelaPacientes(pacientesLista);
 }
 
 function openPacienteModal() {
@@ -409,6 +424,14 @@ function openPacienteModal() {
 function closePacienteModal() {
   const modal = document.getElementById('modalPaciente');
   if (modal) modal.classList.remove('active');
+  const nome = document.getElementById('pacNome');
+  const wsp = document.getElementById('pacWsp');
+  const email = document.getElementById('pacEmail');
+  const obj = document.getElementById('pacObj');
+  if (nome) nome.value = '';
+  if (wsp) wsp.value = '';
+  if (email) email.value = '';
+  if (obj) obj.value = '';
 }
 
 async function salvarNovoPaciente(e) {

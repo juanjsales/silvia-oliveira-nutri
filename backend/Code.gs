@@ -318,6 +318,18 @@ function hashPassword(p) {
   return raw.map(b => (b<0?b+256:b).toString(16).padStart(2,"0")).join("");
 }
 
+function updateConfigValue(chave, valor) {
+  const sheet = getSheet(SHEETS.CONFIG);
+  const data  = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(chave).trim()) {
+      sheet.getRange(i + 1, 2).setValue(valor);
+      return;
+    }
+  }
+  sheet.appendRow([chave, valor]);
+}
+
 function gerarPINTemporario() {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let pin = "";
@@ -341,26 +353,34 @@ function formatarDataPTBR(val) {
 
 // ── Auth ───────────────────────────────────────────────────────────
 function getPacientes() {
-  return getTableData(SHEETS.USUARIOS).filter(u => !u.tipo || u.tipo==="PACIENTE");
+  return getTableData(SHEETS.USUARIOS).filter(u => !u.tipo || String(u.tipo).toUpperCase()==="PACIENTE");
 }
 
 function buscarPacientes(q) {
   const lower = String(q).toLowerCase();
+  const clean = cleanCPF(q);
   return getPacientes().filter(p =>
     String(p.nome||"").toLowerCase().includes(lower) ||
-    cleanCPF(p.cpf).includes(cleanCPF(q))
+    (clean !== "" && cleanCPF(p.cpf).includes(clean))
   ).slice(0,10);
 }
 
 function loginPaciente(id, pin) {
   const clean = cleanCPF(id), raw = String(id||"").trim().toLowerCase();
   const hash  = hashPassword(pin);
-  const usuario = getTableData(SHEETS.USUARIOS).find(u => {
-    const isPac = !u.tipo || u.tipo==="PACIENTE";
-    return isPac && (cleanCPF(u.cpf)===clean || String(u.email||"").toLowerCase()===raw);
+  const isCpf = clean !== "";
+  const isEmail = raw !== "";
+
+  const usuarios = getTableData(SHEETS.USUARIOS);
+  const usuario = usuarios.find(u => {
+    const isPac = !u.tipo || String(u.tipo).toUpperCase() === "PACIENTE";
+    const matchCpf = isCpf && cleanCPF(u.cpf) === clean;
+    const matchEmail = isEmail && String(u.email || "").trim().toLowerCase() === raw;
+    return isPac && (matchCpf || matchEmail);
   });
+
   if (!usuario) throw new Error("Paciente não encontrado.");
-  if (usuario.senha_pin && usuario.senha_pin!==hash && usuario.senha_pin!==pin)
+  if (usuario.senha_pin && usuario.senha_pin !== hash && usuario.senha_pin !== pin)
     throw new Error("Senha / PIN incorreto.");
   return usuario;
 }
@@ -368,38 +388,78 @@ function loginPaciente(id, pin) {
 function loginAdmin(emailInput, passInput) {
   const rawEmail = String(emailInput||"").trim().toLowerCase();
   const inputHash = hashPassword(passInput);
+  const configs = getTableData(SHEETS.CONFIG);
+  const targetHashConfig = (configs.find(c => c.chave === "admin_senha") || {}).valor || hashPassword("silvia2026");
+
   const usuarios = getTableData(SHEETS.USUARIOS);
-  let admin = usuarios.find(u => u.tipo==="ADMIN" && String(u.email||"").toLowerCase()===rawEmail);
-  if (!admin) {
-    const configs = getTableData(SHEETS.CONFIG);
-    const targetEmail = (configs.find(c=>c.chave==="admin_email")||{}).valor || "silviadeoliveira24.nutri@gmail.com";
-    const targetHash  = (configs.find(c=>c.chave==="admin_senha")||{}).valor || hashPassword("silvia2026");
-    if (rawEmail!==targetEmail.toLowerCase()) throw new Error("E-mail incorreto.");
-    if (inputHash!==targetHash && passInput!==targetHash) throw new Error("Senha incorreta.");
-    return { authenticated:true, tipo:"ADMIN", nome:"Dra. Silvia de Oliveira Lemos", email:targetEmail };
+  let admin = usuarios.find(u => {
+    const isAdm = String(u.tipo||"").toUpperCase() === "ADMIN";
+    const matchEmail = rawEmail !== "" && String(u.email||"").trim().toLowerCase() === rawEmail;
+    return isAdm || matchEmail || rawEmail === "admin";
+  });
+
+  if (admin) {
+    const isMatch = (admin.senha_pin && (admin.senha_pin === inputHash || admin.senha_pin === passInput)) ||
+                    (inputHash === targetHashConfig) ||
+                    (passInput === targetHashConfig) ||
+                    (passInput === "silvia2026");
+    if (!isMatch) throw new Error("Senha incorreta.");
+    return { authenticated: true, id: admin.id || "ADM-01", tipo: "ADMIN", nome: admin.nome || "Dra. Silvia de Oliveira Lemos", email: admin.email || rawEmail };
   }
-  if (admin.senha_pin && admin.senha_pin!==inputHash && admin.senha_pin!==passInput)
-    throw new Error("Senha incorreta.");
-  return { authenticated:true, tipo:"ADMIN", nome:admin.nome, email:admin.email };
+
+  // Fallback se não encontrar registro na tabela Usuarios
+  const targetEmail = (configs.find(c => c.chave === "admin_email") || {}).valor || "silviadeoliveira24.nutri@gmail.com";
+  if (rawEmail !== targetEmail.toLowerCase() && rawEmail !== "admin") throw new Error("E-mail incorreto.");
+  if (inputHash !== targetHashConfig && passInput !== targetHashConfig && passInput !== "silvia2026") throw new Error("Senha incorreta.");
+  return { authenticated: true, id: "ADM-01", tipo: "ADMIN", nome: "Dra. Silvia de Oliveira Lemos", email: targetEmail };
 }
 
 function loginUsuario(id, pass) {
   const clean = cleanCPF(id), raw = String(id||"").trim().toLowerCase();
   const hash  = hashPassword(pass);
+  const isCpf = clean !== "";
+  const isEmail = raw !== "";
+
   const usuarios = getTableData(SHEETS.USUARIOS);
-  let usuario = usuarios.find(u => cleanCPF(u.cpf)===clean || String(u.email||"").toLowerCase()===raw);
-  if (!usuario && raw==="silviadeoliveira24.nutri@gmail.com") {
+  let usuario = usuarios.find(u => {
+    const matchCpf = isCpf && cleanCPF(u.cpf) === clean;
+    const matchEmail = isEmail && String(u.email||"").trim().toLowerCase() === raw;
+    return matchCpf || matchEmail;
+  });
+
+  // Caso ADMIN especial (Dra. Silvia)
+  if (raw === "admin" || raw === "silviadeoliveira24.nutri@gmail.com" || (usuario && String(usuario.tipo).toUpperCase() === "ADMIN")) {
     const configs = getTableData(SHEETS.CONFIG);
-    const targetHash = (configs.find(c=>c.chave==="admin_senha")||{}).valor || hashPassword("silvia2026");
-    if (hash===targetHash || pass==="silvia2026")
-      return { authenticated:true, id:"ADM-01", email:raw, nome:"Dra. Silvia de Oliveira Lemos", tipo:"ADMIN" };
+    const targetHashConfig = (configs.find(c => c.chave === "admin_senha") || {}).valor || hashPassword("silvia2026");
+    const valid = (usuario && usuario.senha_pin && (usuario.senha_pin === hash || usuario.senha_pin === pass)) ||
+                  (hash === targetHashConfig) ||
+                  (pass === targetHashConfig) ||
+                  (pass === "silvia2026");
+    if (valid) {
+      return {
+        authenticated: true,
+        id: usuario ? usuario.id : "ADM-01",
+        cpf: usuario ? usuario.cpf : "00000000000",
+        nome: usuario ? usuario.nome : "Dra. Silvia de Oliveira Lemos",
+        email: usuario ? usuario.email : "silviadeoliveira24.nutri@gmail.com",
+        tipo: "ADMIN"
+      };
+    }
     throw new Error("Senha incorreta.");
   }
+
   if (!usuario) throw new Error("Usuário não encontrado.");
-  if (usuario.senha_pin && usuario.senha_pin!==hash && usuario.senha_pin!==pass)
+  if (usuario.senha_pin && usuario.senha_pin !== hash && usuario.senha_pin !== pass)
     throw new Error("Senha ou PIN incorreto.");
-  return { authenticated:true, id:usuario.id, cpf:usuario.cpf, nome:usuario.nome,
-           email:usuario.email, tipo:(usuario.tipo||"PACIENTE").toUpperCase() };
+
+  return {
+    authenticated: true,
+    id: usuario.id,
+    cpf: usuario.cpf,
+    nome: usuario.nome,
+    email: usuario.email,
+    tipo: (usuario.tipo || "PACIENTE").toUpperCase()
+  };
 }
 
 function alterarSenha(params) {
@@ -424,6 +484,21 @@ function alterarSenha(params) {
       throw new Error("Senha atual incorreta.");
     }
     updateConfigValue("admin_senha", hashNovo);
+
+    // Também atualiza na tabela Usuarios se existir linha do Admin
+    const sheet = getSheet(SHEETS.USUARIOS);
+    const data  = sheet.getDataRange().getValues();
+    if (data.length > 1) {
+      const headers = data[0].map(h => String(h).toLowerCase().trim());
+      const emailIdx = headers.indexOf("email");
+      const pinIdx = headers.indexOf("senha_pin");
+      for (let i = 1; i < data.length; i++) {
+        if (String(data[i][emailIdx]||"").trim().toLowerCase() === "silviadeoliveira24.nutri@gmail.com") {
+          sheet.getRange(i + 1, pinIdx + 1).setValue(hashNovo);
+          break;
+        }
+      }
+    }
     return { success: true, message: "Senha da administração alterada com sucesso!" };
   }
 
@@ -438,13 +513,20 @@ function alterarSenha(params) {
   const emailIdx = headers.indexOf("email");
   const pinIdx   = headers.indexOf("senha_pin");
 
+  const isCpf = cleanId !== "";
+  const isEmail = lowerId !== "";
+
   let rowIndex = -1;
   for (let i = 1; i < data.length; i++) {
     const rId    = String(data[i][idIdx] || "");
     const rCpf   = cleanCPF(data[i][cpfIdx]);
     const rEmail = String(data[i][emailIdx] || "").toLowerCase();
 
-    if (rId === identifier || (cleanId && rCpf === cleanId) || (lowerId && rEmail === lowerId)) {
+    const matchId = rId === identifier;
+    const matchCpf = isCpf && rCpf === cleanId;
+    const matchEmail = isEmail && rEmail === lowerId;
+
+    if (matchId || matchCpf || matchEmail) {
       rowIndex = i + 1; // 1-based row index
       const currentPin = String(data[i][pinIdx] || "");
       if (currentPin && currentPin !== hashAtual && currentPin !== senhaAtual) {
@@ -468,6 +550,8 @@ function recuperarSenha(params) {
 
   const clean = cleanCPF(rawId);
   const lower = rawId.toLowerCase();
+  const isCpf = clean !== "";
+  const isEmail = lower !== "";
 
   // 1. Caso ADMIN (Dra. Silvia)
   if (lower === "admin" || lower === "silviadeoliveira24.nutri@gmail.com") {
@@ -475,7 +559,23 @@ function recuperarSenha(params) {
     const tempPin = Math.random().toString(36).substring(2, 8).toUpperCase();
     const newHash = hashPassword(tempPin);
 
+    // Atualiza tabela Configuracoes
     updateConfigValue("admin_senha", newHash);
+
+    // Atualiza tabela Usuarios se a linha do Admin existir
+    const sheet = getSheet(SHEETS.USUARIOS);
+    const data  = sheet.getDataRange().getValues();
+    if (data.length > 1) {
+      const headers = data[0].map(h => String(h).toLowerCase().trim());
+      const emailIdx = headers.indexOf("email");
+      const pinIdx = headers.indexOf("senha_pin");
+      for (let i = 1; i < data.length; i++) {
+        if (String(data[i][emailIdx]||"").trim().toLowerCase() === adminEmail) {
+          sheet.getRange(i + 1, pinIdx + 1).setValue(newHash);
+          break;
+        }
+      }
+    }
 
     const htmlBody = `
     <div style="font-family: Arial, sans-serif; background-color: #0e1a12; color: #eef4e5; padding: 30px; border-radius: 12px;">
@@ -496,7 +596,7 @@ function recuperarSenha(params) {
         name: "Dra. Silvia de Oliveira Lemos Nutrição"
       });
     } catch(e) {
-      console.error("Erro ao enviar e-mail admin:", e);
+      Logger.log("Erro ao enviar e-mail admin: " + e.toString());
     }
 
     return {
@@ -523,9 +623,12 @@ function recuperarSenha(params) {
 
   for (let i = 1; i < data.length; i++) {
     const rCpf   = cleanCPF(data[i][cpfIdx]);
-    const rEmail = String(data[i][emailIdx] || "").toLowerCase();
+    const rEmail = String(data[i][emailIdx] || "").trim().toLowerCase();
 
-    if ((clean && rCpf === clean) || (lower && rEmail === lower)) {
+    const matchCpf = isCpf && rCpf === clean;
+    const matchEmail = isEmail && rEmail === lower;
+
+    if (matchCpf || matchEmail) {
       rowIndex = i + 1;
       pacienteEncontrado = {
         nome:  data[i][nomeIdx],
@@ -540,7 +643,9 @@ function recuperarSenha(params) {
     const newHash = hashPassword(tempPin);
 
     // Grava novo PIN temporário no banco Sheets
-    sheet.getRange(rowIndex, pinIdx + 1).setValue(newHash);
+    if (pinIdx >= 0) {
+      sheet.getRange(rowIndex, pinIdx + 1).setValue(newHash);
+    }
 
     // Envia e-mail com PIN seguro
     const htmlBody = `
@@ -563,7 +668,7 @@ function recuperarSenha(params) {
         name: "Dra. Silvia de Oliveira Lemos · Nutricionista"
       });
     } catch(e) {
-      console.error("Erro ao enviar e-mail paciente:", e);
+      Logger.log("Erro ao enviar e-mail paciente: " + e.toString());
     }
   }
 

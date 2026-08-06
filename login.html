@@ -318,9 +318,11 @@ async function solicitarRecuperacao(e) {
   fecharModalEsqueciSenha();
 
   if (res && res.success) {
-    showStatus("📧 " + (res.message || "Solicitação enviada. Verifique sua caixa de e-mail."), "success");
+    const msg = (res.data && res.data.message) || res.message || "Solicitação enviada. Verifique sua caixa de e-mail.";
+    showStatus("📧 " + msg, "success");
   } else {
-    showStatus(res ? res.error || "Erro ao solicitar recuperação." : "Verifique sua conexão.");
+    const errorMsg = (res && res.data && res.data.error) || (res && res.error) || "Erro ao solicitar recuperação.";
+    showStatus("⚠️ " + errorMsg, "error");
   }
 }
 </script>
