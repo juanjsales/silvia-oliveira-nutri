@@ -1541,8 +1541,9 @@ async function carregarFinanceiro() {
             </span>
           </td>
           <td style="padding:12px; text-align:right;">
+            <button class="btn btn-secondary" onclick="editarLancamentoFin('${l.id}')" style="padding:4px 8px; font-size:0.75rem; color:var(--sage-light);" title="Editar Lançamento">✏️ Editar</button>
             <button class="btn btn-secondary" onclick="imprimirReciboDireto('${l.paciente_nome}','${val}','${l.data}')" style="padding:4px 8px; font-size:0.75rem;" title="Emitir Recibo">📄 Recibo</button>
-            <button class="btn btn-secondary" onclick="deletarLancamentoFin('${l.id}')" style="padding:4px 8px; font-size:0.75rem; color:#f87171;" title="Excluir">✕</button>
+            <button class="btn btn-secondary" onclick="deletarLancamentoFin('${l.id}')" style="padding:4px 8px; font-size:0.75rem; color:#f87171;" title="Excluir Lançamento">🗑️ Excluir</button>
           </td>
         </tr>
       `;
@@ -1555,6 +1556,21 @@ async function carregarFinanceiro() {
   } else {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">Nenhum lançamento financeiro registrado.</td></tr>';
   }
+}
+
+function editarLancamentoFin(id) {
+  const item = lancamentosFinData.find(x => String(x.id) === String(id));
+  if (!item) return;
+  
+  if (document.getElementById('finEditId')) document.getElementById('finEditId').value = item.id;
+  if (document.getElementById('finPacienteNome')) document.getElementById('finPacienteNome').value = item.paciente_nome || '';
+  if (document.getElementById('finData')) document.getElementById('finData').value = item.data ? item.data.split('T')[0] : '';
+  if (document.getElementById('finValor')) document.getElementById('finValor').value = item.valor || '';
+  if (document.getElementById('finDesc')) document.getElementById('finDesc').value = item.descricao || '';
+  if (item.forma_pagamento && document.getElementById('finForma')) document.getElementById('finForma').value = item.forma_pagamento;
+  if (item.status && document.getElementById('finStatus')) document.getElementById('finStatus').value = item.status;
+
+  abrirModalNovoLancamentoFin();
 }
 
 async function deletarLancamentoFin(id) {
@@ -1776,9 +1792,13 @@ function abrirModalNovoLancamentoFin() {
 function fecharModalNovoLancamentoFin() {
   const m = document.getElementById('modalNovoLancamentoFin');
   if (m) m.style.display = 'none';
+  if (document.getElementById('finEditId')) document.getElementById('finEditId').value = '';
+  if (document.getElementById('finPacienteNome')) document.getElementById('finPacienteNome').value = '';
+  if (document.getElementById('finValor')) document.getElementById('finValor').value = '';
 }
 async function salvarNovoLancamentoFin(e) {
   e.preventDefault();
+  const id = document.getElementById('finEditId')?.value;
   const paciente_nome = document.getElementById('finPacienteNome').value;
   const data = document.getElementById('finData').value;
   const valor = document.getElementById('finValor').value;
@@ -1786,12 +1806,13 @@ async function salvarNovoLancamentoFin(e) {
   const forma_pagamento = document.getElementById('finForma').value;
   const status = document.getElementById('finStatus').value;
 
-  const res = await apiCall('saveLancamentoFinanceiro', {
-    lancamento: { paciente_nome, data, valor, descricao, forma_pagamento, status }
-  }, 'POST');
+  const lancamentoObj = { paciente_nome, data, valor, descricao, forma_pagamento, status };
+  if (id) lancamentoObj.id = id;
+
+  const res = await apiCall('saveLancamentoFinanceiro', { lancamento: lancamentoObj }, 'POST');
 
   if (res && res.success) {
-    alert("✅ Lançamento financeiro registrado com sucesso!");
+    alert("✅ Lançamento financeiro " + (id ? "atualizado" : "registrado") + " com sucesso!");
     fecharModalNovoLancamentoFin();
     carregarFinanceiro();
   } else {
@@ -1827,6 +1848,7 @@ function imprimirReciboModal(e) {
       <button onclick="fecharModalNovoLancamentoFin()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
     </div>
     <form onsubmit="salvarNovoLancamentoFin(event)" style="display:flex; flex-direction:column; gap:14px;">
+      <input type="hidden" id="finEditId">
       <div class="form-group">
         <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nome do Paciente</label>
         <input type="text" id="finPacienteNome" class="form-control" placeholder="Ex: Juliana Mendes" required>

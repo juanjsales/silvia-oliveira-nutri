@@ -440,6 +440,7 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
       </div>
 
       <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:12px; padding:18px; margin-bottom:20px;">
+        <input type="hidden" id="exEditId">
         <div class="section-divider" style="margin-bottom:14px">Lançar Novo Marcador Sanguíneo</div>
         <div class="form-grid" style="margin-bottom:12px">
           <div class="form-group">
@@ -769,17 +770,28 @@ async function carregarExamesLaboratoriaisAtend() {
           <span style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:6px; background:rgba(140,164,129,0.18); color:var(--sage-light); border:1px solid var(--sage-light);">🟢 Registrado</span>
         </td>
         <td style="padding:10px; text-align:right;">
-          <button class="btn btn-secondary" onclick="deletarExameLaboratorialAtend('${ex.id}')" style="padding:4px 8px; font-size:0.75rem; color:#f87171;">✕</button>
+          <button class="btn btn-secondary" onclick="editarExameLaboratorialAtend('${ex.id}','${ex.data_exame}','${ex.marcador}','${ex.valor}','${ex.unidade||''}','${ex.valor_referencia||''}','${ex.observacao||''}')" style="padding:4px 8px; font-size:0.75rem; color:var(--sage-light);" title="Editar Marcador">✏️ Editar</button>
+          <button class="btn btn-secondary" onclick="deletarExameLaboratorialAtend('${ex.id}')" style="padding:4px 8px; font-size:0.75rem; color:#f87171;" title="Excluir Marcador">🗑️ Excluir</button>
         </td>
       </tr>
     `).join('');
   } else {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Nenhum exame cadastrado para este paciente.</td></tr>';
   }
+function editarExameLaboratorialAtend(id, data, marcador, valor, unidade, ref, obs) {
+  if (document.getElementById('exEditId')) document.getElementById('exEditId').value = id;
+  if (document.getElementById('exData')) document.getElementById('exData').value = data ? data.split('T')[0] : '';
+  if (document.getElementById('exMarcador')) document.getElementById('exMarcador').value = marcador;
+  if (document.getElementById('exValor')) document.getElementById('exValor').value = valor;
+  if (document.getElementById('exUnidade')) document.getElementById('exUnidade').value = unidade;
+  if (document.getElementById('exRef')) document.getElementById('exRef').value = ref;
+  if (document.getElementById('exObs')) document.getElementById('exObs').value = obs;
+  toast('✏️ Editando marcador ' + marcador);
 }
 
 async function salvarExameLaboratorialAtend() {
   if (!PAC_ID) { toast('Selecione um paciente', true); return; }
+  const editId = document.getElementById('exEditId')?.value;
   const data_exame = document.getElementById('exData').value;
   const marcador = document.getElementById('exMarcador').value;
   const valor = document.getElementById('exValor').value;
@@ -799,11 +811,14 @@ async function salvarExameLaboratorialAtend() {
     observacao: document.getElementById('exObs').value
   };
 
+  if (editId) exameObj.id = editId;
+
   const res = await apiCall('saveExameLaboratorial', { exame: exameObj }, 'POST');
   if (res && res.success) {
-    toast('✅ Marcador salvo com sucesso!');
+    toast('✅ Marcador ' + (editId ? 'atualizado' : 'salvo') + ' com sucesso!');
     document.getElementById('exValor').value = '';
     document.getElementById('exObs').value = '';
+    if (document.getElementById('exEditId')) document.getElementById('exEditId').value = '';
     carregarExamesLaboratoriaisAtend();
   } else {
     toast('Erro ao salvar exame', true);
