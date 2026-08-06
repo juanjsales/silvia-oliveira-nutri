@@ -111,11 +111,11 @@ body.in-iframe .container{padding-top:16px!important}
 /* ── MODAL STEPPER ─────────────────────────────────────────── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(.16,1,.3,1)}
 .modal-overlay.active{opacity:1;pointer-events:auto}
-.modal-card{background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:var(--radius);width:100%;max-width:580px;box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .25s cubic-bezier(.16,1,.3,1);overflow:hidden}
+.modal-card{background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:var(--radius);width:100%;max-width:580px;box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .25s cubic-bezier(.16,1,.3,1);position:relative}
 .modal-overlay.active .modal-card{transform:scale(1)}
 
 /* Stepper header */
-.stepper{display:flex;align-items:center;background:var(--bg-deep);padding:20px 28px;gap:0;border-bottom:1px solid var(--border-forest)}
+.stepper{display:flex;align-items:center;background:var(--bg-deep);padding:20px 28px;gap:0;border-bottom:1px solid var(--border-forest);border-radius:var(--radius) var(--radius) 0 0}
 .step-item{display:flex;align-items:center;gap:8px;flex:1}
 .step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;border:2px solid var(--border-forest);color:var(--text-muted);transition:var(--tr);flex-shrink:0}
 .step-item.active .step-num{border-color:var(--sage-light);color:var(--sage-light);background:var(--sage-dim)}
@@ -127,7 +127,7 @@ body.in-iframe .container{padding-top:16px!important}
 .step-line.done{background:var(--sage-light)}
 
 /* Modal body */
-.modal-body{padding:28px;display:flex;flex-direction:column;gap:18px}
+.modal-body{padding:28px;display:flex;flex-direction:column;gap:18px;position:relative}
 .modal-header{display:flex;justify-content:space-between;align-items:flex-start}
 .modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--text-title)}
 .modal-subtitle{font-size:0.82rem;color:var(--text-muted);margin-top:4px}
@@ -136,7 +136,7 @@ body.in-iframe .container{padding-top:16px!important}
 .modal-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border-forest)}
 
 /* Form */
-.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group{display:flex;flex-direction:column;gap:6px;position:relative}
 .form-group label{font-size:0.72rem;font-weight:800;text-transform:uppercase;color:var(--sage-light);letter-spacing:.05em}
 .form-control{background:var(--bg-deep);border:1.5px solid var(--border-forest);padding:11px 14px;border-radius:12px;color:var(--text-primary);font-family:inherit;font-size:0.92rem;outline:none;transition:var(--tr);width:100%}
 .form-control:focus{border-color:var(--sage-light)}
@@ -150,8 +150,8 @@ body.in-iframe .container{padding-top:16px!important}
 .radio-toggle input[type=radio]:checked+label{background:var(--sage-light);color:var(--forest-dark)}
 
 /* Busca de paciente */
-.pac-search-wrap{position:relative}
-.pac-results{position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1.5px solid var(--sage-light);border-radius:12px;z-index:10;max-height:200px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.pac-search-wrap{position:relative;z-index:99}
+.pac-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg-card);border:1.5px solid var(--sage-light);border-radius:12px;z-index:9999;max-height:220px;overflow-y:auto;box-shadow:0 14px 40px rgba(0,0,0,0.85)}
 .pac-result-item{padding:12px 16px;cursor:pointer;transition:var(--tr);border-bottom:1px solid var(--border-forest);font-size:.9rem}
 .pac-result-item:last-child{border-bottom:none}
 .pac-result-item:hover{background:var(--sage-dim)}
@@ -689,25 +689,39 @@ async function buscarPaciente(q) {
   }, 300);
 }
 
+let tempPacientesMap = {};
+
 function exibirResultados(pacientes) {
   const results = document.getElementById('pacResults');
+  tempPacientesMap = {};
+  pacientes.forEach(p => { tempPacientesMap[p.id] = p; });
+
   results.innerHTML = pacientes.map(p => `
-    <div class="pac-result-item" onclick="selecionarPaciente(${JSON.stringify(JSON.stringify(p))})">
-      <div class="pac-result-name">${p.nome||'—'}</div>
-      <div class="pac-result-detail">CPF: ${maskCPF(p.cpf||'')} · ${p.whatsapp||p.email||''}</div>
+    <div class="pac-result-item" onclick="selecionarPacientePorId('${p.id}')">
+      <div class="pac-result-name">${p.nome || '—'}</div>
+      <div class="pac-result-detail">${p.cpf ? 'CPF: ' + maskCPF(p.cpf) + ' · ' : ''}${p.whatsapp ? maskPhone(p.whatsapp) : (p.email || '')}</div>
     </div>`).join('');
-  results.style.display='block';
+  results.style.display = 'block';
 }
 
-function selecionarPaciente(jsonStr) {
-  const p = JSON.parse(jsonStr);
+function selecionarPacientePorId(id) {
+  const p = tempPacientesMap[id] || (pacientesBD || []).find(x => x.id === id);
+  if (!p) return;
   pacienteSelecionado = p;
   document.getElementById('inputBusca').value = p.nome;
-  document.getElementById('pacResults').style.display='none';
-  document.getElementById('pacSelecionadoBox').style.display='block';
+  document.getElementById('pacResults').style.display = 'none';
+  document.getElementById('pacSelecionadoBox').style.display = 'block';
   document.getElementById('pacSelecionadoNome').textContent = p.nome;
   document.getElementById('pacSelecionadoDetalhe').textContent =
-    `CPF: ${maskCPF(p.cpf||'')} · WhatsApp: ${maskPhone(p.whatsapp||'')} · ${p.email||''}`;
+    `${p.cpf ? 'CPF: ' + maskCPF(p.cpf) + ' · ' : ''}${p.whatsapp ? 'WhatsApp: ' + maskPhone(p.whatsapp) + ' · ' : ''}${p.email || ''}`;
+}
+
+function selecionarPaciente(p) {
+  if (typeof p === 'string') {
+    try { p = JSON.parse(p); } catch(e){}
+  }
+  if (!p || !p.id) return;
+  selecionarPacientePorId(p.id);
 }
 
 function maskCPF(v){ return String(v||'').replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2').slice(0,14); }
