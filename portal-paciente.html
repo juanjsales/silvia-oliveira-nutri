@@ -144,6 +144,9 @@ html, body { overflow-x: hidden; width: 100%; max-width: 100vw; }
   </div>
 
   <div class="app-user-info" style="display:flex; align-items:center; gap:12px;">
+    <button onclick="abrirModalTrocarSenha()" style="background:var(--sage-dim); border:1px solid var(--border-forest); color:var(--sage-light); padding:6px 12px; border-radius:8px; font-weight:700; font-size:0.75rem; cursor:pointer;">
+      🔑 Alterar Senha
+    </button>
     <button onclick="toggleTheme()" id="btnThemeToggle" style="background:var(--sage-dim); border:1px solid var(--border-forest); color:var(--sage-light); padding:6px 12px; border-radius:8px; font-weight:700; font-size:0.75rem; cursor:pointer;">
       🌙 Tema
     </button>
@@ -352,7 +355,7 @@ function inicializarGrafico(labels = ['Maio', 'Junho', 'Julho', 'Agosto'], dataP
 
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'dark';
-  const next = current === 'dark' ? 'light' : 'dark';
+  const next = current === 'light' ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('kos_theme', next);
   const btn = document.getElementById('btnThemeToggle');
@@ -389,6 +392,95 @@ window.addEventListener('DOMContentLoaded', () => {
     inicializarGrafico();
   }
 });
+
+function abrirModalTrocarSenha() {
+  const m = document.getElementById('modalTrocarSenha');
+  if (m) m.style.display = 'flex';
+}
+
+function fecharModalTrocarSenha() {
+  const m = document.getElementById('modalTrocarSenha');
+  if (m) m.style.display = 'none';
+  const a = document.getElementById('pwdAtual'); if (a) a.value = '';
+  const n = document.getElementById('pwdNova');  if (n) n.value = '';
+  const c = document.getElementById('pwdConf');  if (c) c.value = '';
+}
+
+async function salvarNovaSenha(e) {
+  e.preventDefault();
+  const atual = document.getElementById('pwdAtual').value;
+  const nova  = document.getElementById('pwdNova').value;
+  const conf  = document.getElementById('pwdConf').value;
+  const btn   = document.getElementById('btnSalvarPwd');
+
+  if (nova !== conf) {
+    alert("❌ A nova senha e a confirmação não coincidem.");
+    return;
+  }
+  if (nova.length < 4) {
+    alert("❌ A nova senha deve ter no mínimo 4 caracteres.");
+    return;
+  }
+
+  let rawDados = sessionStorage.getItem('kos_paciente_dados');
+  let pacienteObj = null;
+  if (rawDados) {
+    try { pacienteObj = JSON.parse(rawDados); } catch(err){}
+  }
+
+  const userId = pacienteObj ? (pacienteObj.id || pacienteObj.email || pacienteObj.cpf) : 'PAC-01';
+
+  btn.disabled = true;
+  btn.innerText = "Salvando...";
+
+  const res = await apiCall('alterarSenha', {
+    usuario_id: userId,
+    senha_atual: atual,
+    nova_senha: nova
+  });
+
+  btn.disabled = false;
+  btn.innerText = "💾 Salvar Nova Senha";
+
+  if (res && res.success) {
+    alert("✅ " + (res.message || "Sua senha foi alterada com sucesso!"));
+    fecharModalTrocarSenha();
+  } else {
+    alert("⚠️ Erro ao alterar senha: " + (res ? res.error || "Senha atual incorreta." : "Verifique sua conexão."));
+  }
+}
 </script>
+
+<!-- MODAL DE ALTERAÇÃO DE SENHA -->
+<div id="modalTrocarSenha" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:28px; width:100%; max-width:440px; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:20px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:#fff;">🔑 Alterar Senha de Acesso</div>
+      <button onclick="fecharModalTrocarSenha()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+    </div>
+
+    <form onsubmit="salvarNovaSenha(event)" style="display:flex; flex-direction:column; gap:16px;">
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Senha Atual (ou PIN temporário)</label>
+        <input type="password" id="pwdAtual" class="form-control" placeholder="Sua senha atual" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nova Senha</label>
+        <input type="password" id="pwdNova" class="form-control" placeholder="Mínimo 4 caracteres" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Confirmar Nova Senha</label>
+        <input type="password" id="pwdConf" class="form-control" placeholder="Repita a nova senha" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn" style="background:transparent; border:1.5px solid var(--border-forest); color:var(--text-muted);" onclick="fecharModalTrocarSenha()">Cancelar</button>
+        <button type="submit" class="btn" id="btnSalvarPwd">💾 Salvar Nova Senha</button>
+      </div>
+    </form>
+  </div>
+</div>
 </body>
 </html>

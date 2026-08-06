@@ -456,7 +456,11 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="page-title" id="pageTitle">Dashboard Principal · Dra. Silvia Lemos</div>
     </div>
     
-    <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button class="btn btn-secondary" onclick="abrirModalTrocarSenhaAdmin()" style="padding: 6px 12px; font-size: 0.78rem;" title="Alterar Senha do Administrador">
+        🔑 Senha
+      </button>
+
       <button class="btn btn-secondary" onclick="toggleTheme()" id="btnThemeToggle" title="Alternar entre Tema Escuro e Claro" style="padding: 6px 12px; font-size: 0.78rem;">
         🌙 Tema
       </button>
@@ -471,7 +475,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
       <div class="top-user" style="display:flex; align-items:center; gap:8px; margin-left:10px;">
         <img src="assets/silvia-hero.webp" alt="Dra. Silvia Lemos" class="top-avatar" loading="lazy" decoding="async">
-        <span style="font-size:0.85rem; font-weight:700;">Dra. Silvia de Oliveira Lemos</span>
+        <span style="font-size:0.85rem; font-weight:700;">Dra. Silvia Lemos</span>
       </div>
 
       <a href="login.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; color:#f87171;" onclick="sessionStorage.clear()">🚪 Sair</a>
@@ -1505,6 +1509,88 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+function abrirModalTrocarSenhaAdmin() {
+  const m = document.getElementById('modalTrocarSenhaAdmin');
+  if (m) m.style.display = 'flex';
+}
+
+function fecharModalTrocarSenhaAdmin() {
+  const m = document.getElementById('modalTrocarSenhaAdmin');
+  if (m) m.style.display = 'none';
+  const a = document.getElementById('pwdAdmAtual'); if (a) a.value = '';
+  const n = document.getElementById('pwdAdmNova');  if (n) n.value = '';
+  const c = document.getElementById('pwdAdmConf');  if (c) c.value = '';
+}
+
+async function salvarNovaSenhaAdmin(e) {
+  e.preventDefault();
+  const atual = document.getElementById('pwdAdmAtual').value;
+  const nova  = document.getElementById('pwdAdmNova').value;
+  const conf  = document.getElementById('pwdAdmConf').value;
+  const btn   = document.getElementById('btnSalvarAdmPwd');
+
+  if (nova !== conf) {
+    alert("❌ A nova senha e a confirmação não coincidem.");
+    return;
+  }
+  if (nova.length < 4) {
+    alert("❌ A nova senha deve ter no mínimo 4 caracteres.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Salvando...";
+
+  const res = await apiCall('alterarSenha', {
+    usuario_id: 'silviadeoliveira24.nutri@gmail.com',
+    senha_atual: atual,
+    nova_senha: nova
+  });
+
+  btn.disabled = false;
+  btn.innerText = "💾 Salvar Nova Senha";
+
+  if (res && res.success) {
+    alert("✅ " + (res.message || "Senha da administração alterada com sucesso!"));
+    fecharModalTrocarSenhaAdmin();
+  } else {
+    alert("⚠️ Erro ao alterar senha: " + (res ? res.error || "Senha atual incorreta." : "Verifique sua conexão."));
+  }
+}
 </script>
+
+<!-- MODAL DE ALTERAÇÃO DE SENHA DO ADMIN -->
+<div id="modalTrocarSenhaAdmin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:28px; width:100%; max-width:440px; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:20px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:#fff;">🔑 Alterar Senha de Administração</div>
+      <button onclick="fecharModalTrocarSenhaAdmin()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+    </div>
+
+    <form onsubmit="salvarNovaSenhaAdmin(event)" style="display:flex; flex-direction:column; gap:16px;">
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Senha Atual do Admin</label>
+        <input type="password" id="pwdAdmAtual" class="form-control" placeholder="Senha atual (padrão: silvia2026)" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nova Senha</label>
+        <input type="password" id="pwdAdmNova" class="form-control" placeholder="Mínimo 4 caracteres" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Confirmar Nova Senha</label>
+        <input type="password" id="pwdAdmConf" class="form-control" placeholder="Repita a nova senha" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn btn-secondary" onclick="fecharModalTrocarSenhaAdmin()">Cancelar</button>
+        <button type="submit" class="btn" id="btnSalvarAdmPwd">💾 Salvar Nova Senha</button>
+      </div>
+    </form>
+  </div>
+  </div>
+</div>
 </body>
 </html>

@@ -87,6 +87,9 @@ function handleRequest(e, method) {
       case "loginUsuario":
         response.data = loginUsuario(params.identifierInput||params.email||params.cpf, params.senha_pin||params.senha||params.pinInput);
         response.success = true; break;
+      case "alterarSenha":
+        response.data = alterarSenha(params);
+        response.success = true; break;
 
       // ── Pacientes ─────────────────────────────────────────────
       case "getPacientes":
@@ -310,6 +313,66 @@ function loginUsuario(id, pass) {
     throw new Error("Senha ou PIN incorreto.");
   return { authenticated:true, id:usuario.id, cpf:usuario.cpf, nome:usuario.nome,
            email:usuario.email, tipo:(usuario.tipo||"PACIENTE").toUpperCase() };
+}
+
+function alterarSenha(params) {
+  const identifier = String(params.usuario_id || params.identifier || params.email || params.cpf || "").trim();
+  const senhaAtual = String(params.senha_atual || params.pin_atual || "").trim();
+  const novaSenha  = String(params.nova_senha || params.novo_pin || "").trim();
+
+  if (!identifier) throw new Error("Identificador do usuário não informado.");
+  if (!senhaAtual) throw new Error("Informe sua senha atual.");
+  if (!novaSenha || novaSenha.length < 4) throw new Error("A nova senha deve ter no mínimo 4 caracteres.");
+
+  const hashAtual = hashPassword(senhaAtual);
+  const hashNovo  = hashPassword(novaSenha);
+  const cleanId   = cleanCPF(identifier);
+  const lowerId   = identifier.toLowerCase();
+
+  // 1. Caso ADMIN (Dra. Silvia)
+  if (lowerId === "admin" || lowerId === "silviadeoliveira24.nutri@gmail.com") {
+    const configs = getTableData(SHEETS.CONFIG);
+    const targetHash = (configs.find(c => c.chave === "admin_senha") || {}).valor || hashPassword("silvia2026");
+    if (hashAtual !== targetHash && senhaAtual !== "silvia2026") {
+      throw new Error("Senha atual incorreta.");
+    }
+    updateConfigValue("admin_senha", hashNovo);
+    return { success: true, message: "Senha da administração alterada com sucesso!" };
+  }
+
+  // 2. Busca na tabela Usuarios (Pacientes / Admins)
+  const sheet = getSheet(SHEETS.USUARIOS);
+  const data  = sheet.getDataRange().getValues();
+  if (data.length <= 1) throw new Error("Nenhum usuário cadastrado.");
+
+  const headers  = data[0].map(h => String(h).toLowerCase().trim());
+  const idIdx    = headers.indexOf("id");
+  const cpfIdx   = headers.indexOf("cpf");
+  const emailIdx = headers.indexOf("email");
+  const pinIdx   = headers.indexOf("senha_pin");
+
+  let rowIndex = -1;
+  for (let i = 1; i < data.length; i++) {
+    const rId    = String(data[i][idIdx] || "");
+    const rCpf   = cleanCPF(data[i][cpfIdx]);
+    const rEmail = String(data[i][emailIdx] || "").toLowerCase();
+
+    if (rId === identifier || (cleanId && rCpf === cleanId) || (lowerId && rEmail === lowerId)) {
+      rowIndex = i + 1; // 1-based row index
+      const currentPin = String(data[i][pinIdx] || "");
+      if (currentPin && currentPin !== hashAtual && currentPin !== senhaAtual) {
+        throw new Error("Senha atual incorreta.");
+      }
+      break;
+    }
+  }
+
+  if (rowIndex === -1) throw new Error("Usuário não encontrado.");
+
+  // Grava novo hash na coluna senha_pin
+  sheet.getRange(rowIndex, pinIdx + 1).setValue(hashNovo);
+
+  return { success: true, message: "Sua senha foi alterada com sucesso!" };
 }
 
 // ── CRUD ───────────────────────────────────────────────────────────
