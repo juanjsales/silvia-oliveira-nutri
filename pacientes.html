@@ -131,7 +131,10 @@ async function carregarPacientes() {
         <td>${p.cpf || '--'}<br><span style="font-size:0.78rem; color:var(--text-muted);">${p.whatsapp || ''}</span></td>
         <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
         <td>
-          <a href="gerenciador-plano.html?paciente=${encodeURIComponent(p.nome)}" class="btn" style="padding:6px 12px; font-size:0.75rem;">🥗 Criar Cardápio</a>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <a href="gerenciador-plano.html?paciente=${encodeURIComponent(p.nome)}" class="btn" style="padding:6px 10px; font-size:0.75rem;">🥗 Cardápio</a>
+            <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; border-color:var(--sage-light); color:var(--sage-light);">📈 Bioimpedância</a>
+          </div>
         </td>
       `;
       tbl.appendChild(tr);

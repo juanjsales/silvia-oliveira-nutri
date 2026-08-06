@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bioimpedância & Evolução · Dra. Silvia Lemos</title>
+<title>Bioimpedância por Paciente · Dra. Silvia Lemos</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -31,14 +31,23 @@ body { background: var(--forest-deep); color: var(--text-light); font-family: 'P
 .nav-item { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 700; padding: 8px 14px; border-radius: 10px; transition: var(--tr); }
 .nav-item:hover, .nav-item.active { background: rgba(140, 164, 129, 0.15); color: var(--sage-light); }
 
-.container { max-width: 1300px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 28px; }
+.container { max-width: 1300px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 24px; }
 
 .card { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.card-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #fff; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px; }
+.card-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+
+.form-control {
+  background: rgba(0,0,0,0.4); border: 1.5px solid var(--sage-light); padding: 10px 16px; border-radius: 12px; color: #fff; font-family: inherit; font-size: 0.95rem; outline: none; transition: var(--tr); min-width: 280px;
+}
 
 .btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
 .btn:hover { background: #eef4e5; transform: translateY(-2px); }
+
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; margin-top: 16px; }
+th { background: rgba(0,0,0,0.3); padding: 14px 16px; color: var(--sage-light); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-forest); }
+td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-light); }
+tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* OCULTA NAVBAR QUANDO EMBUTIDO EM IFRAME */
 body.in-iframe .top-header { display: none !important; }
@@ -49,7 +58,7 @@ body.in-iframe .container { padding-top: 16px !important; }
 
 <header class="top-header">
   <div>
-    <div class="brand-title">Bioimpedância &amp; Evolução Corporal</div>
+    <div class="brand-title">Bioimpedância &amp; Evolução Corporal por Paciente</div>
     <div style="font-size:0.78rem; color:var(--sage-light); font-weight:700;">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
   </div>
 
@@ -64,20 +73,67 @@ body.in-iframe .container { padding-top: 16px !important; }
 </header>
 
 <main class="container">
+
+  <!-- BARRA DE SELEÇÃO DO PACIENTE -->
+  <div class="card" style="padding: 20px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.2rem;">👤</span>
+        <div>
+          <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); display: block; margin-bottom: 2px;">Selecione o Paciente:</label>
+          <select id="selPacienteEvolucao" class="form-control" onchange="carregarEvolucaoPaciente()">
+            <option value="">Carregando pacientes...</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" onclick="registrarEvolucao()">+ Nova Avaliação Física</button>
+    </div>
+  </div>
+
+  <!-- GRÁFICO DE EVOLUÇÃO INDIVIDUAL -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title">📈 Gráfico de Evolução Corporal (Peso &amp; Gordura %)</div>
-      <button class="btn" onclick="registrarEvolucao()">+ Registrar Nova Medição</button>
+      <div class="card-title">📈 Curva de Evolução Física Individual</div>
+      <div id="statusEvolucao" style="font-size: 0.8rem; color: var(--sage-light); font-weight: 700;"></div>
     </div>
 
-    <div style="height: 380px; position: relative;">
+    <div style="height: 350px; position: relative;">
       <canvas id="chartEvolucao"></canvas>
     </div>
   </div>
+
+  <!-- HISTÓRICO DE MEDIÇÕES EM TABELA -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom: 12px;">📋 Histórico de Avaliações Registradas</div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Data Avaliação</th>
+            <th>Peso (kg)</th>
+            <th>Gordura (%)</th>
+            <th>Massa Magra (kg)</th>
+            <th>Cintura (cm)</th>
+            <th>Quadril (cm)</th>
+          </tr>
+        </thead>
+        <tbody id="tblHistoricoEvolucao">
+          <tr>
+            <td colspan="6" style="text-align:center; color: var(--text-muted); padding: 24px;">Selecione um paciente para carregar o histórico.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </main>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+
+let chartInstance = null;
+let listaPacientes = [];
 
 async function apiCall(action, payload = {}) {
   try {
@@ -93,33 +149,165 @@ async function apiCall(action, payload = {}) {
   }
 }
 
-let chartInstance = null;
+async function inicializarPacientes() {
+  const sel = document.getElementById('selPacienteEvolucao');
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetPacienteId = urlParams.get('paciente_id') || 'PAC-01';
+
+  const res = await apiCall('getPacientes');
+  if (res && res.success && res.data) {
+    listaPacientes = res.data.filter(p => !p.tipo || p.tipo === "PACIENTE");
+    sel.innerHTML = '';
+    
+    listaPacientes.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.nome} (CPF: ${p.cpf || 'N/I'})`;
+      if (p.id === targetPacienteId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    carregarEvolucaoPaciente();
+  } else {
+    sel.innerHTML = '<option value="PAC-01">Juliana Mendes (PAC-01)</option>';
+    carregarEvolucaoPaciente();
+  }
+}
+
+async function carregarEvolucaoPaciente() {
+  const sel = document.getElementById('selPacienteEvolucao');
+  const pacienteId = sel.value;
+  const pacienteObj = listaPacientes.find(p => p.id === pacienteId) || { nome: 'Paciente' };
+  const tblHist = document.getElementById('tblHistoricoEvolucao');
+  const statusEvo = document.getElementById('statusEvolucao');
+
+  if (statusEvo) statusEvo.innerText = `Buscando medições de ${pacienteObj.nome}...`;
+
+  const res = await apiCall('getEvolucao', { paciente_id: pacienteId });
+
+  let dadosEvolucao = [];
+  if (res && res.success && res.data && res.data.length > 0) {
+    dadosEvolucao = res.data;
+  } else {
+    // Dados iniciais de demonstração para PAC-01 se ainda não gravado no banco remoto
+    if (pacienteId === 'PAC-01') {
+      dadosEvolucao = [
+        { data: '2026-05-10', peso: 71.2, percentual_gordura: 28.5, massa_magra: 37.8, cintura: 78, quadril: 98 },
+        { data: '2026-06-12', peso: 69.0, percentual_gordura: 26.1, massa_magra: 38.0, cintura: 75, quadril: 96 },
+        { data: '2026-07-15', peso: 67.4, percentual_gordura: 24.0, massa_magra: 38.3, cintura: 73, quadril: 94 },
+        { data: '2026-08-05', peso: 65.5, percentual_gordura: 22.4, massa_magra: 38.6, cintura: 71, quadril: 93 }
+      ];
+    }
+  }
+
+  if (statusEvo) statusEvo.innerText = `${dadosEvolucao.length} avaliações física(s) encontradas`;
+
+  // RENDERIZA TABELA HISTÓRICO
+  if (tblHist) {
+    tblHist.innerHTML = '';
+    if (dadosEvolucao.length === 0) {
+      tblHist.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">Nenhuma medição registrada para ${pacienteObj.nome} ainda.</td></tr>`;
+    } else {
+      dadosEvolucao.forEach(ev => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${ev.data || 'Recente'}</strong></td>
+          <td><strong style="color:var(--sage-light);">${ev.peso} kg</strong></td>
+          <td>${ev.percentual_gordura}%</td>
+          <td>${ev.massa_magra || '--'} kg</td>
+          <td>${ev.cintura || '--'} cm</td>
+          <td>${ev.quadril || '--'} cm</td>
+        `;
+        tblHist.appendChild(tr);
+      });
+    }
+  }
+
+  // RENDERIZA GRÁFICO DO PACIENTE
+  renderizarGrafico(dadosEvolucao);
+}
+
+function renderizarGrafico(dados) {
+  const ctx = document.getElementById('chartEvolucao');
+  if (!ctx) return;
+
+  const labels = dados.map(d => d.data || 'Medição');
+  const pesos = dados.map(d => parseFloat(d.peso));
+  const gorduras = dados.map(d => parseFloat(d.percentual_gordura));
+  const massas = dados.map(d => parseFloat(d.massa_magra || 0));
+
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.length > 0 ? labels : ['Sem dados'],
+      datasets: [
+        {
+          label: 'Peso Corporal (kg)',
+          data: pesos,
+          borderColor: '#8ca481',
+          backgroundColor: 'rgba(140, 164, 129, 0.15)',
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Gordura Corporal (%)',
+          data: gorduras,
+          borderColor: '#eef4e5',
+          tension: 0.3
+        },
+        {
+          label: 'Massa Magra (kg)',
+          data: massas,
+          borderColor: '#536457',
+          borderDash: [5, 5],
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } }
+      },
+      scales: {
+        x: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
+  });
+}
 
 async function registrarEvolucao() {
-  const peso = parseFloat(prompt("Digite o Peso Atual (kg):", "65.0") || "0");
+  const sel = document.getElementById('selPacienteEvolucao');
+  const pacienteId = sel.value;
+  const pacienteObj = listaPacientes.find(p => p.id === pacienteId) || { nome: 'Paciente' };
+
+  const peso = parseFloat(prompt(`[${pacienteObj.nome}] Digite o Peso Atual (kg):`, "65.0") || "0");
   if (!peso) return;
-  const percGordura = parseFloat(prompt("Digite o Percentual de Gordura (%):", "22.0") || "0");
+  const percGordura = parseFloat(prompt(`[${pacienteObj.nome}] Digite o % de Gordura:`, "22.0") || "0");
+  const massaMagra = parseFloat(prompt(`[${pacienteObj.nome}] Digite a Massa Magra (kg):`, "38.5") || "0");
 
   const evolucao = {
-    paciente_id: "PAC-01",
+    paciente_id: pacienteId,
     peso: peso,
     percentual_gordura: percGordura,
-    massa_magra: 38.5,
+    massa_magra: massaMagra,
     cintura: 71,
-    quadril: 93
+    quadril: 93,
+    data: new Date().toISOString().split('T')[0]
   };
 
   const res = await apiCall('saveEvolucao', { evolucao });
   if (res && res.success) {
-    alert("✅ Nova medição registrada com sucesso!");
-    if (chartInstance) {
-      chartInstance.data.labels.push('Hoje');
-      chartInstance.data.datasets[0].data.push(peso);
-      chartInstance.data.datasets[1].data.push(percGordura);
-      chartInstance.update();
-    }
+    alert(`✅ Avaliação física de ${pacienteObj.nome} salva com sucesso no Google Sheets!`);
+    carregarEvolucaoPaciente();
   } else {
-    alert("Erro ao registrar evolução.");
+    alert("Erro ao registrar avaliação física.");
   }
 }
 
@@ -131,42 +319,7 @@ window.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  const ctx = document.getElementById('chartEvolucao');
-  if (ctx) {
-    chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Maio/26', 'Junho/26', 'Julho/26', 'Agosto/26'],
-        datasets: [
-          {
-            label: 'Peso (kg)',
-            data: [71.2, 69.0, 67.4, 65.5],
-            borderColor: '#8ca481',
-            backgroundColor: 'rgba(140, 164, 129, 0.1)',
-            fill: true,
-            tension: 0.3
-          },
-          {
-            label: 'Gordura corporal (%)',
-            data: [28.5, 26.1, 24.0, 22.4],
-            borderColor: '#eef4e5',
-            tension: 0.3
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } }
-        },
-        scales: {
-          x: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-        }
-      }
-    });
-  }
+  inicializarPacientes();
 });
 </script>
 </body>
