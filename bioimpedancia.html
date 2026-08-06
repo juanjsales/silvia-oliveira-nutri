@@ -771,7 +771,9 @@ async function salvarNovoPaciente(e) {
     senha_pin: '123456'
   };
 
-  listaPacientes.unshift(novoPaciente);
+  if (!Array.isArray(window.listaPacientes)) window.listaPacientes = [];
+  window.listaPacientes.unshift(novoPaciente);
+  listaPacientes = window.listaPacientes;
   const sel = document.getElementById('selPacienteEvolucao');
   if (sel) {
     const opt = document.createElement('option');

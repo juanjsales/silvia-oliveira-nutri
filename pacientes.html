@@ -232,6 +232,8 @@ body.in-iframe .container { padding-top: 16px !important; }
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+var pacientesLista = [];
+window.pacientesLista = pacientesLista;
 
 async function apiCall(action, payload = {}, method = 'GET') {
   try {
@@ -454,8 +456,10 @@ async function salvarNovoPaciente(e) {
   alert(`✅ Paciente ${nome} cadastrado com sucesso!`);
   closePacienteModal();
 
-  pacientesLista.unshift(novoPaciente);
-  renderizarTabelaPacientes(pacientesLista);
+  if (!Array.isArray(window.pacientesLista)) window.pacientesLista = [];
+  window.pacientesLista.unshift(novoPaciente);
+  pacientesLista = window.pacientesLista;
+  renderizarTabelaPacientes(window.pacientesLista);
 
   // Sincroniza em segundo plano no banco Sheets
   apiCall('savePaciente', { paciente: novoPaciente }, 'POST');
