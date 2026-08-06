@@ -440,6 +440,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="nav-item" onclick="openIframe('bioimpedancia.html', this)">
       <span>📈</span> Bioimpedância &amp; Evolução
     </div>
+    <div class="nav-item" id="navFinItem" onclick="openFinanceiroView(this)">
+      <span>💰</span> Financeiro &amp; Recibos
+    </div>
     <a href="index.html" target="_blank" class="nav-item" style="color: var(--text-muted); text-decoration: none;">
       <span>🌐</span> Ver Site ↗️
     </a>
@@ -562,6 +565,62 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <!-- 2. IFRAME CONTAINER CENTRAL -->
     <div id="iframeView" style="display: none; width: 100%;">
       <iframe id="adminIframe" src="about:blank" style="width: 100%; height: calc(100vh - 110px); border: none; border-radius: 20px; background: var(--forest-card);"></iframe>
+    </div>
+
+    <!-- 3. GESTÃO FINANCEIRA & RECIBOS -->
+    <div id="financeiroView" style="display: none; width: 100%;">
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Faturamento Total Lançado</div>
+            <div class="kpi-val" id="finKpiTotal">R$ 0,00</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pagamentos Confirmados</div>
+            <div class="kpi-val" id="finKpiPago" style="color:#8ca481;">R$ 0,00</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pendentes de Recebimento</div>
+            <div class="kpi-val" id="finKpiPendente" style="color:#fbbf24;">R$ 0,00</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Lançamentos Registrados</div>
+            <div class="kpi-val" id="finKpiRecibos">0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">💰 Lançamentos Financeiros da Clínica</div>
+              <div class="card-subtitle">Controle de entradas de consultas, planos e recibos emitidos</div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn btn-secondary" onclick="abrirModalGerarRecibo()">📄 Emitir Recibo Reembolso</button>
+              <button class="btn" onclick="abrirModalNovoLancamentoFin()">+ Novo Lançamento</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr style="border-bottom:1.5px solid var(--border-forest); text-align:left; color:var(--sage-light); font-size:0.75rem; text-transform:uppercase;">
+                  <th style="padding:10px;">Data</th>
+                  <th style="padding:10px;">Paciente</th>
+                  <th style="padding:10px;">Descrição</th>
+                  <th style="padding:10px;">Valor (R$)</th>
+                  <th style="padding:10px;">Forma Pagto</th>
+                  <th style="padding:10px;">Status</th>
+                  <th style="padding:10px; text-align:right;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbFinanceiroBody">
+                <tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">Carregando lançamentos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -1387,10 +1446,12 @@ function openHome(el) {
   closeMobileMenu();
   const homeView = document.getElementById('homeView');
   const iframeView = document.getElementById('iframeView');
+  const financeiroView = document.getElementById('financeiroView');
   const pageTitle = document.getElementById('pageTitle');
 
   if (homeView) homeView.style.display = 'block';
   if (iframeView) iframeView.style.display = 'none';
+  if (financeiroView) financeiroView.style.display = 'none';
   if (pageTitle) pageTitle.innerText = 'Dashboard Principal · Dra. Silvia Lemos';
 
   document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
@@ -1401,10 +1462,12 @@ function openIframe(url, el) {
   closeMobileMenu();
   const homeView = document.getElementById('homeView');
   const iframeView = document.getElementById('iframeView');
+  const financeiroView = document.getElementById('financeiroView');
   const iframe = document.getElementById('adminIframe');
   const pageTitle = document.getElementById('pageTitle');
 
   if (homeView) homeView.style.display = 'none';
+  if (financeiroView) financeiroView.style.display = 'none';
   if (iframeView) iframeView.style.display = 'block';
   if (iframe) iframe.src = url;
 
@@ -1418,6 +1481,123 @@ function openIframe(url, el) {
 
   document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
   if (el) el.classList.add('active');
+}
+
+function openFinanceiroView(el) {
+  closeMobileMenu();
+  const homeView = document.getElementById('homeView');
+  const iframeView = document.getElementById('iframeView');
+  const financeiroView = document.getElementById('financeiroView');
+  const pageTitle = document.getElementById('pageTitle');
+
+  if (homeView) homeView.style.display = 'none';
+  if (iframeView) iframeView.style.display = 'none';
+  if (financeiroView) financeiroView.style.display = 'block';
+  if (pageTitle) pageTitle.innerText = 'Gestão Financeira & Recibos · Dra. Silvia Lemos';
+
+  document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  carregarFinanceiro();
+}
+
+function fmtDate(v) {
+  if (!v) return '—';
+  const s = String(v).trim();
+  if (s.includes('T')) { const [y,m,d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; }
+  if (s.includes('-')) { const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; }
+  return s;
+}
+
+let lancamentosFinData = [];
+
+async function carregarFinanceiro() {
+  const tbody = document.getElementById('tbFinanceiroBody');
+  if (!tbody) return;
+  const res = await apiCall('getFinanceiro');
+  if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+    lancamentosFinData = res.data;
+    let total = 0, pago = 0, pendente = 0;
+    
+    tbody.innerHTML = res.data.map(l => {
+      const val = parseFloat(l.valor) || 0;
+      total += val;
+      if (String(l.status).toLowerCase().includes('pago') || String(l.status).toLowerCase().includes('confirmado')) {
+        pago += val;
+      } else {
+        pendente += val;
+      }
+
+      return `
+        <tr style="border-bottom:1px solid var(--border-forest);">
+          <td style="padding:12px; font-weight:700;">${fmtDate(l.data)}</td>
+          <td style="padding:12px; font-weight:800; color:var(--text-title);">${l.paciente_nome || '—'}</td>
+          <td style="padding:12px; color:var(--cream);">${l.descricao || 'Consulta Nutricional'}</td>
+          <td style="padding:12px; font-weight:900; color:var(--sage-light);">R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+          <td style="padding:12px; font-size:0.85rem;">${l.forma_pagamento || 'Pix'}</td>
+          <td style="padding:12px;">
+            <span style="font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:8px; background:${String(l.status).toLowerCase().includes('pago')?'rgba(140,164,129,0.2)':'rgba(251,191,36,0.2)'}; color:${String(l.status).toLowerCase().includes('pago')?'#8ca481':'#fbbf24'}; border:1px solid ${String(l.status).toLowerCase().includes('pago')?'#8ca481':'#fbbf24'};">
+              ${l.status || 'Confirmado'}
+            </span>
+          </td>
+          <td style="padding:12px; text-align:right;">
+            <button class="btn btn-secondary" onclick="imprimirReciboDireto('${l.paciente_nome}','${val}','${l.data}')" style="padding:4px 8px; font-size:0.75rem;" title="Emitir Recibo">📄 Recibo</button>
+            <button class="btn btn-secondary" onclick="deletarLancamentoFin('${l.id}')" style="padding:4px 8px; font-size:0.75rem; color:#f87171;" title="Excluir">✕</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if (document.getElementById('finKpiTotal')) document.getElementById('finKpiTotal').innerText = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    if (document.getElementById('finKpiPago')) document.getElementById('finKpiPago').innerText = 'R$ ' + pago.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    if (document.getElementById('finKpiPendente')) document.getElementById('finKpiPendente').innerText = 'R$ ' + pendente.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    if (document.getElementById('finKpiRecibos')) document.getElementById('finKpiRecibos').innerText = res.data.length;
+  } else {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">Nenhum lançamento financeiro registrado.</td></tr>';
+  }
+}
+
+async function deletarLancamentoFin(id) {
+  if (!confirm('Deseja excluir este lançamento financeiro?')) return;
+  const res = await apiCall('deleteLancamentoFinanceiro', { id }, 'POST');
+  if (res && res.success) {
+    alert('Lançamento excluído!');
+    carregarFinanceiro();
+  }
+}
+
+function imprimirReciboDireto(nome, valor, data) {
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+    <head>
+      <title>Recibo Nutricional - Dra. Silvia Lemos</title>
+      <style>
+        body { font-family: sans-serif; padding: 40px; color: #111; max-width: 650px; margin: 0 auto; line-height: 1.6; }
+        .hdr { text-align: center; border-bottom: 2px solid #203528; padding-bottom: 20px; margin-bottom: 30px; }
+        .title { font-size: 22px; font-weight: bold; color: #203528; }
+        .sub { font-size: 14px; color: #555; margin-top: 4px; }
+        .box { border: 1px solid #ccc; padding: 24px; border-radius: 8px; background: #fafafa; margin-bottom: 30px; }
+        .val { font-size: 20px; font-weight: bold; color: #203528; }
+        .signature { margin-top: 60px; text-align: center; border-top: 1px solid #000; padding-top: 10px; width: 280px; margin-left: auto; margin-right: auto; }
+      </style>
+    </head>
+    <body>
+      <div class="hdr">
+        <div class="title">RECIBO DE ATENDIMENTO NUTRICIONAL</div>
+        <div class="sub">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
+      </div>
+      <div class="box">
+        Recebi de <strong>${nome||'Paciente'}</strong> a quantia de <span class="val">R$ ${parseFloat(valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span> referente aos serviços prestados de Acompanhamento Nutricional e Consulta Clínica no dia ${fmtDate(data)}.
+      </div>
+      <div class="signature">
+        <strong>Dra. Silvia de Oliveira Lemos</strong><br>
+        Nutricionista · CRN-4 25104731
+      </div>
+      <script>window.print();</script>
+    </body>
+    </html>
+  `);
 }
 
 // MENSAGENS DOS IFRAMES FILHOS (OPEN_IFRAME)

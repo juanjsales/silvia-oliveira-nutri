@@ -15,6 +15,8 @@ const SHEETS = {
   DOBRAS:      "Dobras_Cutaneas",
   SUPLEMENTOS: "Prescricoes_Suplementos",
   RECORDATORIO:"Recordatorio_24h",
+  RECEITAS:    "Receitas_Presets",
+  FINANCEIRO:  "Financeiro",
   CONFIG:      "Configuracoes"
 };
 
@@ -25,10 +27,12 @@ const SCHEMAS = {
   Anamneses:             ["id","paciente_id","data","perfil_clinico","alergias","intolerancias","aversao_alimentar","historico_saude","rotina_sono","intestino","preferencias","medicamentos","suplementos_atuais","cirurgias","historico_familiar","nivel_atividade","objetivo_detalhado","restricoes_alimentares","escolaridade","profissao","ocupacao","renda_familiar","dependentes_renda","estado_civil","tabagismo_status","tabagismo_macos","tabagismo_tempo","etilismo_status","etilismo_frequencia","etilismo_quantidade","ansiedade","depressao","outros_sintomas","ingestao_hidrica","horario_acorda","horario_dormir"],
   Evolucao:              ["id","paciente_id","data","perfil_clinico","peso","altura","imc","percentual_gordura","massa_magra","percentual_musculo","tmb","idade_metabolica","massa_ossea","braco","cintura","abdomen","quadril","panturrilha","pescoca","rcq","dobra_bicipital","dobra_tricipital","dobra_suprailiaca","dobra_subescapular","gestante_semanas","gestante_peso_pre","gestante_dum","pediatria_percentil","pediatria_perimetro_cefalico","diagnostico_nutricional","json_exames"],
   Planos:                ["id","paciente_id","data","json_refeicoes","json_extras","json_lista_compras"],
-  Exames_Laboratoriais:  ["id","paciente_id","data_exame","glicemia","hba1c","insulina","colesterol_total","hdl","ldl","triglicerideos","vitamina_d","vitamina_b12","ferritina","tsh"],
+  Exames_Laboratoriais:  ["id","paciente_id","data_exame","marcador","valor","unidade","valor_referencia","status","observacao"],
   Dobras_Cutaneas:       ["id","paciente_id","data","tricipital","subescapular","suprailiaca","abdominal","coxa","braco_relaxado","braco_contraido","cintura","quadril"],
   Prescricoes_Suplementos:["id","paciente_id","ag_id","data","suplemento_nome","dosagem","posologia","forma_farmaceutica","observacao"],
   Recordatorio_24h:      ["id","paciente_id","data","refeicao","horario","alimentos","escala_bristol_tipo"],
+  Receitas_Presets:      ["id","titulo","categoria","tempo_preparo","rendimento","ingredientes","modo_preparo","macros","data_criacao"],
+  Financeiro:            ["id","paciente_id","paciente_nome","data","descricao","valor","forma_pagamento","status","categoria","observacao"],
   Configuracoes:         ["chave","valor"]
 };
 
@@ -167,6 +171,39 @@ function handleRequest(e, method) {
         response.data = saveSuplemento(params.suplemento||params);
         response.success = true; break;
 
+      // ── Exames Laboratoriais ──────────────────────────────────
+      case "getExamesLaboratoriais":
+        response.data = getAllByField(SHEETS.EXAMES, "paciente_id", params.paciente_id);
+        response.success = true; break;
+      case "saveExameLaboratorial":
+        response.data = saveGeneric(SHEETS.EXAMES, params.exame||params, SCHEMAS.Exames_Laboratoriais);
+        response.success = true; break;
+      case "deleteExameLaboratorial":
+        response.data = deleteByField(SHEETS.EXAMES, "id", params.id);
+        response.success = true; break;
+
+      // ── Receitas Presets ──────────────────────────────────────
+      case "getReceitasPresets":
+        response.data = getTableData(SHEETS.RECEITAS);
+        response.success = true; break;
+      case "saveReceitaPreset":
+        response.data = saveGeneric(SHEETS.RECEITAS, params.receita||params, SCHEMAS.Receitas_Presets);
+        response.success = true; break;
+      case "deleteReceitaPreset":
+        response.data = deleteByField(SHEETS.RECEITAS, "id", params.id);
+        response.success = true; break;
+
+      // ── Financeiro ───────────────────────────────────────────
+      case "getFinanceiro":
+        response.data = getTableData(SHEETS.FINANCEIRO);
+        response.success = true; break;
+      case "saveLancamentoFinanceiro":
+        response.data = saveGeneric(SHEETS.FINANCEIRO, params.lancamento||params, SCHEMAS.Financeiro);
+        response.success = true; break;
+      case "deleteLancamentoFinanceiro":
+        response.data = deleteByField(SHEETS.FINANCEIRO, "id", params.id);
+        response.success = true; break;
+
       default:
         response.error = "Ação inválida: " + action;
     }
@@ -201,6 +238,53 @@ function getTableData(sheetName) {
 function getByField(sheetName, field, val) {
   return getTableData(sheetName)
          .find(r => String(r[field]||"").trim() === String(val||"").trim()) || null;
+}
+
+function saveGeneric(sheetName, itemObj, schema) {
+  const sheet = getSheet(sheetName);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+
+  if (!itemObj.id) {
+    itemObj.id = "GEN-" + Date.now();
+  }
+
+  let rowIdx = -1;
+  const idColIdx = headers.indexOf("id");
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idColIdx]).trim() === String(itemObj.id).trim()) {
+      rowIdx = i + 1;
+      break;
+    }
+  }
+
+  const rowData = headers.map(h => itemObj[h] !== undefined ? itemObj[h] : "");
+
+  if (rowIdx > 0) {
+    sheet.getRange(rowIdx, 1, 1, rowData.length).setValues([rowData]);
+  } else {
+    sheet.appendRow(rowData);
+  }
+
+  return itemObj;
+}
+
+function deleteByField(sheetName, field, val) {
+  const sheet = getSheet(sheetName);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const colIdx = headers.indexOf(field);
+
+  if (colIdx === -1) return false;
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][colIdx]).trim() === String(val).trim()) {
+      sheet.deleteRow(i + 1);
+      return true;
+    }
+  }
+  return false;
 }
 
 function getAllByField(sheetName, field, val) {

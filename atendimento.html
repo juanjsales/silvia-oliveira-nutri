@@ -200,6 +200,7 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
   <div class="tabs-nav" id="tabsNav">
     <button class="tab-btn active" onclick="openTab('anamnese',this)">📝 Anamnese</button>
     <button class="tab-btn" onclick="openTab('bioimpedancia',this)">⚖️ Antropometria &amp; Bioimpedância</button>
+    <button class="tab-btn" onclick="openTab('exames',this)">🔬 Exames Laboratoriais</button>
     <button class="tab-btn" onclick="openTab('plano',this)">🥗 Plano Alimentar</button>
     <button class="tab-btn" onclick="openTab('suplementos',this)">💊 Suplementos</button>
     <button class="tab-btn" onclick="openTab('notas',this)">📓 Anotações</button>
@@ -428,6 +429,82 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
     </div>
   </div>
 
+  <!-- ── TAB EXAMES LABORATORIAIS ── -->
+  <div class="tab-content" id="tab-exames">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🔬 Cadastro e Monitoramento de Exames Laboratoriais</div>
+          <div class="card-subtitle">Lançamento de marcadores sanguíneos com alertas de referência</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:12px; padding:18px; margin-bottom:20px;">
+        <div class="section-divider" style="margin-bottom:14px">Lançar Novo Marcador Sanguíneo</div>
+        <div class="form-grid" style="margin-bottom:12px">
+          <div class="form-group">
+            <label class="required">Data do Exame</label>
+            <input type="date" id="exData" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="required">Marcador / Exame</label>
+            <select id="exMarcador" class="form-control" onchange="preencherReferenciaExame(this.value)">
+              <option value="">Selecione o marcador...</option>
+              <option value="Glicemia em Jejum">Glicemia em Jejum</option>
+              <option value="Hemoglobina Glicada (HbA1c)">Hemoglobina Glicada (HbA1c)</option>
+              <option value="Insulina em Jejum">Insulina em Jejum</option>
+              <option value="Colesterol Total">Colesterol Total</option>
+              <option value="Colesterol HDL">Colesterol HDL</option>
+              <option value="Colesterol LDL">Colesterol LDL</option>
+              <option value="Triglicerídeos">Triglicerídeos</option>
+              <option value="Vitamina D (25-OH)">Vitamina D (25-OH)</option>
+              <option value="Vitamina B12">Vitamina B12</option>
+              <option value="Ferritina">Ferritina</option>
+              <option value="TSH">TSH</option>
+              <option value="PCR Ultrassensível">PCR Ultrassensível</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="required">Valor Encontrado</label>
+            <input type="text" id="exValor" class="form-control" placeholder="Ex: 95">
+          </div>
+          <div class="form-group">
+            <label>Unidade</label>
+            <input type="text" id="exUnidade" class="form-control" placeholder="Ex: mg/dL, ng/mL">
+          </div>
+          <div class="form-group">
+            <label>Faixa de Referência Ideal</label>
+            <input type="text" id="exRef" class="form-control" placeholder="Ex: 70 a 99 mg/dL">
+          </div>
+          <div class="form-group">
+            <label>Observação Clínica</label>
+            <input type="text" id="exObs" class="form-control" placeholder="Ex: Paciente em jejum de 12h">
+          </div>
+        </div>
+        <button class="btn" onclick="salvarExameLaboratorialAtend()" style="font-size:.82rem; padding:8px 16px">+ Salvar Marcador</button>
+      </div>
+
+      <div class="section-divider" style="margin-bottom:14px">Histórico de Exames do Paciente</div>
+      <div id="examesListWrap">
+        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+          <thead>
+            <tr style="border-bottom:1.5px solid var(--border-forest); text-align:left; color:var(--sage-light); font-size:0.75rem; text-transform:uppercase;">
+              <th style="padding:10px;">Data</th>
+              <th style="padding:10px;">Marcador</th>
+              <th style="padding:10px;">Resultado</th>
+              <th style="padding:10px;">Referência</th>
+              <th style="padding:10px;">Status</th>
+              <th style="padding:10px; text-align:right;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbExamesBody">
+            <tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Carregando exames do paciente...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- ── TAB SUPLEMENTOS ── -->
   <div class="tab-content" id="tab-suplementos">
     <div class="card">
@@ -650,7 +727,96 @@ async function carregarDados() {
 
   const hoje = new Date();
   document.getElementById('bioDataFmt').value = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
+  document.getElementById('exData').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
   document.getElementById('btnFinalizarTop').disabled = false;
+  carregarExamesLaboratoriaisAtend();
+}
+
+const REFERENCIAS_EXAMES = {
+  "Glicemia em Jejum": { unidade: "mg/dL", ref: "70 a 99 mg/dL" },
+  "Hemoglobina Glicada (HbA1c)": { unidade: "%", ref: "Abaixo de 5.7%" },
+  "Insulina em Jejum": { unidade: "µUI/mL", ref: "2.0 a 10.0 µUI/mL" },
+  "Colesterol Total": { unidade: "mg/dL", ref: "Abaixo de 190 mg/dL" },
+  "Colesterol HDL": { unidade: "mg/dL", ref: "Acima de 50 mg/dL" },
+  "Colesterol LDL": { unidade: "mg/dL", ref: "Abaixo de 100 mg/dL" },
+  "Triglicerídeos": { unidade: "mg/dL", ref: "Abaixo de 150 mg/dL" },
+  "Vitamina D (25-OH)": { unidade: "ng/mL", ref: "30 a 60 ng/mL" },
+  "Vitamina B12": { unidade: "pg/mL", ref: "300 a 900 pg/mL" },
+  "Ferritina": { unidade: "ng/mL", ref: "50 a 200 ng/mL" },
+  "TSH": { unidade: "mUI/L", ref: "0.4 a 4.0 mUI/L" },
+  "PCR Ultrassensível": { unidade: "mg/L", ref: "Abaixo de 1.0 mg/L" }
+};
+
+function preencherReferenciaExame(marcador) {
+  if (REFERENCIAS_EXAMES[marcador]) {
+    document.getElementById('exUnidade').value = REFERENCIAS_EXAMES[marcador].unidade;
+    document.getElementById('exRef').value = REFERENCIAS_EXAMES[marcador].ref;
+  }
+}
+
+async function carregarExamesLaboratoriaisAtend() {
+  if (!PAC_ID) return;
+  const tbody = document.getElementById('tbExamesBody');
+  const res = await apiCall('getExamesLaboratoriais', { paciente_id: PAC_ID });
+  if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+    tbody.innerHTML = res.data.map(ex => `
+      <tr style="border-bottom:1px solid var(--border-forest);">
+        <td style="padding:10px; font-weight:700;">${fmt(ex.data_exame)}</td>
+        <td style="padding:10px; font-weight:800; color:var(--text-title);">${ex.marcador}</td>
+        <td style="padding:10px; font-weight:900; color:var(--sage-light);">${ex.valor} ${ex.unidade||''}</td>
+        <td style="padding:10px; color:var(--text-muted); font-size:0.8rem;">${ex.valor_referencia||'—'}</td>
+        <td style="padding:10px;">
+          <span style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:6px; background:rgba(140,164,129,0.18); color:var(--sage-light); border:1px solid var(--sage-light);">🟢 Registrado</span>
+        </td>
+        <td style="padding:10px; text-align:right;">
+          <button class="btn btn-secondary" onclick="deletarExameLaboratorialAtend('${ex.id}')" style="padding:4px 8px; font-size:0.75rem; color:#f87171;">✕</button>
+        </td>
+      </tr>
+    `).join('');
+  } else {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Nenhum exame cadastrado para este paciente.</td></tr>';
+  }
+}
+
+async function salvarExameLaboratorialAtend() {
+  if (!PAC_ID) { toast('Selecione um paciente', true); return; }
+  const data_exame = document.getElementById('exData').value;
+  const marcador = document.getElementById('exMarcador').value;
+  const valor = document.getElementById('exValor').value;
+
+  if (!data_exame || !marcador || !valor) {
+    toast('Preencha data, marcador e valor encontrado', true);
+    return;
+  }
+
+  const exameObj = {
+    paciente_id: PAC_ID,
+    data_exame: data_exame,
+    marcador: marcador,
+    valor: valor,
+    unidade: document.getElementById('exUnidade').value,
+    valor_referencia: document.getElementById('exRef').value,
+    observacao: document.getElementById('exObs').value
+  };
+
+  const res = await apiCall('saveExameLaboratorial', { exame: exameObj }, 'POST');
+  if (res && res.success) {
+    toast('✅ Marcador salvo com sucesso!');
+    document.getElementById('exValor').value = '';
+    document.getElementById('exObs').value = '';
+    carregarExamesLaboratoriaisAtend();
+  } else {
+    toast('Erro ao salvar exame', true);
+  }
+}
+
+async function deletarExameLaboratorialAtend(id) {
+  if (!confirm('Deseja excluir este exame?')) return;
+  const res = await apiCall('deleteExameLaboratorial', { id }, 'POST');
+  if (res && res.success) {
+    toast('Exame excluído!');
+    carregarExamesLaboratoriaisAtend();
+  }
 }
 
 function renderPacHeader() {

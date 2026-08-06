@@ -224,6 +224,7 @@ body.in-iframe .manager-container { padding-top: 12px !important; }
     <div class="preset-bar">
       <button class="btn-preset" onclick="carregarPreset('hipertrofia')">⚡ Hipertrofia</button>
       <button class="btn-preset" onclick="carregarPreset('emagrecimento')">🔥 Emagrecer</button>
+      <button class="btn-preset" onclick="abrirModalReceitasFit()" style="border-color:var(--sage-light); color:var(--sage-light);">📖 Receitas Fit</button>
       <button class="btn-preset btn-preset-danger" onclick="limparTudo()">🗑️ Limpar</button>
     </div>
 
@@ -807,6 +808,63 @@ window.addEventListener('resize', () => {
     switchMobileTab('form');
   }
 });
+
+function abrirModalReceitasFit() {
+  const m = document.getElementById('modalReceitasFit');
+  if (m) m.style.display = 'flex';
+}
+
+function fecharModalReceitasFit() {
+  const m = document.getElementById('modalReceitasFit');
+  if (m) m.style.display = 'none';
+}
+
+function importarReceitaNoPlano(nome, itens) {
+  refeicoes.push({ nome: nome, kcal: '350 kcal', itens: itens, icone: '📖' });
+  renderInputs();
+  atualizar();
+  fecharModalReceitasFit();
+  toast('✅ Receita "' + nome + '" importada para o plano!');
+}
 </script>
+
+<!-- MODAL DE RECEITAS FIT & PRESETS -->
+<div id="modalReceitasFit" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:28px; width:100%; max-width:540px; box-shadow:0 24px 60px rgba(0,0,0,0.6); display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:12px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:#fff;">📖 Biblioteca de Receitas Fit</div>
+      <button onclick="fecharModalReceitasFit()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto;" id="listReceitasFitModal">
+      <!-- Receita Modelo 1 -->
+      <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:800; color:var(--sage-light);">🥞 Panqueca Proteica de Banana</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">2 ovos + 1 banana + 30g aveia + canela</div>
+        </div>
+        <button class="btn btn-secondary" onclick="importarReceitaNoPlano('Panqueca Proteica de Banana', '2 ovos + 1 banana amassada + 30g de farelo de aveia + canela. Misturar e grelhar na frigideira antiaderente.')" style="font-size:0.75rem; padding:6px 12px;">⚡ Importar</button>
+      </div>
+
+      <!-- Receita Modelo 2 -->
+      <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:800; color:var(--sage-light);">🥤 Shake Pós-Treino Anabólico</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">30g Whey Protein + 200ml água + 100g morangos</div>
+        </div>
+        <button class="btn btn-secondary" onclick="importarReceitaNoPlano('Shake Pós-Treino Anabólico', '30g Whey Protein isolado + 200ml de água de coco + 100g de morangos congelados. Bater no liquidificador.')" style="font-size:0.75rem; padding:6px 12px;">⚡ Importar</button>
+      </div>
+
+      <!-- Receita Modelo 3 -->
+      <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:800; color:var(--sage-light);">🥗 Crepioca Recheada de Frango</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">1 ovo + 2 col de goma de tapioca + 80g frango desfiado</div>
+        </div>
+        <button class="btn btn-secondary" onclick="importarReceitaNoPlano('Crepioca Recheada de Frango', '1 ovo + 2 colheres de goma de tapioca. Misturar, dourar na frigideira e rechear com 80g de frango desfiado temperado.')" style="font-size:0.75rem; padding:6px 12px;">⚡ Importar</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
