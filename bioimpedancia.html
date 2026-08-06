@@ -39,6 +39,10 @@ body { background: var(--forest-deep); color: var(--text-light); font-family: 'P
 
 .btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
 .btn:hover { background: #eef4e5; transform: translateY(-2px); }
+
+/* OCULTA NAVBAR QUANDO EMBUTIDO EM IFRAME */
+body.in-iframe .top-header { display: none !important; }
+body.in-iframe .container { padding-top: 16px !important; }
 </style>
 </head>
 <body>
@@ -120,7 +124,9 @@ async function registrarEvolucao() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
+  if (window.self !== window.top) {
+    document.body.classList.add('in-iframe');
+  } else if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
     window.location.href = "login.html";
     return;
   }

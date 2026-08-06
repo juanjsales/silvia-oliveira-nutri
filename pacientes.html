@@ -44,6 +44,10 @@ table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.8
 th { background: rgba(0,0,0,0.3); padding: 14px 16px; color: var(--sage-light); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-forest); }
 td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-light); }
 tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* OCULTA NAVBAR QUANDO EM EMBUTIDO EM IFRAME */
+body.in-iframe .top-header { display: none !important; }
+body.in-iframe .container { padding-top: 16px !important; }
 </style>
 </head>
 <body>
@@ -154,7 +158,9 @@ async function openPacienteModal() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
+  if (window.self !== window.top) {
+    document.body.classList.add('in-iframe');
+  } else if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
     window.location.href = "login.html";
     return;
   }

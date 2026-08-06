@@ -208,6 +208,10 @@ textarea.form-control { min-height: 115px; resize: vertical; line-height: 1.6; }
     -webkit-column-break-inside: avoid !important;
   }
 }
+
+/* OCULTA NAVBAR QUANDO EMBUTIDO EM IFRAME */
+body.in-iframe .top-header { display: none !important; }
+body.in-iframe .manager-container { padding-top: 16px !important; }
 </style>
 </head>
 <body>
@@ -710,6 +714,9 @@ function calcularMetaVET() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  if (window.self !== window.top) {
+    document.body.classList.add('in-iframe');
+  }
   carregarLocalStorage();
   renderInputs();
   atualizar();
