@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prontuário · Dra. Silvia Lemos</title>
+<meta name="kos-auth-level" content="admin">
+<script src="assets/js/auth-guard.js"></script>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -148,14 +150,6 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
 </head>
 <body>
 
-<header class="top-header">
-  <div class="brand-title">🏥 Prontuário do Atendimento Nutricional</div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
-    <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px" disabled>✅ Finalizar Atendimento</button>
-  </div>
-</header>
-
 <div class="main-container">
 
   <!-- CARD DO PACIENTE -->
@@ -166,7 +160,8 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
       <div class="pac-details" id="pacDetails"></div>
     </div>
     <div class="pac-tags" id="pacTags">
-      <div class="spinner-ring" style="width:18px;height:18px"></div>
+      <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
+      <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px" disabled>✅ Finalizar Atendimento</button>
     </div>
   </div>
 

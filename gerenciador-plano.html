@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gerenciador de Plano Alimentar · Dra. Silvia Lemos Nutricionista</title>
+<meta name="kos-auth-level" content="admin">
+<script src="assets/js/auth-guard.js"></script>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -202,30 +204,6 @@ body.in-iframe .manager-container { padding-top: 12px !important; }
 </style>
 </head>
 <body>
-
-<!-- TOPO HEADER PREMIUM -->
-<header class="top-header no-print">
-  <div class="brand-box">
-    <div class="brand-icon">🥗</div>
-    <div>
-      <div class="brand-name">Gerenciador de Plano Alimentar</div>
-      <div class="brand-crn">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
-    </div>
-  </div>
-
-  <div class="header-actions">
-    <a href="app-nutri.html" class="btn-nav btn-secondary">📊 Dashboard</a>
-    <a href="pacientes.html" class="btn-nav btn-secondary">👤 Pacientes</a>
-    <a href="bioimpedancia.html" class="btn-nav btn-secondary">📈 Bioimpedância</a>
-    <a href="index.html" class="btn-nav btn-secondary">🌐 Ver Site</a>
-    
-    <button class="btn-nav" onclick="window.print()">
-      🖨️ Exportar / Imprimir PDF
-    </button>
-
-    <a href="login.html" class="btn-nav btn-secondary" style="color:#f87171;" onclick="sessionStorage.clear()">🚪 Sair</a>
-  </div>
-</header>
 
 <!-- SELETOR DE ABAS RESPONSIVO (DESKTOP & MOBILE & IFRAME) -->
 <div class="mobile-tabs no-print">

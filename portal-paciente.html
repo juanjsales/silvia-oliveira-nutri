@@ -4,406 +4,1137 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Portal do Paciente · Dra. Silvia Lemos Nutricionista</title>
+<meta name="kos-auth-level" content="paciente">
+<script src="assets/js/auth-guard.js"></script>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root, [data-theme="dark"] {
-  --bg-deep: #0e1a12;
-  --bg-card: #182a1f;
-  --bg-header: #203528;
-  --text-primary: #eef4e5;
+  --bg-deep: #09130b;
+  --bg-card: #122116;
+  --bg-header: #172a1d;
+  --text-primary: #f0f5eb;
   --text-title: #ffffff;
-  --text-muted: #a0b399;
-  --border-forest: rgba(140, 164, 129, 0.25);
+  --text-muted: #8ea488;
+  --text-light: #cde0cc;
+  --border-forest: rgba(140, 164, 129, 0.22);
   --sage-light: #8ca481;
-  --sage-dim: rgba(140, 164, 129, 0.2);
-  --paper-bg: #f8faf6;
-  --text-dark: #192b20;
-  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  --radius: 20px;
+  --sage-accent: #a1bc95;
+  --sage-dim: rgba(140, 164, 129, 0.15);
+  --sage-glow: rgba(140, 164, 129, 0.35);
+  --gold-accent: #e2b857;
+  --gold-dim: rgba(226, 184, 87, 0.15);
+  --card-inner: rgba(0, 0, 0, 0.3);
+  --tr: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --shadow: 0 16px 40px rgba(0,0,0,0.45);
 }
 
 [data-theme="light"] {
-  --bg-deep: #f3f6f1;
+  --bg-deep: #f1f6ef;
   --bg-card: #ffffff;
-  --bg-header: #e6ede0;
-  --text-primary: #1c2e22;
-  --text-title: #142419;
-  --text-muted: #57695b;
-  --border-forest: #d1ded0;
-  --sage-light: #486640;
-  --sage-dim: rgba(72, 102, 64, 0.12);
-  --paper-bg: #ffffff;
-  --text-dark: #142419;
+  --bg-header: #e1ebd9;
+  --text-primary: #192d1d;
+  --text-title: #0f1f13;
+  --text-muted: #536857;
+  --text-light: #2c4431;
+  --border-forest: #c7d8c5;
+  --sage-light: #416238;
+  --sage-accent: #324e2a;
+  --sage-dim: rgba(65, 98, 56, 0.12);
+  --sage-glow: rgba(65, 98, 56, 0.25);
+  --gold-accent: #b8860b;
+  --gold-dim: rgba(184, 134, 11, 0.12);
+  --card-inner: #f6faf4;
+  --shadow: 0 12px 30px rgba(0,0,0,0.07);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg-deep); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; transition: background 0.3s ease, color 0.3s ease; }
-.section-card { background: var(--bg-card); border-color: var(--border-forest); }
-.app-header { background: var(--bg-header); border-color: var(--border-forest); }
-.section-title, .patient-name { color: var(--text-title); }
-
-/* TELA DE LOGIN */
-.login-overlay { position: fixed; inset: 0; background: var(--forest-deep); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.login-card { background: var(--forest-card); border: 1.5px solid var(--sage-light); border-radius: 28px; padding: 36px 28px; width: 100%; max-width: 400px; text-align: center; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-.login-logo { width: 60px; height: 60px; background: var(--sage-dim); border: 1.5px solid var(--sage-light); border-radius: 50%; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-.login-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #fff; }
-
-.form-group { display: flex; flex-direction: column; gap: 6px; text-align: left; }
-.form-group label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
-.form-control { background: rgba(0,0,0,0.3); border: 1px solid var(--border-forest); padding: 14px 18px; border-radius: 12px; color: #fff; font-family: inherit; font-size: 0.95rem; outline: none; transition: var(--tr); }
-.form-control:focus { border-color: var(--sage-light); }
-
-.btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 14px; border-radius: 12px; font-family: inherit; font-weight: 900; font-size: 0.95rem; cursor: pointer; transition: var(--tr); width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-.btn:hover { background: #9bb590; transform: translateY(-1px); }
-
-/* LAYOUT PRINCIPAL DO PACIENTE */
-.app-header { background: var(--forest-dark); border-bottom: 1px solid var(--border-forest); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; sticky: top; z-index: 100; }
-.app-brand { display: flex; align-items: center; gap: 10px; }
-.app-user-info { text-align: right; }
-.patient-name { font-weight: 800; font-size: 0.95rem; color: #fff; }
-.patient-tag { font-size: 0.72rem; color: var(--sage-light); font-weight: 700; }
-
-.container { max-width: 600px; width: 100%; margin: 0 auto; padding: 24px 16px 100px; display: flex; flex-direction: column; gap: 24px; }
-
-.section-card { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-.section-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
-
-/* CARD DE PRÓXIMA CONSULTA */
-.appointment-banner { background: linear-gradient(135deg, var(--forest-dark) 0%, #15271c 100%); border: 1.5px solid var(--sage-light); border-radius: var(--radius); padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-.ap-date { font-size: 1.2rem; font-weight: 900; color: #fff; }
-.ap-type { font-size: 0.8rem; color: var(--sage-light); font-weight: 700; }
-
-/* BARRA DE NAVEGAÇÃO INFERIOR PARA MOBILE */
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--forest-dark); border-top: 1px solid var(--border-forest); height: 65px; display: flex; justify-content: space-around; align-items: center; z-index: 200; }
-.bnav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
-.bnav-item.active, .bnav-item:hover { color: var(--sage-light); }
-.bnav-icon { font-size: 1.2rem; }
-
-html, body { overflow-x: hidden; width: 100%; max-width: 100vw; }
-
-@media (max-width: 500px) {
-  .appointment-banner { flex-direction: column; gap: 12px; align-items: flex-start; }
-  .appointment-banner .btn { width: 100%; text-align: center; justify-content: center; }
-  .container { padding: 16px 12px 100px; }
-  .section-card { padding: 18px 14px; }
-  .app-header { padding: 12px 16px; }
-  .patient-name { font-size: 0.85rem; }
+html, body { overflow-x: hidden; width: 100%; max-width: 100vw; scroll-behavior: smooth; }
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* IMPRESSÃO DO PLANO */
+/* HEADER FIXO LUXUOSO */
+.app-header {
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-forest);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.app-brand { display: flex; align-items: center; gap: 12px; }
+.brand-avatar {
+  width: 44px; height: 44px;
+  background: var(--sage-dim);
+  border: 1.5px solid var(--sage-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 0 16px var(--sage-glow);
+}
+.brand-title-hdr { font-weight: 800; font-size: 0.98rem; color: var(--text-title); letter-spacing: -0.01em; }
+.brand-sub-hdr { font-size: 0.73rem; color: var(--sage-light); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+.brand-sub-hdr:hover { text-decoration: underline; }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+.btn-hdr-action {
+  background: var(--sage-dim);
+  border: 1px solid var(--border-forest);
+  color: var(--sage-light);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: var(--tr);
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-hdr-action:hover { background: var(--sage-light); color: var(--bg-deep); }
+
+.user-profile-badge {
+  text-align: right;
+  padding-left: 10px;
+  border-left: 1px solid var(--border-forest);
+}
+.patient-name-txt { font-weight: 800; font-size: 0.92rem; color: var(--text-title); }
+.btn-logout-link { font-size: 0.72rem; color: #f87171; text-decoration: none; font-weight: 700; cursor: pointer; }
+.btn-logout-link:hover { text-decoration: underline; }
+
+/* CONTAINER PRINCIPAL */
+.container {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 16px 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* CARTÃO BOAS-VINDAS MEMORÁVEL */
+.welcome-hero {
+  background: linear-gradient(135deg, rgba(18, 33, 22, 0.95) 0%, rgba(25, 45, 30, 0.95) 100%);
+  border: 1.5px solid var(--border-forest);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.welcome-glow {
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, var(--sage-glow) 0%, rgba(0,0,0,0) 70%);
+  pointer-events: none;
+}
+.welcome-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-accent);
+  color: var(--gold-accent);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+.welcome-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--text-title); margin-bottom: 6px; }
+.welcome-quote { font-style: italic; font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; max-width: 520px; }
+
+.streak-badge {
+  background: var(--sage-dim);
+  border: 1.5px solid var(--sage-light);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 8px 20px var(--sage-glow);
+}
+.streak-count { font-size: 1.8rem; font-weight: 900; color: var(--text-title); display: flex; align-items: center; gap: 4px; }
+.streak-lbl { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+
+/* ANEL DE ADERÊNCIA DIÁRIA (DAILY ADHERENCE SCORE) */
+.score-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.score-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-forest);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.score-ring-wrap { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
+.score-ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.score-ring-bg { fill: none; stroke: var(--sage-dim); stroke-width: 7; }
+.score-ring-fill { fill: none; stroke: var(--sage-light); stroke-width: 7; stroke-dasharray: 220; stroke-dashoffset: 60; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+.score-ring-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; color: var(--text-title); }
+.score-info-title { font-weight: 800; font-size: 1rem; color: var(--text-title); margin-bottom: 4px; }
+.score-info-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+
+/* SEÇÃO CARDS */
+.section-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-forest);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: var(--tr);
+}
+.section-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-forest);
+  padding-bottom: 14px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-title);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* METAS MACRO */
+.macros-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+.macro-box {
+  background: var(--card-inner);
+  border: 1px solid var(--border-forest);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: var(--tr);
+}
+.macro-box:hover { border-color: var(--sage-light); transform: translateY(-2px); }
+.macro-num { font-size: 1.3rem; font-weight: 900; color: var(--text-title); }
+.macro-lbl { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+
+/* WIDGET HIDRATAÇÃO 2.0 */
+.water-widget {
+  background: linear-gradient(135deg, rgba(16, 37, 56, 0.4) 0%, rgba(10, 24, 38, 0.5) 100%);
+  border: 1.5px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.water-hdr-row { display: flex; justify-content: space-between; align-items: center; }
+.water-lbl { font-weight: 800; font-size: 0.95rem; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+.water-val { font-size: 0.9rem; font-weight: 800; color: #e0f2fe; }
+.water-bar-track {
+  width: 100%; height: 16px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+.water-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%);
+  border-radius: 12px;
+  transition: width 0.4s ease;
+}
+.water-btn-group { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.btn-water-action {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1.5px solid #38bdf8;
+  color: #e0f2fe;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.btn-water-action:hover { background: #38bdf8; color: #082f49; transform: translateY(-1px); }
+
+/* MEAL TIMELINE & CARDS */
+.meals-timeline { display: flex; flex-direction: column; gap: 16px; }
+.meal-card-v2 {
+  background: var(--card-inner);
+  border: 1px solid var(--border-forest);
+  border-left: 5px solid var(--sage-light);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: var(--tr);
+}
+.meal-card-v2.completed {
+  opacity: 0.7;
+  border-left-color: #34d399;
+  background: rgba(52, 211, 153, 0.06);
+}
+.meal-v2-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.meal-v2-time { font-size: 0.75rem; font-weight: 800; color: var(--gold-accent); background: var(--gold-dim); padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+.meal-v2-name { font-weight: 800; font-size: 1.05rem; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
+.meal-check-btn {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.8rem; font-weight: 800; color: var(--sage-light);
+  cursor: pointer; user-select: none;
+  background: var(--sage-dim); border: 1px solid var(--border-forest);
+  padding: 6px 12px; border-radius: 10px; transition: var(--tr);
+}
+.meal-check-btn:hover { background: var(--sage-light); color: var(--bg-deep); }
+.meal-check-btn input { width: 16px; height: 16px; accent-color: var(--sage-light); cursor: pointer; }
+
+.meal-items-text { font-size: 0.92rem; color: var(--text-light); line-height: 1.6; white-space: pre-line; }
+
+.subst-box-v2 {
+  display: none;
+  background: rgba(0,0,0,0.3);
+  border-left: 3px solid var(--gold-accent);
+  padding: 12px 16px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+.btn-subst-trigger {
+  background: transparent; border: none;
+  color: var(--sage-light); font-size: 0.78rem; font-weight: 800;
+  cursor: pointer; display: flex; align-items: center; gap: 6px; width: fit-content;
+}
+.btn-subst-trigger:hover { text-decoration: underline; }
+
+/* LISTA DE COMPRAS INTERATIVA - MODOS */
+.shopping-mode-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.shop-tab {
+  background: var(--card-inner);
+  border: 1px solid var(--border-forest);
+  color: var(--text-muted);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.shop-tab.active { background: var(--sage-light); color: var(--bg-deep); border-color: var(--sage-light); }
+
+.shopping-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.shop-cat-box {
+  background: var(--card-inner);
+  border: 1px solid var(--border-forest);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.shop-cat-title {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--sage-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px dashed var(--border-forest);
+  padding-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.shop-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+  cursor: pointer;
+  user-select: none;
+  padding: 6px;
+  border-radius: 8px;
+  transition: var(--tr);
+}
+.shop-item-row:hover { background: rgba(255,255,255,0.03); }
+.shop-item-row input { width: 18px; height: 18px; accent-color: var(--sage-light); cursor: pointer; }
+.shop-item-row.checked span { text-decoration: line-through; opacity: 0.45; }
+
+/* EVOLUÇÃO GRÁFICOS */
+.chart-container-wrap { height: 300px; position: relative; width: 100%; }
+
+/* HÁBITOS E ROTINA */
+.habits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.habit-card {
+  background: var(--card-inner);
+  border: 1px solid var(--border-forest);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--tr);
+}
+.habit-card:hover { border-color: var(--sage-light); }
+.habit-card.checked { border-color: var(--sage-light); background: rgba(140, 164, 129, 0.12); }
+.habit-icon { font-size: 1.4rem; }
+.habit-title { font-size: 0.85rem; font-weight: 800; color: var(--text-title); }
+.habit-sub { font-size: 0.72rem; color: var(--text-muted); }
+
+/* BOTÕES DE AÇÃO */
+.btn-main {
+  background: var(--sage-light);
+  color: var(--bg-deep);
+  border: none;
+  padding: 14px 22px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px var(--sage-glow);
+}
+.btn-main:hover { background: var(--sage-accent); transform: translateY(-2px); }
+.btn-sec {
+  background: transparent;
+  border: 1.5px solid var(--border-forest);
+  color: var(--text-primary);
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--tr);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  text-decoration: none;
+}
+.btn-sec:hover { border-color: var(--sage-light); color: var(--sage-light); background: var(--sage-dim); }
+
+/* NAVEGAÇÃO INFERIOR PWA MOBILE */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg-header);
+  border-top: 1px solid var(--border-forest);
+  height: 68px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 200;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.bnav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.bnav-btn.active, .bnav-btn:hover { color: var(--sage-light); transform: translateY(-2px); }
+.bnav-icon-txt { font-size: 1.35rem; }
+
+@media (max-width: 650px) {
+  .welcome-hero { flex-direction: column; text-align: center; align-items: center; }
+  .welcome-quote { max-width: 100%; }
+  .score-card { flex-direction: column; text-align: center; }
+  .container { padding: 16px 12px 105px; gap: 18px; }
+  .section-card { padding: 18px 14px; }
+  .app-header { padding: 10px 14px; }
+}
+
 @media print {
-  .app-header, .bottom-nav, .no-print { display: none !important; }
+  .app-header, .bottom-nav, .no-print, .btn-main, .btn-sec, .btn-subst-trigger { display: none !important; }
   body { background: #fff !important; color: #000 !important; }
-  .section-card { border: none !important; background: transparent !important; padding: 0 !important; }
+  .section-card { border: none !important; background: transparent !important; padding: 0 !important; box-shadow: none !important; }
+  .meal-card-v2 { border: 1px solid #ccc !important; color: #000 !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN DO PACIENTE -->
-<div class="login-overlay" id="loginOverlay">
-  <div class="login-card">
-    <div class="login-logo">🌿</div>
-    <div>
-      <div class="login-title">Portal do Paciente</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Dra. Silvia de Oliveira Lemos Nutricionista</div>
-    </div>
-
-    <form onsubmit="realizarLogin(event)" style="display:flex; flex-direction:column; gap:16px;">
-      <div class="form-group">
-        <label>Seu CPF ou E-mail</label>
-        <input type="text" class="form-control" id="loginCPF" placeholder="000.000.000-00 ou email@exemplo.com" value="123.456.789-00" required>
-      </div>
-
-      <div class="form-group">
-        <label>Sua Senha de Acesso (PIN)</label>
-        <input type="password" class="form-control" id="loginPIN" placeholder="Digite sua senha de 6 dígitos" value="123456" required>
-      </div>
-
-      <button type="submit" class="btn" style="margin-top:8px;">🔑 Entrar no Portal</button>
-    </form>
-
-    <div style="font-size:0.75rem; color:var(--text-muted);">
-      🔒 Acesso seguro e restrito conforme a LGPD.
-    </div>
-  </div>
-</div>
-
-<!-- CABEÇALHO -->
+<!-- CABEÇALHO LUXUOSO FIXO -->
 <header class="app-header">
   <div class="app-brand">
-    <div style="width:36px; height:36px; background:var(--sage-dim); border:1px solid var(--sage-light); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;">🌿</div>
+    <div class="brand-avatar">🌿</div>
     <div>
-      <div style="font-weight:800; font-size:0.9rem; color:#fff;">Dra. Silvia Lemos</div>
-      <a href="index.html" style="font-size:0.72rem; color:var(--sage-light); text-decoration:none; font-weight:700;">🌐 Voltar ao Site</a>
+      <div class="brand-title-hdr">Dra. Silvia Lemos</div>
+      <a href="index.html" class="brand-sub-hdr">🌐 Voltar ao Site Principal</a>
     </div>
   </div>
 
-  <div class="app-user-info" style="display:flex; align-items:center; gap:12px;">
-    <button onclick="abrirModalTrocarSenha()" style="background:var(--sage-dim); border:1px solid var(--border-forest); color:var(--sage-light); padding:6px 12px; border-radius:8px; font-weight:700; font-size:0.75rem; cursor:pointer;">
-      🔑 Alterar Senha
+  <div class="header-right">
+    <button onclick="abrirModalTrocarSenha()" class="btn-hdr-action">
+      🔑 <span style="display:none; @media(min-width:500px){display:inline}">Senha</span>
     </button>
-    <button onclick="toggleTheme()" id="btnThemeToggle" style="background:var(--sage-dim); border:1px solid var(--border-forest); color:var(--sage-light); padding:6px 12px; border-radius:8px; font-weight:700; font-size:0.75rem; cursor:pointer;">
-      🌙 Tema
+    <button onclick="toggleTheme()" id="btnThemeToggle" class="btn-hdr-action">
+      🌙 <span style="display:none; @media(min-width:500px){display:inline}">Tema</span>
     </button>
-    <div style="text-align:right;">
-      <div class="patient-name" id="dispNome">Juliana Mendes</div>
-      <a href="login.html" style="font-size:0.72rem; color:#f87171; text-decoration:none; font-weight:700;" onclick="sessionStorage.clear()">🚪 Sair</a>
+    <div class="user-profile-badge">
+      <div class="patient-name-txt" id="dispNome">Juliana Mendes</div>
+      <span class="btn-logout-link" onclick="window.kosLogout()">🚪 Sair</span>
     </div>
   </div>
 </header>
 
-<!-- CONTEÚDO PRINCIPAL -->
+<!-- CONTEÚDO PRINCIPAL DO PORTAL -->
 <main class="container">
   
-  <!-- BANNER PRÓXIMA CONSULTA -->
-  <div class="appointment-banner">
+  <!-- BOAS-VINDAS MEMORÁVEL -->
+  <div class="welcome-hero">
+    <div class="welcome-glow"></div>
     <div>
-      <div class="ap-type">Próxima Consulta Agendada</div>
-      <div class="ap-date">10 de Agosto às 14:00</div>
-      <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">Online via Google Meet</div>
+      <div class="welcome-tag">✨ Seu Portal de Saúde &amp; Nutrição</div>
+      <h1 class="welcome-title" id="welcomeHeading">Bom dia, Juliana! 👋</h1>
+      <p class="welcome-quote" id="dailyQuote">"Nutrir o corpo com comida de verdade é o ato mais puro de amor-próprio."</p>
     </div>
-    <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20confirmar%20minha%20consulta%20do%20dia%2010." target="_blank" class="btn" style="width:auto; padding:10px 14px; font-size:0.8rem;">
-      💬 WhatsApp
-    </a>
+
+    <!-- SEQUÊNCIA NO FOCO (STREAK) -->
+    <div class="streak-badge">
+      <div class="streak-count">🔥 <span id="streakDays">7</span></div>
+      <div class="streak-lbl">Dias Consecutivos</div>
+    </div>
   </div>
 
-  <!-- SEÇÃO 1: PLANO ALIMENTAR VIGENTE -->
+  <!-- DASHBOARD DE ADERÊNCIA E METAS -->
+  <div class="score-dashboard">
+    <!-- ANEL DE ADERÊNCIA -->
+    <div class="score-card">
+      <div class="score-ring-wrap">
+        <svg class="score-ring-svg" viewBox="0 0 80 80">
+          <circle class="score-ring-bg" cx="40" cy="40" r="35"></circle>
+          <circle class="score-ring-fill" id="scoreRingFill" cx="40" cy="40" r="35"></circle>
+        </svg>
+        <div class="score-ring-val" id="scoreRingText">75%</div>
+      </div>
+      <div>
+        <div class="score-info-title">Aderência Diária</div>
+        <div class="score-info-desc">Acompanhe seu cumprimento das refeições, hidratação e hábitos hoje.</div>
+      </div>
+    </div>
+
+    <!-- CONSULTA AGENDADA -->
+    <div class="score-card" style="border-color: var(--sage-light);">
+      <div style="font-size:2.2rem; flex-shrink:0;">📅</div>
+      <div style="flex:1;">
+        <div style="font-size:0.75rem; font-weight:800; color:var(--gold-accent); text-transform:uppercase;">Próxima Consulta</div>
+        <div style="font-size:1.1rem; font-weight:900; color:var(--text-title);" id="apDateText">10 de Agosto às 14:00</div>
+        <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20confirmar%20minha%20consulta." target="_blank" style="font-size:0.78rem; color:var(--sage-light); font-weight:800; text-decoration:none; margin-top:4px; display:inline-block;">
+          💬 Confirmar via WhatsApp →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 1: RASTREADOR DE HÁBITOS DIÁRIOS -->
+  <section class="section-card">
+    <div class="section-hdr">
+      <div class="section-title">
+        <span>✅</span> Checklist de Hábitos da Nutri
+      </div>
+      <span style="font-size:0.78rem; color:var(--sage-light); font-weight:800;" id="habitsStatus">0/4 concluídos</span>
+    </div>
+
+    <div class="habits-grid">
+      <div class="habit-card" id="habit-1" onclick="toggleHabit('habit-1')">
+        <span class="habit-icon">💊</span>
+        <div>
+          <div class="habit-title">Manipulados / Suplementos</div>
+          <div class="habit-sub">Tomar conforme prescrição</div>
+        </div>
+      </div>
+
+      <div class="habit-card" id="habit-2" onclick="toggleHabit('habit-2')">
+        <span class="habit-icon">🏃‍♀️</span>
+        <div>
+          <div class="habit-title">Atividade Física</div>
+          <div class="habit-sub">Mínimo 30 minutos hoje</div>
+        </div>
+      </div>
+
+      <div class="habit-card" id="habit-3" onclick="toggleHabit('habit-3')">
+        <span class="habit-icon">😴</span>
+        <div>
+          <div class="habit-title">Sono Reparador</div>
+          <div class="habit-sub">7+ horas de descanso</div>
+        </div>
+      </div>
+
+      <div class="habit-card" id="habit-4" onclick="toggleHabit('habit-4')">
+        <span class="habit-icon">🧘</span>
+        <div>
+          <div class="habit-title">Momento Desconexão</div>
+          <div class="habit-sub">Respiração ou caminhada</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 2: PLANO ALIMENTAR & METAS MACRO -->
   <section class="section-card" id="secPlano">
-    <div class="section-title">
-      <span>🥗</span> Seu Plano Alimentar Vigente
+    <div class="section-hdr">
+      <div class="section-title">
+        <span>🥗</span> Seu Plano Alimentar Personalizado
+      </div>
+      <button class="btn-sec" onclick="window.print()" style="padding:6px 14px; font-size:0.78rem;">
+        📥 PDF do Plano
+      </button>
     </div>
 
-    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-forest); padding: 16px; border-radius: 14px; font-size: 0.88rem; line-height: 1.6;">
-      <strong style="color: var(--sage-light);">Meta Diária:</strong> 1800 kcal (130g Proteínas | 180g Carbos | 55g Gorduras)<br>
-      <strong style="color: var(--sage-light);">Meta de Água:</strong> 2.3 Litros / dia
+    <!-- METAS MACRO -->
+    <div class="macros-row">
+      <div class="macro-box">
+        <span class="macro-lbl">Calorias</span>
+        <span class="macro-num">1.800 kcal</span>
+      </div>
+      <div class="macro-box">
+        <span class="macro-lbl">Proteínas</span>
+        <span class="macro-num">130g</span>
+      </div>
+      <div class="macro-box">
+        <span class="macro-lbl">Carboidratos</span>
+        <span class="macro-num">180g</span>
+      </div>
+      <div class="macro-box">
+        <span class="macro-lbl">Gorduras</span>
+        <span class="macro-num">55g</span>
+      </div>
     </div>
 
-    <div style="display:flex; flex-direction:column; gap:14px; margin-top:8px;">
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-forest); padding:16px; border-radius:14px;">
-        <div style="font-weight:800; color:var(--sage-light); margin-bottom:6px;">🍳 Café da Manhã (08:00)</div>
-        <p style="font-size:0.88rem; color:var(--text-light); line-height:1.6;">
-          • 2 ovos mexidos temperados com orégano.<br>
-          • 1 fatia de pão integral 100% com requeijão light.<br>
-          • 1 xícara de café preto sem açúcar.
-        </p>
+    <!-- WIDGET HIDRATAÇÃO -->
+    <div class="water-widget">
+      <div class="water-hdr-row">
+        <div class="water-lbl">💧 Meta Diária de Hidratação</div>
+        <div class="water-val" id="waterValText">0 / 2300 ml</div>
+      </div>
+      <div class="water-bar-track">
+        <div class="water-bar-fill" id="waterBarFill"></div>
+      </div>
+      <div class="water-btn-group">
+        <button class="btn-water-action" onclick="addWater(-250)">- 250ml</button>
+        <button class="btn-water-action" onclick="addWater(250)">+ 1 Copo (250ml)</button>
+        <button class="btn-water-action" onclick="addWater(500)">+ Garrafa (500ml)</button>
+      </div>
+    </div>
+
+    <!-- TIMELINE DE REFEIÇÕES -->
+    <div class="meals-timeline">
+      <!-- Refeição 1 -->
+      <div class="meal-card-v2" id="meal-1">
+        <div class="meal-v2-header">
+          <div class="meal-v2-name">🍳 Café da Manhã</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="meal-v2-time">08:00</span>
+            <label class="meal-check-btn">
+              <input type="checkbox" onchange="toggleMeal('meal-1')">
+              <span>Concluir</span>
+            </label>
+          </div>
+        </div>
+        <div class="meal-items-text">
+• 2 ovos mexidos temperados com orégano e pitada de sal rosa.
+• 1 fatia de pão integral 100% (ou 1 tapioca de 30g).
+• 1 colher de chá de requeijão light ou creme de ricota.
+• 1 xícara de café preto sem açúcar.
+        </div>
+        <button class="btn-subst-trigger" onclick="toggleSubst('sub-1')">🔄 Opções de Substituição</button>
+        <div class="subst-box-v2" id="sub-1">
+          <strong>Substituições permitidas pela Dra. Silvia:</strong><br>
+          • Ovos ➔ 30g de queijo minas frescal grelhado.<br>
+          • Pão ➔ 100g de mandioca cozida ou batata doce.
+        </div>
       </div>
 
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-forest); padding:16px; border-radius:14px;">
-        <div style="font-weight:800; color:var(--sage-light); margin-bottom:6px;">🥗 Almoço (12:30) - Regra 50/25/25</div>
-        <p style="font-size:0.88rem; color:var(--text-light); line-height:1.6;">
-          • <strong>50% Salada/Folhas:</strong> Alface, rúcula e tomate.<br>
-          • <strong>25% Proteína:</strong> 120g filé de frango grelhado.<br>
-          • <strong>25% Carboidrato:</strong> 3 colheres de arroz integral + feijão.
-        </p>
+      <!-- Refeição 2 -->
+      <div class="meal-card-v2" id="meal-2">
+        <div class="meal-v2-header">
+          <div class="meal-v2-name">🥗 Almoço (Regra do Prato 50/25/25)</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="meal-v2-time">12:30</span>
+            <label class="meal-check-btn">
+              <input type="checkbox" onchange="toggleMeal('meal-2')">
+              <span>Concluir</span>
+            </label>
+          </div>
+        </div>
+        <div class="meal-items-text">
+• <strong>50% Folhas/Verduras:</strong> Alface crespa, rúcula, tomate e pepino à vontade com azeite de oliva.
+• <strong>25% Proteína Magra:</strong> 120g de filé de frango grelhado ou patinho moído.
+• <strong>25% Carboidrato:</strong> 3 colheres de sopa de arroz integral + 1 concha de feijão.
+        </div>
+        <button class="btn-subst-trigger" onclick="toggleSubst('sub-2')">🔄 Opções de Substituição</button>
+        <div class="subst-box-v2" id="sub-2">
+          <strong>Substituições permitidas pela Dra. Silvia:</strong><br>
+          • Frango ➔ 130g de filé de tilápia assada ou peixe branco.<br>
+          • Arroz ➔ 120g de batata inglesa assada ou mandioca.
+        </div>
+      </div>
+
+      <!-- Refeição 3 -->
+      <div class="meal-card-v2" id="meal-3">
+        <div class="meal-v2-header">
+          <div class="meal-v2-name">🍎 Lanche da Tarde</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="meal-v2-time">16:00</span>
+            <label class="meal-check-btn">
+              <input type="checkbox" onchange="toggleMeal('meal-3')">
+              <span>Concluir</span>
+            </label>
+          </div>
+        </div>
+        <div class="meal-items-text">
+• 1 maçã (ou banana) fatiada com 1 colher de sopa de farelo de aveia.
+• 10 unidades de castanha de caju ou nozes.
+• 1 copo (200ml) de iogurte natural desnatado.
+        </div>
+        <button class="btn-subst-trigger" onclick="toggleSubst('sub-3')">🔄 Opções de Substituição</button>
+        <div class="subst-box-v2" id="sub-3">
+          <strong>Substituições permitidas pela Dra. Silvia:</strong><br>
+          • Iogurte + Aveia ➔ 1 scoop de Whey Protein batido com morangos e água.
+        </div>
+      </div>
+
+      <!-- Refeição 4 -->
+      <div class="meal-card-v2" id="meal-4">
+        <div class="meal-v2-header">
+          <div class="meal-v2-name">🍲 Jantar Leve</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="meal-v2-time">19:30</span>
+            <label class="meal-check-btn">
+              <input type="checkbox" onchange="toggleMeal('meal-4')">
+              <span>Concluir</span>
+            </label>
+          </div>
+        </div>
+        <div class="meal-items-text">
+• Omelete especial com 2 ovos, tomate picado, espinafre e queijo minas.
+• Salada de folhas verdes à vontade.
+        </div>
+        <button class="btn-subst-trigger" onclick="toggleSubst('sub-4')">🔄 Opções de Substituição</button>
+        <div class="subst-box-v2" id="sub-4">
+          <strong>Substituições permitidas pela Dra. Silvia:</strong><br>
+          • Omelete ➔ Sopa caseira de legumes com peito de frango desfiado.
+        </div>
       </div>
     </div>
-
-    <button class="btn" onclick="window.print()" style="margin-top:10px;">
-      📥 Baixar / Imprimir Plano em PDF
-    </button>
   </section>
 
-  <!-- SEÇÃO 2: LISTA DE COMPRAS INTEGRADA -->
+  <!-- SEÇÃO 3: LISTA DE COMPRAS SUPERMERCADO PWA -->
   <section class="section-card" id="secCompras">
-    <div class="section-title">
-      <span>🛒</span> Sua Lista de Compras Categorizada
+    <div class="section-hdr">
+      <div class="section-title">
+        <span>🛒</span> Lista de Compras Interativa
+      </div>
+      <button class="btn-sec" onclick="copiarLista()" style="padding:6px 12px; font-size:0.78rem;">
+        📋 Copiar para WhatsApp
+      </button>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:0.85rem; line-height:1.6;">
-      <div style="background:rgba(0,0,0,0.2); padding:14px; border-radius:12px;">
-        <strong style="color:var(--sage-light); display:block; margin-bottom:4px;">🥬 Hortifrúti:</strong>
-        • Alface crespa<br>• Rúcula &amp; Tomate<br>• Pepino &amp; Bananas
+    <!-- MODO DE VISUALIZAÇÃO DA LISTA -->
+    <div class="shopping-mode-tabs">
+      <button class="shop-tab active" onclick="filterShopping('all')">Todos os Itens</button>
+      <button class="shop-tab" onclick="filterShopping('pending')">⏳ Pendentes</button>
+      <button class="shop-tab" onclick="filterShopping('checked')">✅ Comprados</button>
+    </div>
+
+    <div class="shopping-grid-v2">
+      <!-- Hortifrúti -->
+      <div class="shop-cat-box">
+        <div class="shop-cat-title">
+          <span>🥬 Hortifrúti &amp; Frutas</span>
+        </div>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Alface crespa &amp; Rúcula</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Tomate &amp; Pepino</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Maçãs e Bananas</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Espinafre fresco</span>
+        </label>
       </div>
 
-      <div style="background:rgba(0,0,0,0.2); padding:14px; border-radius:12px;">
-        <strong style="color:var(--sage-light); display:block; margin-bottom:4px;">🥩 Proteínas &amp; Ovos:</strong>
-        • Ovos caipiras (2 dúzias)<br>• Filé de frango (1kg)<br>• Patinho moído
+      <!-- Proteínas -->
+      <div class="shop-cat-box">
+        <div class="shop-cat-title">
+          <span>🥩 Proteínas &amp; Laticínios</span>
+        </div>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Ovos Caipiras (2 Dúzias)</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Filé de Frango (1.5kg)</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Patinho moído (1kg)</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Iogurte Natural Desnatado</span>
+        </label>
+      </div>
+
+      <!-- Grãos e Secos -->
+      <div class="shop-cat-box">
+        <div class="shop-cat-title">
+          <span>🌾 Mercearia &amp; Oleaginosas</span>
+        </div>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Arroz Integral &amp; Feijão</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Farelo de Aveia</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Azeite de Oliva Extra Virgem</span>
+        </label>
+        <label class="shop-item-row" onclick="toggleShopRow(this)">
+          <input type="checkbox"> <span>Castanhas de Caju</span>
+        </label>
       </div>
     </div>
   </section>
 
-  <!-- SEÇÃO 3: EVOLUÇÃO CORPORAL -->
+  <!-- SEÇÃO 4: EVOLUÇÃO CORPORAL E GRÁFICOS -->
   <section class="section-card" id="secEvolucao">
-    <div class="section-title">
-      <span>📈</span> Sua Evolução Corporal
+    <div class="section-hdr">
+      <div class="section-title">
+        <span>📈</span> Sua Evolução Corporal
+      </div>
+      <span style="font-size:0.8rem; color:var(--sage-light); font-weight:800;">-5.7kg desde o início 🎉</span>
     </div>
 
-    <div style="height:250px; position:relative;">
+    <div class="chart-container-wrap">
       <canvas id="chartEvolucaoPaciente"></canvas>
     </div>
   </section>
 
+  <!-- SUPORTE E CONTATO DIRETO -->
+  <div style="text-align:center; background:var(--bg-card); border:1.5px solid var(--border-forest); padding:28px; border-radius:var(--radius-lg); display:flex; flex-direction:column; align-items:center; gap:12px; box-shadow:var(--shadow);">
+    <div style="font-size:2rem;">💬</div>
+    <div style="font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:var(--text-title);">Precisa de ajuda com a sua dieta?</div>
+    <p style="font-size:0.88rem; color:var(--text-muted); max-width:480px; line-height:1.5;">A Dra. Silvia Lemos e sua equipe estão à disposição para tirar dúvidas sobre substituições, suplementação e ajustes na sua rotina.</p>
+    <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Estou%20com%20uma%20d%C3%BAvida%20sobre%20meu%20plano%20alimentar." target="_blank" class="btn-main" style="margin-top:6px;">
+      📱 Falar no WhatsApp da Dra. Silvia
+    </a>
+  </div>
+
 </main>
 
-<!-- NAVEGAÇÃO INFERIOR PARA MOBILE -->
+<!-- NAVEGAÇÃO INFERIOR PARA MOBILE PWA -->
 <nav class="bottom-nav no-print">
-  <div class="bnav-item active" onclick="scrollToSection('secPlano')">
-    <span class="bnav-icon">🥗</span>
+  <div class="bnav-btn active" onclick="scrollToSec('secPlano')">
+    <span class="bnav-icon-txt">🥗</span>
     <span>Cardápio</span>
   </div>
-  <div class="bnav-item" onclick="scrollToSection('secCompras')">
-    <span class="bnav-icon">🛒</span>
+  <div class="bnav-btn" onclick="scrollToSec('secCompras')">
+    <span class="bnav-icon-txt">🛒</span>
     <span>Compras</span>
   </div>
-  <div class="bnav-item" onclick="scrollToSection('secEvolucao')">
-    <span class="bnav-icon">📈</span>
+  <div class="bnav-btn" onclick="scrollToSec('secEvolucao')">
+    <span class="bnav-icon-txt">📈</span>
     <span>Evolução</span>
   </div>
 </nav>
 
+<!-- MODAL DE ALTERAÇÃO DE SENHA -->
+<div id="modalTrocarSenha" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:var(--radius-lg); padding:28px; width:100%; max-width:440px; box-shadow:var(--shadow);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:20px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--text-title);">🔑 Alterar Senha de Acesso</div>
+      <button onclick="fecharModalTrocarSenha()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+    </div>
+
+    <form onsubmit="salvarNovaSenha(event)" style="display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Senha Atual (ou PIN)</label>
+        <input type="password" id="pwdAtual" class="btn-sec" placeholder="Sua senha atual" required style="padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nova Senha</label>
+        <input type="password" id="pwdNova" class="btn-sec" placeholder="Mínimo 4 caracteres" required style="padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Confirmar Nova Senha</label>
+        <input type="password" id="pwdConf" class="btn-sec" placeholder="Repita a nova senha" required style="padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn-sec" onclick="fecharModalTrocarSenha()">Cancelar</button>
+        <button type="submit" class="btn-main" id="btnSalvarPwd">💾 Salvar Nova Senha</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
 
-async function apiCall(action, payload = {}) {
-  const bodyData = { action, ...payload };
-  try {
-    const res = await fetch(KOS_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(bodyData)
-    });
-    return await res.json();
-  } catch (err) {
-    console.error("Erro na chamada de API:", err);
-    return { success: false, error: err.toString() };
+let currentWater = 0;
+const targetWater = 2300;
+let chartInstance = null;
+
+// HÁBITOS CONCLUÍDOS
+let habitsCompleted = { 'habit-1': false, 'habit-2': false, 'habit-3': false, 'habit-4': false };
+let mealsCompleted = { 'meal-1': false, 'meal-2': false, 'meal-3': false, 'meal-4': false };
+
+function updateAdherenceScore() {
+  const totalItems = 4 + 4; // 4 refeições + 4 hábitos
+  let done = 0;
+  Object.values(habitsCompleted).forEach(v => { if (v) done++; });
+  Object.values(mealsCompleted).forEach(v => { if (v) done++; });
+
+  const pct = Math.round((done / totalItems) * 100);
+  const ringFill = document.getElementById('scoreRingFill');
+  const ringText = document.getElementById('scoreRingText');
+
+  if (ringFill) {
+    // 220 é a circunferência total do anel (2 * PI * 35 = 220)
+    const offset = 220 - (220 * pct) / 100;
+    ringFill.style.strokeDashoffset = offset;
+  }
+  if (ringText) ringText.innerText = pct + '%';
+}
+
+// RASTREADOR DE ÁGUA
+function updateWaterUI() {
+  const bar = document.getElementById('waterBarFill');
+  const txt = document.getElementById('waterValText');
+  const pct = Math.min(100, Math.round((currentWater / targetWater) * 100));
+  if (bar) bar.style.width = pct + '%';
+  if (txt) txt.innerText = `${currentWater} / ${targetWater} ml (${pct}%)`;
+  localStorage.setItem('kos_paciente_water', currentWater);
+}
+
+function addWater(amount) {
+  currentWater = Math.max(0, currentWater + amount);
+  updateWaterUI();
+}
+
+// TOGGLE HÁBITOS
+function toggleHabit(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  habitsCompleted[id] = !habitsCompleted[id];
+  el.classList.toggle('checked', habitsCompleted[id]);
+
+  let count = Object.values(habitsCompleted).filter(Boolean).length;
+  document.getElementById('habitsStatus').innerText = `${count}/4 concluídos`;
+  updateAdherenceScore();
+}
+
+// TOGGLE REFEIÇÃO
+function toggleMeal(id) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  const chk = card.querySelector('input[type="checkbox"]');
+  mealsCompleted[id] = chk ? chk.checked : false;
+  card.classList.toggle('completed', mealsCompleted[id]);
+  updateAdherenceScore();
+}
+
+// TOGGLE SUBSTITUIÇÕES
+function toggleSubst(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+// TOGGLE ITEM COMPRAS
+function toggleShopRow(el) {
+  const chk = el.querySelector('input[type="checkbox"]');
+  if (chk) {
+    el.classList.toggle('checked', chk.checked);
   }
 }
 
-let pacienteLogado = null;
+function filterShopping(mode) {
+  document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
 
-async function realizarLogin(e) {
-  e.preventDefault();
-  const cpfInput = document.getElementById('loginCPF').value;
-  const pinInput = document.getElementById('loginPIN').value;
-  const btn = document.querySelector('#loginOverlay button');
-  if (btn) btn.innerText = "🟡 Autenticando...";
-
-  const res = await apiCall('loginPaciente', { identifierInput: cpfInput, pinInput: pinInput });
-
-  if (res && res.success && res.data) {
-    pacienteLogado = res.data;
-    const dispNome = document.getElementById('dispNome');
-    if (dispNome) dispNome.innerText = pacienteLogado.nome;
-    document.getElementById('loginOverlay').style.display = 'none';
-    carregarDadosPaciente(pacienteLogado.id);
-  } else {
-    // Fallback rápido local para ambiente de teste
-    if (pinInput === '123456' || cpfInput.includes('123')) {
-      document.getElementById('loginOverlay').style.display = 'none';
-      inicializarGrafico(['Maio', 'Junho', 'Julho', 'Agosto'], [71.2, 69.0, 67.4, 65.5]);
-    } else {
-      alert("Erro de Login: " + (res.error || "CPF/E-mail ou PIN incorretos!"));
-      if (btn) btn.innerText = "🔑 Entrar no Portal";
+  document.querySelectorAll('.shop-item-row').forEach(row => {
+    const isChecked = row.classList.contains('checked');
+    if (mode === 'all') {
+      row.style.display = 'flex';
+    } else if (mode === 'pending') {
+      row.style.display = isChecked ? 'none' : 'flex';
+    } else if (mode === 'checked') {
+      row.style.display = isChecked ? 'flex' : 'none';
     }
-  }
+  });
 }
 
-async function carregarDadosPaciente(pacienteId) {
-  const resEvolucao = await apiCall('getEvolucao', { paciente_id: pacienteId });
-
-  if (resEvolucao && resEvolucao.success && resEvolucao.data && resEvolucao.data.length > 0) {
-    const labels = resEvolucao.data.map(e => e.data ? String(e.data).slice(5) : 'Medição');
-    const pesos = resEvolucao.data.map(e => parseFloat(e.peso));
-    inicializarGrafico(labels, pesos);
-  } else {
-    inicializarGrafico(['Maio', 'Junho', 'Julho', 'Agosto'], [71.2, 69.0, 67.4, 65.5]);
-  }
+function scrollToSec(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
-function scrollToSection(secId) {
-  const el = document.getElementById(secId);
-  if(el) el.scrollIntoView({ behavior: 'smooth' });
+// COPIAR LISTA DE COMPRAS
+function copiarLista() {
+  const items = Array.from(document.querySelectorAll('.shop-item-row span')).map(i => "• " + i.innerText).join('\n');
+  navigator.clipboard.writeText("🛒 *Lista de Compras - Dra. Silvia Lemos*\n\n" + items);
+  alert("📋 Lista de compras copiada para a área de transferência!");
 }
 
-function inicializarGrafico(labels = ['Maio', 'Junho', 'Julho', 'Agosto'], dataPeso = [71.2, 69.0, 67.4, 65.5]) {
+// EVOLUÇÃO GRÁFICO
+function renderEvolChart() {
   const ctx = document.getElementById('chartEvolucaoPaciente');
-  if (ctx) {
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Peso Corporal (kg)',
-            data: dataPeso,
-            borderColor: '#8ca481',
-            backgroundColor: 'rgba(140, 164, 129, 0.15)',
-            fill: true,
-            tension: 0.3
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: '#eef4e5' } }
+  if (!ctx) return;
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Maio', 'Junho', 'Julho', 'Agosto'],
+      datasets: [
+        {
+          label: 'Peso Corporal (kg)',
+          data: [71.2, 69.0, 67.4, 65.5],
+          borderColor: '#8ca481',
+          backgroundColor: 'rgba(140, 164, 129, 0.15)',
+          fill: true,
+          tension: 0.35,
+          borderWidth: 3,
+          pointRadius: 6,
+          pointBackgroundColor: '#8ca481'
         },
-        scales: {
-          x: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        {
+          label: '% Gordura Corporal',
+          data: [28.5, 26.8, 25.1, 23.4],
+          borderColor: '#e2b857',
+          backgroundColor: 'rgba(226, 184, 87, 0.08)',
+          fill: true,
+          tension: 0.35,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#e2b857'
         }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#f0f5eb', font: { family: 'Plus Jakarta Sans', weight: '700' } } }
+      },
+      scales: {
+        x: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } }
       }
-    });
-  }
+    }
+  });
 }
 
+// TEMA
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'dark';
   const next = current === 'light' ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('kos_theme', next);
   const btn = document.getElementById('btnThemeToggle');
-  if (btn) btn.innerText = next === 'light' ? '☀️ Claro' : '🌙 Tema';
+  if (btn) btn.innerHTML = next === 'light' ? '☀️ <span style="display:none; @media(min-width:500px){display:inline}">Claro</span>' : '🌙 <span style="display:none; @media(min-width:500px){display:inline}">Escuro</span>';
 }
 
 function initTheme() {
   const saved = localStorage.getItem('kos_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved);
-  const btn = document.getElementById('btnThemeToggle');
-  if (btn) btn.innerText = saved === 'light' ? '☀️ Claro' : '🌙 Tema';
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  
-  // Verifica se o paciente já está autenticado via login.html
-  const isAuth = sessionStorage.getItem('kos_paciente_auth') === 'true';
-  const rawDados = sessionStorage.getItem('kos_paciente_dados');
-  
-  if (isAuth && rawDados) {
-    try {
-      const p = JSON.parse(rawDados);
-      const dispNome = document.getElementById('dispNome');
-      if (dispNome) dispNome.innerText = p.nome || 'Paciente';
-      const lock = document.getElementById('loginOverlay');
-      if (lock) lock.style.display = 'none';
-      carregarDadosPaciente(p.id || 'PAC-01');
-    } catch(e) {
-      inicializarGrafico();
-    }
-  } else {
-    // Se não estiver logado, oculta overlay apenas se preencher
-    inicializarGrafico();
-  }
-});
+// CITAÇÃO E SAUDAÇÃO DINÂMICA POR HORÁRIO
+function updateGreeting() {
+  const hr = new Date().getHours();
+  let text = "Bom dia";
+  if (hr >= 12 && hr < 18) text = "Boa tarde";
+  else if (hr >= 18 || hr < 5) text = "Boa noite";
 
+  const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
+  let nome = "Juliana";
+  if (rawDados) {
+    try {
+      const u = JSON.parse(rawDados);
+      if (u.nome) {
+        nome = u.nome.split(' ')[0];
+        document.getElementById('dispNome').innerText = u.nome;
+      }
+    } catch(e){}
+  }
+  document.getElementById('welcomeHeading').innerText = `${text}, ${nome}! 👋`;
+}
+
+// MODAL SENHA
 function abrirModalTrocarSenha() {
   const m = document.getElementById('modalTrocarSenha');
   if (m) m.style.display = 'flex';
 }
-
 function fecharModalTrocarSenha() {
   const m = document.getElementById('modalTrocarSenha');
   if (m) m.style.display = 'none';
-  const a = document.getElementById('pwdAtual'); if (a) a.value = '';
-  const n = document.getElementById('pwdNova');  if (n) n.value = '';
-  const c = document.getElementById('pwdConf');  if (c) c.value = '';
 }
 
 async function salvarNovaSenha(e) {
@@ -413,74 +1144,49 @@ async function salvarNovaSenha(e) {
   const conf  = document.getElementById('pwdConf').value;
   const btn   = document.getElementById('btnSalvarPwd');
 
-  if (nova !== conf) {
-    alert("❌ A nova senha e a confirmação não coincidem.");
-    return;
-  }
-  if (nova.length < 4) {
-    alert("❌ A nova senha deve ter no mínimo 4 caracteres.");
-    return;
-  }
-
-  let rawDados = sessionStorage.getItem('kos_paciente_dados');
-  let pacienteObj = null;
-  if (rawDados) {
-    try { pacienteObj = JSON.parse(rawDados); } catch(err){}
-  }
-
-  const userId = pacienteObj ? (pacienteObj.id || pacienteObj.email || pacienteObj.cpf) : 'PAC-01';
+  if (nova !== conf) { alert("❌ A nova senha e a confirmação não coincidem."); return; }
+  if (nova.length < 4) { alert("❌ A nova senha deve ter no mínimo 4 caracteres."); return; }
 
   btn.disabled = true;
   btn.innerText = "Salvando...";
 
-  const res = await apiCall('alterarSenha', {
-    usuario_id: userId,
-    senha_atual: atual,
-    nova_senha: nova
-  });
+  const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
+  let pacienteObj = null;
+  if (rawDados) { try { pacienteObj = JSON.parse(rawDados); } catch(err){} }
+
+  const res = await fetch(KOS_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: 'alterarSenha',
+      usuario_id: pacienteObj ? pacienteObj.id : 'PAC-01',
+      senha_atual: atual,
+      nova_senha: nova
+    })
+  }).then(r => r.json()).catch(() => null);
 
   btn.disabled = false;
   btn.innerText = "💾 Salvar Nova Senha";
 
   if (res && res.success) {
-    alert("✅ " + (res.message || "Sua senha foi alterada com sucesso!"));
+    alert("✅ " + (res.message || "Senha alterada com sucesso!"));
     fecharModalTrocarSenha();
   } else {
-    alert("⚠️ Erro ao alterar senha: " + (res ? res.error || "Senha atual incorreta." : "Verifique sua conexão."));
+    alert("⚠️ Erro: " + (res ? res.error || "Senha atual incorreta." : "Falha na conexão."));
   }
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  updateGreeting();
+
+  const savedWater = parseInt(localStorage.getItem('kos_paciente_water') || '0', 10);
+  currentWater = isNaN(savedWater) ? 0 : savedWater;
+  updateWaterUI();
+
+  renderEvolChart();
+  updateAdherenceScore();
+});
 </script>
-
-<!-- MODAL DE ALTERAÇÃO DE SENHA -->
-<div id="modalTrocarSenha" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:28px; width:100%; max-width:440px; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:20px;">
-      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:#fff;">🔑 Alterar Senha de Acesso</div>
-      <button onclick="fecharModalTrocarSenha()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
-    </div>
-
-    <form onsubmit="salvarNovaSenha(event)" style="display:flex; flex-direction:column; gap:16px;">
-      <div class="form-group">
-        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Senha Atual (ou PIN temporário)</label>
-        <input type="password" id="pwdAtual" class="form-control" placeholder="Sua senha atual" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
-      </div>
-
-      <div class="form-group">
-        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nova Senha</label>
-        <input type="password" id="pwdNova" class="form-control" placeholder="Mínimo 4 caracteres" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
-      </div>
-
-      <div class="form-group">
-        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Confirmar Nova Senha</label>
-        <input type="password" id="pwdConf" class="form-control" placeholder="Repita a nova senha" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
-      </div>
-
-      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
-        <button type="button" class="btn" style="background:transparent; border:1.5px solid var(--border-forest); color:var(--text-muted);" onclick="fecharModalTrocarSenha()">Cancelar</button>
-        <button type="submit" class="btn" id="btnSalvarPwd">💾 Salvar Nova Senha</button>
-      </div>
-    </form>
-  </div>
-</div>
 </body>
 </html>
