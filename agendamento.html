@@ -284,17 +284,39 @@ body.in-iframe .container{padding-top:16px!important}
           </div>
           <div class="form-group">
             <label>Nome Completo *</label>
-            <input type="text" id="nNome" class="form-control" placeholder="Ex: Ana Paula Ribeiro">
+            <input type="text" id="nNome" class="form-control" placeholder="Ex: Ana Paula Ribeiro" required>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>WhatsApp</label>
-              <input type="text" id="nWA" class="form-control" placeholder="(21) 99999-9999" oninput="mascaraPhone(this)">
+              <label>CPF (Acesso ao Portal) *</label>
+              <input type="text" id="nCPF" class="form-control" placeholder="000.000.000-00" oninput="mascaraCPF(this)" required>
+            </div>
+            <div class="form-group">
+              <label>Data de Nascimento</label>
+              <input type="date" id="nNasc" class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>WhatsApp *</label>
+              <input type="text" id="nWA" class="form-control" placeholder="(21) 99999-9999" oninput="mascaraPhone(this)" required>
             </div>
             <div class="form-group">
               <label>E-mail *</label>
-              <input type="email" id="nEmail" class="form-control" placeholder="paciente@email.com">
+              <input type="email" id="nEmail" class="form-control" placeholder="paciente@email.com" required>
             </div>
+          </div>
+          <div class="form-group">
+            <label>Objetivo Clínico (opcional)</label>
+            <select id="nObj" class="form-control">
+              <option value="Reeducação Alimentar &amp; Emagrecimento">Reeducação Alimentar &amp; Emagrecimento</option>
+              <option value="Nutrição Esportiva &amp; Hipertrofia">Nutrição Esportiva &amp; Hipertrofia</option>
+              <option value="Saúde Intestinal &amp; Bio-Reset">Saúde Intestinal &amp; Bio-Reset</option>
+              <option value="Controle de Diabetes &amp; Doenças Crônicas">Controle de Diabetes &amp; Doenças Crônicas</option>
+              <option value="Nutrição na Gestação &amp; Amamentação">Nutrição na Gestação &amp; Amamentação</option>
+              <option value="Longevidade &amp; Medicina Preventiva">Longevidade &amp; Medicina Preventiva</option>
+              <option value="Nutrição Comportamental">Nutrição Comportamental</option>
+            </select>
           </div>
         </div>
 
@@ -728,6 +750,7 @@ function selecionarPaciente(p) {
 }
 
 function maskCPF(v){ return String(v||'').replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2').slice(0,14); }
+function mascaraCPF(el){ if(!el) return; el.value = maskCPF(el.value); }
 function maskPhone(v){ const d=String(v||'').replace(/\D/g,''); return d.length<=10?d.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{4})(\d)/,'$1-$2').slice(0,14):d.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2').slice(0,15); }
 
 function irParaPasso2() {
@@ -737,8 +760,12 @@ function irParaPasso2() {
     return;
   }
   if (isNovo) {
-    const nome = document.getElementById('nNome').value.trim();
+    const nome  = document.getElementById('nNome').value.trim();
+    const cpf   = document.getElementById('nCPF')?.value.trim();
+    const email = document.getElementById('nEmail')?.value.trim();
     if (!nome) { alert('Informe o nome completo do paciente.'); return; }
+    if (!cpf)  { alert('Informe o CPF do paciente (obrigatório para login no portal).'); return; }
+    if (!email){ alert('Informe o e-mail do paciente.'); return; }
   }
   const nome = isNovo ? document.getElementById('nNome').value.trim() : pacienteSelecionado.nome;
   document.getElementById('step2PacNome').textContent = '👤 '+nome;
@@ -776,11 +803,14 @@ async function salvarConsulta() {
   let paciente;
   if (isNovo) {
     paciente = {
-      id:       'NOVO',
-      nome:     document.getElementById('nNome').value.trim(),
-      whatsapp: document.getElementById('nWA')?.value.replace(/\D/g,'') || '',
-      email:    document.getElementById('nEmail').value.trim(),
-      tipo:     'PACIENTE'
+      id:              'NOVO',
+      nome:            document.getElementById('nNome').value.trim(),
+      cpf:             (document.getElementById('nCPF')?.value || '').replace(/\D/g,''),
+      whatsapp:        (document.getElementById('nWA')?.value || '').replace(/\D/g,''),
+      email:           document.getElementById('nEmail').value.trim(),
+      data_nascimento: document.getElementById('nNasc')?.value || '',
+      objetivo:        document.getElementById('nObj')?.value || 'Reeducação Alimentar',
+      tipo:            'PACIENTE'
     };
   } else {
     paciente = { id: pacienteSelecionado.id };
