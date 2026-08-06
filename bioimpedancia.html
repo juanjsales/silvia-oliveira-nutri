@@ -22,6 +22,26 @@
   --radius: 20px;
 }
 
+[data-theme="light"] {
+  --bg-deep: #f3f6f1;
+  --bg-card: #ffffff;
+  --bg-header: #e6ede0;
+  --text-primary: #1c2e22;
+  --text-title: #142419;
+  --text-muted: #57695b;
+  --border-forest: #cbe0c9;
+  --sage-light: #3d5a35;
+  --sage-dim: rgba(61, 90, 53, 0.12);
+}
+
+[data-theme="light"] .card { background: #ffffff !important; border-color: #d1ded0 !important; color: #1c2e22 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .card-title, [data-theme="light"] .brand-title, [data-theme="light"] strong { color: #142419 !important; }
+[data-theme="light"] table td { color: #1c2e22 !important; border-bottom-color: #e4ebe2 !important; }
+[data-theme="light"] table th { background: #e6ede0 !important; color: #213524 !important; border-bottom-color: #d0ded0 !important; }
+[data-theme="light"] .btn-secondary { background: #eaf1e7 !important; color: #213524 !important; border-color: #b8cbb6 !important; }
+[data-theme="light"] .btn-secondary:hover { background: #d8e5d4 !important; color: #142419 !important; }
+[data-theme="light"] .top-header { background: #e4ede0 !important; border-color: #cbe0c9 !important; }
+
 /* PADRONIZAÇÃO DE BARRAS DE ROLAGEM (SCROLLBARS) BOTÂNICAS */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-deep, #0e1a12); }
@@ -326,7 +346,16 @@ window.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  const savedTheme = localStorage.getItem('kos_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+
   inicializarPacientes();
+});
+
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SET_THEME') {
+    document.documentElement.setAttribute('data-theme', e.data.theme);
+  }
 });
 </script>
 </body>

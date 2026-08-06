@@ -34,11 +34,73 @@
   --text-primary: #1c2e22;
   --text-title: #142419;
   --text-muted: #57695b;
-  --border-forest: #d1ded0;
-  --sage-light: #486640;
-  --sage-dim: rgba(72, 102, 64, 0.12);
+  --border-forest: #cbe0c9;
+  --sage-light: #3d5a35;
+  --sage-dim: rgba(61, 90, 53, 0.12);
   --paper-bg: #ffffff;
   --text-dark: #142419;
+}
+
+[data-theme="light"] .card,
+[data-theme="light"] .kpi-card,
+[data-theme="light"] .form-panel {
+  background: #ffffff !important;
+  border-color: #d1ded0 !important;
+  color: #1c2e22 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04) !important;
+}
+
+[data-theme="light"] .card-title,
+[data-theme="light"] .page-title,
+[data-theme="light"] .brand-name,
+[data-theme="light"] .kpi-val,
+[data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3, [data-theme="light"] h4,
+[data-theme="light"] strong, [data-theme="light"] b {
+  color: #142419 !important;
+}
+
+[data-theme="light"] table td {
+  color: #1c2e22 !important;
+  border-bottom-color: #e4ebe2 !important;
+}
+
+[data-theme="light"] table th {
+  background: #e6ede0 !important;
+  color: #213524 !important;
+  border-bottom-color: #d0ded0 !important;
+}
+
+[data-theme="light"] .btn-secondary {
+  background: #eaf1e7 !important;
+  color: #213524 !important;
+  border-color: #b8cbb6 !important;
+}
+[data-theme="light"] .btn-secondary:hover {
+  background: #d8e5d4 !important;
+  color: #142419 !important;
+}
+
+[data-theme="light"] .form-control {
+  background: #f8faf6 !important;
+  color: #1c2e22 !important;
+  border-color: #b8cbb6 !important;
+}
+
+[data-theme="light"] .top-header,
+[data-theme="light"] .sidebar {
+  background: #e4ede0 !important;
+  border-color: #cbe0c9 !important;
+}
+
+[data-theme="light"] .nav-item {
+  color: #4a5c4e !important;
+}
+
+[data-theme="light"] .nav-item:hover,
+[data-theme="light"] .nav-item.active {
+  background: #ffffff !important;
+  color: #142419 !important;
+  border-color: #cbe0c9 !important;
 }
 
 /* PADRONIZAÇÃO DE BARRAS DE ROLAGEM (SCROLLBARS) BOTÂNICAS */
@@ -654,11 +716,12 @@ async function carregarDadosDashboard() {
       if (isOnline) online++; else presencial++;
 
       if (tblAg) {
+        const horaFmt = formatTime(ag.hora);
         const cleanWsp = String(ag.whatsapp || '5521999998888').replace(/\D/g, '');
-        const msgWsp = encodeURIComponent(`Olá ${ag.paciente_nome}! Lembrete da sua consulta hoje às ${ag.hora}.`);
+        const msgWsp = encodeURIComponent(`Olá ${ag.paciente_nome}! Lembrete da sua consulta hoje às ${horaFmt}.`);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${ag.hora || '--:--'}</td>
+          <td><strong>${horaFmt}</strong></td>
           <td>${ag.paciente_nome}</td>
           <td>${ag.tipo || 'Consulta Nutricional'}</td>
           <td><span style="color: #8ca481; font-weight:800;">${ag.status || 'Confirmado'}</span></td>
@@ -1138,6 +1201,8 @@ function toggleTheme() {
   const btn = document.getElementById('btnThemeToggle');
   if (btn) btn.innerText = next === 'light' ? '☀️ Claro' : '🌙 Tema';
 
+  updateChartThemeColors(next);
+
   const iframe = document.getElementById('adminIframe');
   if (iframe && iframe.contentWindow) {
     try {
@@ -1151,9 +1216,53 @@ function initTheme() {
   document.documentElement.setAttribute('data-theme', saved);
   const btn = document.getElementById('btnThemeToggle');
   if (btn) btn.innerText = saved === 'light' ? '☀️ Claro' : '🌙 Tema';
+  updateChartThemeColors(saved);
+}
+
+function updateChartThemeColors(theme) {
+  const isLight = theme === 'light';
+  const textColor = isLight ? '#142419' : '#eef4e5';
+  const mutedColor = isLight ? '#57695b' : '#a0b399';
+  const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+
+  if (window.Chart && Chart.instances) {
+    Object.values(Chart.instances).forEach(chart => {
+      if (chart.options?.plugins?.legend?.labels) {
+        chart.options.plugins.legend.labels.color = textColor;
+      }
+      if (chart.options?.scales?.x?.ticks) {
+        chart.options.scales.x.ticks.color = mutedColor;
+        if (chart.options.scales.x.grid) chart.options.scales.x.grid.color = gridColor;
+      }
+      if (chart.options?.scales?.y?.ticks) {
+        chart.options.scales.y.ticks.color = mutedColor;
+        if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = gridColor;
+      }
+      chart.update();
+    });
+  }
 }
 
 // MÁSCARAS E FORMATAÇÃO DE DADOS
+function formatTime(val) {
+  if (!val) return '--:--';
+  const str = String(val).trim();
+  if (str.includes('T')) {
+    const timePart = str.split('T')[1];
+    if (timePart) {
+      const parts = timePart.split(':');
+      if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+      }
+    }
+  }
+  if (str.includes(':')) {
+    const parts = str.split(':');
+    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+  }
+  return str;
+}
+
 function maskCPF(v) {
   return String(v || '').replace(/\D/g, '')
     .replace(/(\d{3})(\d)/, '$1.$2')
