@@ -126,6 +126,20 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 .form-control:focus { border-color: var(--sage-light); }
 
+/* Stepper header idêntico ao agendamento */
+.stepper{display:flex;align-items:center;background:var(--bg-deep);padding:20px 28px;gap:0;border-bottom:1px solid var(--border-forest);border-radius:var(--radius) var(--radius) 0 0}
+.step-item{display:flex;align-items:center;gap:8px;flex:1}
+.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;border:2px solid var(--border-forest);color:var(--text-muted);transition:var(--tr);flex-shrink:0}
+.step-item.active .step-num{border-color:var(--sage-light);color:var(--sage-light);background:var(--sage-dim)}
+.step-item.done .step-num{border-color:var(--sage-light);background:var(--sage-light);color:var(--forest-dark)}
+.step-label{font-size:0.8rem;font-weight:700;color:var(--text-muted);white-space:nowrap}
+.step-item.active .step-label{color:var(--sage-light)}
+.step-item.done .step-label{color:var(--text-light)}
+.step-line{flex:1;height:1px;background:var(--border-forest);margin:0 8px}
+.step-line.done{background:var(--sage-light)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.modal-card{background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:var(--radius);width:100%;max-width:580px;box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .25s cubic-bezier(.16,1,.3,1);position:relative;padding:0 !important;}
+
 /* OCULTA NAVBAR QUANDO EM EMBUTIDO EM IFRAME */
 body.in-iframe .top-header { display: none !important; }
 body.in-iframe .container { padding-top: 16px !important; }
@@ -176,97 +190,127 @@ body.in-iframe .container { padding-top: 16px !important; }
   </div>
 </div>
 
-<!-- MODAL UNIFICADO: CADASTRAR PACIENTE & AGENDAR CONSULTA -->
+<!-- MODAL STEPPER: IDÊNTICO AO DO AGENDAMENTO DE CONSULTAS -->
 <div class="modal-overlay" id="modalPaciente">
-  <div class="modal-card" style="max-width:620px;">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title">👤 Cadastrar Paciente &amp; Agendar Consulta</div>
-        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Cadastre o novo paciente e agende a primeira consulta no mesmo fluxo</div>
+  <div class="modal-card">
+
+    <!-- Stepper header -->
+    <div class="stepper" id="stepperBar">
+      <div class="step-item active" id="step1Item">
+        <div class="step-num" id="step1Num">1</div>
+        <div class="step-label">Paciente</div>
       </div>
-      <button class="modal-close" onclick="closePacienteModal()">✕</button>
+      <div class="step-line" id="stepLine1"></div>
+      <div class="step-item" id="step2Item">
+        <div class="step-num" id="step2Num">2</div>
+        <div class="step-label">Consulta</div>
+      </div>
+      <div class="step-line" id="stepLine2"></div>
+      <div class="step-item" id="step3Item">
+        <div class="step-num" id="step3Num">✓</div>
+        <div class="step-label">Confirmado</div>
+      </div>
     </div>
 
-    <form onsubmit="salvarNovoPacienteEAgendamento(event)" class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
-      <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:12px 14px; font-size:0.82rem; color:var(--text-primary); display:flex; align-items:center; gap:10px;">
-        <span style="font-size:1.2rem;">📧</span>
-        <span>Ao salvar, o perfil é criado, a consulta agendada e um <strong>e-mail automático</strong> com a confirmação e credenciais de acesso ao portal é enviado para o paciente.</span>
-      </div>
+    <div class="modal-body" style="padding:28px; display:flex; flex-direction:column; gap:18px;">
 
-      <div style="font-weight:800; font-size:0.85rem; color:var(--sage-light); text-transform:uppercase; letter-spacing:0.05em; margin-top:4px; border-bottom:1px solid var(--border-forest); padding-bottom:4px;">
-        1. Dados de Identificação do Paciente
-      </div>
-
-      <div class="form-group">
-        <label>Nome Completo *</label>
-        <input type="text" id="pacNome" class="form-control" placeholder="Ex: Carlos Eduardo Torres" required>
-      </div>
-
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
-        <div class="form-group">
-          <label>WhatsApp *</label>
-          <input type="text" id="pacWsp" class="form-control" placeholder="(21) 99999-8888" required>
+      <!-- PASSO 1 — PACIENTE -->
+      <div id="stepPaciente">
+        <div class="modal-header" style="margin-bottom:14px;">
+          <div>
+            <div class="modal-title">👤 Cadastrar Novo Paciente</div>
+            <div class="modal-subtitle">Preencha os dados de contato do novo paciente</div>
+          </div>
+          <button class="modal-close" onclick="closePacienteModal()">✕</button>
         </div>
-        <div class="form-group">
-          <label>E-mail *</label>
-          <input type="email" id="pacEmail" class="form-control" placeholder="paciente@email.com" required>
+
+        <div id="formNovo" style="display:flex; flex-direction:column; gap:14px;">
+          <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:12px 14px; font-size:0.82rem; color:var(--text-primary); display:flex; align-items:center; gap:10px;">
+            <span>📧</span> <span>Ao agendar, o perfil do paciente é criado e um <strong>e-mail automático</strong> com os detalhes da consulta e credenciais do Portal do Paciente é enviado para o e-mail cadastrado.</span>
+          </div>
+          <div class="form-group">
+            <label>Nome Completo *</label>
+            <input type="text" id="pacNome" class="form-control" placeholder="Ex: Carlos Eduardo Torres" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>WhatsApp *</label>
+              <input type="text" id="pacWsp" class="form-control" placeholder="(21) 99999-8888" oninput="maskPhone(this)" required>
+            </div>
+            <div class="form-group">
+              <label>E-mail *</label>
+              <input type="email" id="pacEmail" class="form-control" placeholder="paciente@email.com" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Objetivo Clínico (opcional)</label>
+            <select id="pacObj" class="form-control">
+              <option value="Reeducação Alimentar &amp; Emagrecimento">Reeducação Alimentar &amp; Emagrecimento</option>
+              <option value="Nutrição Esportiva &amp; Hipertrofia">Nutrição Esportiva &amp; Hipertrofia</option>
+              <option value="Saúde Intestinal &amp; Bio-Reset">Saúde Intestinal &amp; Bio-Reset</option>
+              <option value="Controle de Diabetes &amp; Doenças Crônicas">Controle de Diabetes &amp; Doenças Crônicas</option>
+              <option value="Nutrição na Gestação &amp; Amamentação">Nutrição na Gestação &amp; Amamentação</option>
+              <option value="Longevidade &amp; Medicina Preventiva">Longevidade &amp; Medicina Preventiva</option>
+              <option value="Nutrição Comportamental">Nutrição Comportamental</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label>Objetivo Clínico (opcional)</label>
-        <select id="pacObj" class="form-control">
-          <option value="Reeducação Alimentar &amp; Emagrecimento">Reeducação Alimentar &amp; Emagrecimento</option>
-          <option value="Nutrição Esportiva &amp; Hipertrofia">Nutrição Esportiva &amp; Hipertrofia</option>
-          <option value="Saúde Intestinal &amp; Bio-Reset">Saúde Intestinal &amp; Bio-Reset</option>
-          <option value="Controle de Diabetes &amp; Doenças Crônicas">Controle de Diabetes &amp; Doenças Crônicas</option>
-          <option value="Nutrição na Gestação &amp; Amamentação">Nutrição na Gestação &amp; Amamentação</option>
-          <option value="Longevidade &amp; Medicina Preventiva">Longevidade &amp; Medicina Preventiva</option>
-          <option value="Nutrição Comportamental">Nutrição Comportamental</option>
-        </select>
-      </div>
-
-      <div style="font-weight:800; font-size:0.85rem; color:var(--sage-light); text-transform:uppercase; letter-spacing:0.05em; margin-top:6px; border-bottom:1px solid var(--border-forest); padding-bottom:4px;">
-        2. Agendamento da Primeira Consulta (Avaliação)
-      </div>
-
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
-        <div class="form-group">
-          <label>Data da Consulta *</label>
-          <input type="date" id="agData" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label>Horário *</label>
-          <input type="time" id="agHora" class="form-control" value="09:00" required>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid var(--border-forest); margin-top:16px;">
+          <button class="btn btn-secondary" type="button" onclick="closePacienteModal()">Cancelar</button>
+          <button class="btn" type="button" onclick="irParaPasso2Pac()">Próximo: Consulta →</button>
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
-        <div class="form-group">
-          <label>Tipo de Consulta</label>
-          <select id="agTipo" class="form-control">
-            <option value="Avaliação Inicial (Presencial)">Avaliação Inicial (Presencial)</option>
-            <option value="Avaliação Inicial (Online)">Avaliação Inicial (Online)</option>
-            <option value="Consulta Nutricional">Consulta Nutricional</option>
-            <option value="Retorno de Avaliação">Retorno de Avaliação</option>
-          </select>
+      <!-- PASSO 2 — CONSULTA -->
+      <div id="stepConsulta" style="display:none; flex-direction:column; gap:18px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">📅 Detalhes da Primeira Consulta</div>
+            <div class="modal-subtitle" id="step2PacNome" style="color:var(--sage-light); font-weight:700;"></div>
+          </div>
+          <button class="modal-close" onclick="closePacienteModal()">✕</button>
         </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Data da Consulta *</label>
+            <input type="date" id="agData" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Horário *</label>
+            <input type="time" id="agHora" class="form-control" value="09:00" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo de Consulta</label>
+            <select id="agTipo" class="form-control">
+              <option value="Avaliação Inicial (Presencial)">Avaliação Inicial (Presencial)</option>
+              <option value="Avaliação Inicial (Online)">Avaliação Inicial (Online)</option>
+              <option value="Consulta Nutricional">Consulta Nutricional</option>
+              <option value="Retorno de Avaliação">Retorno de Avaliação</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="agValor" class="form-control" value="250" min="0">
+          </div>
+        </div>
+
         <div class="form-group">
-          <label>Valor (R$)</label>
-          <input type="number" id="agValor" class="form-control" value="250" min="0">
+          <label>Observação Interna (opcional)</label>
+          <input type="text" id="agObs" class="form-control" placeholder="Ex: Trazer exames recentes de sangue">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid var(--border-forest);">
+          <button class="btn btn-secondary" type="button" onclick="voltarPasso1Pac()">← Voltar</button>
+          <button class="btn" type="button" onclick="salvarNovoPacienteEAgendamento()" id="btnSalvarPacAgendamento">💾 Confirmar &amp; Salvar no Banco</button>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Observação Interna (opcional)</label>
-        <input type="text" id="agObs" class="form-control" placeholder="Ex: Trazer exames recentes de sangue">
-      </div>
-
-      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
-        <button type="button" class="btn btn-secondary" onclick="closePacienteModal()">Cancelar</button>
-        <button type="submit" class="btn" id="btnSalvarPacAgendamento">📅 Cadastrar Paciente &amp; Agendar Consulta</button>
-      </div>
-    </form>
+    </div>
   </div>
 </div>
 
@@ -457,31 +501,67 @@ async function carregarPacientes() {
   renderizarTabelaPacientes(window.pacientesLista);
 }
 
+let currentStepPac = 1;
+
 function openPacienteModal() {
   const modal = document.getElementById('modalPaciente');
   if (!modal) return;
   const agData = document.getElementById('agData');
   if (agData && !agData.value) agData.value = new Date().toISOString().split('T')[0];
+  irParaStepPac(1);
   modal.classList.add('active');
 }
 
 function closePacienteModal() {
   const modal = document.getElementById('modalPaciente');
   if (modal) modal.classList.remove('active');
-  const nome = document.getElementById('pacNome');
-  const wsp = document.getElementById('pacWsp');
-  const email = document.getElementById('pacEmail');
-  const obs = document.getElementById('agObs');
-  if (nome) nome.value = '';
-  if (wsp) wsp.value = '';
-  if (email) email.value = '';
-  if (obs) obs.value = '';
+  ['pacNome', 'pacWsp', 'pacEmail', 'agObs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+function irParaStepPac(n) {
+  currentStepPac = n;
+  const s1 = document.getElementById('stepPaciente');
+  const s2 = document.getElementById('stepConsulta');
+  if (s1) s1.style.display = (n === 1) ? 'block' : 'none';
+  if (s2) s2.style.display = (n === 2) ? 'flex' : 'none';
+
+  for (let i = 1; i <= 3; i++) {
+    const item = document.getElementById(`step${i}Item`);
+    const num = document.getElementById(`step${i}Num`);
+    if (item && num) {
+      item.classList.remove('active', 'done');
+      if (i < n) { item.classList.add('done'); num.textContent = '✓'; }
+      else if (i === n) { item.classList.add('active'); num.textContent = i; }
+      else { num.textContent = i; }
+    }
+  }
+  const l1 = document.getElementById('stepLine1');
+  const l2 = document.getElementById('stepLine2');
+  if (l1) l1.className = `step-line${n >= 2 ? ' done' : ''}`;
+  if (l2) l2.className = `step-line${n >= 3 ? ' done' : ''}`;
+}
+
+function irParaPasso2Pac() {
+  const nome = document.getElementById('pacNome')?.value.trim();
+  const email = document.getElementById('pacEmail')?.value.trim();
+  if (!nome) { alert('Informe o nome completo do paciente.'); return; }
+  if (!email) { alert('Informe o e-mail do paciente.'); return; }
+  const step2Nome = document.getElementById('step2PacNome');
+  if (step2Nome) step2Nome.textContent = '👤 ' + nome;
+  irParaStepPac(2);
+}
+
+function voltarPasso1Pac() {
+  irParaStepPac(1);
 }
 
 async function salvarNovoPacienteEAgendamento(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
   const btn = document.getElementById('btnSalvarPacAgendamento');
-  if (btn) { btn.disabled = true; btn.innerHTML = '🟡 Cadastrando & Enviando E-mail...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner-ring" style="width:16px;height:16px;border-width:2px"></div> Salvando...'; }
 
   const nome     = document.getElementById('pacNome').value.trim();
   const whatsapp = (document.getElementById('pacWsp')?.value || '').replace(/\D/g,'');
@@ -513,18 +593,24 @@ async function salvarNovoPacienteEAgendamento(e) {
     status: "Confirmado"
   };
 
-  const res = await apiCall('saveConsultaCompleta', { paciente: pacienteObj, agendamento: agendamentoObj }, 'POST');
+  try {
+    const res = await apiCall('saveConsultaCompleta', { paciente: pacienteObj, agendamento: agendamentoObj }, 'POST');
+    if (res?.success) {
+      const dataFmt = formatDateBR(data);
+      const pacSalvo = res?.data?.paciente || { id: "PAC-" + Date.now(), nome, whatsapp, email, objetivo, data_cadastro: pacienteObj.data_cadastro };
+      if (!Array.isArray(window.pacientesLista)) window.pacientesLista = [];
+      window.pacientesLista.unshift(pacSalvo);
+      renderizarTabelaPacientes(window.pacientesLista);
+      closePacienteModal();
+      alert(`✅ Paciente ${nome} cadastrado e consulta agendada para ${dataFmt} às ${hora}!\n\n📧 Um e-mail com a confirmação e credenciais do Portal do Paciente foi enviado para ${email}.`);
+    } else {
+      alert('Erro ao salvar: ' + (res?.error || 'Tente novamente.'));
+    }
+  } catch(err) {
+    alert('Erro de conexão: ' + err.message);
+  }
 
-  if (btn) { btn.disabled = false; btn.innerText = '📅 Cadastrar Paciente & Agendar Consulta'; }
-  closePacienteModal();
-
-  const dataFmt = formatDateBR(data);
-  const pacSalvo = res?.data?.paciente || { id: "PAC-" + Date.now(), nome, whatsapp, email, objetivo, data_cadastro: pacienteObj.data_cadastro };
-  if (!Array.isArray(window.pacientesLista)) window.pacientesLista = [];
-  window.pacientesLista.unshift(pacSalvo);
-  renderizarTabelaPacientes(window.pacientesLista);
-
-  alert(`✅ Paciente ${nome} cadastrado e consulta agendada para ${dataFmt} às ${hora}!\n\n📧 Um e-mail com a confirmação e credenciais do Portal do Paciente foi enviado para ${email}.`);
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Confirmar & Salvar no Banco'; }
 }
 
 function abrirAgendamentoPacienteModal(paciente) {

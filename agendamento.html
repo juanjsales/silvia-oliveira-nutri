@@ -800,13 +800,6 @@ async function salvarConsulta() {
     if (res?.success) {
       const d = res.data;
       const dtFmt = formatDateBR(agendamento.data);
-      const successMsg = document.getElementById('successMsg');
-      successMsg.innerHTML = `<b>${d?.paciente?.nome||paciente.nome}</b><br>📅 ${dtFmt} às ${agendamento.hora}<br>🏥 ${agendamento.tipo}`;
-      if (d?.emailEnviado) {
-        document.getElementById('emailBadge').style.display='block';
-      }
-      irParaStep(3);
-      // Adicionar localmente para atualizar a lista sem recarregar
       const novAg = {
         id: d?.agendamento?.id || 'LOCAL-'+Date.now(),
         paciente_id: d?.paciente?.id || pacienteSelecionado?.id,
@@ -817,6 +810,8 @@ async function salvarConsulta() {
       allAgendamentos.push(novAg);
       renderCalendar();
       renderDayList();
+      fecharModal();
+      alert(`✅ Consulta agendada com sucesso para ${d?.paciente?.nome || paciente.nome} em ${dtFmt} às ${agendamento.hora}!\n\n📧 Um e-mail com os detalhes e acesso ao portal foi enviado ao paciente.`);
     } else {
       alert('Erro ao salvar: '+(res?.error||'Tente novamente.'));
     }
