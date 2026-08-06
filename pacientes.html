@@ -8,21 +8,36 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --forest-dark: #203528;
-  --forest-card: #182a1f;
-  --forest-deep: #0e1a12;
-  --sage-light: #8ca481;
-  --sage-dim: rgba(140, 164, 129, 0.2);
-  --text-light: #eef4e5;
+:root, [data-theme="dark"] {
+  --bg-deep: #0e1a12;
+  --bg-card: #182a1f;
+  --bg-header: #203528;
+  --text-primary: #eef4e5;
+  --text-title: #ffffff;
   --text-muted: #a0b399;
   --border-forest: rgba(140, 164, 129, 0.25);
+  --sage-light: #8ca481;
+  --sage-dim: rgba(140, 164, 129, 0.2);
   --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   --radius: 20px;
 }
 
+[data-theme="light"] {
+  --bg-deep: #f3f6f1;
+  --bg-card: #ffffff;
+  --bg-header: #e6ede0;
+  --text-primary: #1c2e22;
+  --text-title: #142419;
+  --text-muted: #57695b;
+  --border-forest: #d1ded0;
+  --sage-light: #486640;
+  --sage-dim: rgba(72, 102, 64, 0.12);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
+body { background: var(--bg-deep); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; transition: background 0.3s ease, color 0.3s ease; }
+.card { background: var(--bg-card); border-color: var(--border-forest); }
+.card-title, .brand-title { color: var(--text-title); }
 
 /* HEADER */
 .top-header { background: var(--forest-card); border-bottom: 1px solid var(--border-forest); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; sticky: top; z-index: 100; }
@@ -44,6 +59,53 @@ table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.8
 th { background: rgba(0,0,0,0.3); padding: 14px 16px; color: var(--sage-light); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-forest); }
 td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-light); }
 tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* MODAL PADRÃO BOTÂNICO COM ANIMAÇÃO FADE/ZOOM */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-overlay.active {
+  opacity: 1; pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-forest);
+  border-radius: var(--radius);
+  padding: 32px;
+  width: 100%; max-width: 520px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column; gap: 20px;
+  transform: scale(0.95);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-overlay.active .modal-card {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border-forest); padding-bottom: 16px;
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text-title); }
+.modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: var(--tr); }
+.modal-close:hover { color: #f87171; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+.form-control {
+  background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-forest);
+  padding: 12px 16px; border-radius: 12px; color: #fff;
+  font-family: inherit; font-size: 0.95rem; outline: none; transition: var(--tr); width: 100%;
+}
+.form-control:focus { border-color: var(--sage-light); }
 
 /* OCULTA NAVBAR QUANDO EM EMBUTIDO EM IFRAME */
 body.in-iframe .top-header { display: none !important; }
@@ -107,6 +169,49 @@ body.in-iframe .container { padding-top: 16px !important; }
     <div id="anamneseBody">
       <div style="text-align: center; padding: 24px; color: var(--sage-light);">Carregando ficha...</div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL PADRÃO DE NOVO PACIENTE -->
+<div class="modal-overlay" id="modalPaciente">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">👤 Cadastrar Novo Paciente</div>
+      <button class="modal-close" onclick="closePacienteModal()">✕</button>
+    </div>
+
+    <form onsubmit="salvarNovoPaciente(event)" class="modal-body">
+      <div class="form-group">
+        <label>Nome Completo do Paciente</label>
+        <input type="text" id="pacNome" class="form-control" placeholder="Ex: Carlos Eduardo Torres" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="form-group">
+          <label>CPF</label>
+          <input type="text" id="pacCPF" class="form-control" placeholder="000.000.000-00" required>
+        </div>
+        <div class="form-group">
+          <label>WhatsApp</label>
+          <input type="text" id="pacWsp" class="form-control" placeholder="(21) 99999-8888" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Objetivo Principal</label>
+        <select id="pacObj" class="form-control">
+          <option value="Reeducação Alimentar &amp; Emagrecimento">Reeducação Alimentar &amp; Emagrecimento</option>
+          <option value="Nutrição Esportiva &amp; Hipertrofia">Nutrição Esportiva &amp; Hipertrofia</option>
+          <option value="Saúde Intestinal &amp; Bio-Reset">Saúde Intestinal &amp; Bio-Reset</option>
+          <option value="Gestação &amp; Lactação">Gestação &amp; Lactação</option>
+        </select>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px;">
+        <button type="button" class="btn btn-secondary" onclick="closePacienteModal()">Cancelar</button>
+        <button type="submit" class="btn">💾 Cadastrar Paciente</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -203,6 +308,26 @@ function copiarLinkAnamnesePublica(pacienteId) {
   alert(`✅ Link copiado!\nEnvie para o paciente:\n${link}`);
 }
 
+function maskCPF(v) {
+  return String(v || '').replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    .slice(0, 14);
+}
+
+function maskPhone(v) {
+  const d = String(v || '').replace(/\D/g, '');
+  if (d.length <= 10) {
+    return d.replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4})(\d)/, '$1-$2')
+      .slice(0, 14);
+  }
+  return d.replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+    .slice(0, 15);
+}
+
 async function carregarPacientes() {
   const res = await apiCall('getPacientes');
   const tbl = document.getElementById('tblPacientes');
@@ -214,11 +339,14 @@ async function carregarPacientes() {
       const isPaciente = !p.tipo || p.tipo === "PACIENTE";
       if (!isPaciente) return;
 
+      const cpfFmt = p.cpf ? maskCPF(p.cpf) : '--';
+      const wspFmt = p.whatsapp ? maskPhone(p.whatsapp) : '--';
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${p.data_cadastro || ''}</span></td>
         <td><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
-        <td>${p.cpf || '--'}<br><span style="font-size:0.78rem; color:var(--text-muted);">${p.whatsapp || ''}</span></td>
+        <td>${cpfFmt}<br><span style="font-size:0.78rem; color:var(--text-muted);">${wspFmt}</span></td>
         <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
         <td>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -233,18 +361,29 @@ async function carregarPacientes() {
   }
 }
 
-async function openPacienteModal() {
-  const nome = prompt("Digite o Nome Completo do Paciente:");
-  if (!nome) return;
-  const cpf = prompt("Digite o CPF do Paciente:") || "";
-  const whatsapp = prompt("Digite o WhatsApp com DDD (Ex: 21999998888):") || "";
-  const objetivo = prompt("Digite o Objetivo Principal:") || "Reeducação Alimentar";
+function openPacienteModal() {
+  const modal = document.getElementById('modalPaciente');
+  if (modal) modal.classList.add('active');
+}
+
+function closePacienteModal() {
+  const modal = document.getElementById('modalPaciente');
+  if (modal) modal.classList.remove('active');
+}
+
+async function salvarNovoPaciente(e) {
+  e.preventDefault();
+  const nome = document.getElementById('pacNome').value;
+  const cpf = document.getElementById('pacCPF').value;
+  const whatsapp = document.getElementById('pacWsp').value;
+  const objetivo = document.getElementById('pacObj').value;
 
   const novoPaciente = { nome, cpf, whatsapp, objetivo, senha_pin: "123456" };
   const res = await apiCall('savePaciente', { paciente: novoPaciente });
 
   if (res && res.success) {
-    alert("✅ Paciente cadastrado com sucesso!");
+    alert(`✅ Paciente ${nome} cadastrado com sucesso no Google Sheets!`);
+    closePacienteModal();
     carregarPacientes();
   } else {
     alert("Erro ao cadastrar paciente.");
@@ -258,6 +397,12 @@ window.addEventListener('DOMContentLoaded', () => {
     window.location.href = "login.html";
     return;
   }
+
+  const inpCPF = document.getElementById('pacCPF');
+  const inpWsp = document.getElementById('pacWsp');
+  if (inpCPF) inpCPF.addEventListener('input', e => e.target.value = maskCPF(e.target.value));
+  if (inpWsp) inpWsp.addEventListener('input', e => e.target.value = maskPhone(e.target.value));
+
   carregarPacientes();
 });
 </script>

@@ -10,23 +10,43 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root {
-  --forest-dark: #203528;
-  --forest-card: #182a1f;
-  --forest-deep: #0e1a12;
+:root, [data-theme="dark"] {
+  --bg-deep: #0e1a12;
+  --bg-card: #182a1f;
+  --bg-header: #203528;
+  --text-primary: #eef4e5;
+  --text-title: #ffffff;
+  --text-muted: #a0b399;
+  --border-forest: rgba(140, 164, 129, 0.25);
   --sage-light: #8ca481;
   --sage-dim: rgba(140, 164, 129, 0.2);
   --paper-bg: #f8faf6;
   --text-dark: #192b20;
-  --text-light: #eef4e5;
-  --text-muted: #a0b399;
-  --border-forest: rgba(140, 164, 129, 0.25);
   --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   --radius: 16px;
+  --card-padding: 24px;
+}
+
+[data-theme="light"] {
+  --bg-deep: #f3f6f1;
+  --bg-card: #ffffff;
+  --bg-header: #e6ede0;
+  --text-primary: #1c2e22;
+  --text-title: #142419;
+  --text-muted: #57695b;
+  --border-forest: #d1ded0;
+  --sage-light: #486640;
+  --sage-dim: rgba(72, 102, 64, 0.12);
+  --paper-bg: #ffffff;
+  --text-dark: #142419;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+body { background: var(--bg-deep); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; display: flex; height: 100vh; overflow: hidden; transition: background 0.3s ease, color 0.3s ease; }
+.card { background: var(--bg-card); border-color: var(--border-forest); padding: var(--card-padding); }
+.top-header { background: var(--bg-card); border-color: var(--border-forest); }
+.sidebar { background: var(--bg-header); border-color: var(--border-forest); }
+.page-title, .card-title, .brand-name, .kpi-val { color: var(--text-title); }
 
 /* SIDEBAR LEVE */
 .sidebar { width: 260px; background: var(--forest-dark); border-right: 1px solid var(--border-forest); padding: 24px; display: flex; flex-direction: column; gap: 28px; flex-shrink: 0; }
@@ -186,6 +206,44 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   to { transform: rotate(360deg); }
 }
 
+/* MODAL PADRÃO BOTÂNICO COM ANIMAÇÃO FADE/ZOOM */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-overlay.active {
+  opacity: 1; pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-forest);
+  border-radius: var(--radius);
+  padding: 32px;
+  width: 100%; max-width: 520px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column; gap: 20px;
+  transform: scale(0.95);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-overlay.active .modal-card {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border-forest); padding-bottom: 16px;
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text-title); }
+.modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: var(--tr); }
+.modal-close:hover { color: #f87171; }
+
 /* IMPRESSÃO A4 PROFISSIONAL SEM QUEBRA DE CARDS */
 @page {
   size: A4 portrait;
@@ -287,6 +345,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="page-title" id="pageTitle">Dashboard Principal · Dra. Silvia Lemos</div>
     
     <div style="display: flex; align-items: center; gap: 12px;">
+      <button class="btn btn-secondary" onclick="toggleTheme()" id="btnThemeToggle" title="Alternar entre Tema Escuro e Claro" style="padding: 6px 12px; font-size: 0.78rem;">
+        🌙 Tema
+      </button>
+
       <button class="btn btn-secondary" onclick="testarConexaoDB()" style="padding: 6px 12px; font-size: 0.78rem; border-color: var(--sage-light); color: var(--sage-light);" title="Testar comunicação com o banco Google Sheets">
         🧪 Testar DB
       </button>
@@ -383,35 +445,56 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div id="iframeView" style="display: none; width: 100%;">
       <iframe id="adminIframe" src="about:blank" style="width: 100%; height: calc(100vh - 110px); border: none; border-radius: 20px; background: var(--forest-card);"></iframe>
     </div>
-          <button class="btn" onclick="openPacienteModal()">+ Cadastrar Paciente</button>
-        </div>
+  </div>
+</main>
 
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>WhatsApp</th>
-                <th>Objetivo</th>
-                <th>Link Anamnese</th>
-              </tr>
-            </thead>
-            <tbody id="tblPacientes">
-              <tr>
-                <td>Juliana Mendes</td>
-                <td>123.456.789-00</td>
-                <td>(21) 99999-8888</td>
-                <td>Reeducação Alimentar &amp; Emagrecimento</td>
-                <td>
-                  <button class="btn btn-secondary" onclick="copiarLinkAnamnese('PAC-01')" style="padding:6px 12px; font-size:0.75rem;">🔗 Copiar Link Anamnese</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+<!-- MODAL PADRÃO DE NOVO AGENDAMENTO -->
+<div class="modal-overlay" id="modalAgendamento">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">📅 Novo Agendamento</div>
+      <button class="modal-close" onclick="closeAgendamentoModal()">✕</button>
+    </div>
+
+    <form onsubmit="salvarNovoAgendamento(event)" class="modal-body">
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Nome do Paciente</label>
+        <input type="text" id="agNome" class="form-control" placeholder="Ex: Juliana Mendes" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Data</label>
+          <input type="date" id="agData" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Horário</label>
+          <input type="time" id="agHora" class="form-control" value="09:00" required>
         </div>
       </div>
-    </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Tipo de Consulta</label>
+          <select id="agTipo" class="form-control">
+            <option value="Online (Google Meet)">Online (Google Meet)</option>
+            <option value="Presencial">Presencial no Consultório</option>
+            <option value="Retorno de Avaliação">Retorno de Avaliação</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Valor (R$)</label>
+          <input type="number" id="agValor" class="form-control" value="250">
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px;">
+        <button type="button" class="btn btn-secondary" onclick="closeAgendamentoModal()">Cancelar</button>
+        <button type="submit" class="btn">💾 Confirmar Agendamento</button>
+      </div>
+    </form>
+  </div>
+</div>
 
     <!-- 3. GERADOR DE PLANO ALIMENTAR & LISTA DE COMPRAS PDF (EDITORIAL CLEAN) -->
     <div class="view-panel" id="planoView">
@@ -631,15 +714,48 @@ async function carregarDadosDashboard() {
     if (kpiPre) kpiPre.innerText = "0";
     if (kpiFat) kpiFat.innerText = "R$ 0";
 
-    if (tblAg) {
-      tblAg.innerHTML = `
-        <tr>
-          <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">
-            Nenhum agendamento cadastrado para hoje.
-          </td>
-        </tr>
-      `;
+// MODAL DE NOVO AGENDAMENTO
+function openAgendamentoModal() {
+  const modal = document.getElementById('modalAgendamento');
+  if (modal) {
+    modal.classList.add('active');
+    const inputData = document.getElementById('agData');
+    if (inputData && !inputData.value) {
+      inputData.value = new Date().toISOString().split('T')[0];
     }
+  }
+}
+
+function closeAgendamentoModal() {
+  const modal = document.getElementById('modalAgendamento');
+  if (modal) modal.classList.remove('active');
+}
+
+async function salvarNovoAgendamento(e) {
+  e.preventDefault();
+  const paciente_nome = document.getElementById('agNome').value;
+  const data = document.getElementById('agData').value;
+  const hora = document.getElementById('agHora').value;
+  const tipo = document.getElementById('agTipo').value;
+  const valor = parseFloat(document.getElementById('agValor').value) || 250;
+
+  const agendamento = {
+    paciente_id: "PAC-" + Date.now(),
+    paciente_nome,
+    data,
+    hora,
+    tipo,
+    valor,
+    status: "Confirmado"
+  };
+
+  const res = await apiCall('saveAgendamento', { agendamento });
+  if (res && res.success) {
+    alert(`✅ Agendamento de ${paciente_nome} cadastrado com sucesso!`);
+    closeAgendamentoModal();
+    carregarDadosDashboard();
+  } else {
+    alert("Erro ao criar agendamento.");
   }
 }
 
@@ -1079,6 +1195,52 @@ async function salvarPlanoNoBancoSheets() {
   }
 }
 
+// GERENCIAMENTO DE TEMAS (ESCURO / CLARO)
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('kos_theme', next);
+  
+  const btn = document.getElementById('btnThemeToggle');
+  if (btn) btn.innerText = next === 'light' ? '☀️ Claro' : '🌙 Tema';
+
+  const iframe = document.getElementById('adminIframe');
+  if (iframe && iframe.contentWindow) {
+    try {
+      iframe.contentWindow.postMessage({ type: 'SET_THEME', theme: next }, '*');
+    } catch(err){}
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('kos_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn = document.getElementById('btnThemeToggle');
+  if (btn) btn.innerText = saved === 'light' ? '☀️ Claro' : '🌙 Tema';
+}
+
+// MÁSCARAS E FORMATAÇÃO DE DADOS
+function maskCPF(v) {
+  return String(v || '').replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    .slice(0, 14);
+}
+
+function maskPhone(v) {
+  const d = String(v || '').replace(/\D/g, '');
+  if (d.length <= 10) {
+    return d.replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4})(\d)/, '$1-$2')
+      .slice(0, 14);
+  }
+  return d.replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+    .slice(0, 15);
+}
+
 // NAVEGAÇÃO ENTRE HOME E IFRAME CENTRAL
 function openHome(el) {
   const homeView = document.getElementById('homeView');
@@ -1115,6 +1277,7 @@ function openIframe(url, el) {
 
 // INICIALIZAR GRÁFICOS DA HOME E DASHBOARD
 window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   if (sessionStorage.getItem('kos_adm_auth') === 'true') {
     const lock = document.getElementById('adminLockscreen');
     if (lock) lock.style.display = 'none';
