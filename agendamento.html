@@ -359,12 +359,15 @@ body.in-iframe .container{padding-top:16px!important}
           <div class="success-icon">🌿</div>
           <div class="success-title">Consulta Agendada!</div>
           <div class="success-detail" id="successMsg"></div>
-          <div id="emailBadge" style="display:none">
-            <span class="success-badge">📧 E-mail com acesso e PDF enviado</span>
+          <div id="emailBadge" style="display:none; margin-top:10px;">
+            <span class="success-badge">📧 E-mail com confirmação e credenciais de acesso enviado</span>
           </div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+          <div style="font-size:0.85rem; color:var(--sage-light); margin-top:12px; line-height:1.5; font-weight:700;">
+            ✨ Seu cadastro de paciente foi gerado automaticamente! Utilize seu e-mail/CPF para acessar seu portal.
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px">
             <button class="btn btn-secondary" onclick="fecharModal()">Fechar</button>
-            <button class="btn" onclick="fecharModal();abrirModal()">+ Nova Consulta</button>
+            <a href="login.html" class="btn" style="text-decoration:none;">🔑 Entrar no Portal do Paciente →</a>
           </div>
         </div>
       </div>
