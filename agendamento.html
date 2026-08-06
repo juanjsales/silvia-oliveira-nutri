@@ -277,17 +277,14 @@ body.in-iframe .container{padding-top:16px!important}
           </div>
         </div>
 
-        <!-- Formulário novo paciente -->
+        <!-- Formulário novo paciente — apenas dados para contato/agendamento -->
         <div id="formNovo" style="display:none; display:flex; flex-direction:column; gap:14px;">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nome Completo *</label>
-              <input type="text" id="nNome" class="form-control" placeholder="Ex: Ana Paula Ribeiro">
-            </div>
-            <div class="form-group">
-              <label>CPF *</label>
-              <input type="text" id="nCPF" class="form-control" placeholder="000.000.000-00" oninput="mascaraCPF(this)">
-            </div>
+          <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:10px 14px; font-size:0.8rem; color:var(--sage-light); display:flex; align-items:center; gap:8px;">
+            ℹ️ <span>Dados clínicos completos (CPF, nascimento, histórico) serão coletados na <strong>Anamnese</strong>, no dia da consulta.</span>
+          </div>
+          <div class="form-group">
+            <label>Nome Completo *</label>
+            <input type="text" id="nNome" class="form-control" placeholder="Ex: Ana Paula Ribeiro">
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -295,25 +292,9 @@ body.in-iframe .container{padding-top:16px!important}
               <input type="text" id="nWA" class="form-control" placeholder="(21) 99999-9999" oninput="mascaraPhone(this)">
             </div>
             <div class="form-group">
-              <label>Data de Nascimento</label>
-              <input type="date" id="nNasc" class="form-control">
+              <label>E-mail *</label>
+              <input type="email" id="nEmail" class="form-control" placeholder="paciente@email.com">
             </div>
-          </div>
-          <div class="form-group">
-            <label>E-mail (receberá acesso e PDF) *</label>
-            <input type="email" id="nEmail" class="form-control" placeholder="paciente@email.com">
-          </div>
-          <div class="form-group">
-            <label>Objetivo Clínico Principal</label>
-            <select id="nObjetivo" class="form-control">
-              <option>Reeducação Alimentar & Emagrecimento</option>
-              <option>Nutrição Esportiva & Hipertrofia</option>
-              <option>Saúde Intestinal & Bio-Reset</option>
-              <option>Controle de Diabetes & Doenças Crônicas</option>
-              <option>Nutrição na Gestação & Amamentação</option>
-              <option>Longevidade & Medicina Preventiva</option>
-              <option>Nutrição Comportamental</option>
-            </select>
           </div>
         </div>
 
@@ -640,7 +621,7 @@ function abrirModal() {
   document.getElementById('pacResults').style.display='none';
   document.getElementById('pacSelecionadoBox').style.display='none';
   // Reset novo paciente
-  ['nNome','nCPF','nWA','nEmail','nNasc'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['nNome','nWA','nEmail'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('rExistente').checked=true;
   togglePacForm();
   document.getElementById('modalNovaConsulta').classList.add('active');
@@ -761,11 +742,8 @@ async function salvarConsulta() {
     paciente = {
       id:       'NOVO',
       nome:     document.getElementById('nNome').value.trim(),
-      cpf:      document.getElementById('nCPF').value.replace(/\D/g,''),
-      whatsapp: document.getElementById('nWA').value.replace(/\D/g,''),
+      whatsapp: document.getElementById('nWA')?.value.replace(/\D/g,'') || '',
       email:    document.getElementById('nEmail').value.trim(),
-      data_nascimento: document.getElementById('nNasc').value,
-      objetivo: document.getElementById('nObjetivo').value,
       tipo:     'PACIENTE'
     };
   } else {

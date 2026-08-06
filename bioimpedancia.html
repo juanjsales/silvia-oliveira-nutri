@@ -198,7 +198,7 @@ tr:hover td { background: var(--sage-dim); }
 
 </main>
 
-<!-- ── MODAL PADRÃO DE NOVO PACIENTE (igual ao pacientes.html) ── -->
+<!-- ── MODAL PADRÃO DE NOVO PACIENTE (alinhado com pacientes.html) ── -->
 <div class="modal-overlay" id="modalNovoPaciente">
   <div class="modal-card" style="max-width:580px;">
     <div class="modal-header">
@@ -209,41 +209,22 @@ tr:hover td { background: var(--sage-dim); }
       <button class="modal-close" onclick="fecharNovoPacienteModal()">✕</button>
     </div>
     <form onsubmit="salvarNovoPaciente(event)" style="display:flex; flex-direction:column; gap:16px; padding-top:4px;">
+      <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:10px 14px; font-size:0.8rem; color:var(--sage-light); display:flex; align-items:center; gap:8px;">
+        ℹ️ <span>Dados clínicos completos (CPF, nascimento, histórico) serão coletados na <strong>Anamnese</strong>, no dia da consulta.</span>
+      </div>
       <div class="form-group">
         <label>Nome Completo *</label>
         <input type="text" id="npNome" class="form-control" placeholder="Ex: Carlos Eduardo Torres" required>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
         <div class="form-group">
-          <label>CPF *</label>
-          <input type="text" id="npCPF" class="form-control" placeholder="000.000.000-00" oninput="this.value=maskCPF(this.value)" required>
-        </div>
-        <div class="form-group">
           <label>WhatsApp</label>
           <input type="text" id="npWsp" class="form-control" placeholder="(21) 99999-8888" oninput="this.value=maskPhone(this.value)">
         </div>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
         <div class="form-group">
-          <label>Data de Nascimento</label>
-          <input type="date" id="npNasc" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>E-mail (acesso e PDF) *</label>
+          <label>E-mail *</label>
           <input type="email" id="npEmail" class="form-control" placeholder="paciente@email.com" required>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Objetivo Clínico Principal</label>
-        <select id="npObj" class="form-control">
-          <option>Reeducação Alimentar &amp; Emagrecimento</option>
-          <option>Nutrição Esportiva &amp; Hipertrofia</option>
-          <option>Saúde Intestinal &amp; Bio-Reset</option>
-          <option>Controle de Diabetes &amp; Doenças Crônicas</option>
-          <option>Nutrição na Gestação &amp; Amamentação</option>
-          <option>Longevidade &amp; Medicina Preventiva</option>
-          <option>Nutrição Comportamental</option>
-        </select>
       </div>
       <div style="display:flex; justify-content:flex-end; gap:12px; padding-top:14px; border-top:1px solid var(--border-forest);">
         <button type="button" class="btn btn-secondary" onclick="fecharNovoPacienteModal()">Cancelar</button>
@@ -794,17 +775,12 @@ function fecharNovoPacienteModal() {
 async function salvarNovoPaciente(e) {
   e.preventDefault();
   const nome     = document.getElementById('npNome').value.trim();
-  const cpf      = document.getElementById('npCPF').value.replace(/\D/g,'');
-  const whatsapp = document.getElementById('npWsp').value.replace(/\D/g,'');
+  const whatsapp = (document.getElementById('npWsp')?.value || '').replace(/\D/g,'');
   const email    = document.getElementById('npEmail').value.trim();
-  const data_nasc= document.getElementById('npNasc').value;
-  const objetivo = document.getElementById('npObj').value;
 
   const novoPaciente = {
     id: 'PAC-' + Date.now(),
-    nome, cpf, whatsapp, email,
-    data_nascimento: data_nasc,
-    objetivo,
+    nome, whatsapp, email,
     data_cadastro: new Date().toISOString().split('T')[0],
     senha_pin: '123456'
   };
