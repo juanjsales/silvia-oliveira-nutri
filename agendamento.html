@@ -497,22 +497,45 @@ function updateMonthStats() {
   document.getElementById('statPresencial').textContent = mesAgs.filter(a=>String(a.tipo||'').toLowerCase().includes('presencial')).length;
 }
 
-// ── Helpers de data ────────────────────────────────────────────────
+// -- Helpers de data --
 function parseDate(val) {
   if (!val) return null;
   const s = String(val).trim();
-  if (s.includes('T')) return new Date(s);
+  if (s.includes('T')) {
+    const datePart = s.split('T')[0];
+    // Filtra epoch falso do Sheets (hora pura serializada como 1899-12-30)
+    if (datePart === '1899-12-30' || datePart === '1899-12-31') return null;
+    return new Date(s);
+  }
   if (s.includes('/')) { const [d,m,y]=s.split('/'); return new Date(+y,+m-1,+d); }
   if (s.includes('-')) { const [y,m,d]=s.split('-'); return new Date(+y,+m-1,+d); }
   return null;
 }
 function isSameDay(a,b) { return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+
+// Extrai HH:MM sem passar por new Date() para evitar conversao de fuso
 function formatTime(val) {
   if (!val) return '';
   const s = String(val).trim();
-  if (s.includes('T')) { const p=s.split('T')[1]?.split(':'); if(p?.length>=2) return `${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`; }
-  if (s.includes(':')) { const p=s.split(':'); return `${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`; }
+  if (s.includes('T')) {
+    const timePart = s.split('T')[1] || '';
+    const p = timePart.split(':');
+    if (p.length >= 2) return p[0].padStart(2,'0') + ':' + p[1].padStart(2,'0');
+  }
+  if (s.includes(':')) {
+    const p = s.split(':');
+    return p[0].padStart(2,'0') + ':' + p[1].padStart(2,'0');
+  }
   return s;
+}
+
+// Remove qualquer ISO timestamp que venha colado ao campo tipo/observacao
+function sanitizaTipo(val) {
+  if (!val) return 'Consulta';
+  return String(val)
+    .replace(/\d{4}-\d{2}-\d{2}T[\d:.Z+-]+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 // ── Lista do Dia ───────────────────────────────────────────────────
@@ -537,10 +560,10 @@ function buildCard(ag) {
   const hora   = formatTime(ag.hora)||ag.hora||'--:--';
   const periodo = Number(hora.split(':')[0])<12?'AM':'PM';
   const nome   = ag.paciente_nome||ag.nome||'Paciente';
-  const tipo   = ag.tipo||'Consulta';
+  const tipo   = sanitizaTipo(ag.tipo);
   const status = ag.status||'Confirmado';
   const valor  = ag.valor ? `R$ ${parseFloat(ag.valor).toFixed(2).replace('.',',')}` : '';
-  const obs    = ag.observacao||'';
+  const obs    = sanitizaTipo(ag.observacao);
   const id     = ag.id||'';
   const pacId  = ag.paciente_id||'';
 
