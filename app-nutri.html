@@ -246,26 +246,32 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   </div>
 
   <nav class="nav-menu">
-    <div class="nav-item active" onclick="switchView('agendaView', this)">
-      <span>📊</span> Dashboard &amp; Agenda
+    <div class="nav-item active" onclick="openHome(this)">
+      <span>🏠</span> Home (Gráficos &amp; KPIs)
     </div>
-    <a href="pacientes.html" class="nav-item" style="color: var(--text-muted); text-decoration: none;">
-      <span>👤</span> Pacientes &amp; Anamneses ↗️
+    <div class="nav-item" onclick="openIframe('pacientes.html', this)">
+      <span>👤</span> Pacientes &amp; Anamneses
+    </div>
+    <div class="nav-item" onclick="openIframe('gerenciador-plano.html', this)">
+      <span>🥗</span> Gerenciador de Cardápios
+    </div>
+    <div class="nav-item" onclick="openIframe('bioimpedancia.html', this)">
+      <span>📈</span> Bioimpedância &amp; Evolução
+    </div>
+    <a href="index.html" target="_blank" class="nav-item" style="color: var(--text-muted); text-decoration: none;">
+      <span>🌐</span> Ver Site ↗️
     </a>
-    <a href="gerenciador-plano.html" class="nav-item" style="color: var(--sage-light); font-weight:800; text-decoration: none;">
-      <span>🥗</span> Gerenciador de Plano ↗️
-    </a>
-    <a href="bioimpedancia.html" class="nav-item" style="color: var(--text-muted); text-decoration: none;">
-      <span>📈</span> Bioimpedância &amp; Evolução ↗️
+    <a href="login.html" class="nav-item" style="color: #f87171; text-decoration: none;" onclick="sessionStorage.clear()">
+      <span>🚪</span> Sair
     </a>
   </nav>
 </aside>
 
 <main class="main-wrapper">
   <header class="top-header no-print">
-    <div class="page-title" id="pageTitle">Dashboard Administrativo · Dra. Silvia Lemos</div>
+    <div class="page-title" id="pageTitle">Dashboard Principal · Dra. Silvia Lemos</div>
     
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
       <button class="btn btn-secondary" onclick="testarConexaoDB()" style="padding: 6px 12px; font-size: 0.78rem; border-color: var(--sage-light); color: var(--sage-light);" title="Testar comunicação com o banco Google Sheets">
         🧪 Testar DB
       </button>
@@ -274,24 +280,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         🟢 DB Conectado
       </div>
 
-      <a href="pacientes.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">👤 Pacientes</a>
-      <a href="gerenciador-plano.html" class="btn" style="padding: 6px 14px; font-size: 0.78rem; background: var(--sage-light); color: var(--forest-dark);">🥗 Plano Alimentar ↗️</a>
-      <a href="bioimpedancia.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">📈 Bioimpedância</a>
-      <a href="index.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">🌐 Ver Site</a>
-      <a href="login.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; color:#f87171;" onclick="sessionStorage.clear()">🚪 Sair</a>
-    </div>
-  </header>
-      <div class="top-user">
+      <div class="top-user" style="display:flex; align-items:center; gap:8px; margin-left:10px;">
         <img src="assets/silvia-hero.webp" alt="Dra. Silvia Lemos" class="top-avatar" loading="lazy" decoding="async">
-        <span>Dra. Silvia de Oliveira Lemos</span>
+        <span style="font-size:0.85rem; font-weight:700;">Dra. Silvia de Oliveira Lemos</span>
       </div>
+
+      <a href="login.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; color:#f87171;" onclick="sessionStorage.clear()">🚪 Sair</a>
     </div>
   </header>
 
   <div class="content-area">
     
-    <!-- 1. AGENDA & KPIS -->
-    <div class="view-panel active" id="agendaView">
+    <!-- 1. HOME VIEW (GRÁFICOS, KPIS & AGENDA) -->
+    <div id="homeView" style="display: block;">
       <div class="kpi-grid">
         <div class="kpi-card">
           <div class="kpi-label">Consultas Hoje</div>
@@ -311,9 +312,31 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
       </div>
 
+      <!-- PAINEL DE GRÁFICOS DA HOME -->
+      <div class="grid-2" style="margin-bottom: 24px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📈 Atendimentos &amp; Faturamento Mensal</div>
+          </div>
+          <div style="height: 280px; position: relative;">
+            <canvas id="chartAtendimentosHome"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📊 Pacientes por Objetivo Clínico</div>
+          </div>
+          <div style="height: 280px; position: relative;">
+            <canvas id="chartObjetivosHome"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- AGENDA DE CONSULTAS -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📅 Consultas Agendadas</div>
+          <div class="card-title">📅 Consultas Agendadas para Hoje</div>
           <button class="btn" onclick="openAgendamentoModal()">+ Novo Agendamento</button>
         </div>
 
@@ -353,11 +376,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
 
-    <!-- 2. PACIENTES & ANAMNESE -->
-    <div class="view-panel" id="pacientesView">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">👤 Cadastro de Pacientes</div>
+    <!-- 2. IFRAME CONTAINER CENTRAL -->
+    <div id="iframeView" style="display: none; width: 100%;">
+      <iframe id="adminIframe" src="about:blank" style="width: 100%; height: calc(100vh - 110px); border: none; border-radius: 20px; background: var(--forest-card);"></iframe>
+    </div>
           <button class="btn" onclick="openPacienteModal()">+ Cadastrar Paciente</button>
         </div>
 
@@ -1032,7 +1054,41 @@ async function salvarPlanoNoBancoSheets() {
   }
 }
 
-// INICIALIZAR GRÁFICO E DASHBOARD
+// NAVEGAÇÃO ENTRE HOME E IFRAME CENTRAL
+function openHome(el) {
+  const homeView = document.getElementById('homeView');
+  const iframeView = document.getElementById('iframeView');
+  const pageTitle = document.getElementById('pageTitle');
+
+  if (homeView) homeView.style.display = 'block';
+  if (iframeView) iframeView.style.display = 'none';
+  if (pageTitle) pageTitle.innerText = 'Dashboard Principal · Dra. Silvia Lemos';
+
+  document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+function openIframe(url, el) {
+  const homeView = document.getElementById('homeView');
+  const iframeView = document.getElementById('iframeView');
+  const iframe = document.getElementById('adminIframe');
+  const pageTitle = document.getElementById('pageTitle');
+
+  if (homeView) homeView.style.display = 'none';
+  if (iframeView) iframeView.style.display = 'block';
+  if (iframe) iframe.src = url;
+
+  if (pageTitle) {
+    if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Lemos';
+    else if (url.includes('gerenciador')) pageTitle.innerText = 'Gerenciador de Cardápios & PDF · Dra. Silvia Lemos';
+    else if (url.includes('bioimpedancia')) pageTitle.innerText = 'Bioimpedância & Evolução · Dra. Silvia Lemos';
+  }
+
+  document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+// INICIALIZAR GRÁFICOS DA HOME E DASHBOARD
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('kos_adm_auth') === 'true') {
     const lock = document.getElementById('adminLockscreen');
@@ -1041,30 +1097,25 @@ window.addEventListener('DOMContentLoaded', () => {
 
   carregarDadosDashboard();
 
-  // INICIALIZA GERADOR DE PLANO ALIMENTAR V3
-  carregarLocalStorage();
-  renderInputs();
-  atualizar();
-
-  const ctx = document.getElementById('chartEvolucao');
-  if (ctx) {
-    chartInstance = new Chart(ctx, {
-      type: 'line',
+  // 1. GRÁFICO DE ATENDIMENTOS & FATURAMENTO NA HOME
+  const ctxAtend = document.getElementById('chartAtendimentosHome');
+  if (ctxAtend) {
+    new Chart(ctxAtend, {
+      type: 'bar',
       data: {
         labels: ['Maio/26', 'Junho/26', 'Julho/26', 'Agosto/26'],
         datasets: [
           {
-            label: 'Peso (kg)',
-            data: [71.2, 69.0, 67.4, 65.5],
-            borderColor: '#8ca481',
-            backgroundColor: 'rgba(140, 164, 129, 0.1)',
-            fill: true,
-            tension: 0.3
+            label: 'Consultas Realizadas',
+            data: [22, 28, 35, 42],
+            backgroundColor: '#8ca481',
+            borderRadius: 6
           },
           {
-            label: 'Gordura corporal (%)',
-            data: [28.5, 26.1, 24.0, 22.4],
-            borderColor: '#203528',
+            label: 'Faturamento Estimado (R$)',
+            data: [5500, 7000, 8750, 10500],
+            borderColor: '#eef4e5',
+            type: 'line',
             tension: 0.3
           }
         ]
@@ -1072,13 +1123,33 @@ window.addEventListener('DOMContentLoaded', () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } }
-        },
+        plugins: { legend: { labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } } },
         scales: {
           x: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } },
           y: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } }
         }
+      }
+    });
+  }
+
+  // 2. GRÁFICO DE OBJETIVOS CLÍNICOS NA HOME
+  const ctxObj = document.getElementById('chartObjetivosHome');
+  if (ctxObj) {
+    new Chart(ctxObj, {
+      type: 'doughnut',
+      data: {
+        labels: ['Emagrecimento & Reeducação (55%)', 'Hipertrofia & Esporte (30%)', 'Saúde Intestinal (15%)'],
+        datasets: [{
+          data: [55, 30, 15],
+          backgroundColor: ['#8ca481', '#a4ba9a', '#203528'],
+          borderColor: '#182a1f',
+          borderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } } }
       }
     });
   }
