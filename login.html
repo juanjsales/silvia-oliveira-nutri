@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Login · Dra. Silvia Lemos Nutricionista</title>
+<title>Login Unificado · Dra. Silvia Lemos Nutricionista</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -53,7 +53,7 @@ body {
   border-radius: var(--radius);
   padding: 40px 32px;
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   box-shadow: 0 24px 60px rgba(0,0,0,0.7);
   display: flex;
   flex-direction: column;
@@ -71,23 +71,6 @@ body {
 }
 .brand-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #fff; }
 .brand-sub { font-size: 0.8rem; color: var(--sage-light); font-weight: 700; letter-spacing: 0.05em; }
-
-/* SELETOR DE MODO (PACIENTE VS ADMIN) */
-.role-tabs {
-  display: grid; grid-template-columns: 1fr 1fr;
-  background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-forest);
-  padding: 4px; border-radius: 14px; gap: 4px;
-}
-.tab-btn {
-  padding: 10px; border-radius: 10px; border: none;
-  background: transparent; color: var(--text-muted);
-  font-family: inherit; font-size: 0.82rem; font-weight: 800;
-  cursor: pointer; transition: var(--tr); text-align: center;
-}
-.tab-btn.active {
-  background: var(--sage-light); color: var(--forest-dark);
-  box-shadow: 0 4px 12px rgba(140, 164, 129, 0.3);
-}
 
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-group label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
@@ -130,45 +113,22 @@ body {
     </div>
   </div>
 
-  <!-- SELETOR PACIENTE OU ADMIN -->
-  <div class="role-tabs">
-    <button class="tab-btn active" id="btnTabPaciente" onclick="setRole('paciente')">🔑 Paciente</button>
-    <button class="tab-btn" id="btnTabAdmin" onclick="setRole('admin')">🔐 Dra. Silvia (Nutri)</button>
-  </div>
-
   <div id="statusBox" class="status-msg"></div>
 
-  <!-- FORMULÁRIO DE LOGIN DO PACIENTE -->
-  <form id="formPaciente" onsubmit="handlePacienteLogin(event)" style="display: flex; flex-direction: column; gap: 16px;">
+  <!-- FORMULÁRIO DE LOGIN ÚNICO UNIFICADO -->
+  <form onsubmit="handleUnifiedLogin(event)" style="display: flex; flex-direction: column; gap: 16px;">
     <div class="form-group">
-      <label>CPF ou E-mail do Paciente</label>
-      <input type="text" id="pacienteCPF" class="form-control" placeholder="000.000.000-00 ou email@exemplo.com" value="123.456.789-00" required>
+      <label>CPF ou E-mail de Acesso</label>
+      <input type="text" id="userInput" class="form-control" placeholder="000.000.000-00 ou email@exemplo.com" required>
     </div>
 
     <div class="form-group">
-      <label>Sua Senha PIN</label>
-      <input type="password" id="pacientePIN" class="form-control" placeholder="Digite seu PIN de 6 dígitos" value="123456" required>
+      <label>Sua Senha ou PIN</label>
+      <input type="password" id="passInput" class="form-control" placeholder="Digite sua senha de acesso" required>
     </div>
 
-    <button type="submit" class="btn-submit" id="btnPaciente">
-      🔑 Entrar no Portal do Paciente
-    </button>
-  </form>
-
-  <!-- FORMULÁRIO DE LOGIN ADMINISTRATIVO -->
-  <form id="formAdmin" onsubmit="handleAdminLogin(event)" style="display: none; flex-direction: column; gap: 16px;">
-    <div class="form-group">
-      <label>E-mail Administrativo</label>
-      <input type="email" id="adminEmail" class="form-control" placeholder="silviadeoliveira24.nutri@gmail.com" value="silviadeoliveira24.nutri@gmail.com" required>
-    </div>
-
-    <div class="form-group">
-      <label>Senha do Painel</label>
-      <input type="password" id="adminPass" class="form-control" placeholder="••••••••" value="silvia2026" required>
-    </div>
-
-    <button type="submit" class="btn-submit" id="btnAdmin">
-      🔐 Acessar Painel Nutri
+    <button type="submit" class="btn-submit">
+      🔑 Entrar no Sistema
     </button>
   </form>
 
@@ -185,31 +145,6 @@ body {
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
-
-let activeRole = 'paciente';
-
-function setRole(role) {
-  activeRole = role;
-  const btnPac = document.getElementById('btnTabPaciente');
-  const btnAdm = document.getElementById('btnTabAdmin');
-  const formPac = document.getElementById('formPaciente');
-  const formAdm = document.getElementById('formAdmin');
-  const statusBox = document.getElementById('statusBox');
-
-  if (statusBox) statusBox.style.display = 'none';
-
-  if (role === 'paciente') {
-    btnPac.classList.add('active');
-    btnAdm.classList.remove('active');
-    formPac.style.display = 'flex';
-    formAdm.style.display = 'none';
-  } else {
-    btnAdm.classList.add('active');
-    btnPac.classList.remove('active');
-    formAdm.style.display = 'flex';
-    formPac.style.display = 'none';
-  }
-}
 
 function showStatus(msg, type = 'error') {
   const statusBox = document.getElementById('statusBox');
@@ -234,62 +169,50 @@ async function apiCall(action, payload = {}) {
   }
 }
 
-// LOGIN PACIENTE
-async function handlePacienteLogin(e) {
+async function handleUnifiedLogin(e) {
   e.preventDefault();
-  const cpf = document.getElementById('pacienteCPF').value.trim();
-  const pin = document.getElementById('pacientePIN').value.trim();
+  const identifierInput = document.getElementById('userInput').value.trim();
+  const passwordInput = document.getElementById('passInput').value.trim();
 
-  if (!cpf || !pin) {
-    showStatus("Por favor, informe seu CPF e PIN de acesso.");
+  if (!identifierInput || !passwordInput) {
+    showStatus("Por favor, informe seu CPF/E-mail e senha de acesso.");
     return;
   }
 
-  showStatus("Autenticando paciente...", "success");
+  showStatus("Autenticando no banco de dados...", "success");
 
-  const res = await apiCall('loginPaciente', { cpf, senha_pin: pin });
-  if (res && res.success) {
-    sessionStorage.setItem('kos_paciente_auth', 'true');
-    sessionStorage.setItem('kos_paciente_dados', JSON.stringify(res.paciente || { nome: cpf }));
-    showStatus("✅ Login realizado! Redirecionando...", "success");
-    setTimeout(() => {
-      window.location.href = "portal-paciente.html";
-    }, 600);
-  } else {
-    showStatus(res.error || "CPF/E-mail ou PIN incorreto. Tente novamente.");
-  }
-}
+  // Chamada à API unificada loginUsuario
+  const res = await apiCall('loginUsuario', { identifierInput, passwordInput });
 
-// LOGIN ADMIN (DRA. SILVIA)
-async function handleAdminLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('adminEmail').value.trim();
-  const senha = document.getElementById('adminPass').value.trim();
+  if (res && res.success && res.data) {
+    const user = res.data;
+    const userTipo = (user.tipo || "PACIENTE").toUpperCase();
 
-  if (!email || !senha) {
-    showStatus("Por favor, informe seu e-mail e senha de administrador.");
-    return;
-  }
-
-  showStatus("Autenticando Dra. Silvia...", "success");
-
-  const res = await apiCall('loginAdmin', { email, senha });
-  if (res && res.success) {
-    sessionStorage.setItem('kos_adm_auth', 'true');
-    showStatus("✅ Acesso autorizado! Redirecionando...", "success");
-    setTimeout(() => {
-      window.location.href = "gerenciador-plano.html";
-    }, 600);
-  } else {
-    // Fallback de segurança local
-    if (email === "silviadeoliveira24.nutri@gmail.com" && senha === "silvia2026") {
+    if (userTipo === 'ADMIN') {
       sessionStorage.setItem('kos_adm_auth', 'true');
-      showStatus("✅ Acesso autorizado (Modo Offline)! Redirecionando...", "success");
+      sessionStorage.setItem('kos_user_dados', JSON.stringify(user));
+      showStatus(`✅ Bem-vinda, ${user.nome}! Entrando no Painel...`, "success");
       setTimeout(() => {
-        window.location.href = "gerenciador-plano.html";
+        window.location.href = "app-nutri.html";
       }, 600);
     } else {
-      showStatus(res.error || "Credenciais de administrador incorretas.");
+      sessionStorage.setItem('kos_paciente_auth', 'true');
+      sessionStorage.setItem('kos_paciente_dados', JSON.stringify(user));
+      showStatus(`✅ Bem-vindo(a), ${user.nome}! Entrando no Portal...`, "success");
+      setTimeout(() => {
+        window.location.href = "portal-paciente.html";
+      }, 600);
+    }
+  } else {
+    // Fallback de segurança local para Dra. Silvia
+    if (identifierInput.toLowerCase() === "silviadeoliveira24.nutri@gmail.com" && passwordInput === "silvia2026") {
+      sessionStorage.setItem('kos_adm_auth', 'true');
+      showStatus("✅ Acesso Autorizado! Entrando no Painel...", "success");
+      setTimeout(() => {
+        window.location.href = "app-nutri.html";
+      }, 600);
+    } else {
+      showStatus(res.error || "CPF/E-mail ou Senha incorreta. Tente novamente.");
     }
   }
 }

@@ -247,42 +247,40 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
   <nav class="nav-menu">
     <div class="nav-item active" onclick="switchView('agendaView', this)">
-      <span>📅</span> Agenda &amp; KPIs
+      <span>📊</span> Dashboard &amp; Agenda
     </div>
-    <div class="nav-item" onclick="switchView('pacientesView', this)">
-      <span>👤</span> Pacientes &amp; Anamnese
-    </div>
-    <a href="gerenciador-plano.html" class="nav-item" style="color: var(--sage-light); font-weight:800;">
-      <span>🥗</span> Gerenciador de Plano (Página Dedicada) ↗️
+    <a href="pacientes.html" class="nav-item" style="color: var(--text-muted); text-decoration: none;">
+      <span>👤</span> Pacientes &amp; Anamneses ↗️
     </a>
-    <div class="nav-item" onclick="switchView('planoView', this)">
-      <span>📄</span> Visualizar Prescrição &amp; PDF
-    </div>
-    <div class="nav-item" onclick="switchView('evolucaoView', this)">
-      <span>📈</span> Bioimpedância &amp; Evolução
-    </div>
+    <a href="gerenciador-plano.html" class="nav-item" style="color: var(--sage-light); font-weight:800; text-decoration: none;">
+      <span>🥗</span> Gerenciador de Plano ↗️
+    </a>
+    <a href="bioimpedancia.html" class="nav-item" style="color: var(--text-muted); text-decoration: none;">
+      <span>📈</span> Bioimpedância &amp; Evolução ↗️
+    </a>
   </nav>
 </aside>
 
 <main class="main-wrapper">
   <header class="top-header no-print">
-    <div class="page-title" id="pageTitle">Agenda &amp; KPIs Diários</div>
+    <div class="page-title" id="pageTitle">Dashboard Administrativo · Dra. Silvia Lemos</div>
     
     <div style="display: flex; align-items: center; gap: 10px;">
       <button class="btn btn-secondary" onclick="testarConexaoDB()" style="padding: 6px 12px; font-size: 0.78rem; border-color: var(--sage-light); color: var(--sage-light);" title="Testar comunicação com o banco Google Sheets">
-        🧪 Testar Sincronização DB
+        🧪 Testar DB
       </button>
       
       <div id="dbStatusBadge" style="font-size: 0.75rem; font-weight: 800; color: #8ca481; background: rgba(140,164,129,0.15); border: 1px solid var(--sage-light); padding: 4px 10px; border-radius: 8px;">
-        🟢 DB Conectado (Google Sheets)
+        🟢 DB Conectado
       </div>
 
-      <a href="gerenciador-plano.html" class="btn" style="padding: 6px 14px; font-size: 0.78rem; background: var(--sage-light); color: var(--forest-dark);" title="Abrir Gerenciador de Plano em Página Dedicada">
-        🥗 Gerenciador de Plano ↗️
-      </a>
+      <a href="pacientes.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">👤 Pacientes</a>
+      <a href="gerenciador-plano.html" class="btn" style="padding: 6px 14px; font-size: 0.78rem; background: var(--sage-light); color: var(--forest-dark);">🥗 Plano Alimentar ↗️</a>
+      <a href="bioimpedancia.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">📈 Bioimpedância</a>
       <a href="index.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">🌐 Ver Site</a>
-      <a href="portal-paciente.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">🔑 Portal Paciente</a>
-      
+      <a href="login.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; color:#f87171;" onclick="sessionStorage.clear()">🚪 Sair</a>
+    </div>
+  </header>
       <div class="top-user">
         <img src="assets/silvia-hero.webp" alt="Dra. Silvia Lemos" class="top-avatar" loading="lazy" decoding="async">
         <span>Dra. Silvia de Oliveira Lemos</span>

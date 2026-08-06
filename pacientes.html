@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pacientes & Anamneses · Dra. Silvia Lemos</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --forest-dark: #203528;
+  --forest-card: #182a1f;
+  --forest-deep: #0e1a12;
+  --sage-light: #8ca481;
+  --sage-dim: rgba(140, 164, 129, 0.2);
+  --text-light: #eef4e5;
+  --text-muted: #a0b399;
+  --border-forest: rgba(140, 164, 129, 0.25);
+  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
+
+/* HEADER */
+.top-header { background: var(--forest-card); border-bottom: 1px solid var(--border-forest); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; sticky: top; z-index: 100; }
+.brand-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: #fff; }
+.nav-links { display: flex; gap: 16px; align-items: center; }
+.nav-item { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 700; padding: 8px 14px; border-radius: 10px; transition: var(--tr); }
+.nav-item:hover, .nav-item.active { background: rgba(140, 164, 129, 0.15); color: var(--sage-light); }
+
+.container { max-width: 1300px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 28px; }
+
+.card { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.card-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #fff; }
+
+.btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.btn:hover { background: #eef4e5; transform: translateY(-2px); }
+
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+th { background: rgba(0,0,0,0.3); padding: 14px 16px; color: var(--sage-light); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-forest); }
+td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-light); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <div>
+    <div class="brand-title">Gestão de Pacientes</div>
+    <div style="font-size:0.78rem; color:var(--sage-light); font-weight:700;">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
+  </div>
+
+  <nav class="nav-links">
+    <a href="app-nutri.html" class="nav-item">📊 Dashboard</a>
+    <a href="pacientes.html" class="nav-item active">👤 Pacientes &amp; Anamneses</a>
+    <a href="gerenciador-plano.html" class="nav-item">🥗 Gerenciador de Plano</a>
+    <a href="bioimpedancia.html" class="nav-item">📈 Bioimpedância</a>
+    <a href="index.html" class="nav-item">🌐 Ver Site</a>
+    <a href="login.html" class="nav-item" style="color:#f87171;" onclick="sessionStorage.clear()">🚪 Sair</a>
+  </nav>
+</header>
+
+<main class="container">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">👤 Pacientes Cadastrados &amp; Fichas Clínicas</div>
+      <button class="btn" onclick="openPacienteModal()">+ Novo Paciente</button>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>ID / Cadastro</th>
+            <th>Nome do Paciente</th>
+            <th>CPF / WhatsApp</th>
+            <th>Objetivo Clínico</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tblPacientes">
+          <tr>
+            <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Carregando pacientes do banco de dados...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+
+async function apiCall(action, payload = {}) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Erro na API:", err);
+    return { success: false, error: err.toString() };
+  }
+}
+
+async function carregarPacientes() {
+  const res = await apiCall('getPacientes');
+  const tbl = document.getElementById('tblPacientes');
+  if (!tbl) return;
+
+  if (res && res.success && res.data) {
+    tbl.innerHTML = '';
+    res.data.forEach(p => {
+      const isPaciente = !p.tipo || p.tipo === "PACIENTE";
+      if (!isPaciente) return;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${p.data_cadastro || ''}</span></td>
+        <td><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
+        <td>${p.cpf || '--'}<br><span style="font-size:0.78rem; color:var(--text-muted);">${p.whatsapp || ''}</span></td>
+        <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
+        <td>
+          <a href="gerenciador-plano.html?paciente=${encodeURIComponent(p.nome)}" class="btn" style="padding:6px 12px; font-size:0.75rem;">🥗 Criar Cardápio</a>
+        </td>
+      `;
+      tbl.appendChild(tr);
+    });
+  }
+}
+
+async function openPacienteModal() {
+  const nome = prompt("Digite o Nome Completo do Paciente:");
+  if (!nome) return;
+  const cpf = prompt("Digite o CPF do Paciente:") || "";
+  const whatsapp = prompt("Digite o WhatsApp com DDD (Ex: 21999998888):") || "";
+  const objetivo = prompt("Digite o Objetivo Principal:") || "Reeducação Alimentar";
+
+  const novoPaciente = { nome, cpf, whatsapp, objetivo, senha_pin: "123456" };
+  const res = await apiCall('savePaciente', { paciente: novoPaciente });
+
+  if (res && res.success) {
+    alert("✅ Paciente cadastrado com sucesso!");
+    carregarPacientes();
+  } else {
+    alert("Erro ao cadastrar paciente.");
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
+    window.location.href = "login.html";
+    return;
+  }
+  carregarPacientes();
+});
+</script>
+</body>
+</html>

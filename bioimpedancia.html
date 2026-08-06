@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bioimpedância & Evolução · Dra. Silvia Lemos</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+  --forest-dark: #203528;
+  --forest-card: #182a1f;
+  --forest-deep: #0e1a12;
+  --sage-light: #8ca481;
+  --sage-dim: rgba(140, 164, 129, 0.2);
+  --text-light: #eef4e5;
+  --text-muted: #a0b399;
+  --border-forest: rgba(140, 164, 129, 0.25);
+  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
+
+.top-header { background: var(--forest-card); border-bottom: 1px solid var(--border-forest); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; sticky: top; z-index: 100; }
+.brand-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: #fff; }
+.nav-links { display: flex; gap: 16px; align-items: center; }
+.nav-item { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 700; padding: 8px 14px; border-radius: 10px; transition: var(--tr); }
+.nav-item:hover, .nav-item.active { background: rgba(140, 164, 129, 0.15); color: var(--sage-light); }
+
+.container { max-width: 1300px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 28px; }
+
+.card { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.card-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #fff; }
+
+.btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.btn:hover { background: #eef4e5; transform: translateY(-2px); }
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <div>
+    <div class="brand-title">Bioimpedância &amp; Evolução Corporal</div>
+    <div style="font-size:0.78rem; color:var(--sage-light); font-weight:700;">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
+  </div>
+
+  <nav class="nav-links">
+    <a href="app-nutri.html" class="nav-item">📊 Dashboard</a>
+    <a href="pacientes.html" class="nav-item">👤 Pacientes &amp; Anamneses</a>
+    <a href="gerenciador-plano.html" class="nav-item">🥗 Gerenciador de Plano</a>
+    <a href="bioimpedancia.html" class="nav-item active">📈 Bioimpedância</a>
+    <a href="index.html" class="nav-item">🌐 Ver Site</a>
+    <a href="login.html" class="nav-item" style="color:#f87171;" onclick="sessionStorage.clear()">🚪 Sair</a>
+  </nav>
+</header>
+
+<main class="container">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📈 Gráfico de Evolução Corporal (Peso &amp; Gordura %)</div>
+      <button class="btn" onclick="registrarEvolucao()">+ Registrar Nova Medição</button>
+    </div>
+
+    <div style="height: 380px; position: relative;">
+      <canvas id="chartEvolucao"></canvas>
+    </div>
+  </div>
+</main>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+
+async function apiCall(action, payload = {}) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Erro na API:", err);
+    return { success: false, error: err.toString() };
+  }
+}
+
+let chartInstance = null;
+
+async function registrarEvolucao() {
+  const peso = parseFloat(prompt("Digite o Peso Atual (kg):", "65.0") || "0");
+  if (!peso) return;
+  const percGordura = parseFloat(prompt("Digite o Percentual de Gordura (%):", "22.0") || "0");
+
+  const evolucao = {
+    paciente_id: "PAC-01",
+    peso: peso,
+    percentual_gordura: percGordura,
+    massa_magra: 38.5,
+    cintura: 71,
+    quadril: 93
+  };
+
+  const res = await apiCall('saveEvolucao', { evolucao });
+  if (res && res.success) {
+    alert("✅ Nova medição registrada com sucesso!");
+    if (chartInstance) {
+      chartInstance.data.labels.push('Hoje');
+      chartInstance.data.datasets[0].data.push(peso);
+      chartInstance.data.datasets[1].data.push(percGordura);
+      chartInstance.update();
+    }
+  } else {
+    alert("Erro ao registrar evolução.");
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const ctx = document.getElementById('chartEvolucao');
+  if (ctx) {
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Maio/26', 'Junho/26', 'Julho/26', 'Agosto/26'],
+        datasets: [
+          {
+            label: 'Peso (kg)',
+            data: [71.2, 69.0, 67.4, 65.5],
+            borderColor: '#8ca481',
+            backgroundColor: 'rgba(140, 164, 129, 0.1)',
+            fill: true,
+            tension: 0.3
+          },
+          {
+            label: 'Gordura corporal (%)',
+            data: [28.5, 26.1, 24.0, 22.4],
+            borderColor: '#eef4e5',
+            tension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } }
+        },
+        scales: {
+          x: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
