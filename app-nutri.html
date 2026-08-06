@@ -171,6 +171,21 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .preset-bar { grid-template-columns: 1fr !important; gap: 6px !important; }
 }
 
+/* SPINNER DE CARREGAMENTO */
+.spinner-ring {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(140, 164, 129, 0.25);
+  border-top-color: var(--sage-light);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* IMPRESSÃO A4 PROFISSIONAL SEM QUEBRA DE CARDS */
 @page {
   size: A4 portrait;
@@ -296,19 +311,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="kpi-grid">
         <div class="kpi-card">
           <div class="kpi-label">Consultas Hoje</div>
-          <div class="kpi-val" id="kpiConsultas">4</div>
+          <div class="kpi-val" id="kpiConsultas"><div class="spinner-ring"></div></div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Atendimentos Online</div>
-          <div class="kpi-val" id="kpiOnline">3</div>
+          <div class="kpi-val" id="kpiOnline"><div class="spinner-ring"></div></div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Presenciais</div>
-          <div class="kpi-val" id="kpiPresencial">1</div>
+          <div class="kpi-val" id="kpiPresencial"><div class="spinner-ring"></div></div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Faturamento Estimado</div>
-          <div class="kpi-val" id="kpiFatura">R$ 1.000</div>
+          <div class="kpi-val" id="kpiFatura"><div class="spinner-ring"></div></div>
         </div>
       </div>
 
@@ -353,21 +368,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             </thead>
             <tbody id="tblAgendamentos">
               <tr>
-                <td>09:00</td>
-                <td>Juliana Mendes</td>
-                <td>Online (Google Meet)</td>
-                <td><span style="color: #8ca481; font-weight:800;">Confirmado</span></td>
-                <td>
-                  <a href="https://wa.me/5521999998888?text=Ol%C3%A1%20Juliana!%20Lembrete%20da%20sua%20consulta%20hoje%20%C3%A0s%2009h." target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">💬 Lembrete 1-Clique</a>
-                </td>
-              </tr>
-              <tr>
-                <td>11:00</td>
-                <td>Carlos Eduardo Torres</td>
-                <td>Presencial</td>
-                <td><span style="color: #8ca481; font-weight:800;">Confirmado</span></td>
-                <td>
-                  <a href="https://wa.me/5521988887777?text=Ol%C3%A1%20Carlos!%20Confirmado%20atendimento%20às%2011h." target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">💬 Lembrete 1-Clique</a>
+                <td colspan="5" style="text-align:center; padding: 32px; color: var(--sage-light); font-weight:700;">
+                  <div class="spinner-ring" style="width:26px; height:26px; margin-bottom:8px;"></div><br>
+                  Sincronizando agendamentos em tempo real...
                 </td>
               </tr>
             </tbody>
@@ -615,6 +618,28 @@ async function carregarDadosDashboard() {
     if (kpiOn) kpiOn.innerText = online;
     if (kpiPre) kpiPre.innerText = presencial;
     if (kpiFat) kpiFat.innerText = `R$ ${faturamento.toLocaleString('pt-BR')}`;
+  } else {
+    // FALLBACK DE SEGURANÇA CASO O BANCO RETORNE VAZIO OU DEMORE
+    const kpiC = document.getElementById('kpiConsultas');
+    const kpiOn = document.getElementById('kpiOnline');
+    const kpiPre = document.getElementById('kpiPresencial');
+    const kpiFat = document.getElementById('kpiFatura');
+    const tblAg = document.getElementById('tblAgendamentos');
+
+    if (kpiC) kpiC.innerText = "0";
+    if (kpiOn) kpiOn.innerText = "0";
+    if (kpiPre) kpiPre.innerText = "0";
+    if (kpiFat) kpiFat.innerText = "R$ 0";
+
+    if (tblAg) {
+      tblAg.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">
+            Nenhum agendamento cadastrado para hoje.
+          </td>
+        </tr>
+      `;
+    }
   }
 }
 
