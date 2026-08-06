@@ -141,14 +141,15 @@ tr:hover td { background: var(--sage-dim); }
   <!-- BARRA DE SELEÇÃO DO PACIENTE E NOVA AVALIAÇÃO -->
   <div class="card" style="padding: 18px 24px;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-      <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
         <span style="font-size: 1.4rem;">👤</span>
         <div>
           <label style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); display: block; margin-bottom: 2px;">Paciente Selecionado:</label>
-          <select id="selPacienteEvolucao" class="form-control" style="min-width:300px" onchange="carregarEvolucaoPaciente()">
+          <select id="selPacienteEvolucao" class="form-control" style="min-width:280px" onchange="carregarEvolucaoPaciente()">
             <option value="">Carregando pacientes...</option>
           </select>
         </div>
+        <button class="btn btn-secondary" onclick="abrirNovoPacienteModal()" style="font-size:0.8rem; padding:9px 14px; margin-top:14px;">+ Novo Paciente</button>
       </div>
 
       <button class="btn" onclick="abrirModalAvaliacao()">📋 + Nova Avaliação Física (UNIGAMA)</button>
@@ -196,6 +197,61 @@ tr:hover td { background: var(--sage-dim); }
   </div>
 
 </main>
+
+<!-- ── MODAL PADRÃO DE NOVO PACIENTE (igual ao pacientes.html) ── -->
+<div class="modal-overlay" id="modalNovoPaciente">
+  <div class="modal-card" style="max-width:580px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">👤 Cadastrar Novo Paciente</div>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Preencha os dados cadastrais do paciente</div>
+      </div>
+      <button class="modal-close" onclick="fecharNovoPacienteModal()">✕</button>
+    </div>
+    <form onsubmit="salvarNovoPaciente(event)" style="display:flex; flex-direction:column; gap:16px; padding-top:4px;">
+      <div class="form-group">
+        <label>Nome Completo *</label>
+        <input type="text" id="npNome" class="form-control" placeholder="Ex: Carlos Eduardo Torres" required>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="form-group">
+          <label>CPF *</label>
+          <input type="text" id="npCPF" class="form-control" placeholder="000.000.000-00" oninput="this.value=maskCPF(this.value)" required>
+        </div>
+        <div class="form-group">
+          <label>WhatsApp</label>
+          <input type="text" id="npWsp" class="form-control" placeholder="(21) 99999-8888" oninput="this.value=maskPhone(this.value)">
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="form-group">
+          <label>Data de Nascimento</label>
+          <input type="date" id="npNasc" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>E-mail (acesso e PDF) *</label>
+          <input type="email" id="npEmail" class="form-control" placeholder="paciente@email.com" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Objetivo Clínico Principal</label>
+        <select id="npObj" class="form-control">
+          <option>Reeducação Alimentar &amp; Emagrecimento</option>
+          <option>Nutrição Esportiva &amp; Hipertrofia</option>
+          <option>Saúde Intestinal &amp; Bio-Reset</option>
+          <option>Controle de Diabetes &amp; Doenças Crônicas</option>
+          <option>Nutrição na Gestação &amp; Amamentação</option>
+          <option>Longevidade &amp; Medicina Preventiva</option>
+          <option>Nutrição Comportamental</option>
+        </select>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:12px; padding-top:14px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn btn-secondary" onclick="fecharNovoPacienteModal()">Cancelar</button>
+        <button type="submit" class="btn">💾 Cadastrar Paciente</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- ── MODAL COMPLETO DE AVALIAÇÃO FÍSICA & UNIGAMA ── -->
 <div class="modal-overlay" id="modalAvaliacaoFisica">
@@ -720,6 +776,54 @@ function calcularRCQEv() {
   } else {
     elRCQ.value = '—';
   }
+}
+
+// ── Novo Paciente Modal ──
+function maskCPF(v) {
+  return v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+}
+function maskPhone(v) {
+  return v.replace(/\D/g,'').replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2');
+}
+function abrirNovoPacienteModal() {
+  document.getElementById('modalNovoPaciente').classList.add('active');
+}
+function fecharNovoPacienteModal() {
+  document.getElementById('modalNovoPaciente').classList.remove('active');
+}
+async function salvarNovoPaciente(e) {
+  e.preventDefault();
+  const nome     = document.getElementById('npNome').value.trim();
+  const cpf      = document.getElementById('npCPF').value.replace(/\D/g,'');
+  const whatsapp = document.getElementById('npWsp').value.replace(/\D/g,'');
+  const email    = document.getElementById('npEmail').value.trim();
+  const data_nasc= document.getElementById('npNasc').value;
+  const objetivo = document.getElementById('npObj').value;
+
+  const novoPaciente = {
+    id: 'PAC-' + Date.now(),
+    nome, cpf, whatsapp, email,
+    data_nascimento: data_nasc,
+    objetivo,
+    data_cadastro: new Date().toISOString().split('T')[0],
+    senha_pin: '123456'
+  };
+
+  listaPacientes.unshift(novoPaciente);
+  const sel = document.getElementById('selPacienteEvolucao');
+  if (sel) {
+    const opt = document.createElement('option');
+    opt.value = novoPaciente.id;
+    opt.textContent = novoPaciente.nome;
+    sel.insertBefore(opt, sel.firstChild);
+    sel.value = novoPaciente.id;
+  }
+
+  alert(`✅ Paciente ${nome} cadastrado com sucesso!`);
+  fecharNovoPacienteModal();
+
+  // Sincroniza em background com o banco Sheets
+  apiCall('savePaciente', { paciente: novoPaciente });
 }
 
 // ── Modal Abrir / Salvar ──
