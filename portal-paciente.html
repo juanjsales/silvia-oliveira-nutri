@@ -939,7 +939,8 @@ body {
 const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
 
 let currentWater = 0;
-const targetWater = 2300;
+let waterTarget = 2500;
+let currentPacId = 'PAC-01';
 let chartInstance = null;
 
 // HÁBITOS CONCLUÍDOS
@@ -957,7 +958,6 @@ function updateAdherenceScore() {
   const ringText = document.getElementById('scoreRingText');
 
   if (ringFill) {
-    // 220 é a circunferência total do anel (2 * PI * 35 = 220)
     const offset = 220 - (220 * pct) / 100;
     ringFill.style.strokeDashoffset = offset;
   }
@@ -968,10 +968,10 @@ function updateAdherenceScore() {
 function updateWaterUI() {
   const bar = document.getElementById('waterBarFill');
   const txt = document.getElementById('waterValText');
-  const pct = Math.min(100, Math.round((currentWater / targetWater) * 100));
+  const pct = Math.min(100, Math.round((currentWater / waterTarget) * 100));
   if (bar) bar.style.width = pct + '%';
-  if (txt) txt.innerText = `${currentWater} / ${targetWater} ml (${pct}%)`;
-  localStorage.setItem('kos_paciente_water', currentWater);
+  if (txt) txt.innerText = `${currentWater} / ${waterTarget} ml (${pct}%)`;
+  if (currentPacId) localStorage.setItem('kos_water_' + currentPacId, currentWater);
 }
 
 function addWater(amount) {
@@ -1199,6 +1199,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 async function carregarDadosHistorico(pacienteId) {
   if (!pacienteId) return;
+  currentPacId = pacienteId;
   try {
     const res = await fetch(KOS_API_URL, {
       method: "POST",
@@ -1207,7 +1208,26 @@ async function carregarDadosHistorico(pacienteId) {
     }).then(r => r.json()).catch(() => null);
 
     if (res && res.success && res.data) {
-      const { plano, suplementos, evolucao } = res.data;
+      const { anamnese, plano, suplementos, evolucao } = res.data;
+
+      // 0. Conectar Meta de Hidratação Reais Prescrita no Banco de Dados
+      if (anamnese && anamnese.ingestao_hidrica) {
+        const str = String(anamnese.ingestao_hidrica).toLowerCase();
+        let ml = 2500;
+        if (str.includes('l') && !str.includes('ml')) {
+          const num = parseFloat(str.replace(',', '.'));
+          if (!isNaN(num) && num > 0) ml = Math.round(num < 15 ? num * 1000 : num);
+        } else {
+          const num = parseInt(str.replace(/\D/g, ''), 10);
+          if (!isNaN(num) && num > 0) ml = num;
+        }
+        waterTarget = ml;
+
+        // Recupera o consumo atual gravado para ESTE paciente específico
+        const savedWater = parseInt(localStorage.getItem(`kos_water_${pacienteId}`) || '0', 10);
+        currentWater = isNaN(savedWater) ? 0 : savedWater;
+        updateWaterUI();
+      }
 
       // 1. Renderizar Plano Alimentar Real se existir
       if (plano && plano.json_refeicoes) {
