@@ -175,10 +175,14 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
 
   <!-- SELETOR DE PERFIL CLÍNICO / CATEGORIA -->
   <div class="profile-selector">
-    <div class="profile-option active" id="profAdultoM" onclick="setPerfilClinicoAtend('Adulto Masculino')">👨 Adulto Masculino</div>
-    <div class="profile-option" id="profAdultoF" onclick="setPerfilClinicoAtend('Adulto Feminino')">👩 Adulto Feminino</div>
-    <div class="profile-option" id="profPediatria" onclick="setPerfilClinicoAtend('Pediatria')">👶 Pediatria</div>
-    <div class="profile-option" id="profGestante" onclick="setPerfilClinicoAtend('Gestante')">🤰 Gestante</div>
+    <div class="profile-option active" id="profAdultoM" onclick="setPerfilClinicoAtend('Adulto Masculino')" title="Métricas de corte masculinas. Aplica cálculo padrão de TMB (Mifflin/Harris) e faixa de RCQ masculino.">👨 Adulto Masculino</div>
+    <div class="profile-option" id="profAdultoF" onclick="setPerfilClinicoAtend('Adulto Feminino')" title="Métricas de corte femininas. Aplica gordura corporal de referência e limite de RCQ 0.85.">👩 Adulto Feminino</div>
+    <div class="profile-option" id="profPediatria" onclick="setPerfilClinicoAtend('Pediatria')" title="Ativa acompanhamento infantil de curvas de crescimento (OMS), Z-score e Perímetro Cefálico.">👶 Pediatria</div>
+    <div class="profile-option" id="profGestante" onclick="setPerfilClinicoAtend('Gestante')" title="Ativa controle de semanas gestacionais, DUM, ganho de peso recomendado e suplementação pré-natal.">🤰 Gestante</div>
+    <div class="profile-option" id="profAtleta" onclick="setPerfilClinicoAtend('Atleta / Esportista')" title="Ativa protocolo de dobras cutâneas (7 dobras), análise de Massa Magra e timing de nutrientes.">🏋️ Atleta / Esportista</div>
+    <div class="profile-option" id="profGeriatria" onclick="setPerfilClinicoAtend('Geriatria / Idoso')" title="Foco em triagem nutricional geriatria (MAN), monitoramento de sarcopenia e densidade óssea.">👴 Geriatria / Idoso</div>
+    <div class="profile-option" id="profVegano" onclick="setPerfilClinicoAtend('Vegetariano / Vegano')" title="Ativa alertas de proteínas complementares e monitoramento de B12, Zinco, Ferro e Ômega-3.">🌱 Vegano / Vegetariano</div>
+    <div class="profile-option" id="profPatologia" onclick="setPerfilClinicoAtend('Patologia / Clínico')" title="Ativa painel avançado de exames de sangue (Glicemia, Lipídico, Renal) e dietoterapia terapêutica.">🩺 Patologia / Clínico</div>
   </div>
 
   <!-- STATUS BAR -->
@@ -579,15 +583,22 @@ function convertBRToISO(str) {
 
 function setPerfilClinicoAtend(perfil) {
   perfilClinicoAtend = perfil;
-  ['profAdultoM','profAdultoF','profPediatria','profGestante'].forEach(id => {
+  const ids = ['profAdultoM','profAdultoF','profPediatria','profGestante','profAtleta','profGeriatria','profVegano','profPatologia'];
+  ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  if (perfil.includes('Masculino')) document.getElementById('profAdultoM').classList.add('active');
-  else if (perfil.includes('Feminino')) document.getElementById('profAdultoF').classList.add('active');
-  else if (perfil.includes('Pediatria')) document.getElementById('profPediatria').classList.add('active');
-  else if (perfil.includes('Gestante')) document.getElementById('profGestante').classList.add('active');
-  toast('Perfil clínico: '+perfil);
+
+  if (perfil.includes('Masculino')) document.getElementById('profAdultoM')?.classList.add('active');
+  else if (perfil.includes('Feminino')) document.getElementById('profAdultoF')?.classList.add('active');
+  else if (perfil.includes('Pediatria')) document.getElementById('profPediatria')?.classList.add('active');
+  else if (perfil.includes('Gestante')) document.getElementById('profGestante')?.classList.add('active');
+  else if (perfil.includes('Atleta')) document.getElementById('profAtleta')?.classList.add('active');
+  else if (perfil.includes('Geriatria') || perfil.includes('Idoso')) document.getElementById('profGeriatria')?.classList.add('active');
+  else if (perfil.includes('Vegetariano') || perfil.includes('Vegano')) document.getElementById('profVegano')?.classList.add('active');
+  else if (perfil.includes('Patologia') || perfil.includes('Clínico')) document.getElementById('profPatologia')?.classList.add('active');
+
+  toast('Perfil clínico ativado: ' + perfil);
 }
 
 function toast(msg, isError=false) {
