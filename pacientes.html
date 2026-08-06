@@ -448,13 +448,13 @@ function renderizarTabelaPacientes(lista) {
 async function carregarPacientes() {
   const res = await apiCall('getPacientes');
   if (res && res.success && Array.isArray(res.data)) {
-    pacientesLista = res.data;
+    window.pacientesLista = res.data;
   } else if (res && Array.isArray(res)) {
-    pacientesLista = res;
+    window.pacientesLista = res;
   } else {
-    pacientesLista = [];
+    window.pacientesLista = [];
   }
-  renderizarTabelaPacientes(pacientesLista);
+  renderizarTabelaPacientes(window.pacientesLista);
 }
 
 function openPacienteModal() {
@@ -522,7 +522,6 @@ async function salvarNovoPacienteEAgendamento(e) {
   const pacSalvo = res?.data?.paciente || { id: "PAC-" + Date.now(), nome, whatsapp, email, objetivo, data_cadastro: pacienteObj.data_cadastro };
   if (!Array.isArray(window.pacientesLista)) window.pacientesLista = [];
   window.pacientesLista.unshift(pacSalvo);
-  pacientesLista = window.pacientesLista;
   renderizarTabelaPacientes(window.pacientesLista);
 
   alert(`✅ Paciente ${nome} cadastrado e consulta agendada para ${dataFmt} às ${hora}!\n\n📧 Um e-mail com a confirmação e credenciais do Portal do Paciente foi enviado para ${email}.`);
