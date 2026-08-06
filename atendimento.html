@@ -782,6 +782,8 @@ async function carregarExamesLaboratoriaisAtend() {
   } else {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Nenhum exame cadastrado para este paciente.</td></tr>';
   }
+}
+
 function editarExameLaboratorialAtend(id, data, marcador, valor, unidade, ref, obs) {
   if (document.getElementById('exEditId')) document.getElementById('exEditId').value = id;
   if (document.getElementById('exData')) document.getElementById('exData').value = data ? data.split('T')[0] : '';
