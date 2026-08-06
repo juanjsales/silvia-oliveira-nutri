@@ -176,20 +176,25 @@ body.in-iframe .container { padding-top: 16px !important; }
   </div>
 </div>
 
-<!-- MODAL PADRÃO DE NOVO PACIENTE -->
+<!-- MODAL UNIFICADO: CADASTRAR PACIENTE & AGENDAR CONSULTA -->
 <div class="modal-overlay" id="modalPaciente">
-  <div class="modal-card" style="max-width:580px;">
+  <div class="modal-card" style="max-width:620px;">
     <div class="modal-header">
       <div>
-        <div class="modal-title">👤 Cadastrar Novo Paciente</div>
-        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Preencha os dados cadastrais do paciente</div>
+        <div class="modal-title">👤 Cadastrar Paciente &amp; Agendar Consulta</div>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Cadastre o novo paciente e agende a primeira consulta no mesmo fluxo</div>
       </div>
       <button class="modal-close" onclick="closePacienteModal()">✕</button>
     </div>
 
-    <form onsubmit="salvarNovoPaciente(event)" class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
-      <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:10px 14px; font-size:0.8rem; color:var(--sage-light); display:flex; align-items:center; gap:8px;">
-        ℹ️ <span>Dados clínicos completos (CPF, nascimento, histórico de saúde) serão coletados na <strong>Anamnese</strong>, no dia da primeira consulta.</span>
+    <form onsubmit="salvarNovoPacienteEAgendamento(event)" class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+      <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:12px 14px; font-size:0.82rem; color:var(--text-primary); display:flex; align-items:center; gap:10px;">
+        <span style="font-size:1.2rem;">📧</span>
+        <span>Ao salvar, o perfil é criado, a consulta agendada e um <strong>e-mail automático</strong> com a confirmação e credenciais de acesso ao portal é enviado para o paciente.</span>
+      </div>
+
+      <div style="font-weight:800; font-size:0.85rem; color:var(--sage-light); text-transform:uppercase; letter-spacing:0.05em; margin-top:4px; border-bottom:1px solid var(--border-forest); padding-bottom:4px;">
+        1. Dados de Identificação do Paciente
       </div>
 
       <div class="form-group">
@@ -199,8 +204,8 @@ body.in-iframe .container { padding-top: 16px !important; }
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
         <div class="form-group">
-          <label>WhatsApp</label>
-          <input type="text" id="pacWsp" class="form-control" placeholder="(21) 99999-8888">
+          <label>WhatsApp *</label>
+          <input type="text" id="pacWsp" class="form-control" placeholder="(21) 99999-8888" required>
         </div>
         <div class="form-group">
           <label>E-mail *</label>
@@ -211,7 +216,6 @@ body.in-iframe .container { padding-top: 16px !important; }
       <div class="form-group">
         <label>Objetivo Clínico (opcional)</label>
         <select id="pacObj" class="form-control">
-          <option value="">-- Selecione se souber --</option>
           <option value="Reeducação Alimentar &amp; Emagrecimento">Reeducação Alimentar &amp; Emagrecimento</option>
           <option value="Nutrição Esportiva &amp; Hipertrofia">Nutrição Esportiva &amp; Hipertrofia</option>
           <option value="Saúde Intestinal &amp; Bio-Reset">Saúde Intestinal &amp; Bio-Reset</option>
@@ -222,38 +226,8 @@ body.in-iframe .container { padding-top: 16px !important; }
         </select>
       </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
-        <button type="button" class="btn btn-secondary" onclick="closePacienteModal()">Cancelar</button>
-        <button type="submit" class="btn">💾 Cadastrar Paciente</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- MODAL UNIFICADO: AGENDAR CONSULTA APÓS CADASTRAR PACIENTE -->
-<div class="modal-overlay" id="modalAgendamentoPaciente">
-  <div class="modal-card" style="max-width:580px;">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title">📅 Agendar Consulta da Primeira Avaliação</div>
-        <div style="font-size:0.8rem; color:var(--sage-light); font-weight:700; margin-top:2px;" id="agPacSub">
-          Paciente cadastrado com sucesso! Defina a data e horário da consulta.
-        </div>
-      </div>
-      <button class="modal-close" onclick="closeAgendamentoPacienteModal()">✕</button>
-    </div>
-
-    <form onsubmit="salvarAgendamentoPaciente(event)" class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
-      <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:10px 14px; font-size:0.8rem; color:var(--text-light); display:flex; align-items:center; gap:8px;">
-        📧 <span>Ao confirmar, o paciente receberá um e-mail automático com os detalhes da consulta e as credenciais do portal.</span>
-      </div>
-
-      <input type="hidden" id="agPacId">
-      <input type="hidden" id="agPacWsp">
-
-      <div class="form-group">
-        <label>Paciente</label>
-        <input type="text" id="agPacNome" class="form-control" readonly style="background:rgba(0,0,0,0.25); font-weight:800; color:var(--sage-light);">
+      <div style="font-weight:800; font-size:0.85rem; color:var(--sage-light); text-transform:uppercase; letter-spacing:0.05em; margin-top:6px; border-bottom:1px solid var(--border-forest); padding-bottom:4px;">
+        2. Agendamento da Primeira Consulta (Avaliação)
       </div>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
@@ -284,13 +258,13 @@ body.in-iframe .container { padding-top: 16px !important; }
       </div>
 
       <div class="form-group">
-        <label>E-mail do Paciente (para notificação)</label>
-        <input type="email" id="agPacEmail" class="form-control" readonly style="background:rgba(0,0,0,0.25);">
+        <label>Observação Interna (opcional)</label>
+        <input type="text" id="agObs" class="form-control" placeholder="Ex: Trazer exames recentes de sangue">
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
-        <button type="button" class="btn btn-secondary" onclick="closeAgendamentoPacienteModal()">Agendar Depois</button>
-        <button type="submit" class="btn" id="btnSalvarAgendamentoPac">📅 Confirmar & Agendar Consulta</button>
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn btn-secondary" onclick="closePacienteModal()">Cancelar</button>
+        <button type="submit" class="btn" id="btnSalvarPacAgendamento">📅 Cadastrar Paciente &amp; Agendar Consulta</button>
       </div>
     </form>
   </div>
@@ -486,7 +460,10 @@ async function carregarPacientes() {
 
 function openPacienteModal() {
   const modal = document.getElementById('modalPaciente');
-  if (modal) modal.classList.add('active');
+  if (!modal) return;
+  const agData = document.getElementById('agData');
+  if (agData && !agData.value) agData.value = new Date().toISOString().split('T')[0];
+  modal.classList.add('active');
 }
 
 function closePacienteModal() {
@@ -495,112 +472,76 @@ function closePacienteModal() {
   const nome = document.getElementById('pacNome');
   const wsp = document.getElementById('pacWsp');
   const email = document.getElementById('pacEmail');
-  const obj = document.getElementById('pacObj');
+  const obs = document.getElementById('agObs');
   if (nome) nome.value = '';
   if (wsp) wsp.value = '';
   if (email) email.value = '';
-  if (obj) obj.value = '';
+  if (obs) obs.value = '';
 }
 
-async function salvarNovoPaciente(e) {
+async function salvarNovoPacienteEAgendamento(e) {
   e.preventDefault();
+  const btn = document.getElementById('btnSalvarPacAgendamento');
+  if (btn) { btn.disabled = true; btn.innerHTML = '🟡 Cadastrando & Enviando E-mail...'; }
+
   const nome     = document.getElementById('pacNome').value.trim();
   const whatsapp = (document.getElementById('pacWsp')?.value || '').replace(/\D/g,'');
   const email    = document.getElementById('pacEmail').value.trim();
-  const objetivo = document.getElementById('pacObj')?.value || '';
+  const objetivo = document.getElementById('pacObj')?.value || 'Reeducação Alimentar & Emagrecimento';
 
-  const novoPaciente = {
-    id: "PAC-" + Date.now(),
+  const data  = document.getElementById('agData').value;
+  const hora  = document.getElementById('agHora').value;
+  const tipo  = document.getElementById('agTipo').value;
+  const valor = parseFloat(document.getElementById('agValor').value) || 250;
+  const obs   = document.getElementById('agObs')?.value || '';
+
+  const pacienteObj = {
+    id: "NOVO",
     nome,
     whatsapp,
     email,
     objetivo,
-    data_cadastro: new Date().toISOString().split('T')[0],
-    senha_pin: "123456"
+    tipo: "PACIENTE",
+    data_cadastro: new Date().toISOString().split('T')[0]
   };
 
-  closePacienteModal();
-
-  if (!Array.isArray(window.pacientesLista)) window.pacientesLista = [];
-  window.pacientesLista.unshift(novoPaciente);
-  pacientesLista = window.pacientesLista;
-  renderizarTabelaPacientes(window.pacientesLista);
-
-  // Sincroniza paciente em segundo plano no banco Sheets
-  apiCall('savePaciente', { paciente: novoPaciente }, 'POST');
-
-  // Abre imediatamente o modal de agendamento de consulta para unificar o fluxo da Nutricionista
-  abrirAgendamentoPacienteModal(novoPaciente);
-}
-
-function abrirAgendamentoPacienteModal(paciente) {
-  const m = document.getElementById('modalAgendamentoPaciente');
-  if (!m) return;
-  const idEl = document.getElementById('agPacId');
-  const nomeEl = document.getElementById('agPacNome');
-  const emailEl = document.getElementById('agPacEmail');
-  const wspEl = document.getElementById('agPacWsp');
-
-  if (idEl) idEl.value = paciente.id;
-  if (nomeEl) nomeEl.value = paciente.nome;
-  if (emailEl) emailEl.value = paciente.email;
-  if (wspEl) wspEl.value = paciente.whatsapp || '';
-
-  const agData = document.getElementById('agData');
-  if (agData && !agData.value) agData.value = new Date().toISOString().split('T')[0];
-
-  const sub = document.getElementById('agPacSub');
-  if (sub) sub.innerText = `Paciente ${paciente.nome} cadastrado! Agende a primeira consulta abaixo.`;
-
-  m.classList.add('active');
-}
-
-function closeAgendamentoPacienteModal() {
-  const m = document.getElementById('modalAgendamentoPaciente');
-  if (m) m.classList.remove('active');
-}
-
-async function salvarAgendamentoPaciente(e) {
-  e.preventDefault();
-  const btn = document.getElementById('btnSalvarAgendamentoPac');
-  if (btn) { btn.disabled = true; btn.innerText = "🟡 Agendando & Enviando E-mail..."; }
-
-  const paciente_id = document.getElementById('agPacId').value;
-  const paciente_nome = document.getElementById('agPacNome').value;
-  const paciente_email = document.getElementById('agPacEmail').value;
-  const paciente_whatsapp = document.getElementById('agPacWsp').value;
-  const data = document.getElementById('agData').value;
-  const hora = document.getElementById('agHora').value;
-  const tipo = document.getElementById('agTipo').value;
-  const valor = parseFloat(document.getElementById('agValor').value) || 250;
-
-  const agendamento = {
-    id: "AG-" + Date.now(),
-    paciente_id,
-    paciente_nome,
-    paciente_whatsapp,
+  const agendamentoObj = {
     data,
     hora,
     tipo,
     valor,
+    observacao: obs,
     status: "Confirmado"
   };
 
-  const pacienteObj = {
-    id: paciente_id,
-    nome: paciente_nome,
-    email: paciente_email,
-    whatsapp: paciente_whatsapp
-  };
+  const res = await apiCall('saveConsultaCompleta', { paciente: pacienteObj, agendamento: agendamentoObj }, 'POST');
 
-  // Chama a API que grava consulta e dispara e-mail com senha/acesso
-  await apiCall('saveConsultaCompleta', { paciente: pacienteObj, agendamento }, 'POST');
-
-  if (btn) { btn.disabled = false; btn.innerText = "📅 Confirmar & Agendar Consulta"; }
-  closeAgendamentoPacienteModal();
+  if (btn) { btn.disabled = false; btn.innerText = '📅 Cadastrar Paciente & Agendar Consulta'; }
+  closePacienteModal();
 
   const dataFmt = formatDateBR(data);
-  alert(`✅ Paciente ${paciente_nome} cadastrado e consulta agendada para ${dataFmt} às ${hora}!\n\n📧 Um e-mail com a confirmação e credenciais do portal foi enviado para ${paciente_email}.`);
+  const pacSalvo = res?.data?.paciente || { id: "PAC-" + Date.now(), nome, whatsapp, email, objetivo, data_cadastro: pacienteObj.data_cadastro };
+  if (!Array.isArray(window.pacientesLista)) window.pacientesLista = [];
+  window.pacientesLista.unshift(pacSalvo);
+  pacientesLista = window.pacientesLista;
+  renderizarTabelaPacientes(window.pacientesLista);
+
+  alert(`✅ Paciente ${nome} cadastrado e consulta agendada para ${dataFmt} às ${hora}!\n\n📧 Um e-mail com a confirmação e credenciais do Portal do Paciente foi enviado para ${email}.`);
+}
+
+function abrirAgendamentoPacienteModal(paciente) {
+  openPacienteModal();
+}
+
+function closeAgendamentoPacienteModal() {
+  closePacienteModal();
+}
+
+function salvarAgendamentoPaciente(e) {
+  return salvarNovoPacienteEAgendamento(e);
+}
+function salvarNovoPaciente(e) {
+  return salvarNovoPacienteEAgendamento(e);
 }
 
 window.addEventListener('DOMContentLoaded', () => {

@@ -634,18 +634,24 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
 
     <form onsubmit="salvarNovoAgendamento(event)" class="modal-body">
-      <div class="form-group">
-        <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Nome do Paciente</label>
-        <input type="text" id="agNome" class="form-control" placeholder="Ex: Juliana Mendes" required>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Nome do Paciente *</label>
+          <input type="text" id="agNome" class="form-control" placeholder="Ex: Juliana Mendes" required>
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">E-mail do Paciente *</label>
+          <input type="email" id="agEmail" class="form-control" placeholder="paciente@email.com" required>
+        </div>
       </div>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
         <div class="form-group">
-          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Data</label>
+          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Data *</label>
           <input type="date" id="agData" class="form-control" required>
         </div>
         <div class="form-group">
-          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Horário</label>
+          <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--sage-light);">Horário *</label>
           <input type="time" id="agHora" class="form-control" value="09:00" required>
         </div>
       </div>
@@ -667,7 +673,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
       <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px;">
         <button type="button" class="btn btn-secondary" onclick="closeAgendamentoModal()">Cancelar</button>
-        <button type="submit" class="btn">💾 Confirmar Agendamento</button>
+        <button type="submit" class="btn">💾 Confirmar Agendamento &amp; Enviar E-mail</button>
       </div>
     </form>
   </div>
@@ -913,15 +919,21 @@ function closeAgendamentoModal() {
 
 async function salvarNovoAgendamento(e) {
   e.preventDefault();
-  const paciente_nome = document.getElementById('agNome').value;
-  const data = document.getElementById('agData').value;
-  const hora = document.getElementById('agHora').value;
-  const tipo = document.getElementById('agTipo').value;
-  const valor = parseFloat(document.getElementById('agValor').value) || 250;
+  const paciente_nome = document.getElementById('agNome')?.value.trim() || '';
+  const paciente_email = document.getElementById('agEmail')?.value.trim() || '';
+  const data = document.getElementById('agData')?.value || '';
+  const hora = document.getElementById('agHora')?.value || '09:00';
+  const tipo = document.getElementById('agTipo')?.value || 'Online (Google Meet)';
+  const valor = parseFloat(document.getElementById('agValor')?.value) || 250;
+
+  const paciente = {
+    id: "NOVO",
+    nome: paciente_nome,
+    email: paciente_email,
+    tipo: "PACIENTE"
+  };
 
   const agendamento = {
-    paciente_id: "PAC-" + Date.now(),
-    paciente_nome,
     data,
     hora,
     tipo,
@@ -929,9 +941,9 @@ async function salvarNovoAgendamento(e) {
     status: "Confirmado"
   };
 
-  const res = await apiCall('saveAgendamento', { agendamento });
+  const res = await apiCall('saveConsultaCompleta', { paciente, agendamento }, 'POST');
   if (res && res.success) {
-    alert(`✅ Agendamento de ${paciente_nome} cadastrado com sucesso!`);
+    alert(`✅ Consulta de ${paciente_nome} agendada com sucesso!\n\n📧 Um e-mail com a confirmação e dados de acesso ao Portal foi enviado para ${paciente_email || 'o paciente'}.`);
     closeAgendamentoModal();
     carregarDadosDashboard();
   } else {
