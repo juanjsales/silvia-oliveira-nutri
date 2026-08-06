@@ -740,20 +740,39 @@ function irParaPasso2() {
     const nome = document.getElementById('nNome').value.trim();
     if (!nome) { alert('Informe o nome completo do paciente.'); return; }
   }
-  // Atualiza label step 2
   const nome = isNovo ? document.getElementById('nNome').value.trim() : pacienteSelecionado.nome;
   document.getElementById('step2PacNome').textContent = '👤 '+nome;
+  
+  const isAdmin = (window.self !== window.top) || (sessionStorage.getItem('kos_adm_auth') === 'true') || (localStorage.getItem('kos_adm_auth') === 'true');
+  const btnSalvar = document.getElementById('btnSalvar');
+  if (btnSalvar) {
+    btnSalvar.innerHTML = isAdmin ? '💾 Confirmar &amp; Salvar no Banco' : '💬 Enviar Solicitação no WhatsApp →';
+  }
+
   irParaStep(2);
 }
 
 async function salvarConsulta() {
+  const isAdmin = (window.self !== window.top) || (sessionStorage.getItem('kos_adm_auth') === 'true') || (localStorage.getItem('kos_adm_auth') === 'true');
+  const isNovo = document.getElementById('rNovo').checked;
+  const nome = isNovo ? document.getElementById('nNome').value.trim() : (pacienteSelecionado?.nome || '');
+  const data = document.getElementById('agData').value;
+  const hora = document.getElementById('agHora').value;
+  const tipo = document.getElementById('agTipo').value;
+
+  if (!isAdmin) {
+    // Visitante (Paciente na LP): Envia solicitação com data e horário direto no WhatsApp da Dra. Silvia
+    const msgText = encodeURIComponent(`Olá Dra. Silvia! Gostaria de agendar uma consulta para o dia ${formatDateBR(data)} às ${hora} (${tipo}). Meu nome é ${nome}.`);
+    window.open(`https://wa.me/5521987385146?text=${msgText}`, '_blank');
+    fecharModal();
+    return;
+  }
+
+  // Admin (Dra. Silvia): Grava no banco e cria credenciais do paciente
   const btn = document.getElementById('btnSalvar');
   btn.disabled=true;
   btn.innerHTML='<div class="spinner-ring" style="width:16px;height:16px;border-width:2px"></div> Salvando...';
 
-  const isNovo = document.getElementById('rNovo').checked;
-
-  // Monta paciente
   let paciente;
   if (isNovo) {
     paciente = {
@@ -767,11 +786,10 @@ async function salvarConsulta() {
     paciente = { id: pacienteSelecionado.id };
   }
 
-  // Monta agendamento
   const agendamento = {
-    data:        document.getElementById('agData').value,
-    hora:        document.getElementById('agHora').value,
-    tipo:        document.getElementById('agTipo').value,
+    data:        data,
+    hora:        hora,
+    tipo:        tipo,
     valor:       document.getElementById('agValor').value,
     observacao:  document.getElementById('agObs').value,
     status:      'Confirmado'
