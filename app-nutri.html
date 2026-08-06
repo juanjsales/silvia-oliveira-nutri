@@ -278,36 +278,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 </head>
 <body>
 
-<!-- ADMIN AUTH LOCKSCREEN -->
-<div class="admin-lock-overlay" id="adminLockscreen">
-  <div class="admin-lock-card">
-    <div class="admin-lock-logo">🔒</div>
-    <div>
-      <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #fff;">Acesso Administrativo</div>
-      <div style="font-size: 0.82rem; color: var(--sage-light); margin-top: 4px; font-weight: 700;">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
-    </div>
 
-    <form onsubmit="autenticarAdmin(event)" style="display:flex; flex-direction:column; gap:16px;">
-      <div class="form-group">
-        <label>E-mail do Nutricionista</label>
-        <input type="email" class="form-control" id="admEmail" value="silviadeoliveira24.nutri@gmail.com" required>
-      </div>
-
-      <div class="form-group">
-        <label>Senha de Acesso Mestra</label>
-        <input type="password" class="form-control" id="admPass" placeholder="Digite sua senha admin" value="silvia2026" required>
-      </div>
-
-      <button type="submit" class="btn" style="padding: 14px; margin-top: 6px; font-size: 0.95rem; justify-content: center;">
-        🔑 Desbloquear Painel Admin
-      </button>
-    </form>
-
-    <div style="font-size:0.75rem; color:var(--text-muted);">
-      🔒 Protegido com criptografia e sessão de segurança local.
-    </div>
-  </div>
-</div>
 
 <aside class="sidebar no-print">
   <div class="brand-box">
@@ -756,53 +727,6 @@ async function salvarNovoAgendamento(e) {
     carregarDadosDashboard();
   } else {
     alert("Erro ao criar agendamento.");
-  }
-}
-
-// MODAL & CADASTRO DE NOVO PACIENTE
-async function openPacienteModal() {
-  const nome = prompt("Digite o Nome Completo do Paciente:");
-  if (!nome) return;
-  const cpf = prompt("Digite o CPF do Paciente (apenas números ou formatado):") || "";
-  const whatsapp = prompt("Digite o WhatsApp com DDD (Ex: 21999998888):") || "";
-  const objetivo = prompt("Digite o Objetivo Principal (Ex: Emagrecimento / Hipertrofia):") || "Reeducação Alimentar";
-
-  const novoPaciente = { nome, cpf, whatsapp, objetivo, senha_pin: "123456" };
-  const res = await apiCall('savePaciente', { paciente: novoPaciente });
-
-  if (res && res.success) {
-    alert("✅ Paciente cadastrado com sucesso na planilha!");
-    carregarDadosDashboard();
-  } else {
-    alert("Erro ao cadastrar paciente: " + (res.error || "Tente novamente."));
-  }
-}
-
-// MODAL & AGENDAMENTO DE CONSULTA
-async function openAgendamentoModal() {
-  const paciente_nome = prompt("Digite o Nome do Paciente para o Agendamento:");
-  if (!paciente_nome) return;
-  const hora = prompt("Digite o Horário (Ex: 14:00):", "14:00") || "14:00";
-  const tipo = prompt("Digite o Tipo (Online / Presencial):", "Online (Google Meet)") || "Online (Google Meet)";
-  const valor = parseFloat(prompt("Digite o Valor da Consulta (R$):", "250") || "250");
-
-  const hoje = new Date().toISOString().split("T")[0];
-  const novoAgendamento = {
-    paciente_id: "PAC-" + Date.now(),
-    paciente_nome,
-    data: hoje,
-    hora,
-    tipo,
-    valor,
-    status: "Confirmado"
-  };
-
-  const res = await apiCall('saveAgendamento', { agendamento: novoAgendamento });
-  if (res && res.success) {
-    alert("✅ Agendamento registrado com sucesso na planilha!");
-    carregarDadosDashboard();
-  } else {
-    alert("Erro ao salvar agendamento: " + (res.error || "Tente novamente."));
   }
 }
 
@@ -1278,9 +1202,9 @@ function openIframe(url, el) {
 // INICIALIZAR GRÁFICOS DA HOME E DASHBOARD
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
-  if (sessionStorage.getItem('kos_adm_auth') === 'true') {
-    const lock = document.getElementById('adminLockscreen');
-    if (lock) lock.style.display = 'none';
+  if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
+    window.location.href = "login.html";
+    return;
   }
 
   carregarDadosDashboard();
