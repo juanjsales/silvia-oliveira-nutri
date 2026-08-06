@@ -22,8 +22,8 @@ const SHEETS = {
 const SCHEMAS = {
   Usuarios:              ["id","cpf","nome","email","whatsapp","data_nascimento","objetivo","tipo","data_cadastro","senha_pin"],
   Agendamentos:          ["id","paciente_id","paciente_nome","paciente_whatsapp","data","hora","tipo","valor","status","observacao","notas_consulta"],
-  Anamneses:             ["id","paciente_id","data","alergias","historico_saude","rotina_sono","intestino","preferencias","medicamentos","suplementos_atuais","cirurgias","historico_familiar","nivel_atividade","objetivo_detalhado","restricoes_alimentares"],
-  Evolucao:              ["id","paciente_id","data","peso","percentual_gordura","massa_magra","cintura","quadril","imc"],
+  Anamneses:             ["id","paciente_id","data","perfil_clinico","alergias","intolerancias","aversao_alimentar","historico_saude","rotina_sono","intestino","preferencias","medicamentos","suplementos_atuais","cirurgias","historico_familiar","nivel_atividade","objetivo_detalhado","restricoes_alimentares","escolaridade","profissao","ocupacao","renda_familiar","dependentes_renda","estado_civil","tabagismo_status","tabagismo_macos","tabagismo_tempo","etilismo_status","etilismo_frequencia","etilismo_quantidade","ansiedade","depressao","outros_sintomas","ingestao_hidrica","horario_acorda","horario_dormir"],
+  Evolucao:              ["id","paciente_id","data","perfil_clinico","peso","altura","imc","percentual_gordura","massa_magra","percentual_musculo","tmb","idade_metabolica","massa_ossea","braco","cintura","abdomen","quadril","panturrilha","pescoca","rcq","dobra_bicipital","dobra_tricipital","dobra_suprailiaca","dobra_subescapular","gestante_semanas","gestante_peso_pre","gestante_dum","pediatria_percentil","pediatria_perimetro_cefalico","diagnostico_nutricional","json_exames"],
   Planos:                ["id","paciente_id","data","json_refeicoes","json_extras","json_lista_compras"],
   Exames_Laboratoriais:  ["id","paciente_id","data_exame","glicemia","hba1c","insulina","colesterol_total","hdl","ldl","triglicerideos","vitamina_d","vitamina_b12","ferritina","tsh"],
   Dobras_Cutaneas:       ["id","paciente_id","data","tricipital","subescapular","suprailiaca","abdominal","coxa","braco_relaxado","braco_contraido","cintura","quadril"],
@@ -339,51 +339,48 @@ function updateAgendamento(id, fields) {
 }
 
 function saveAnamnese(an) {
-  const sheet = getSheet(SHEETS.ANAMNESES);
-  const id    = "ANAM-"+Date.now();
-  const hoje  = new Date().toISOString().split("T")[0];
-  // Verifica se já existe anamnese para atualizar
+  const sheet   = getSheet(SHEETS.ANAMNESES);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const data    = sheet.getDataRange().getValues();
-  const headers = data[0];
-  const pacCol  = headers.indexOf("paciente_id");
-  for (let i=1; i<data.length; i++) {
-    if (String(data[i][pacCol]).trim()===String(an.paciente_id).trim()) {
-      const fields = {
-        data:hoje, alergias:an.alergias||"", historico_saude:an.historico_saude||"",
-        rotina_sono:an.rotina_sono||"", intestino:an.intestino||"",
-        preferencias:an.preferencias||"", medicamentos:an.medicamentos||"",
-        suplementos_atuais:an.suplementos_atuais||"", cirurgias:an.cirurgias||"",
-        historico_familiar:an.historico_familiar||"", nivel_atividade:an.nivel_atividade||"",
-        objetivo_detalhado:an.objetivo_detalhado||"", restricoes_alimentares:an.restricoes_alimentares||""
-      };
-      Object.keys(fields).forEach(key => {
-        const col = headers.indexOf(key);
-        if (col>=0) sheet.getRange(i+1,col+1).setValue(fields[key]);
-      });
-      return { updated:true, paciente_id:an.paciente_id };
+  const id      = "ANAM-" + Date.now();
+  const hoje    = an.data || new Date().toISOString().split("T")[0];
+
+  const rowMap = { id, paciente_id: an.paciente_id, data: hoje, ...an };
+  const pacCol = headers.indexOf("paciente_id");
+
+  if (pacCol >= 0 && data.length > 1) {
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][pacCol]).trim() === String(an.paciente_id).trim()) {
+        headers.forEach((h, colIdx) => {
+          if (rowMap[h] !== undefined && h !== "id") {
+            sheet.getRange(i + 1, colIdx + 1).setValue(rowMap[h]);
+          }
+        });
+        return { updated: true, paciente_id: an.paciente_id, ...an };
+      }
     }
   }
-  // Novo registro
-  sheet.appendRow([id, an.paciente_id, hoje,
-    an.alergias||"Nenhuma", an.historico_saude||"",
-    an.rotina_sono||"", an.intestino||"",
-    an.preferencias||"", an.medicamentos||"",
-    an.suplementos_atuais||"", an.cirurgias||"",
-    an.historico_familiar||"", an.nivel_atividade||"",
-    an.objetivo_detalhado||"", an.restricoes_alimentares||""]);
+
+  const newRow = headers.map(h => rowMap[h] !== undefined ? rowMap[h] : "");
+  sheet.appendRow(newRow);
   return { id, ...an };
 }
 
 function saveEvolucao(ev) {
-  const sheet = getSheet(SHEETS.EVOLUCAO);
-  const id    = "EVO-"+Date.now();
-  const hoje  = ev.data || new Date().toISOString().split("T")[0];
-  const peso  = parseFloat(ev.peso)||0;
-  const alt   = parseFloat(ev.altura)||0;
-  const imc   = (alt>0 ? (peso/(alt*alt)).toFixed(1) : 0);
-  sheet.appendRow([id, ev.paciente_id, hoje, peso, ev.percentual_gordura||0,
-                   ev.massa_magra||0, ev.cintura||0, ev.quadril||0, imc]);
-  return { id, ...ev, imc };
+  const sheet   = getSheet(SHEETS.EVOLUCAO);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const id      = "EVO-" + Date.now();
+  const hoje    = ev.data || new Date().toISOString().split("T")[0];
+
+  const peso  = parseFloat(ev.peso) || 0;
+  const alt   = parseFloat(ev.altura) || 0;
+  const imc   = (alt > 0 ? (peso / ((alt / 100) * (alt / 100))).toFixed(1) : (ev.imc || 0));
+
+  const rowMap = { id, paciente_id: ev.paciente_id, data: hoje, ...ev, imc };
+
+  const newRow = headers.map(h => rowMap[h] !== undefined ? rowMap[h] : "");
+  sheet.appendRow(newRow);
+  return { id, imc, ...ev };
 }
 
 function savePlano(pl) {

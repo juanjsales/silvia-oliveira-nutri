@@ -3,23 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bioimpedância por Paciente · Dra. Silvia Lemos</title>
+<title>Avaliação Física & Bioimpedância · Dra. Silvia Lemos</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root {
-  --forest-dark: #203528;
-  --forest-card: #182a1f;
-  --forest-deep: #0e1a12;
-  --sage-light: #8ca481;
-  --sage-dim: rgba(140, 164, 129, 0.2);
-  --text-light: #eef4e5;
+:root,[data-theme="dark"] {
+  --bg-deep: #0e1a12;
+  --bg-card: #182a1f;
+  --bg-header: #203528;
+  --text-primary: #eef4e5;
+  --text-title: #ffffff;
   --text-muted: #a0b399;
   --border-forest: rgba(140, 164, 129, 0.25);
+  --sage-light: #8ca481;
+  --sage-dim: rgba(140, 164, 129, 0.15);
+  --forest-card: #152219;
+  --forest-dark: #0a120c;
   --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  --radius: 20px;
+  --radius: 16px;
 }
 
 [data-theme="light"] {
@@ -32,100 +35,134 @@
   --border-forest: #cbe0c9;
   --sage-light: #3d5a35;
   --sage-dim: rgba(61, 90, 53, 0.12);
+  --forest-card: #ffffff;
+  --forest-dark: #1a2e1e;
 }
-
-[data-theme="light"] .card { background: #ffffff !important; border-color: #d1ded0 !important; color: #1c2e22 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.04) !important; }
-[data-theme="light"] .card-title, [data-theme="light"] .brand-title, [data-theme="light"] strong { color: #142419 !important; }
-[data-theme="light"] table td { color: #1c2e22 !important; border-bottom-color: #e4ebe2 !important; }
-[data-theme="light"] table th { background: #e6ede0 !important; color: #213524 !important; border-bottom-color: #d0ded0 !important; }
-[data-theme="light"] .btn-secondary { background: #eaf1e7 !important; color: #213524 !important; border-color: #b8cbb6 !important; }
-[data-theme="light"] .btn-secondary:hover { background: #d8e5d4 !important; color: #142419 !important; }
-[data-theme="light"] .top-header { background: #e4ede0 !important; border-color: #cbe0c9 !important; }
-
-/* PADRONIZAÇÃO DE BARRAS DE ROLAGEM (SCROLLBARS) BOTÂNICAS */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-deep, #0e1a12); }
-::-webkit-scrollbar-thumb { background: var(--border-forest, rgba(140, 164, 129, 0.35)); border-radius: 4px; border: 2px solid var(--bg-deep, #0e1a12); }
-::-webkit-scrollbar-thumb:hover { background: var(--sage-light, #8ca481); }
-* { scrollbar-width: thin; scrollbar-color: var(--border-forest, rgba(140, 164, 129, 0.35)) var(--bg-deep, #0e1a12); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-forest); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sage-light); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-forest) var(--bg-deep); }
 
-.top-header { background: var(--forest-card); border-bottom: 1px solid var(--border-forest); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; sticky: top; z-index: 100; }
-.brand-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: #fff; }
-.nav-links { display: flex; gap: 16px; align-items: center; }
-.nav-item { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 700; padding: 8px 14px; border-radius: 10px; transition: var(--tr); }
-.nav-item:hover, .nav-item.active { background: rgba(140, 164, 129, 0.15); color: var(--sage-light); }
-
-.container { max-width: 1300px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 24px; }
-
-.card { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px; }
-.card-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
-
-.form-control {
-  background: rgba(0,0,0,0.4); border: 1.5px solid var(--sage-light); padding: 10px 16px; border-radius: 12px; color: #fff; font-family: inherit; font-size: 0.95rem; outline: none; transition: var(--tr); min-width: 280px;
-}
-
-.btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-.btn:hover { background: #eef4e5; transform: translateY(-2px); }
-
-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; margin-top: 16px; }
-th { background: rgba(0,0,0,0.3); padding: 14px 16px; color: var(--sage-light); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-forest); }
-td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-light); }
-tr:hover td { background: rgba(255,255,255,0.02); }
-
-/* OCULTA NAVBAR QUANDO EMBUTIDO EM IFRAME */
+body { background: var(--bg-deep); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; transition: background .3s, color .3s; }
 body.in-iframe .top-header { display: none !important; }
 body.in-iframe .container { padding-top: 16px !important; }
+
+/* HEADER TOPO */
+.top-header { background: var(--bg-header); border-bottom: 1px solid var(--border-forest); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; sticky: top; z-index: 100; flex-wrap: wrap; gap: 12px; }
+.brand-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--text-title); }
+.nav-links { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.nav-item { color: var(--text-muted); text-decoration: none; font-size: 0.82rem; font-weight: 700; padding: 8px 12px; border-radius: 10px; transition: var(--tr); }
+.nav-item:hover, .nav-item.active { background: var(--sage-dim); color: var(--sage-light); }
+
+/* LAYOUT */
+.container { max-width: 1300px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.card { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
+.card-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
+
+/* FORM & BUTTONS */
+.form-control { background: var(--bg-deep); border: 1.5px solid var(--border-forest); padding: 10px 14px; border-radius: 12px; color: var(--text-primary); font-family: inherit; font-size: 0.9rem; outline: none; transition: var(--tr); width: 100%; box-sizing: border-box; }
+.form-control:focus { border-color: var(--sage-light); }
+.form-control option { background: var(--bg-card); }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+
+.btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; white-space: nowrap; }
+.btn:hover { opacity: .88; transform: translateY(-1px); }
+.btn-secondary { background: transparent; border: 1.5px solid var(--border-forest); color: var(--text-primary); }
+.btn-secondary:hover { border-color: var(--sage-light); color: var(--sage-light); }
+
+/* TABELA HISTÓRICO */
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.86rem; margin-top: 12px; }
+th { background: var(--bg-deep); padding: 12px 14px; color: var(--sage-light); font-weight: 800; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-forest); }
+td { padding: 12px 14px; border-bottom: 1px solid var(--border-forest); color: var(--text-primary); }
+tr:hover td { background: var(--sage-dim); }
+
+/* SELETOR DE PERFIL CLINICO */
+.profile-selector { display: flex; background: var(--bg-deep); border: 1.5px solid var(--border-forest); border-radius: 14px; padding: 4px; gap: 4px; margin-bottom: 18px; flex-wrap: wrap; }
+.profile-option { flex: 1; min-width: 120px; text-align: center; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-size: 0.82rem; font-weight: 800; color: var(--text-muted); transition: var(--tr); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.profile-option input { display: none; }
+.profile-option.active { background: var(--sage-light); color: var(--forest-dark); }
+
+/* MODAL AVALIAÇÃO FÍSICA COMPLETA */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .25s cubic-bezier(.16,1,.3,1); }
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-card { background: var(--bg-card); border: 1.5px solid var(--border-forest); border-radius: var(--radius); width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 24px 60px rgba(0,0,0,0.6); transform: scale(.95); transition: transform .25s cubic-bezier(.16,1,.3,1); overflow: hidden; }
+.modal-overlay.active .modal-card { transform: scale(1); }
+
+.modal-header { padding: 20px 24px; background: var(--bg-deep); border-bottom: 1px solid var(--border-forest); display: flex; justify-content: space-between; align-items: center; }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--text-title); }
+.modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; transition: var(--tr); }
+.modal-close:hover { color: #f87171; }
+
+.modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+.modal-footer { padding: 16px 24px; background: var(--bg-deep); border-top: 1px solid var(--border-forest); display: flex; justify-content: space-between; align-items: center; }
+
+/* MODAL TABS */
+.modal-tabs { display: flex; gap: 4px; background: var(--bg-deep); border: 1px solid var(--border-forest); border-radius: 12px; padding: 4px; overflow-x: auto; }
+.modal-tab-btn { padding: 8px 14px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-size: 0.8rem; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit; }
+.modal-tab-btn.active { background: var(--sage-light); color: var(--forest-dark); }
+.modal-section { display: none; flex-direction: column; gap: 16px; }
+.modal-section.active { display: flex; }
+
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.form-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+.section-title-sm { font-size: 0.76rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.06em; border-bottom: 1px solid var(--border-forest); padding-bottom: 4px; margin-bottom: 8px; }
+
+@media(max-width:768px) {
+  .form-grid-2, .form-grid-3, .form-grid-4 { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 
 <header class="top-header">
   <div>
-    <div class="brand-title">Bioimpedância &amp; Evolução Corporal por Paciente</div>
+    <div class="brand-title">📈 Bioimpedância &amp; Avaliação Física Completa</div>
     <div style="font-size:0.78rem; color:var(--sage-light); font-weight:700;">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
   </div>
 
   <nav class="nav-links">
     <a href="app-nutri.html" class="nav-item">📊 Dashboard</a>
     <a href="pacientes.html" class="nav-item">👤 Pacientes &amp; Anamneses</a>
+    <a href="agendamento.html" class="nav-item">📅 Agendamentos</a>
     <a href="gerenciador-plano.html" class="nav-item">🥗 Gerenciador de Plano</a>
     <a href="bioimpedancia.html" class="nav-item active">📈 Bioimpedância</a>
     <a href="index.html" class="nav-item">🌐 Ver Site</a>
-    <a href="login.html" class="nav-item" style="color:#f87171;" onclick="sessionStorage.clear()">🚪 Sair</a>
   </nav>
 </header>
 
 <main class="container">
 
-  <!-- BARRA DE SELEÇÃO DO PACIENTE -->
-  <div class="card" style="padding: 20px 28px;">
+  <!-- BARRA DE SELEÇÃO DO PACIENTE E NOVA AVALIAÇÃO -->
+  <div class="card" style="padding: 18px 24px;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 1.2rem;">👤</span>
+        <span style="font-size: 1.4rem;">👤</span>
         <div>
-          <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); display: block; margin-bottom: 2px;">Selecione o Paciente:</label>
-          <select id="selPacienteEvolucao" class="form-control" onchange="carregarEvolucaoPaciente()">
+          <label style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); display: block; margin-bottom: 2px;">Paciente Selecionado:</label>
+          <select id="selPacienteEvolucao" class="form-control" style="min-width:300px" onchange="carregarEvolucaoPaciente()">
             <option value="">Carregando pacientes...</option>
           </select>
         </div>
       </div>
 
-      <button class="btn" onclick="registrarEvolucao()">+ Nova Avaliação Física</button>
+      <button class="btn" onclick="abrirModalAvaliacao()">📋 + Nova Avaliação Física (UNIGAMA)</button>
     </div>
   </div>
 
   <!-- GRÁFICO DE EVOLUÇÃO INDIVIDUAL -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title">📈 Curva de Evolução Física Individual</div>
+      <div class="card-title">📈 Curva de Evolução Física</div>
       <div id="statusEvolucao" style="font-size: 0.8rem; color: var(--sage-light); font-weight: 700;"></div>
     </div>
 
-    <div style="height: 350px; position: relative;">
+    <div style="height: 320px; position: relative;">
       <canvas id="chartEvolucao"></canvas>
     </div>
   </div>
@@ -138,16 +175,20 @@ body.in-iframe .container { padding-top: 16px !important; }
         <thead>
           <tr>
             <th>Data Avaliação</th>
+            <th>Perfil</th>
             <th>Peso (kg)</th>
+            <th>Altura (cm)</th>
+            <th>IMC</th>
             <th>Gordura (%)</th>
             <th>Massa Magra (kg)</th>
             <th>Cintura (cm)</th>
             <th>Quadril (cm)</th>
+            <th>RCQ</th>
           </tr>
         </thead>
         <tbody id="tblHistoricoEvolucao">
           <tr>
-            <td colspan="6" style="text-align:center; color: var(--text-muted); padding: 24px;">Selecione um paciente para carregar o histórico.</td>
+            <td colspan="10" style="text-align:center; color: var(--text-muted); padding: 24px;">Selecione um paciente para carregar o histórico.</td>
           </tr>
         </tbody>
       </table>
@@ -156,11 +197,291 @@ body.in-iframe .container { padding-top: 16px !important; }
 
 </main>
 
+<!-- ── MODAL COMPLETO DE AVALIAÇÃO FÍSICA & UNIGAMA ── -->
+<div class="modal-overlay" id="modalAvaliacaoFisica">
+  <div class="modal-card">
+
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">📋 Prontuário de Avaliação Física Nutricional</div>
+        <div style="font-size:0.78rem; color:var(--sage-light); margin-top:2px;" id="modalPacSub">Ficha Clínica Padrão UNIGAMA</div>
+      </div>
+      <button class="modal-close" onclick="fecharModalAvaliacao()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- PERFIL CLÍNICO / CATEGORIA -->
+      <div class="profile-selector" id="profileSelector">
+        <label class="profile-option active" id="profAdultoM" onclick="setPerfilClinico('Adulto Masculino')">
+          👨 Adulto Masculino
+        </label>
+        <label class="profile-option" id="profAdultoF" onclick="setPerfilClinico('Adulto Feminino')">
+          👩 Adulto Feminino
+        </label>
+        <label class="profile-option" id="profPediatria" onclick="setPerfilClinico('Pediatria')">
+          👶 Pediatria
+        </label>
+        <label class="profile-option" id="profGestante" onclick="setPerfilClinico('Gestante')">
+          🤰 Gestante
+        </label>
+      </div>
+
+      <!-- TABS DO MODAL -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" onclick="switchModalTab('secAntropometria', this)">⚖️ Antropometria &amp; Bioimpedância</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('secCircunferencias', this)">📏 Circunferências &amp; Dobras</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('secExames', this)">🧪 Exames Bioquímicos (UNIGAMA)</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('secSocialSintomas', this)">📋 Hábitos &amp; Sintomas</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('secDiagnostico', this)">📝 Diagnóstico Nutricional</button>
+      </div>
+
+      <!-- 1. ANTROPOMETRIA & BIOIMPEDÂNCIA -->
+      <div class="modal-section active" id="secAntropometria">
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Data da Avaliação *</label>
+            <input type="text" id="evDataFmt" class="form-control" placeholder="DD/MM/AAAA" oninput="mascaraData(this)">
+          </div>
+          <div class="form-group">
+            <label>Peso (kg) *</label>
+            <input type="number" id="evPeso" class="form-control" step="0.1" placeholder="Ex: 68.5" oninput="calcularIMCEv()">
+          </div>
+          <div class="form-group">
+            <label>Altura (cm) *</label>
+            <input type="number" id="evAltura" class="form-control" step="0.5" placeholder="Ex: 168" oninput="calcularIMCEv()">
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>IMC (Calculado)</label>
+            <input type="text" id="evIMC" class="form-control" readonly placeholder="—" style="background:var(--sage-dim); color:var(--sage-light); font-weight:800;">
+          </div>
+          <div class="form-group">
+            <label>% Gordura Corporal</label>
+            <input type="number" id="evGordura" class="form-control" step="0.1" placeholder="Ex: 22.4">
+          </div>
+          <div class="form-group">
+            <label>Massa Magra (kg)</label>
+            <input type="number" id="evMassaMagra" class="form-control" step="0.1" placeholder="Ex: 38.6">
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>% Músculo Esquelético</label>
+            <input type="number" id="evMusculo" class="form-control" step="0.1" placeholder="Ex: 42.0">
+          </div>
+          <div class="form-group">
+            <label>TMB - Taxa Metabólica Basal (kcal)</label>
+            <input type="number" id="evTMB" class="form-control" placeholder="Ex: 1450">
+          </div>
+          <div class="form-group">
+            <label>Idade Metabólica (anos)</label>
+            <input type="number" id="evIdadeMetabolica" class="form-control" placeholder="Ex: 26">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DO PERFIL (GESTANTE / PEDIATRIA) -->
+        <div id="boxGestante" style="display:none; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-radius:12px; padding:14px; gap:12px; flex-direction:column;">
+          <div class="section-title-sm" style="color:#fbbf24;">🤰 Parâmetros Gestacionais</div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label style="color:#fbbf24;">Semanas de Gestação</label>
+              <input type="number" id="evGestSemanas" class="form-control" placeholder="Ex: 24">
+            </div>
+            <div class="form-group">
+              <label style="color:#fbbf24;">Peso Pré-Gestacional (kg)</label>
+              <input type="number" id="evGestPesoPre" class="form-control" step="0.1" placeholder="Ex: 62.0">
+            </div>
+            <div class="form-group">
+              <label style="color:#fbbf24;">DUM (Última Menstruação)</label>
+              <input type="text" id="evGestDUM" class="form-control" placeholder="DD/MM/AAAA" oninput="mascaraData(this)">
+            </div>
+          </div>
+        </div>
+
+        <div id="boxPediatria" style="display:none; background:rgba(99,179,237,0.08); border:1px solid rgba(99,179,237,0.3); border-radius:12px; padding:14px; gap:12px; flex-direction:column;">
+          <div class="section-title-sm" style="color:#63b3ed;">👶 Parâmetros Pediátricos</div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label style="color:#63b3ed;">Percentil IMC / Idade (OMS)</label>
+              <input type="text" id="evPedPercentil" class="form-control" placeholder="Ex: P50, Eutrofia">
+            </div>
+            <div class="form-group">
+              <label style="color:#63b3ed;">Perímetro Cefálico (cm)</label>
+              <input type="number" id="evPedPerimetroCef" class="form-control" step="0.1" placeholder="Ex: 48.5">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. CIRCUNFERÊNCIAS & DOBRAS CUTÂNEAS (UNIGAMA PÁG. 3) -->
+      <div class="modal-section" id="secCircunferencias">
+        <div class="section-title-sm">📏 Circunferências Antropométricas (cm)</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Circunferência do Braço</label>
+            <input type="number" id="evBraco" class="form-control" step="0.1" placeholder="Ex: 28.5">
+          </div>
+          <div class="form-group">
+            <label>Circunferência da Cintura</label>
+            <input type="number" id="evCintura" class="form-control" step="0.1" placeholder="Ex: 73.0" oninput="calcularRCQEv()">
+          </div>
+          <div class="form-group">
+            <label>Circunferência do Abdômen</label>
+            <input type="number" id="evAbdomen" class="form-control" step="0.1" placeholder="Ex: 78.0">
+          </div>
+          <div class="form-group">
+            <label>Circunferência do Quadril</label>
+            <input type="number" id="evQuadril" class="form-control" step="0.1" placeholder="Ex: 95.0" oninput="calcularRCQEv()">
+          </div>
+          <div class="form-group">
+            <label>Circunferência da Panturrilha</label>
+            <input type="number" id="evPanturrilha" class="form-control" step="0.1" placeholder="Ex: 35.0">
+          </div>
+          <div class="form-group">
+            <label>Circunferência do Pescoço</label>
+            <input type="number" id="evPescoco" class="form-control" step="0.1" placeholder="Ex: 33.0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Razão Cintura/Quadril (RCQ Risco Cardiovascular)</label>
+          <input type="text" id="evRCQ" class="form-control" readonly placeholder="—" style="background:var(--sage-dim); color:var(--sage-light); font-weight:800;">
+        </div>
+
+        <div class="section-title-sm" style="margin-top:12px;">📐 Dobras Cutâneas (mm) - Adipômetro</div>
+        <div class="form-grid-4">
+          <div class="form-group">
+            <label>Bicipital (mm)</label>
+            <input type="number" id="evDobraBicipital" class="form-control" step="0.5" placeholder="Ex: 8.0">
+          </div>
+          <div class="form-group">
+            <label>Tricipital (mm)</label>
+            <input type="number" id="evDobraTricipital" class="form-control" step="0.5" placeholder="Ex: 14.5">
+          </div>
+          <div class="form-group">
+            <label>Suprailíaca (mm)</label>
+            <input type="number" id="evDobraSuprailiaca" class="form-control" step="0.5" placeholder="Ex: 16.0">
+          </div>
+          <div class="form-group">
+            <label>Subescapular (mm)</label>
+            <input type="number" id="evDobraSubescapular" class="form-control" step="0.5" placeholder="Ex: 12.0">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. EXAMES BIOQUÍMICOS (UNIGAMA PÁG. 2) -->
+      <div class="modal-section" id="secExames">
+        <div class="section-title-sm">🧪 Tabela de Exames Bioquímicos</div>
+        <div class="form-grid-3">
+          <div class="form-group"><label>Hemácias (x10⁶/mm³)</label><input type="text" id="exHemacias" class="form-control" placeholder="4.5"></div>
+          <div class="form-group"><label>Hematócrito (%)</label><input type="text" id="exHematocrito" class="form-control" placeholder="42%"></div>
+          <div class="form-group"><label>Hemoglobina (g/dL)</label><input type="text" id="exHemoglobina" class="form-control" placeholder="13.8"></div>
+          <div class="form-group"><label>Leucócitos (mg/dL)</label><input type="text" id="exLeucocitos" class="form-control" placeholder="6500"></div>
+          <div class="form-group"><label>Glicose Jejum (mg/dL)</label><input type="text" id="exGlicose" class="form-control" placeholder="88"></div>
+          <div class="form-group"><label>HbA1c (%)</label><input type="text" id="exHbA1c" class="form-control" placeholder="5.2%"></div>
+          <div class="form-group"><label>Colesterol Total (mg/dL)</label><input type="text" id="exColesTotal" class="form-control" placeholder="175"></div>
+          <div class="form-group"><label>HDL-C (mg/dL)</label><input type="text" id="exHDL" class="form-control" placeholder="55"></div>
+          <div class="form-group"><label>LDL-C (mg/dL)</label><input type="text" id="exLDL" class="form-control" placeholder="98"></div>
+          <div class="form-group"><label>Triglicerídeos (mg/dL)</label><input type="text" id="exTriglicerideos" class="form-control" placeholder="110"></div>
+          <div class="form-group"><label>Ferritina (ng/mL)</label><input type="text" id="exFerritina" class="form-control" placeholder="65"></div>
+          <div class="form-group"><label>Vitamina D 25-OH (ng/mL)</label><input type="text" id="exVitD" class="form-control" placeholder="38"></div>
+          <div class="form-group"><label>TSH (mU/L)</label><input type="text" id="exTSH" class="form-control" placeholder="1.8"></div>
+          <div class="form-group"><label>Ureia / Creatinina</label><input type="text" id="exUreiaCreat" class="form-control" placeholder="28 / 0.8"></div>
+          <div class="form-group"><label>Outros Exames</label><input type="text" id="exOutros" class="form-control" placeholder="TGO, TGP, Vit C..."></div>
+        </div>
+      </div>
+
+      <!-- 4. HÁBITOS, SOCIAL & SINTOMAS (UNIGAMA PÁG. 1 & 4) -->
+      <div class="modal-section" id="secSocialSintomas">
+        <div class="section-title-sm">🚬 História Social &amp; Hábitos</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Escolaridade</label>
+            <input type="text" id="anEscolaridade" class="form-control" placeholder="Ex: Superior completo">
+          </div>
+          <div class="form-group">
+            <label>Profissão / Ocupação</label>
+            <input type="text" id="anProfissao" class="form-control" placeholder="Ex: Engenheira">
+          </div>
+          <div class="form-group">
+            <label>Renda Familiar (salários mín.)</label>
+            <input type="text" id="anRenda" class="form-control" placeholder="Ex: 5 salários">
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Tabagismo</label>
+            <select id="anTabagismo" class="form-control">
+              <option value="Não">Não tabagista</option>
+              <option value="Sim">Sim (Fumante ativo)</option>
+              <option value="Ex-fumante">Ex-fumante (Parou)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Etilismo (Álcool)</label>
+            <select id="anEtilismo" class="form-control">
+              <option value="Não">Não consome</option>
+              <option value="Social">Social (Finais de semana)</option>
+              <option value="Frequente">Frequente (Semanal)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ingestão Hídrica Diária</label>
+            <select id="anHidrica" class="form-control">
+              <option value="Pouca (até 1 L)">Pouca (até 1 L/dia)</option>
+              <option value="Moderada (1 a 1,5 L)" selected>Moderada (1 a 1.5 L/dia)</option>
+              <option value="Adequada (1,5 L ou mais)">Adequada (1.5 L ou mais)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-title-sm" style="margin-top:12px;">🩺 Sinais e Sintomas</div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Função Intestinal</label>
+            <select id="anIntestinoEv" class="form-control">
+              <option value="Normal">Normal (evacua 1-2x/dia)</option>
+              <option value="Constipação">Constipação (ressecado)</option>
+              <option value="Diarreia">Diarreia / Fezes amolecidas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Aversões / Intolerâncias Alimentares</label>
+            <input type="text" id="anAversao" class="form-control" placeholder="Ex: Não tolera quiabo, aversão a peixe...">
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. DIAGNÓSTICO NUTRICIONAL (UNIGAMA PÁG. 3) -->
+      <div class="modal-section" id="secDiagnostico">
+        <div class="section-title-sm">📝 Diagnóstico &amp; Conduta Nutricional</div>
+        <div class="form-group">
+          <label>Parecer Clínico e Diagnóstico Nutricional</label>
+          <textarea id="evDiagnostico" class="form-control" style="min-height:140px;" placeholder="Ex: Paciente eutrófica com adequação de massa magra. Leve aumento de adiposidade abdominal (RCQ = 0.77). Conduta focada em reeducação alimentar e ganho de massa magra."></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="fecharModalAvaliacao()">Cancelar</button>
+      <button class="btn" id="btnSalvarAvaliacao" onclick="salvarModalAvaliacao()">💾 Salvar Avaliação Completa</button>
+    </div>
+
+  </div>
+</div>
+
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
 
 let chartInstance = null;
 let listaPacientes = [];
+let perfilSelecionado = 'Adulto Feminino';
 
 async function apiCall(action, payload = {}) {
   try {
@@ -171,11 +492,68 @@ async function apiCall(action, payload = {}) {
     });
     return await res.json();
   } catch (err) {
-    console.error("Erro na API:", err);
     return { success: false, error: err.toString() };
   }
 }
 
+// ── Máscara de Data (DD/MM/AAAA) ──
+function mascaraData(el) {
+  let v = el.value.replace(/\D/g, '');
+  if (v.length > 8) v = v.slice(0, 8);
+  if (v.length >= 5) {
+    el.value = `${v.slice(0,2)}/${v.slice(2,4)}/${v.slice(4)}`;
+  } else if (v.length >= 3) {
+    el.value = `${v.slice(0,2)}/${v.slice(2)}`;
+  } else {
+    el.value = v;
+  }
+}
+
+function formatDateBR(val) {
+  if (!val) return '';
+  const s = String(val).trim();
+  if (s.includes('T')) {
+    const [y,m,d] = s.split('T')[0].split('-');
+    return `${d}/${m}/${y}`;
+  }
+  if (s.includes('-')) {
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  return s;
+}
+
+function convertBRToISO(str) {
+  if (!str) return new Date().toISOString().split('T')[0];
+  if (str.includes('/')) {
+    const [d,m,y] = str.split('/');
+    if (d && m && y && y.length === 4) return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+  return str;
+}
+
+// ── Troca de Perfil Clínico ──
+function setPerfilClinico(perfil) {
+  perfilSelecionado = perfil;
+  document.querySelectorAll('.profile-option').forEach(el => el.classList.remove('active'));
+  if (perfil.includes('Masculino')) document.getElementById('profAdultoM').classList.add('active');
+  else if (perfil.includes('Feminino')) document.getElementById('profAdultoF').classList.add('active');
+  else if (perfil.includes('Pediatria')) document.getElementById('profPediatria').classList.add('active');
+  else if (perfil.includes('Gestante')) document.getElementById('profGestante').classList.add('active');
+
+  // Ajusta visibilidade dos boxes específicos
+  document.getElementById('boxGestante').style.display = perfil.includes('Gestante') ? 'flex' : 'none';
+  document.getElementById('boxPediatria').style.display = perfil.includes('Pediatria') ? 'flex' : 'none';
+}
+
+function switchModalTab(secId, btn) {
+  document.querySelectorAll('.modal-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(secId).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Inicialização ──
 async function inicializarPacientes() {
   const sel = document.getElementById('selPacienteEvolucao');
   const urlParams = new URLSearchParams(window.location.search);
@@ -203,7 +581,7 @@ async function inicializarPacientes() {
 
 async function carregarEvolucaoPaciente() {
   const sel = document.getElementById('selPacienteEvolucao');
-  const pacienteId = sel.value;
+  const pacienteId = sel ? sel.value : 'PAC-01';
   const pacienteObj = listaPacientes.find(p => p.id === pacienteId) || { nome: 'Paciente' };
   const tblHist = document.getElementById('tblHistoricoEvolucao');
   const statusEvo = document.getElementById('statusEvolucao');
@@ -216,41 +594,43 @@ async function carregarEvolucaoPaciente() {
   if (res && res.success && res.data && res.data.length > 0) {
     dadosEvolucao = res.data;
   } else {
-    // Dados iniciais de demonstração para PAC-01 se ainda não gravado no banco remoto
     if (pacienteId === 'PAC-01') {
       dadosEvolucao = [
-        { data: '2026-05-10', peso: 71.2, percentual_gordura: 28.5, massa_magra: 37.8, cintura: 78, quadril: 98 },
-        { data: '2026-06-12', peso: 69.0, percentual_gordura: 26.1, massa_magra: 38.0, cintura: 75, quadril: 96 },
-        { data: '2026-07-15', peso: 67.4, percentual_gordura: 24.0, massa_magra: 38.3, cintura: 73, quadril: 94 },
-        { data: '2026-08-05', peso: 65.5, percentual_gordura: 22.4, massa_magra: 38.6, cintura: 71, quadril: 93 }
+        { data: '2026-05-10', perfil_clinico: 'Adulto Feminino', peso: 71.2, altura: 168, imc: '25.2', percentual_gordura: 28.5, massa_magra: 37.8, cintura: 78, quadril: 98, rcq: '0.79' },
+        { data: '2026-06-12', perfil_clinico: 'Adulto Feminino', peso: 69.0, altura: 168, imc: '24.4', percentual_gordura: 26.1, massa_magra: 38.0, cintura: 75, quadril: 96, rcq: '0.78' },
+        { data: '2026-07-15', perfil_clinico: 'Adulto Feminino', peso: 67.4, altura: 168, imc: '23.8', percentual_gordura: 24.0, massa_magra: 38.3, cintura: 73, quadril: 94, rcq: '0.77' },
+        { data: '2026-08-05', perfil_clinico: 'Adulto Feminino', peso: 65.5, altura: 168, imc: '23.2', percentual_gordura: 22.4, massa_magra: 38.6, cintura: 71, quadril: 93, rcq: '0.76' }
       ];
     }
   }
 
-  if (statusEvo) statusEvo.innerText = `${dadosEvolucao.length} avaliações física(s) encontradas`;
+  if (statusEvo) statusEvo.innerText = `${dadosEvolucao.length} avaliação(ões) física(s) registrada(s)`;
 
-  // RENDERIZA TABELA HISTÓRICO
   if (tblHist) {
     tblHist.innerHTML = '';
     if (dadosEvolucao.length === 0) {
-      tblHist.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">Nenhuma medição registrada para ${pacienteObj.nome} ainda.</td></tr>`;
+      tblHist.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--text-muted); padding:24px;">Nenhuma medição registrada para ${pacienteObj.nome} ainda.</td></tr>`;
     } else {
       dadosEvolucao.forEach(ev => {
+        const dtFmt = formatDateBR(ev.data);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${ev.data || 'Recente'}</strong></td>
+          <td><strong>${dtFmt}</strong></td>
+          <td><span style="font-size:0.75rem; font-weight:800; background:var(--sage-dim); color:var(--sage-light); padding:3px 8px; border-radius:6px;">${ev.perfil_clinico || 'Adulto'}</span></td>
           <td><strong style="color:var(--sage-light);">${ev.peso} kg</strong></td>
+          <td>${ev.altura || '--'} cm</td>
+          <td><strong>${ev.imc || '--'}</strong></td>
           <td>${ev.percentual_gordura}%</td>
           <td>${ev.massa_magra || '--'} kg</td>
           <td>${ev.cintura || '--'} cm</td>
           <td>${ev.quadril || '--'} cm</td>
+          <td>${ev.rcq || '--'}</td>
         `;
         tblHist.appendChild(tr);
       });
     }
   }
 
-  // RENDERIZA GRÁFICO DO PACIENTE
   renderizarGrafico(dadosEvolucao);
 }
 
@@ -258,14 +638,12 @@ function renderizarGrafico(dados) {
   const ctx = document.getElementById('chartEvolucao');
   if (!ctx) return;
 
-  const labels = dados.map(d => d.data || 'Medição');
+  const labels = dados.map(d => formatDateBR(d.data));
   const pesos = dados.map(d => parseFloat(d.peso));
   const gorduras = dados.map(d => parseFloat(d.percentual_gordura));
   const massas = dados.map(d => parseFloat(d.massa_magra || 0));
 
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
+  if (chartInstance) chartInstance.destroy();
 
   chartInstance = new Chart(ctx, {
     type: 'line',
@@ -273,25 +651,25 @@ function renderizarGrafico(dados) {
       labels: labels.length > 0 ? labels : ['Sem dados'],
       datasets: [
         {
-          label: 'Peso Corporal (kg)',
+          label: 'Peso (kg)',
           data: pesos,
           borderColor: '#8ca481',
           backgroundColor: 'rgba(140, 164, 129, 0.15)',
           fill: true,
-          tension: 0.3
+          tension: 0.35
         },
         {
-          label: 'Gordura Corporal (%)',
+          label: '% Gordura',
           data: gorduras,
-          borderColor: '#eef4e5',
-          tension: 0.3
+          borderColor: '#fbbf24',
+          tension: 0.35
         },
         {
           label: 'Massa Magra (kg)',
           data: massas,
-          borderColor: '#536457',
-          borderDash: [5, 5],
-          tension: 0.3
+          borderColor: '#63b3ed',
+          borderDash: [4, 4],
+          tension: 0.35
         }
       ]
     },
@@ -299,7 +677,7 @@ function renderizarGrafico(dados) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } }
+        legend: { labels: { color: '#a0b399', font: { family: 'Plus Jakarta Sans', size: 11 } } }
       },
       scales: {
         x: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } },
@@ -309,32 +687,122 @@ function renderizarGrafico(dados) {
   });
 }
 
-async function registrarEvolucao() {
+// ── Cálculos Dinâmicos no Modal ──
+function calcularIMCEv() {
+  const peso = parseFloat(document.getElementById('evPeso').value) || 0;
+  const alt = parseFloat(document.getElementById('evAltura').value) || 0;
+  const elIMC = document.getElementById('evIMC');
+
+  if (peso > 0 && alt > 0) {
+    const altM = alt / 100;
+    const imc = (peso / (altM * altM)).toFixed(1);
+    let cat = imc < 18.5 ? 'Abaixo do peso' : imc < 25 ? 'Eutrofia (Normal)' : imc < 30 ? 'Sobrepeso' : 'Obesidade';
+    elIMC.value = `${imc} · ${cat}`;
+  } else {
+    elIMC.value = '—';
+  }
+}
+
+function calcularRCQEv() {
+  const cin = parseFloat(document.getElementById('evCintura').value) || 0;
+  const qua = parseFloat(document.getElementById('evQuadril').value) || 0;
+  const elRCQ = document.getElementById('evRCQ');
+
+  if (cin > 0 && qua > 0) {
+    const rcq = (cin / qua).toFixed(2);
+    let risco = 'Baixo Risco';
+    if (perfilSelecionado.includes('Feminino') || perfilSelecionado.includes('Gestante')) {
+      if (rcq > 0.85) risco = 'Alto Risco Cardíaco';
+    } else {
+      if (rcq > 0.90) risco = 'Alto Risco Cardíaco';
+    }
+    elRCQ.value = `${rcq} · ${risco}`;
+  } else {
+    elRCQ.value = '—';
+  }
+}
+
+// ── Modal Abrir / Salvar ──
+function abrirModalAvaliacao() {
   const sel = document.getElementById('selPacienteEvolucao');
-  const pacienteId = sel.value;
+  const pacienteId = sel ? sel.value : 'PAC-01';
   const pacienteObj = listaPacientes.find(p => p.id === pacienteId) || { nome: 'Paciente' };
 
-  const peso = parseFloat(prompt(`[${pacienteObj.nome}] Digite o Peso Atual (kg):`, "65.0") || "0");
-  if (!peso) return;
-  const percGordura = parseFloat(prompt(`[${pacienteObj.nome}] Digite o % de Gordura:`, "22.0") || "0");
-  const massaMagra = parseFloat(prompt(`[${pacienteObj.nome}] Digite a Massa Magra (kg):`, "38.5") || "0");
+  document.getElementById('modalPacSub').innerText = `Paciente: ${pacienteObj.nome} (ID: ${pacienteId})`;
+  
+  // Data de hoje formatada
+  const hoje = new Date();
+  const d = String(hoje.getDate()).padStart(2, '0');
+  const m = String(hoje.getMonth() + 1).padStart(2, '0');
+  const y = hoje.getFullYear();
+  document.getElementById('evDataFmt').value = `${d}/${m}/${y}`;
 
-  const evolucao = {
+  document.getElementById('modalAvaliacaoFisica').classList.add('active');
+}
+
+function fecharModalAvaliacao() {
+  document.getElementById('modalAvaliacaoFisica').classList.remove('active');
+}
+
+async function salvarModalAvaliacao() {
+  const sel = document.getElementById('selPacienteEvolucao');
+  const pacienteId = sel ? sel.value : 'PAC-01';
+  const pacienteObj = listaPacientes.find(p => p.id === pacienteId) || { nome: 'Paciente' };
+  const btn = document.getElementById('btnSalvarAvaliacao');
+
+  const dtStr = document.getElementById('evDataFmt').value;
+  const peso = parseFloat(document.getElementById('evPeso').value) || 0;
+
+  if (!peso) {
+    alert("Por favor, informe ao menos o Peso Atual do paciente.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Salvando Avaliação...";
+
+  const ev = {
     paciente_id: pacienteId,
+    data: convertBRToISO(dtStr),
+    perfil_clinico: perfilSelecionado,
     peso: peso,
-    percentual_gordura: percGordura,
-    massa_magra: massaMagra,
-    cintura: 71,
-    quadril: 93,
-    data: new Date().toISOString().split('T')[0]
+    altura: parseFloat(document.getElementById('evAltura').value) || 0,
+    imc: document.getElementById('evIMC').value.split(' ·')[0],
+    percentual_gordura: parseFloat(document.getElementById('evGordura').value) || 0,
+    massa_magra: parseFloat(document.getElementById('evMassaMagra').value) || 0,
+    percentual_musculo: parseFloat(document.getElementById('evMusculo').value) || 0,
+    tmb: parseFloat(document.getElementById('evTMB').value) || 0,
+    idade_metabolica: parseFloat(document.getElementById('evIdadeMetabolica').value) || 0,
+    braco: parseFloat(document.getElementById('evBraco').value) || 0,
+    cintura: parseFloat(document.getElementById('evCintura').value) || 0,
+    abdomen: parseFloat(document.getElementById('evAbdomen').value) || 0,
+    quadril: parseFloat(document.getElementById('evQuadril').value) || 0,
+    panturrilha: parseFloat(document.getElementById('evPanturrilha').value) || 0,
+    pescoca: parseFloat(document.getElementById('evPescoco').value) || 0,
+    rcq: document.getElementById('evRCQ').value.split(' ·')[0],
+    dobra_bicipital: parseFloat(document.getElementById('evDobraBicipital').value) || 0,
+    dobra_tricipital: parseFloat(document.getElementById('evDobraTricipital').value) || 0,
+    dobra_suprailiaca: parseFloat(document.getElementById('evDobraSuprailiaca').value) || 0,
+    dobra_subescapular: parseFloat(document.getElementById('evDobraSubescapular').value) || 0,
+    gestante_semanas: document.getElementById('evGestSemanas').value,
+    gestante_peso_pre: document.getElementById('evGestPesoPre').value,
+    gestante_dum: document.getElementById('evGestDUM').value,
+    pediatria_percentil: document.getElementById('evPedPercentil').value,
+    pediatria_perimetro_cefalico: document.getElementById('evPedPerimetroCef').value,
+    diagnostico_nutricional: document.getElementById('evDiagnostico').value
   };
 
-  const res = await apiCall('saveEvolucao', { evolucao });
+  const res = await apiCall('saveEvolucao', { evolucao: ev });
+
+  btn.disabled = false;
+  btn.innerText = "💾 Salvar Avaliação Completa";
+
   if (res && res.success) {
-    alert(`✅ Avaliação física de ${pacienteObj.nome} salva com sucesso no Google Sheets!`);
+    alert(`✅ Avaliação Física e Antropometria de ${pacienteObj.nome} salvas com sucesso!`);
+    fecharModalAvaliacao();
     carregarEvolucaoPaciente();
   } else {
-    alert("Erro ao registrar avaliação física.");
+    alert("Erro ao salvar avaliação física: " + (res.error || "Tente novamente."));
   }
 }
 
