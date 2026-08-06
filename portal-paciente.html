@@ -1186,7 +1186,141 @@ window.addEventListener('DOMContentLoaded', () => {
 
   renderEvolChart();
   updateAdherenceScore();
+
+  // Tenta carregar os dados reais do banco do paciente autenticado
+  const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
+  if (rawDados) {
+    try {
+      const u = JSON.parse(rawDados);
+      if (u.id) carregarDadosHistorico(u.id);
+    } catch(e){}
+  }
 });
+
+async function carregarDadosHistorico(pacienteId) {
+  if (!pacienteId) return;
+  try {
+    const res = await fetch(KOS_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: 'getHistoricoCompleto', paciente_id: pacienteId })
+    }).then(r => r.json()).catch(() => null);
+
+    if (res && res.success && res.data) {
+      const { plano, suplementos, evolucao } = res.data;
+
+      // 1. Renderizar Plano Alimentar Real se existir
+      if (plano && plano.json_refeicoes) {
+        try {
+          const meallist = typeof plano.json_refeicoes === 'string' ? JSON.parse(plano.json_refeicoes) : plano.json_refeicoes;
+          if (Array.isArray(meallist) && meallist.length > 0) {
+            const container = document.querySelector('.meals-timeline');
+            if (container) {
+              container.innerHTML = meallist.map((m, idx) => `
+                <div class="meal-card-v2" id="meal-${idx+1}">
+                  <div class="meal-v2-header">
+                    <div class="meal-v2-name">${m.icone || '🥗'} ${m.nome || ('Refeição ' + (idx+1))}</div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="meal-v2-time">${m.horario || 'Flexível'}</span>
+                      <label class="meal-check-btn">
+                        <input type="checkbox" onchange="toggleMeal('meal-${idx+1}')">
+                        <span>Concluir</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="meal-items-text">${m.alimentos || m.itens || 'Consulte sua prescrição.'}</div>
+                  ${m.substituicoes ? `
+                    <button class="btn-subst-trigger" onclick="toggleSubst('sub-${idx+1}')">🔄 Opções de Substituição</button>
+                    <div class="subst-box-v2" id="sub-${idx+1}">
+                      <strong>Substituições permitidas:</strong><br>${m.substituicoes}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('');
+            }
+          }
+        } catch(e){}
+      }
+
+      // 2. Renderizar Suplementos Prescritos Reais
+      if (suplementos && Array.isArray(suplementos) && suplementos.length > 0) {
+        const sec = document.getElementById('secPlano');
+        if (sec) {
+          let supCardHtml = `<div style="background:var(--card-inner); border:1.5px solid var(--sage-light); padding:18px; border-radius:var(--radius-md); margin-top:16px;">
+            <div style="font-weight:800; font-size:0.95rem; color:var(--sage-light); margin-bottom:10px;">💊 Suplementação &amp; Manipulados Prescritos</div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              ${suplementos.map(s => `
+                <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:12px; border-radius:10px;">
+                  <div style="font-weight:800; color:var(--text-title); font-size:0.9rem;">${s.suplemento_nome} (${s.dosagem || ''})</div>
+                  <div style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">
+                    📌 <strong>Posologia:</strong> ${s.posologia || 'Conforme orientação'} | <strong>Forma:</strong> ${s.forma_farmaceutica || 'Cápsula'}
+                  </div>
+                  ${s.observacao ? `<div style="font-size:0.75rem; color:var(--sage-light); margin-top:3px; font-style:italic;">Obs: ${s.observacao}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+          const wrap = document.createElement('div');
+          wrap.innerHTML = supCardHtml;
+          sec.appendChild(wrap.firstElementChild);
+        }
+      }
+
+      // 3. Renderizar Gráfico de Evolução Real
+      if (evolucao && Array.isArray(evolucao) && evolucao.length > 0) {
+        const labels = evolucao.map(e => e.data ? String(e.data).slice(5) : 'Medição');
+        const pesos = evolucao.map(e => parseFloat(e.peso) || 0);
+        const gorduras = evolucao.map(e => parseFloat(e.percentual_gordura) || 0);
+        
+        if (chartInstance) chartInstance.destroy();
+        const ctx = document.getElementById('chartEvolucaoPaciente');
+        if (ctx) {
+          chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Peso Corporal (kg)',
+                  data: pesos,
+                  borderColor: '#8ca481',
+                  backgroundColor: 'rgba(140, 164, 129, 0.15)',
+                  fill: true,
+                  tension: 0.35,
+                  borderWidth: 3,
+                  pointRadius: 6,
+                  pointBackgroundColor: '#8ca481'
+                },
+                {
+                  label: '% Gordura Corporal',
+                  data: gorduras,
+                  borderColor: '#e2b857',
+                  backgroundColor: 'rgba(226, 184, 87, 0.08)',
+                  fill: true,
+                  tension: 0.35,
+                  borderWidth: 2,
+                  pointRadius: 4,
+                  pointBackgroundColor: '#e2b857'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { labels: { color: '#f0f5eb', font: { family: 'Plus Jakarta Sans', weight: '700' } } }
+              },
+              scales: {
+                x: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+              }
+            }
+          });
+        }
+      }
+    }
+  } catch(err){}
+}
 </script>
 </body>
 </html>

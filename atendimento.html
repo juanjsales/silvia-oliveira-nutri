@@ -165,6 +165,14 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
     </div>
   </div>
 
+  <!-- ALERTAS CLÍNICOS AUTOMÁTICOS DA ANAMNESE -->
+  <div id="alertaClinicoBox" style="display:none; background:rgba(248,113,113,0.12); border:1.5px solid rgba(248,113,113,0.35); border-radius:14px; padding:14px 18px;">
+    <div style="font-weight:900; color:#f87171; font-size:0.88rem; display:flex; align-items:center; gap:8px;">
+      ⚠️ ALERTAS CLÍNICOS IMPORTANTES (ANAMNESE)
+    </div>
+    <div id="alertaClinicoTexto" style="font-size:0.82rem; color:var(--text-primary); margin-top:6px; line-height:1.5;"></div>
+  </div>
+
   <!-- SELETOR DE PERFIL CLÍNICO / CATEGORIA -->
   <div class="profile-selector">
     <div class="profile-option active" id="profAdultoM" onclick="setPerfilClinicoAtend('Adulto Masculino')">👨 Adulto Masculino</div>
@@ -649,6 +657,7 @@ function renderPacHeader() {
 }
 
 function preencherAnamnese(an) {
+  if (!an) return;
   const m = { anEscolaridade:'escolaridade', anProfissao:'profissao', anRenda:'renda_familiar',
               anDependentes:'dependentes_renda', anEstadoCivil:'estado_civil', anTabagismo:'tabagismo_status',
               anEtilismo:'etilismo_status', anAgua:'ingestao_hidrica', anHistorico:'historico_saude',
@@ -658,6 +667,23 @@ function preencherAnamnese(an) {
     const el = document.getElementById(id);
     if (el && an[m[id]]) el.value = an[m[id]];
   });
+
+  // Alertas Clínicos Automáticos no Prontuário
+  const alertas = [];
+  if (an.alergias) alertas.push(`🚨 <strong>Alergias:</strong> ${an.alergias}`);
+  if (an.intolerancias) alertas.push(`⚠️ <strong>Intolerâncias:</strong> ${an.intolerancias}`);
+  if (an.aversao_alimentar) alertas.push(`🚫 <strong>Aversões:</strong> ${an.aversao_alimentar}`);
+  if (an.medicamentos) alertas.push(`💊 <strong>Medicamentos:</strong> ${an.medicamentos}`);
+  if (an.restricoes_alimentares) alertas.push(`⛔ <strong>Restrições:</strong> ${an.restricoes_alimentares}`);
+
+  const box = document.getElementById('alertaClinicoBox');
+  const txt = document.getElementById('alertaClinicoTexto');
+  if (alertas.length > 0 && box && txt) {
+    txt.innerHTML = alertas.join('<br>');
+    box.style.display = 'block';
+  } else if (box) {
+    box.style.display = 'none';
+  }
 }
 
 async function salvarAnamnese() {
