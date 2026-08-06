@@ -260,9 +260,17 @@ body.in-iframe .manager-container { padding-top: 16px !important; }
       <button class="btn-preset btn-preset-danger" onclick="limparTudo()">🗑️ Limpar</button>
     </div>
 
-    <div class="form-group">
+    <!-- SELETOR DE PACIENTE DO BANCO DE DADOS -->
+    <div class="form-group" style="background: rgba(140, 164, 129, 0.12); padding: 12px; border-radius: 12px; border: 1px solid var(--border-sage);">
+      <label style="color: var(--sage-light); font-weight: 800;">👤 Vincular ao Paciente (Banco):</label>
+      <select id="selPacientePlano" class="form-control" onchange="selecionarPacienteDoBanco()">
+        <option value="">Carregando pacientes...</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-top: 10px;">
       <label>Nome da Paciente</label>
-      <input type="text" id="inNome" class="form-control" value="ANYCELLI V.C. DOS SANTOS" oninput="salvarELocal(); atualizar();">
+      <input type="text" id="inNome" class="form-control" value="Juliana Mendes" oninput="salvarELocal(); atualizar();">
     </div>
 
     <div class="section-divider">🧮 Calculadora Clínica (TMB &amp; VET)</div>
@@ -665,17 +673,71 @@ function atualizar() {
   if (counterBadge) counterBadge.innerText = `${totalPages} Páginas Geradas`;
 }
 
-// SALVAR NO BANCO GOOGLE SHEETS COM VÍNCULO DINÂMICO DE PACIENTE
+// INTEGRAÇÃO COM BANCO DE PACIENTES
+let listaPacientesBanco = [];
+
+async function carregarPacientesNoGerenciador() {
+  const sel = document.getElementById('selPacientePlano');
+  if (!sel) return;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramPacienteId = urlParams.get('paciente_id');
+  const paramPacienteNome = urlParams.get('paciente');
+
+  const res = await apiCall('getPacientes');
+  if (res && res.success && res.data) {
+    listaPacientesBanco = res.data.filter(p => !p.tipo || p.tipo === "PACIENTE");
+    sel.innerHTML = '';
+
+    let matchedOption = false;
+    listaPacientesBanco.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.nome} (CPF: ${p.cpf || 'N/I'})`;
+      
+      if ((paramPacienteId && p.id === paramPacienteId) || 
+          (paramPacienteNome && p.nome.toLowerCase().includes(paramPacienteNome.toLowerCase()))) {
+        opt.selected = true;
+        matchedOption = true;
+      }
+      sel.appendChild(opt);
+    });
+
+    if (matchedOption || listaPacientesBanco.length > 0) {
+      selecionarPacienteDoBanco();
+    }
+  } else {
+    sel.innerHTML = '<option value="PAC-01">Juliana Mendes (PAC-01)</option>';
+  }
+}
+
+function selecionarPacienteDoBanco() {
+  const sel = document.getElementById('selPacientePlano');
+  if (!sel) return;
+  const pacienteId = sel.value;
+  const paciente = listaPacientesBanco.find(p => p.id === pacienteId);
+
+  if (paciente) {
+    const inNome = document.getElementById('inNome');
+    const inObj = document.getElementById('inObjetivo');
+    if (inNome) inNome.value = paciente.nome;
+    if (inObj && paciente.objetivo) inObj.value = paciente.objetivo;
+    
+    salvarELocal();
+    atualizar();
+  }
+}
+
+// SALVAR NO BANCO GOOGLE SHEETS COM VÍNCULO DIRETO AO PACIENTE SELECIONADO
 async function salvarPlanoNoBancoSheets() {
+  const sel = document.getElementById('selPacientePlano');
+  const pacienteId = sel ? sel.value : "PAC-01";
   const nome = document.getElementById('inNome').value || 'PACIENTE';
   const apresentacao = document.getElementById('inApresentacao').value;
   const objetivo = document.getElementById('inObjetivo').value;
 
-  const pacienteIdPrompt = prompt(`Digite o CPF ou ID do Paciente para vincular o plano de ${nome}:`, "PAC-01");
-  if (!pacienteIdPrompt) return;
-
   const planoData = {
-    paciente_id: pacienteIdPrompt.trim(),
+    paciente_id: pacienteId,
     paciente_nome: nome,
     refeicoes: refeicoes,
     extras: { apresentacao, objetivo },
@@ -684,7 +746,7 @@ async function salvarPlanoNoBancoSheets() {
 
   const res = await apiCall('savePlano', { plano: planoData });
   if (res && res.success) {
-    alert(`✅ Plano Alimentar de ${nome} (Vínculo: ${pacienteIdPrompt}) salvo com sucesso no Google Sheets!`);
+    alert(`✅ Plano Alimentar de ${nome} (ID: ${pacienteId}) salvo com sucesso no Google Sheets!`);
   } else {
     alert("Erro ao salvar plano no banco: " + (res.error || "Tente novamente."));
   }
@@ -717,6 +779,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (window.self !== window.top) {
     document.body.classList.add('in-iframe');
   }
+  carregarPacientesNoGerenciador();
   carregarLocalStorage();
   renderInputs();
   atualizar();
