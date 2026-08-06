@@ -634,7 +634,11 @@ window.addEventListener('message', e => {
 async function apiCall(action, payload={}, method='GET') {
   try {
     if (method==='POST') {
-      const res = await fetch(API_URL,{method:'POST',body:JSON.stringify({action,...payload}),headers:{'Content-Type':'application/json'}});
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, ...payload })
+      });
       return await res.json();
     }
     const res = await fetch(`${API_URL}?${new URLSearchParams({action,...payload})}`);
@@ -710,7 +714,7 @@ async function carregarDados() {
 
   if (resAg?.success && resAg.data) {
     agendamento = resAg.data;
-    document.getElementById('agInfo').textContent = `${fmt(agendamento.data)} às ${agendamento.hora||''} · ${agendamento.tipo||'Consulta'}`;
+    if (document.getElementById('agInfo')) document.getElementById('agInfo').textContent = `${fmt(agendamento.data)} às ${agendamento.hora||''} · ${agendamento.tipo||'Consulta'}`;
   }
 
   const resPac = await apiCall('getPacienteById',{id:PAC_ID});
@@ -727,9 +731,9 @@ async function carregarDados() {
   }
 
   const hoje = new Date();
-  document.getElementById('bioDataFmt').value = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
-  document.getElementById('exData').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
-  document.getElementById('btnFinalizarTop').disabled = false;
+  if (document.getElementById('bioDataFmt')) document.getElementById('bioDataFmt').value = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
+  if (document.getElementById('exData')) document.getElementById('exData').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+  if (document.getElementById('btnFinalizarTop')) document.getElementById('btnFinalizarTop').disabled = false;
   carregarExamesLaboratoriaisAtend();
 }
 
