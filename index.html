@@ -468,7 +468,7 @@ img, svg, video {
   </nav>
 
   <div style="display: flex; align-items: center; gap: 10px;">
-    <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Vim%20pelo%20site%20e%20gostaria%20de%20agendar%20uma%20consulta." target="_blank" class="btn-sage">
+    <a href="#" onclick="abrirModalAgendamentoLP(event)" class="btn-sage">
       🌿 Agendar Consulta
     </a>
 
@@ -487,7 +487,7 @@ img, svg, video {
   <a href="#calculadora" onclick="toggleMobileMenu()">Calculadora IMC</a>
   <a href="#especialidades" onclick="toggleMobileMenu()">Especialidades</a>
   <a href="#faq" onclick="toggleMobileMenu()">Dúvidas</a>
-  <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!" target="_blank" style="color: var(--sage-light); font-weight: 800;">💬 Falar no WhatsApp</a>
+  <a href="#" onclick="toggleMobileMenu(); abrirModalAgendamentoLP(event);" style="color: var(--sage-light); font-weight: 800;">💬 Escolher Horário & Agendar</a>
 </nav>
 
 <!-- HERO D1 -->
@@ -528,8 +528,8 @@ img, svg, video {
       🌱 Nutrição Clínica • Esportiva • Obesidade e Emagrecimento
     </div>
 
-    <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Quero%20agendar%20uma%20consulta." target="_blank" class="btn-sage" style="padding: 16px 36px; font-size: 0.9rem;">
-      💬 Agendar Consulta pelo WhatsApp
+    <a href="#" onclick="abrirModalAgendamentoLP(event)" class="btn-sage" style="padding: 16px 36px; font-size: 0.9rem;">
+      💬 Escolher Horário Disponível &amp; Agendar
     </a>
   </div>
 </section>
@@ -550,8 +550,8 @@ img, svg, video {
       <p style="color: var(--cream-dim); font-size: 1rem; line-height: 1.8; margin-bottom: 24px;">
         Acredito que o alimento não deve ser fonte de culpa ou ansiedade. Através de um planejamento estratégico personalizado entregue em materiais em PDF de fácil acesso, adequamos os macronutrientes à sua rotina real, com suporte contínuo via WhatsApp.
       </p>
-      <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Li%20sua%20apresenta%C3%A7%C3%A3o%20no%20site%20e%20gostaria%20de%20agendar." target="_blank" class="btn-sage">
-        💬 Falar Direto com a Dra. Silvia
+      <a href="#" onclick="abrirModalAgendamentoLP(event)" class="btn-sage">
+        💬 Escolher Data &amp; Falar com a Dra. Silvia
       </a>
     </div>
   </div>
@@ -836,15 +836,181 @@ img, svg, video {
   </div>
 </footer>
 
-<a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!" target="_blank" class="wsp-float" aria-label="Falar no WhatsApp">
+<a href="#" onclick="abrirModalAgendamentoLP(event)" class="wsp-float" aria-label="Escolher Horário & Agendar">
   💬
 </a>
 
+<!-- MODAL DE SELEÇÃO DE DATA E HORÁRIO DISPONÍVEL (LP) -->
+<div id="modalAgendamentoLP" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--forest-card); border:1.5px solid var(--border-sage); border-radius:24px; padding:32px; width:100%; max-width:540px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; gap:20px; position:relative; transform:scale(1);">
+    
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--border-forest); padding-bottom:16px;">
+      <div>
+        <div style="font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:var(--cream);">🌿 Escolha seu Horário de Consulta</div>
+        <div style="font-size:0.82rem; color:var(--sage-light); margin-top:4px;">Selecione o dia e horário livre para enviar direto no WhatsApp da Dra. Silvia</div>
+      </div>
+      <button onclick="fecharModalAgendamentoLP()" style="background:transparent; border:none; color:var(--cream-dim); font-size:1.6rem; cursor:pointer; padding:0 4px;">✕</button>
+    </div>
+
+    <form onsubmit="confirmarAgendamentoLP(event)" style="display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:0.78rem; font-weight:700; color:var(--sage-light); text-transform:uppercase; letter-spacing:1px;">Seu Nome Completo *</label>
+        <input type="text" id="lpNome" required placeholder="Ex: Maria Eduarda Silva" style="background:rgba(0,0,0,0.3); border:1px solid var(--border-sage); padding:12px 14px; border-radius:12px; color:var(--cream); font-size:0.92rem; outline:none;">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.78rem; font-weight:700; color:var(--sage-light); text-transform:uppercase; letter-spacing:1px;">WhatsApp *</label>
+          <input type="text" id="lpWA" required placeholder="(21) 99999-9999" oninput="this.value=maskPhone(this.value)" style="background:rgba(0,0,0,0.3); border:1px solid var(--border-sage); padding:12px 14px; border-radius:12px; color:var(--cream); font-size:0.92rem; outline:none;">
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.78rem; font-weight:700; color:var(--sage-light); text-transform:uppercase; letter-spacing:1px;">Modalidade *</label>
+          <select id="lpTipo" style="background:var(--forest-dark); border:1px solid var(--border-sage); padding:12px 14px; border-radius:12px; color:var(--cream); font-size:0.88rem; outline:none;">
+            <option value="Avaliação Inicial Presencial">🏢 Presencial no Consultório</option>
+            <option value="Avaliação Inicial Online">💻 Online (Google Meet)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:0.78rem; font-weight:700; color:var(--sage-light); text-transform:uppercase; letter-spacing:1px;">Data Desejada *</label>
+        <input type="date" id="lpData" required onchange="verificarHorariosDisponiveisLP()" style="background:rgba(0,0,0,0.3); border:1px solid var(--border-sage); padding:12px 14px; border-radius:12px; color:var(--cream); font-size:0.92rem; outline:none;">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="font-size:0.78rem; font-weight:700; color:var(--sage-light); text-transform:uppercase; letter-spacing:1px;">Horários Disponíveis *</label>
+        <div id="lpHorariosGrid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
+          <div style="grid-column:span 3; font-size:0.82rem; color:var(--cream-dim); text-align:center; padding:10px;">Selecione uma data acima para carregar os horários livres.</div>
+        </div>
+        <input type="hidden" id="lpHoraSelecionada" required>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid var(--border-forest); margin-top:6px;">
+        <button type="button" onclick="fecharModalAgendamentoLP()" style="background:transparent; border:1px solid var(--border-sage); color:var(--cream-dim); padding:10px 18px; border-radius:100px; cursor:pointer; font-weight:600;">Cancelar</button>
+        <button type="submit" id="btnConfirmarWspLP" class="btn-sage" style="padding:12px 24px; font-size:0.88rem;">
+          💬 Solicitar via WhatsApp →
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
+// MÁSCARA WHATSAPP
+function maskPhone(v) {
+  const d = String(v || '').replace(/\D/g, '');
+  if (d.length <= 10) {
+    return d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2').slice(0, 14);
+  }
+  return d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').slice(0, 15);
+}
+
 // MENU MOBILE TOGGLE
 function toggleMobileMenu() {
   const drawer = document.getElementById('mobileDrawer');
   if (drawer) drawer.classList.toggle('open');
+}
+
+// MODAL DE AGENDAMENTO COM HORÁRIOS LIVRES
+let lpHorariosOcupados = [];
+let agendamentosCarregadosLP = false;
+
+async function abrirModalAgendamentoLP(e) {
+  if (e) e.preventDefault();
+  const modal = document.getElementById('modalAgendamentoLP');
+  if (modal) modal.style.display = 'flex';
+
+  const amanha = new Date();
+  amanha.setDate(amanha.getDate() + 1);
+  const dataInput = document.getElementById('lpData');
+  if (dataInput) {
+    const yyyy = amanha.getFullYear();
+    const mm = String(amanha.getMonth() + 1).padStart(2, '0');
+    const dd = String(amanha.getDate()).padStart(2, '0');
+    dataInput.min = `${yyyy}-${mm}-${dd}`;
+    if (!dataInput.value) dataInput.value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  await carregarAgendamentosLP();
+  verificarHorariosDisponiveisLP();
+}
+
+function fecharModalAgendamentoLP() {
+  const modal = document.getElementById('modalAgendamentoLP');
+  if (modal) modal.style.display = 'none';
+}
+
+async function carregarAgendamentosLP() {
+  if (agendamentosCarregadosLP) return;
+  try {
+    const res = await fetch('https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec?action=getAgendamentos');
+    const json = await res.json();
+    if (json && json.success && Array.isArray(json.data)) {
+      lpHorariosOcupados = json.data;
+      agendamentosCarregadosLP = true;
+    }
+  } catch(e) {}
+}
+
+function verificarHorariosDisponiveisLP() {
+  const dataVal = document.getElementById('lpData').value;
+  const grid = document.getElementById('lpHorariosGrid');
+  const inputHora = document.getElementById('lpHoraSelecionada');
+  if (!grid || !dataVal) return;
+
+  inputHora.value = '';
+  const todosHorarios = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+  
+  const ocupadosNaData = lpHorariosOcupados
+    .filter(a => a.data && String(a.data).includes(dataVal) && a.status !== 'Cancelado')
+    .map(a => String(a.hora).trim().slice(0, 5));
+
+  grid.innerHTML = todosHorarios.map(h => {
+    const isOcupado = ocupadosNaData.includes(h);
+    if (isOcupado) {
+      return `<button type="button" disabled style="background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.3); color:#f87171; padding:8px 6px; border-radius:10px; font-size:0.8rem; cursor:not-allowed; font-weight:700;">
+        ${h} 🔴 Ocupado
+      </button>`;
+    } else {
+      return `<button type="button" onclick="selecionarHorarioLP('${h}', this)" style="background:rgba(164,186,154,0.12); border:1px solid var(--border-sage); color:var(--cream); padding:8px 6px; border-radius:10px; font-size:0.82rem; cursor:pointer; font-weight:700; transition:var(--tr);" class="btn-slot-lp">
+        ${h} 🟢 Livre
+      </button>`;
+    }
+  }).join('');
+}
+
+function selecionarHorarioLP(hora, el) {
+  document.querySelectorAll('.btn-slot-lp').forEach(b => {
+    b.style.background = 'rgba(164,186,154,0.12)';
+    b.style.borderColor = 'var(--border-sage)';
+    b.style.color = 'var(--cream)';
+  });
+  el.style.background = 'var(--sage-light)';
+  el.style.borderColor = 'var(--cream)';
+  el.style.color = 'var(--forest-dark)';
+  document.getElementById('lpHoraSelecionada').value = hora;
+}
+
+function confirmarAgendamentoLP(e) {
+  e.preventDefault();
+  const nome = document.getElementById('lpNome').value.trim();
+  const wa = document.getElementById('lpWA').value.trim();
+  const tipo = document.getElementById('lpTipo').value;
+  const data = document.getElementById('lpData').value;
+  const hora = document.getElementById('lpHoraSelecionada').value;
+
+  if (!hora) {
+    alert('Por favor, selecione um dos horários disponíveis (🟢 Livre).');
+    return;
+  }
+
+  const [y, m, d] = data.split('-');
+  const dataBR = `${d}/${m}/${y}`;
+  const msgText = encodeURIComponent(`Olá Dra. Silvia! Gostaria de agendar uma consulta para o dia ${dataBR} às ${hora} (${tipo}). Meu nome é ${nome}. Meu WhatsApp: ${wa}`);
+  
+  window.open(`https://wa.me/5521987385146?text=${msgText}`, '_blank');
+  fecharModalAgendamentoLP();
 }
 
 let selectedDiagText = 'Metabolismo Lento & Emagrecimento';
@@ -852,9 +1018,7 @@ function selectDiag(el, text) {
   document.querySelectorAll('.diag-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
   selectedDiagText = text;
-  const msg = `Olá Dra. Silvia! Fiz o diagnóstico no site para: ${text}. Quero otimizar minha saúde!`;
-  const btn = document.getElementById('btnSendDiagWsp');
-  if (btn) btn.href = `https://wa.me/5521987385146?text=${encodeURIComponent(msg)}`;
+  abrirModalAgendamentoLP();
 }
 
 // CALCULADORA COM VALIDAÇÃO ANTI-NaN
@@ -869,13 +1033,11 @@ function calcularSaude() {
   const resIMC = document.getElementById('resIMC');
   const resAgua = document.getElementById('resAgua');
   const resDiag = document.getElementById('resDiag');
-  const btnWsp = document.getElementById('btnSendCalcWsp');
 
   if (!peso || !altura || isNaN(peso) || isNaN(altura) || peso <= 0 || altura <= 0) {
     if (resIMC) resIMC.innerText = '--';
     if (resAgua) resAgua.innerText = '--';
     if (resDiag) resDiag.innerText = 'Preencha peso e altura válidos';
-    if (btnWsp) btnWsp.href = "https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20calcular%20meu%20IMC%20e%20agendar%20uma%20consulta.";
     return;
   }
 
@@ -892,9 +1054,6 @@ function calcularSaude() {
   else diag = "Atenção / Obesidade";
 
   if (resDiag) resDiag.innerText = diag;
-
-  const msg = `Olá Dra. Silvia! Calculei no site: Meu IMC é ${imc} (${diag}) e meta de água é ${agua}L/dia. Quero agendar minha consulta!`;
-  if (btnWsp) btnWsp.href = `https://wa.me/5521987385146?text=${encodeURIComponent(msg)}`;
 }
 
 // INTERSECTION OBSERVER PARA ANIMAÇÕES REVEAL
