@@ -41,6 +41,13 @@
   --text-dark: #142419;
 }
 
+/* PADRONIZAÇÃO DE BARRAS DE ROLAGEM (SCROLLBARS) BOTÂNICAS */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-forest); border-radius: 4px; border: 2px solid var(--bg-deep); }
+::-webkit-scrollbar-thumb:hover { background: var(--sage-light); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-forest) var(--bg-deep); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg-deep); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; display: flex; height: 100vh; overflow: hidden; transition: background 0.3s ease, color 0.3s ease; }
 .card { background: var(--bg-card); border-color: var(--border-forest); padding: var(--card-padding); }
@@ -684,6 +691,8 @@ async function carregarDadosDashboard() {
     if (kpiOn) kpiOn.innerText = "0";
     if (kpiPre) kpiPre.innerText = "0";
     if (kpiFat) kpiFat.innerText = "R$ 0";
+  }
+}
 
 // MODAL DE NOVO AGENDAMENTO
 function openAgendamentoModal() {
