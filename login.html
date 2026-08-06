@@ -140,7 +140,10 @@ body {
     </div>
 
     <div class="form-group">
-      <label>Sua Senha ou PIN</label>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <label>Sua Senha ou PIN</label>
+        <a href="#" onclick="abrirModalEsqueciSenha(event)" style="font-size:0.75rem; color:var(--sage-light); text-decoration:none; font-weight:700;">Esqueci minha senha</a>
+      </div>
       <input type="password" id="passInput" class="form-control" placeholder="Digite sua senha de acesso" required>
     </div>
 
@@ -159,6 +162,32 @@ body {
     </div>
   </div>
 </main>
+
+<!-- MODAL DE RECUPERAÇÃO DE SENHA -->
+<div id="modalEsqueciSenha" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:28px; width:100%; max-width:440px; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:16px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:#fff;">🔑 Recuperar Senha / PIN</div>
+      <button onclick="fecharModalEsqueciSenha()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+    </div>
+
+    <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+      Informe seu <strong>CPF ou E-mail</strong> cadastrado. Se o cadastro constar em nosso sistema, enviaremos um novo PIN temporário diretamente para sua caixa de e-mail.
+    </p>
+
+    <form onsubmit="solicitarRecuperacao(event)" style="display:flex; flex-direction:column; gap:16px;">
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">CPF ou E-mail</label>
+        <input type="text" id="reqIdInput" class="form-control" placeholder="000.000.000-00 ou email@exemplo.com" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn-submit" style="background:transparent; border:1.5px solid var(--border-forest); color:var(--text-muted);" onclick="fecharModalEsqueciSenha()">Cancelar</button>
+        <button type="submit" class="btn-submit" id="btnEnviarRecuperacao">📧 Enviar Novo PIN por E-mail</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
@@ -254,6 +283,46 @@ async function handleUnifiedLogin(e) {
     } else {
       showStatus(res.error || "CPF/E-mail ou Senha incorreta. Tente novamente.");
     }
+  }
+}
+
+function abrirModalEsqueciSenha(e) {
+  if (e) e.preventDefault();
+  const m = document.getElementById('modalEsqueciSenha');
+  if (m) m.style.display = 'flex';
+}
+
+function fecharModalEsqueciSenha() {
+  const m = document.getElementById('modalEsqueciSenha');
+  if (m) m.style.display = 'none';
+  const inp = document.getElementById('reqIdInput');
+  if (inp) inp.value = '';
+}
+
+async function solicitarRecuperacao(e) {
+  e.preventDefault();
+  const idVal = document.getElementById('reqIdInput').value.trim();
+  const btn = document.getElementById('btnEnviarRecuperacao');
+
+  if (!idVal) {
+    alert("Por favor, informe seu CPF ou E-mail.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "🟡 Enviando e-mail...";
+
+  const res = await apiCall('recuperarSenha', { identifier: idVal });
+
+  btn.disabled = false;
+  btn.innerText = "📧 Enviar Novo PIN por E-mail";
+
+  fecharModalEsqueciSenha();
+
+  if (res && res.success) {
+    showStatus("📧 " + (res.message || "Solicitação enviada. Verifique sua caixa de e-mail."), "success");
+  } else {
+    showStatus(res ? res.error || "Erro ao solicitar recuperação." : "Verifique sua conexão.");
   }
 }
 </script>

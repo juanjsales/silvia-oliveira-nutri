@@ -90,6 +90,9 @@ function handleRequest(e, method) {
       case "alterarSenha":
         response.data = alterarSenha(params);
         response.success = true; break;
+      case "recuperarSenha":
+        response.data = recuperarSenha(params);
+        response.success = true; break;
 
       // ── Pacientes ─────────────────────────────────────────────
       case "getPacientes":
@@ -373,6 +376,118 @@ function alterarSenha(params) {
   sheet.getRange(rowIndex, pinIdx + 1).setValue(hashNovo);
 
   return { success: true, message: "Sua senha foi alterada com sucesso!" };
+}
+
+function recuperarSenha(params) {
+  const rawId = String(params.identifier || params.email || params.cpf || "").trim();
+  if (!rawId) throw new Error("Por favor, informe seu CPF ou E-mail.");
+
+  const clean = cleanCPF(rawId);
+  const lower = rawId.toLowerCase();
+
+  // 1. Caso ADMIN (Dra. Silvia)
+  if (lower === "admin" || lower === "silviadeoliveira24.nutri@gmail.com") {
+    const adminEmail = "silviadeoliveira24.nutri@gmail.com";
+    const tempPin = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const newHash = hashPassword(tempPin);
+
+    updateConfigValue("admin_senha", newHash);
+
+    const htmlBody = `
+    <div style="font-family: Arial, sans-serif; background-color: #0e1a12; color: #eef4e5; padding: 30px; border-radius: 12px;">
+      <h2 style="color: #8ca481;">🔑 Recuperação de Acesso Administrativo</h2>
+      <p>Olá, Dra. Silvia!</p>
+      <p>Recebemos uma solicitação de redefinição de senha para seu painel administrativo.</p>
+      <div style="background: rgba(140,164,129,0.15); border: 1px solid #8ca481; padding: 16px; border-radius: 8px; font-size: 1.2rem; text-align: center; margin: 20px 0;">
+        Sua nova senha temporária: <strong style="color: #ffffff; letter-spacing: 2px;">${tempPin}</strong>
+      </div>
+      <p style="font-size: 0.85rem; color: #a0b399;">Por segurança, recomendamos que altere essa senha assim que realizar o login.</p>
+    </div>`;
+
+    try {
+      MailApp.sendEmail({
+        to: adminEmail,
+        subject: "🔑 Código de Recuperação de Senha - Painel Nutricional",
+        htmlBody: htmlBody,
+        name: "Dra. Silvia de Oliveira Lemos Nutrição"
+      });
+    } catch(e) {
+      console.error("Erro ao enviar e-mail admin:", e);
+    }
+
+    return {
+      success: true,
+      message: "Um código de acesso temporário foi enviado para o e-mail de administração cadastrado."
+    };
+  }
+
+  // 2. Caso Paciente
+  const sheet = getSheet(SHEETS.USUARIOS);
+  const data  = sheet.getDataRange().getValues();
+  if (data.length <= 1) {
+    return { success: true, message: "Se o CPF/E-mail informado constar em nosso sistema, enviamos as instruções de login para seu e-mail cadastrado." };
+  }
+
+  const headers  = data[0].map(h => String(h).toLowerCase().trim());
+  const cpfIdx   = headers.indexOf("cpf");
+  const emailIdx = headers.indexOf("email");
+  const nomeIdx  = headers.indexOf("nome");
+  const pinIdx   = headers.indexOf("senha_pin");
+
+  let rowIndex = -1;
+  let pacienteEncontrado = null;
+
+  for (let i = 1; i < data.length; i++) {
+    const rCpf   = cleanCPF(data[i][cpfIdx]);
+    const rEmail = String(data[i][emailIdx] || "").toLowerCase();
+
+    if ((clean && rCpf === clean) || (lower && rEmail === lower)) {
+      rowIndex = i + 1;
+      pacienteEncontrado = {
+        nome:  data[i][nomeIdx],
+        email: data[i][emailIdx]
+      };
+      break;
+    }
+  }
+
+  if (rowIndex !== -1 && pacienteEncontrado && pacienteEncontrado.email) {
+    const tempPin = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const newHash = hashPassword(tempPin);
+
+    // Grava novo PIN temporário no banco Sheets
+    sheet.getRange(rowIndex, pinIdx + 1).setValue(newHash);
+
+    // Envia e-mail com PIN seguro
+    const htmlBody = `
+    <div style="font-family: Arial, sans-serif; background-color: #0e1a12; color: #eef4e5; padding: 30px; border-radius: 12px;">
+      <h2 style="color: #8ca481;">🔑 Recuperação de Senha - Portal do Paciente</h2>
+      <p>Olá, <strong>${pacienteEncontrado.nome}</strong>!</p>
+      <p>Recebemos um pedido para redefinir sua senha de acesso ao Portal da Dra. Silvia Lemos.</p>
+      <div style="background: rgba(140,164,129,0.15); border: 1px solid #8ca481; padding: 16px; border-radius: 8px; font-size: 1.3rem; text-align: center; margin: 20px 0;">
+        Seu novo PIN temporário: <strong style="color: #ffffff; letter-spacing: 3px;">${tempPin}</strong>
+      </div>
+      <p>Acesse o portal e utilize seu CPF/E-mail juntamente com este PIN para entrar.</p>
+      <p style="font-size: 0.85rem; color: #a0b399;">Se você não solicitou este e-mail, nenhuma ação é necessária.</p>
+    </div>`;
+
+    try {
+      MailApp.sendEmail({
+        to: pacienteEncontrado.email,
+        subject: "🔑 Seu Novo PIN de Acesso - Dra. Silvia Oliveira Nutrição",
+        htmlBody: htmlBody,
+        name: "Dra. Silvia de Oliveira Lemos · Nutricionista"
+      });
+    } catch(e) {
+      console.error("Erro ao enviar e-mail paciente:", e);
+    }
+  }
+
+  // Resposta genérica segura (previne enumeração de usuários)
+  return {
+    success: true,
+    message: "Se o CPF/E-mail informado constar em nosso sistema, enviamos um novo PIN de acesso temporário para seu e-mail cadastrado."
+  };
 }
 
 // ── CRUD ───────────────────────────────────────────────────────────
