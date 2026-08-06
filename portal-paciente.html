@@ -10,23 +10,41 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root {
-  --forest-dark: #203528;
-  --forest-card: #182a1f;
-  --forest-deep: #0e1a12;
+:root, [data-theme="dark"] {
+  --bg-deep: #0e1a12;
+  --bg-card: #182a1f;
+  --bg-header: #203528;
+  --text-primary: #eef4e5;
+  --text-title: #ffffff;
+  --text-muted: #a0b399;
+  --border-forest: rgba(140, 164, 129, 0.25);
   --sage-light: #8ca481;
   --sage-dim: rgba(140, 164, 129, 0.2);
   --paper-bg: #f8faf6;
   --text-dark: #192b20;
-  --text-light: #eef4e5;
-  --text-muted: #a0b399;
-  --border-forest: rgba(140, 164, 129, 0.25);
   --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   --radius: 20px;
 }
 
+[data-theme="light"] {
+  --bg-deep: #f3f6f1;
+  --bg-card: #ffffff;
+  --bg-header: #e6ede0;
+  --text-primary: #1c2e22;
+  --text-title: #142419;
+  --text-muted: #57695b;
+  --border-forest: #d1ded0;
+  --sage-light: #486640;
+  --sage-dim: rgba(72, 102, 64, 0.12);
+  --paper-bg: #ffffff;
+  --text-dark: #142419;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+body { background: var(--bg-deep); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; transition: background 0.3s ease, color 0.3s ease; }
+.section-card { background: var(--bg-card); border-color: var(--border-forest); }
+.app-header { background: var(--bg-header); border-color: var(--border-forest); }
+.section-title, .patient-name { color: var(--text-title); }
 
 /* TELA DE LOGIN */
 .login-overlay { position: fixed; inset: 0; background: var(--forest-deep); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -125,9 +143,14 @@ html, body { overflow-x: hidden; width: 100%; max-width: 100vw; }
     </div>
   </div>
 
-  <div class="app-user-info">
-    <div class="patient-name" id="dispNome">Juliana Mendes</div>
-    <div class="patient-tag">Paciente Ativa</div>
+  <div class="app-user-info" style="display:flex; align-items:center; gap:12px;">
+    <button onclick="toggleTheme()" id="btnThemeToggle" style="background:var(--sage-dim); border:1px solid var(--border-forest); color:var(--sage-light); padding:6px 12px; border-radius:8px; font-weight:700; font-size:0.75rem; cursor:pointer;">
+      🌙 Tema
+    </button>
+    <div style="text-align:right;">
+      <div class="patient-name" id="dispNome">Juliana Mendes</div>
+      <a href="login.html" style="font-size:0.72rem; color:#f87171; text-decoration:none; font-weight:700;" onclick="sessionStorage.clear()">🚪 Sair</a>
+    </div>
   </div>
 </header>
 
@@ -303,7 +326,7 @@ function inicializarGrafico(labels = ['Maio', 'Junho', 'Julho', 'Agosto'], dataP
         labels: labels,
         datasets: [
           {
-            label: 'Peso (kg)',
+            label: 'Peso Corporal (kg)',
             data: dataPeso,
             borderColor: '#8ca481',
             backgroundColor: 'rgba(140, 164, 129, 0.15)',
@@ -326,6 +349,46 @@ function inicializarGrafico(labels = ['Maio', 'Junho', 'Julho', 'Agosto'], dataP
     });
   }
 }
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('kos_theme', next);
+  const btn = document.getElementById('btnThemeToggle');
+  if (btn) btn.innerText = next === 'light' ? '☀️ Claro' : '🌙 Tema';
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('kos_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn = document.getElementById('btnThemeToggle');
+  if (btn) btn.innerText = saved === 'light' ? '☀️ Claro' : '🌙 Tema';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  
+  // Verifica se o paciente já está autenticado via login.html
+  const isAuth = sessionStorage.getItem('kos_paciente_auth') === 'true';
+  const rawDados = sessionStorage.getItem('kos_paciente_dados');
+  
+  if (isAuth && rawDados) {
+    try {
+      const p = JSON.parse(rawDados);
+      const dispNome = document.getElementById('dispNome');
+      if (dispNome) dispNome.innerText = p.nome || 'Paciente';
+      const lock = document.getElementById('loginOverlay');
+      if (lock) lock.style.display = 'none';
+      carregarDadosPaciente(p.id || 'PAC-01');
+    } catch(e) {
+      inicializarGrafico();
+    }
+  } else {
+    // Se não estiver logado, oculta overlay apenas se preencher
+    inicializarGrafico();
+  }
+});
 </script>
 </body>
 </html>
