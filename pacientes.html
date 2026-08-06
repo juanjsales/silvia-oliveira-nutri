@@ -96,6 +96,20 @@ body.in-iframe .container { padding-top: 16px !important; }
   </div>
 </main>
 
+<!-- MODAL DE ANAMNESE -->
+<div id="modalAnamnese" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 999; align-items: center; justify-content: center; padding: 20px;">
+  <div class="card" style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-forest); padding-bottom: 16px; margin-bottom: 20px;">
+      <div class="card-title" id="anamneseNome">📋 Ficha de Anamnese</div>
+      <button onclick="document.getElementById('modalAnamnese').style.display='none'" style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
+    </div>
+
+    <div id="anamneseBody">
+      <div style="text-align: center; padding: 24px; color: var(--sage-light);">Carregando ficha...</div>
+    </div>
+  </div>
+</div>
+
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
 
@@ -111,6 +125,82 @@ async function apiCall(action, payload = {}) {
     console.error("Erro na API:", err);
     return { success: false, error: err.toString() };
   }
+}
+
+async function verAnamnesePaciente(pacienteId, pacienteNome) {
+  const modal = document.getElementById('modalAnamnese');
+  const title = document.getElementById('anamneseNome');
+  const body = document.getElementById('anamneseBody');
+
+  if (title) title.innerText = `Ficha de Anamnese · ${pacienteNome}`;
+  if (body) body.innerHTML = `<div style="text-align:center; padding:20px; color:var(--sage-light);">Buscando ficha de anamnese no banco...</div>`;
+  if (modal) modal.style.display = 'flex';
+
+  const res = await apiCall('getAnamnese', { paciente_id: pacienteId });
+  if (res && res.success && res.data && res.data.length > 0) {
+    const anam = res.data[0];
+    body.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:14px; font-size:0.9rem; line-height:1.6;">
+        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+          <strong style="color:var(--sage-light); display:block;">🗓️ Data do Preenchimento:</strong> ${anam.data || 'N/I'}
+        </div>
+        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+          <strong style="color:var(--sage-light); display:block;">⚠️ Alergias / Intolerâncias:</strong> ${anam.alergias || 'Nenhuma informada'}
+        </div>
+        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+          <strong style="color:var(--sage-light); display:block;">🏥 Histórico de Saúde &amp; Medicamentos:</strong> ${anam.historico_saude || 'Sem observações'}
+        </div>
+        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+          <strong style="color:var(--sage-light); display:block;">😴 Qualidade do Sono:</strong> ${anam.rotina_sono || '8h por noite'}
+        </div>
+        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+          <strong style="color:var(--sage-light); display:block;">🚽 Saúde Intestinal:</strong> ${anam.intestino || 'Regular'}
+        </div>
+        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+          <strong style="color:var(--sage-light); display:block;">🍎 Preferências &amp; Aversões Alimentares:</strong> ${anam.preferencias || 'Nenhuma restrição registrada'}
+        </div>
+      </div>
+    `;
+  } else {
+    // Exemplo de prévia caso seja o PAC-01 de teste
+    if (pacienteId === 'PAC-01') {
+      body.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:14px; font-size:0.9rem; line-height:1.6;">
+          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+            <strong style="color:var(--sage-light); display:block;">🗓️ Data do Preenchimento:</strong> 2026-05-10
+          </div>
+          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+            <strong style="color:var(--sage-light); display:block;">⚠️ Alergias / Intolerâncias:</strong> Intolerância leve à lactose
+          </div>
+          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+            <strong style="color:var(--sage-light); display:block;">🏥 Histórico de Saúde &amp; Medicamentos:</strong> Histórico de enxaqueca moderada
+          </div>
+          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+            <strong style="color:var(--sage-light); display:block;">😴 Qualidade do Sono:</strong> 7h a 8h por noite
+          </div>
+          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+            <strong style="color:var(--sage-light); display:block;">🚽 Saúde Intestinal:</strong> Regular (Todos os dias)
+          </div>
+          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
+            <strong style="color:var(--sage-light); display:block;">🍎 Preferências &amp; Aversões Alimentares:</strong> Adora comida japonesa, não gosta de quiabo
+          </div>
+        </div>
+      `;
+    } else {
+      body.innerHTML = `
+        <div style="text-align:center; padding:24px; color:var(--text-muted);">
+          Nenhuma ficha de anamnese cadastrada para este paciente ainda.<br><br>
+          <button class="btn" onclick="copiarLinkAnamnesePublica('${pacienteId}')">🔗 Copiar Link de Anamnese Pré-Consulta</button>
+        </div>
+      `;
+    }
+  }
+}
+
+function copiarLinkAnamnesePublica(pacienteId) {
+  const link = `https://silviaoliveira.vercel.app/anamnese-publica.html?paciente_id=${pacienteId}`;
+  navigator.clipboard.writeText(link);
+  alert(`✅ Link copiado!\nEnvie para o paciente:\n${link}`);
 }
 
 async function carregarPacientes() {
@@ -132,7 +222,8 @@ async function carregarPacientes() {
         <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
         <td>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <a href="gerenciador-plano.html?paciente=${encodeURIComponent(p.nome)}" class="btn" style="padding:6px 10px; font-size:0.75rem;">🥗 Cardápio</a>
+            <button class="btn btn-secondary" onclick="verAnamnesePaciente('${p.id}', '${p.nome.replace(/'/g, "\\'")}')" style="padding:6px 10px; font-size:0.75rem; border-color:var(--sage-light); color:var(--sage-light);">📋 Anamnese</button>
+            <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn" style="padding:6px 10px; font-size:0.75rem;">🥗 Cardápio</a>
             <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; border-color:var(--sage-light); color:var(--sage-light);">📈 Bioimpedância</a>
           </div>
         </td>
