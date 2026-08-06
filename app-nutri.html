@@ -234,15 +234,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .plano-editor-grid { display: grid; grid-template-columns: 420px 1fr; gap: 24px; width: 100%; align-items: start; }
 
 /* MEDIA QUERIES PARA RESPONSIVIDADE MOBILE E TABLET */
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 900px) {
   body { flex-direction: column !important; height: auto !important; min-height: 100vh !important; overflow-y: auto !important; overflow-x: hidden !important; }
   .sidebar { width: 100% !important; height: auto !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; border-right: none !important; border-bottom: 1px solid var(--border-forest) !important; padding: 12px 16px !important; flex-wrap: wrap !important; }
-  .nav-menu { flex-direction: row !important; overflow-x: auto !important; width: 100% !important; justify-content: flex-start !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
-  .nav-item { white-space: nowrap !important; flex-shrink: 0 !important; padding: 8px 12px !important; font-size: 0.82rem !important; }
+  .nav-menu { flex-direction: row !important; overflow-x: auto !important; width: 100% !important; justify-content: flex-start !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; gap: 6px !important; }
+  .nav-item { white-space: nowrap !important; flex-shrink: 0 !important; padding: 8px 12px !important; font-size: 0.8rem !important; }
   .main-wrapper { flex: 1 !important; overflow: visible !important; width: 100% !important; }
-  .top-header { height: auto !important; padding: 14px 16px !important; flex-wrap: wrap !important; gap: 12px !important; justify-content: space-between !important; }
-  .content-area { padding: 16px 12px !important; gap: 20px !important; width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; }
-  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  .top-header { height: auto !important; padding: 12px 16px !important; flex-wrap: wrap !important; gap: 10px !important; justify-content: space-between !important; }
+  .content-area { padding: 16px 12px !important; gap: 16px !important; width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
   .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
   .plano-editor-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
   .form-panel-wrapper { width: 100% !important; }
@@ -250,11 +250,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .pdf-page { width: 100% !important; max-width: 100% !important; min-height: auto !important; padding: 20px 14px !important; box-sizing: border-box !important; margin-bottom: 20px !important; }
   .cover-main-title { font-size: 2.2rem !important; }
   .cover-body { padding: 30px 10px !important; }
+  #adminIframe { height: 78vh !important; }
 }
 
 @media screen and (max-width: 600px) {
   .kpi-grid { grid-template-columns: 1fr !important; }
-  .top-header { flex-direction: column !alignment: flex-start !important; align-items: flex-start !important; }
+  .top-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
   .top-user { font-size: 0.78rem !important; }
   .brand-crn { display: none !important; }
   .preset-bar { grid-template-columns: 1fr !important; gap: 6px !important; }

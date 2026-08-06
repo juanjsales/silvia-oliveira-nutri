@@ -70,7 +70,7 @@ body { background: var(--bg-deep); color: var(--text-primary); font-family: 'Plu
 .btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
 .btn:hover { background: #eef4e5; transform: translateY(-2px); }
 
-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+table { width: 100%; min-width: 750px; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
 th { background: rgba(0,0,0,0.3); padding: 14px 16px; color: var(--sage-light); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-forest); }
 td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-light); }
 tr:hover td { background: rgba(255,255,255,0.02); }
@@ -323,6 +323,20 @@ function copiarLinkAnamnesePublica(pacienteId) {
   alert(`✅ Link copiado!\nEnvie para o paciente:\n${link}`);
 }
 
+function formatDateBR(v) {
+  if (!v) return '';
+  const str = String(v).trim();
+  if (str.includes('T')) {
+    const parts = str.split('T')[0].split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  if (str.includes('-')) {
+    const parts = str.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return str;
+}
+
 function maskCPF(v) {
   return String(v || '').replace(/\D/g, '')
     .replace(/(\d{3})(\d)/, '$1.$2')
@@ -356,18 +370,19 @@ async function carregarPacientes() {
 
       const cpfFmt = p.cpf ? maskCPF(p.cpf) : '--';
       const wspFmt = p.whatsapp ? maskPhone(p.whatsapp) : '--';
+      const dtFmt = p.data_cadastro ? formatDateBR(p.data_cadastro) : '';
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${p.data_cadastro || ''}</span></td>
-        <td><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
-        <td>${cpfFmt}<br><span style="font-size:0.78rem; color:var(--text-muted);">${wspFmt}</span></td>
-        <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
-        <td>
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button class="btn btn-secondary" onclick="verAnamnesePaciente('${p.id}', '${p.nome.replace(/'/g, "\\'")}')" style="padding:6px 10px; font-size:0.75rem; border-color:var(--sage-light); color:var(--sage-light);">📋 Anamnese</button>
-            <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn" style="padding:6px 10px; font-size:0.75rem;">🥗 Cardápio</a>
-            <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; border-color:var(--sage-light); color:var(--sage-light);">📈 Bioimpedância</a>
+        <td style="white-space:nowrap;"><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
+        <td style="white-space:nowrap;"><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
+        <td style="white-space:nowrap;">${cpfFmt}<br><span style="font-size:0.78rem; color:var(--text-muted);">${wspFmt}</span></td>
+        <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700; display:inline-block; white-space:nowrap;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
+        <td style="white-space:nowrap;">
+          <div style="display:flex; gap:6px; flex-wrap:nowrap; align-items:center;">
+            <button class="btn btn-secondary" onclick="verAnamnesePaciente('${p.id}', '${p.nome.replace(/'/g, "\\'")}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📋 Anamnese</button>
+            <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🥗 Cardápio</a>
+            <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</a>
           </div>
         </td>
       `;
