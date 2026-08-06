@@ -7,403 +7,166 @@
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
-:root, [data-theme="dark"] {
-  --bg-deep: #0e1a12;
-  --bg-card: #182a1f;
-  --bg-header: #203528;
-  --text-primary: #eef4e5;
-  --text-title: #ffffff;
-  --text-muted: #a0b399;
-  --text-light: #d1e0cc;
-  --border-forest: rgba(140, 164, 129, 0.25);
-  --sage-light: #8ca481;
-  --sage-dim: rgba(140, 164, 129, 0.15);
-  --forest-card: #152219;
-  --forest-dark: #0a120c;
-  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  --radius: 16px;
+:root,[data-theme="dark"]{
+  --bg-deep:#0e1a12;--bg-card:#182a1f;--bg-header:#203528;
+  --text-primary:#eef4e5;--text-title:#ffffff;--text-muted:#a0b399;--text-light:#d1e0cc;
+  --border-forest:rgba(140,164,129,0.25);--sage-light:#8ca481;--sage-dim:rgba(140,164,129,0.15);
+  --forest-card:#152219;--forest-dark:#0a120c;
+  --tr:all 0.25s cubic-bezier(0.16,1,0.3,1);--radius:16px;
 }
-
-[data-theme="light"] {
-  --bg-deep: #f3f6f1;
-  --bg-card: #ffffff;
-  --bg-header: #e6ede0;
-  --text-primary: #1c2e22;
-  --text-title: #142419;
-  --text-muted: #57695b;
-  --text-light: #3a5040;
-  --border-forest: #cbe0c9;
-  --sage-light: #3d5a35;
-  --sage-dim: rgba(61, 90, 53, 0.10);
-  --forest-card: #f0f5ee;
-  --forest-dark: #1a2e1e;
+[data-theme="light"]{
+  --bg-deep:#f3f6f1;--bg-card:#ffffff;--bg-header:#e6ede0;
+  --text-primary:#1c2e22;--text-title:#142419;--text-muted:#57695b;--text-light:#3a5040;
+  --border-forest:#cbe0c9;--sage-light:#3d5a35;--sage-dim:rgba(61,90,53,0.10);
+  --forest-card:#f0f5ee;--forest-dark:#1a2e1e;
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-* { scrollbar-width: thin; scrollbar-color: var(--border-forest) var(--bg-deep); }
-*::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-track { background: var(--bg-deep); border-radius: 4px; }
-*::-webkit-scrollbar-thumb { background: var(--border-forest); border-radius: 4px; }
-*::-webkit-scrollbar-thumb:hover { background: var(--sage-light); }
-
-body {
-  background: var(--bg-deep);
-  color: var(--text-primary);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  min-height: 100vh;
-  transition: background 0.3s ease, color 0.3s ease;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+*{scrollbar-width:thin;scrollbar-color:var(--border-forest) var(--bg-deep)}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-track{background:var(--bg-deep);border-radius:4px}
+*::-webkit-scrollbar-thumb{background:var(--border-forest);border-radius:4px}
+*::-webkit-scrollbar-thumb:hover{background:var(--sage-light)}
+body{background:var(--bg-deep);color:var(--text-primary);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+body.in-iframe .top-header{display:none!important}
+body.in-iframe .container{padding-top:16px!important}
 
 /* HEADER */
-.top-header {
-  background: var(--bg-header);
-  border-bottom: 1px solid var(--border-forest);
-  padding: 16px 28px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.brand-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: var(--text-title); }
-.brand-sub { font-size: 0.75rem; color: var(--sage-light); font-weight: 700; }
+.top-header{background:var(--bg-header);border-bottom:1px solid var(--border-forest);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;gap:16px;flex-wrap:wrap}
+.brand-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--text-title)}
+.brand-sub{font-size:0.72rem;color:var(--sage-light);font-weight:700}
 
 /* LAYOUT */
-.container { max-width: 1280px; margin: 0 auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 24px; }
+.container{max-width:1300px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column;gap:24px}
+.agenda-layout{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start}
 
 /* CARD */
-.card {
-  background: var(--forest-card);
-  border: 1px solid var(--border-forest);
-  border-radius: var(--radius);
-  padding: 24px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.25);
-}
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-.card-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: var(--text-title); }
+.card{background:var(--forest-card);border:1px solid var(--border-forest);border-radius:var(--radius);padding:24px;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.card-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--text-title)}
 
 /* BOTÕES */
-.btn {
-  background: var(--sage-light);
-  color: var(--forest-dark);
-  border: none;
-  padding: 10px 18px;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: var(--tr);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-.btn:hover { opacity: 0.88; transform: translateY(-1px); }
-.btn-secondary {
-  background: transparent;
-  border: 1.5px solid var(--border-forest);
-  color: var(--text-primary);
-}
-.btn-secondary:hover { border-color: var(--sage-light); color: var(--sage-light); }
-.btn-icon {
-  background: transparent;
-  border: 1px solid var(--border-forest);
-  color: var(--text-muted);
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: var(--tr);
-  padding: 0;
-}
-.btn-icon:hover { border-color: var(--sage-light); color: var(--sage-light); }
+.btn{background:var(--sage-light);color:var(--forest-dark);border:none;padding:10px 18px;border-radius:12px;font-weight:800;font-size:0.85rem;cursor:pointer;transition:var(--tr);text-decoration:none;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-family:inherit}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn-secondary{background:transparent;border:1.5px solid var(--border-forest);color:var(--text-primary)}
+.btn-secondary:hover{border-color:var(--sage-light);color:var(--sage-light)}
+.btn-icon{background:transparent;border:1px solid var(--border-forest);color:var(--text-muted);width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:var(--tr);padding:0;font-family:inherit}
+.btn-icon:hover{border-color:var(--sage-light);color:var(--sage-light)}
+.btn-start{background:rgba(140,164,129,.15);border:1.5px solid var(--sage-light);color:var(--sage-light);padding:6px 14px;font-size:0.78rem;border-radius:10px;cursor:pointer;font-weight:800;transition:var(--tr);display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:inherit}
+.btn-start:hover{background:var(--sage-light);color:var(--forest-dark)}
 
 /* CALENDÁRIO */
-.agenda-layout {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 24px;
-  align-items: start;
-}
+.calendar-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.calendar-nav-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--text-title)}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day-header{text-align:center;font-size:0.68rem;font-weight:800;text-transform:uppercase;color:var(--text-muted);padding:6px 0;letter-spacing:.04em}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--tr);position:relative;color:var(--text-primary);border:1.5px solid transparent}
+.cal-day:hover{background:var(--sage-dim);border-color:var(--border-forest)}
+.cal-day.other-month{color:var(--text-muted);opacity:.35}
+.cal-day.today{background:var(--sage-dim);border-color:var(--sage-light);color:var(--sage-light);font-weight:900}
+.cal-day.selected{background:var(--sage-light);color:var(--forest-dark);font-weight:900;border-color:transparent}
+.cal-day.has-events::after{content:'';position:absolute;bottom:3px;width:5px;height:5px;background:var(--sage-light);border-radius:50%}
+.cal-day.selected.has-events::after{background:var(--forest-dark)}
 
-.calendar-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-.calendar-nav-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-title);
-  text-transform: capitalize;
-}
+/* RESUMO MÊS */
+.month-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border-forest)}
+.month-stat{background:var(--sage-dim);border:1px solid var(--border-forest);border-radius:12px;padding:12px;text-align:center}
+.month-stat-val{font-size:1.6rem;font-weight:900;color:var(--sage-light);line-height:1}
+.month-stat-label{font-size:0.7rem;font-weight:700;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:.03em}
 
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-.cal-day-header {
-  text-align: center;
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 6px 0;
-  letter-spacing: 0.04em;
-}
-.cal-day {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--tr);
-  position: relative;
-  color: var(--text-primary);
-  border: 1.5px solid transparent;
-}
-.cal-day:hover { background: var(--sage-dim); border-color: var(--border-forest); }
-.cal-day.other-month { color: var(--text-muted); opacity: 0.4; }
-.cal-day.today {
-  background: var(--sage-dim);
-  border-color: var(--sage-light);
-  color: var(--sage-light);
-  font-weight: 900;
-}
-.cal-day.selected {
-  background: var(--sage-light);
-  color: var(--forest-dark);
-  font-weight: 900;
-  border-color: transparent;
-}
-.cal-day.has-events::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  width: 5px; height: 5px;
-  background: var(--sage-light);
-  border-radius: 50%;
-}
-.cal-day.selected.has-events::after { background: var(--forest-dark); }
+/* LISTA DO DIA */
+.day-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.day-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--text-title);font-weight:700}
+.day-subtitle{font-size:0.78rem;color:var(--text-muted);margin-top:2px}
+.consult-list{display:flex;flex-direction:column;gap:10px}
 
-/* MINI RESUMO DO MÊS */
-.month-summary {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border-forest);
-}
-.month-stat {
-  background: var(--sage-dim);
-  border: 1px solid var(--border-forest);
-  border-radius: 12px;
-  padding: 12px;
-  text-align: center;
-}
-.month-stat-val { font-size: 1.6rem; font-weight: 900; color: var(--sage-light); line-height: 1; }
-.month-stat-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+.consult-card{background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:68px 1fr auto;gap:14px;align-items:center;transition:var(--tr);position:relative;overflow:hidden}
+.consult-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--sage-light);border-radius:4px 0 0 4px}
+.consult-card.status-cancelado::before{background:#f87171}
+.consult-card.status-realizado::before{background:#34d399}
+.consult-card.status-aguardando::before{background:#fbbf24}
+.consult-card:hover{border-color:var(--sage-light);transform:translateY(-1px)}
+.consult-time{font-size:1.1rem;font-weight:900;color:var(--sage-light);text-align:center;line-height:1.2}
+.consult-time-period{font-size:0.68rem;color:var(--text-muted);font-weight:700}
+.consult-info{display:flex;flex-direction:column;gap:4px}
+.consult-name{font-weight:800;font-size:0.95rem;color:var(--text-title)}
+.consult-type{font-size:0.78rem;color:var(--text-muted)}
+.consult-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.tag{font-size:0.68rem;font-weight:800;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.04em}
+.tag-online{background:rgba(99,179,237,.15);color:#63b3ed;border:1px solid rgba(99,179,237,.3)}
+.tag-presencial{background:rgba(140,164,129,.15);color:var(--sage-light);border:1px solid var(--border-forest)}
+.tag-retorno{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+.consult-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.status-select{font-size:0.7rem;font-weight:800;padding:4px 8px;border-radius:20px;border:1px solid var(--border-forest);background:transparent;color:var(--sage-light);cursor:pointer;font-family:inherit}
+.whats-btn{background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:0.72rem;font-weight:800;padding:4px 10px;border-radius:8px;cursor:pointer;transition:var(--tr);white-space:nowrap;font-family:inherit}
+.whats-btn:hover{background:rgba(37,211,102,.2)}
 
-/* LISTA DE CONSULTAS DO DIA */
-.day-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.day-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.1rem;
-  color: var(--text-title);
-  font-weight: 700;
-}
-.day-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
-
-.consult-list { display: flex; flex-direction: column; gap: 10px; }
-
-.consult-card {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border-forest);
-  border-radius: 14px;
-  padding: 16px 20px;
-  display: grid;
-  grid-template-columns: 70px 1fr auto;
-  gap: 16px;
-  align-items: center;
-  transition: var(--tr);
-  position: relative;
-  overflow: hidden;
-}
-.consult-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 4px;
-  background: var(--sage-light);
-  border-radius: 4px 0 0 4px;
-}
-.consult-card.status-cancelado::before { background: #f87171; }
-.consult-card.status-realizado::before { background: #34d399; }
-.consult-card.status-aguardando::before { background: #fbbf24; }
-.consult-card:hover { border-color: var(--sage-light); background: var(--sage-dim); }
-
-.consult-time {
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: var(--sage-light);
-  text-align: center;
-  line-height: 1.2;
-}
-.consult-time-period { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; }
-
-.consult-info { display: flex; flex-direction: column; gap: 4px; }
-.consult-name { font-weight: 800; font-size: 0.95rem; color: var(--text-title); }
-.consult-type { font-size: 0.78rem; color: var(--text-muted); }
-.consult-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
-.tag {
-  font-size: 0.68rem;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.tag-online { background: rgba(99, 179, 237, 0.15); color: #63b3ed; border: 1px solid rgba(99, 179, 237, 0.3); }
-.tag-presencial { background: rgba(140, 164, 129, 0.15); color: var(--sage-light); border: 1px solid var(--border-forest); }
-.tag-retorno { background: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-
-.consult-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-.status-badge {
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  border: none;
-  transition: var(--tr);
-  white-space: nowrap;
-}
-.status-confirmado { background: rgba(140, 164, 129, 0.2); color: var(--sage-light); border: 1px solid var(--border-forest); }
-.status-aguardando { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-.status-realizado { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-.status-cancelado { background: rgba(248, 113, 113, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
-
-.whats-btn {
-  background: rgba(37, 211, 102, 0.1);
-  border: 1px solid rgba(37, 211, 102, 0.3);
-  color: #25d366;
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: var(--tr);
-  white-space: nowrap;
-}
-.whats-btn:hover { background: rgba(37, 211, 102, 0.2); }
-
-.empty-state {
-  text-align: center;
-  padding: 52px 24px;
-  color: var(--text-muted);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-.empty-state-icon { font-size: 3rem; opacity: 0.5; }
-.empty-state-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--text-title); }
-
-/* MODAL */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  z-index: 2000;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.modal-overlay.active { opacity: 1; pointer-events: auto; }
-.modal-card {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border-forest);
-  border-radius: var(--radius);
-  padding: 32px;
-  width: 100%; max-width: 540px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
-  display: flex; flex-direction: column; gap: 20px;
-  transform: scale(0.95);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.modal-overlay.active .modal-card { transform: scale(1); }
-.modal-header {
-  display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid var(--border-forest); padding-bottom: 16px;
-}
-.modal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text-title); }
-.modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: var(--tr); }
-.modal-close:hover { color: #f87171; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
-.form-control {
-  background: var(--bg-deep);
-  border: 1.5px solid var(--border-forest);
-  padding: 12px 16px;
-  border-radius: 12px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 0.95rem;
-  outline: none;
-  transition: var(--tr);
-  width: 100%;
-}
-.form-control:focus { border-color: var(--sage-light); }
-.form-control option { background: var(--bg-card); }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.empty-state{text-align:center;padding:52px 24px;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty-state-icon{font-size:2.8rem;opacity:.5}
+.empty-state-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text-title)}
 
 /* SPINNER */
-.spinner-ring {
-  width: 22px; height: 22px;
-  border: 3px solid rgba(140, 164, 129, 0.25);
-  border-top-color: var(--sage-light);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-ring{width:22px;height:22px;border:3px solid rgba(140,164,129,.25);border-top-color:var(--sage-light);border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* OCULTAR HEADER DENTRO DE IFRAME */
-body.in-iframe .top-header { display: none !important; }
-body.in-iframe .container { padding-top: 16px !important; }
+/* ── MODAL STEPPER ─────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(.16,1,.3,1)}
+.modal-overlay.active{opacity:1;pointer-events:auto}
+.modal-card{background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:var(--radius);width:100%;max-width:580px;box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .25s cubic-bezier(.16,1,.3,1);overflow:hidden}
+.modal-overlay.active .modal-card{transform:scale(1)}
 
-/* RESPONSIVIDADE */
-@media (max-width: 860px) {
-  .agenda-layout { grid-template-columns: 1fr; }
-}
-@media (max-width: 600px) {
-  .consult-card { grid-template-columns: 60px 1fr; }
-  .consult-actions { display: none; }
-}
+/* Stepper header */
+.stepper{display:flex;align-items:center;background:var(--bg-deep);padding:20px 28px;gap:0;border-bottom:1px solid var(--border-forest)}
+.step-item{display:flex;align-items:center;gap:8px;flex:1}
+.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;border:2px solid var(--border-forest);color:var(--text-muted);transition:var(--tr);flex-shrink:0}
+.step-item.active .step-num{border-color:var(--sage-light);color:var(--sage-light);background:var(--sage-dim)}
+.step-item.done .step-num{border-color:var(--sage-light);background:var(--sage-light);color:var(--forest-dark)}
+.step-label{font-size:0.8rem;font-weight:700;color:var(--text-muted);white-space:nowrap}
+.step-item.active .step-label{color:var(--sage-light)}
+.step-item.done .step-label{color:var(--text-light)}
+.step-line{flex:1;height:1px;background:var(--border-forest);margin:0 8px}
+.step-line.done{background:var(--sage-light)}
+
+/* Modal body */
+.modal-body{padding:28px;display:flex;flex-direction:column;gap:18px}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--text-title)}
+.modal-subtitle{font-size:0.82rem;color:var(--text-muted);margin-top:4px}
+.modal-close{background:transparent;border:none;color:var(--text-muted);font-size:1.4rem;cursor:pointer;transition:var(--tr);flex-shrink:0;line-height:1}
+.modal-close:hover{color:#f87171}
+.modal-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border-forest)}
+
+/* Form */
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:0.72rem;font-weight:800;text-transform:uppercase;color:var(--sage-light);letter-spacing:.05em}
+.form-control{background:var(--bg-deep);border:1.5px solid var(--border-forest);padding:11px 14px;border-radius:12px;color:var(--text-primary);font-family:inherit;font-size:0.92rem;outline:none;transition:var(--tr);width:100%}
+.form-control:focus{border-color:var(--sage-light)}
+.form-control option{background:var(--bg-card)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* Radio toggle pac tipo */
+.radio-toggle{display:flex;background:var(--bg-deep);border:1.5px solid var(--border-forest);border-radius:12px;padding:4px;gap:4px}
+.radio-toggle label{flex:1;text-align:center;padding:8px;border-radius:10px;cursor:pointer;font-size:0.82rem;font-weight:700;color:var(--text-muted);transition:var(--tr)}
+.radio-toggle input[type=radio]{display:none}
+.radio-toggle input[type=radio]:checked+label{background:var(--sage-light);color:var(--forest-dark)}
+
+/* Busca de paciente */
+.pac-search-wrap{position:relative}
+.pac-results{position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1.5px solid var(--sage-light);border-radius:12px;z-index:10;max-height:200px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.pac-result-item{padding:12px 16px;cursor:pointer;transition:var(--tr);border-bottom:1px solid var(--border-forest);font-size:.9rem}
+.pac-result-item:last-child{border-bottom:none}
+.pac-result-item:hover{background:var(--sage-dim)}
+.pac-result-name{font-weight:800;color:var(--text-title)}
+.pac-result-detail{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+
+/* Sucesso */
+.success-view{text-align:center;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:16px}
+.success-icon{font-size:3.5rem}
+.success-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text-title)}
+.success-detail{font-size:.88rem;color:var(--text-muted);line-height:1.7}
+.success-badge{background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);color:#34d399;padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+
+@media(max-width:860px){.agenda-layout{grid-template-columns:1fr}}
+@media(max-width:600px){.consult-card{grid-template-columns:56px 1fr}.consult-actions{display:none}}
 </style>
 </head>
 <body>
@@ -413,96 +176,170 @@ body.in-iframe .container { padding-top: 16px !important; }
     <div class="brand-title">📅 Agendamento de Consultas</div>
     <div class="brand-sub">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
   </div>
-  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <button class="btn" onclick="openNovoAgendamento()">+ Nova Consulta</button>
-    <a href="app-nutri.html" class="btn btn-secondary" style="font-size:0.82rem;">← Dashboard</a>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button class="btn" onclick="abrirModal()">+ Nova Consulta</button>
+    <a href="app-nutri.html" class="btn btn-secondary" style="font-size:.82rem">← Dashboard</a>
   </div>
 </header>
 
 <main class="container">
-
-  <!-- LAYOUT CALENDÁRIO + LISTA -->
   <div class="agenda-layout">
 
-    <!-- CALENDÁRIO MENSAL -->
+    <!-- CALENDÁRIO -->
     <div class="card">
       <div class="calendar-nav">
         <button class="btn-icon" onclick="changeMonth(-1)">‹</button>
         <div class="calendar-nav-title" id="calMonthTitle">—</div>
         <button class="btn-icon" onclick="changeMonth(1)">›</button>
       </div>
-
-      <div class="calendar-grid" id="calGrid">
-        <!-- preenchido via JS -->
-      </div>
-
-      <!-- MINI RESUMO DO MÊS -->
+      <div class="calendar-grid" id="calGrid"></div>
       <div class="month-summary">
-        <div class="month-stat">
-          <div class="month-stat-val" id="statTotal">—</div>
-          <div class="month-stat-label">Consultas no Mês</div>
-        </div>
-        <div class="month-stat">
-          <div class="month-stat-val" id="statHoje">—</div>
-          <div class="month-stat-label">Hoje</div>
-        </div>
-        <div class="month-stat">
-          <div class="month-stat-val" id="statOnline">—</div>
-          <div class="month-stat-label">Online</div>
-        </div>
-        <div class="month-stat">
-          <div class="month-stat-val" id="statPresencial">—</div>
-          <div class="month-stat-label">Presencial</div>
-        </div>
+        <div class="month-stat"><div class="month-stat-val" id="statTotal">—</div><div class="month-stat-label">Consultas</div></div>
+        <div class="month-stat"><div class="month-stat-val" id="statHoje">—</div><div class="month-stat-label">Hoje</div></div>
+        <div class="month-stat"><div class="month-stat-val" id="statOnline">—</div><div class="month-stat-label">Online</div></div>
+        <div class="month-stat"><div class="month-stat-val" id="statPresencial">—</div><div class="month-stat-label">Presencial</div></div>
       </div>
     </div>
 
-    <!-- LISTA DO DIA SELECIONADO -->
+    <!-- LISTA DO DIA -->
     <div class="card">
       <div class="day-header">
         <div>
           <div class="day-title" id="dayTitle">Consultas do Dia</div>
           <div class="day-subtitle" id="daySubtitle">Selecione uma data no calendário</div>
         </div>
-        <button class="btn" onclick="openNovoAgendamento()" style="font-size:0.8rem; padding:8px 14px;">+ Agendar</button>
+        <button class="btn" onclick="abrirModal()" style="font-size:.8rem;padding:8px 14px">+ Agendar</button>
       </div>
-
       <div id="consultList" class="consult-list">
         <div class="empty-state">
-          <div class="spinner-ring" style="width:28px;height:28px;"></div>
+          <div class="spinner-ring" style="width:28px;height:28px"></div>
           <div class="empty-state-title">Carregando agenda...</div>
         </div>
       </div>
     </div>
   </div>
-
 </main>
 
-<!-- MODAL NOVO AGENDAMENTO -->
-<div class="modal-overlay" id="modalNovoAg">
+<!-- ── MODAL STEPPER ── -->
+<div class="modal-overlay" id="modalNovaConsulta">
   <div class="modal-card">
-    <div class="modal-header">
-      <div class="modal-title">📅 Nova Consulta</div>
-      <button class="modal-close" onclick="closeNovoAgendamento()">✕</button>
+
+    <!-- Stepper header -->
+    <div class="stepper" id="stepperBar">
+      <div class="step-item active" id="step1Item">
+        <div class="step-num" id="step1Num">1</div>
+        <div class="step-label">Paciente</div>
+      </div>
+      <div class="step-line" id="stepLine1"></div>
+      <div class="step-item" id="step2Item">
+        <div class="step-num" id="step2Num">2</div>
+        <div class="step-label">Consulta</div>
+      </div>
+      <div class="step-line" id="stepLine2"></div>
+      <div class="step-item" id="step3Item">
+        <div class="step-num" id="step3Num">✓</div>
+        <div class="step-label">Confirmado</div>
+      </div>
     </div>
 
-    <form onsubmit="salvarAgendamento(event)">
+    <div class="modal-body">
 
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <div class="form-group">
-          <label>Paciente</label>
-          <select id="agPaciente" class="form-control" required>
-            <option value="">Selecione o paciente...</option>
-          </select>
+      <!-- PASSO 1 — PACIENTE -->
+      <div id="stepPaciente">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">👤 Identificação do Paciente</div>
+            <div class="modal-subtitle">Busque um paciente existente ou cadastre um novo</div>
+          </div>
+          <button class="modal-close" onclick="fecharModal()">✕</button>
+        </div>
+
+        <div class="radio-toggle">
+          <input type="radio" name="tipoPac" id="rExistente" value="existente" checked onchange="togglePacForm()">
+          <label for="rExistente">🔍 Paciente Existente</label>
+          <input type="radio" name="tipoPac" id="rNovo" value="novo" onchange="togglePacForm()">
+          <label for="rNovo">✨ Novo Paciente</label>
+        </div>
+
+        <!-- Busca existente -->
+        <div id="formExistente">
+          <div class="form-group">
+            <label>Buscar por nome ou CPF</label>
+            <div class="pac-search-wrap">
+              <input type="text" id="inputBusca" class="form-control" placeholder="Digite nome ou CPF..." oninput="buscarPaciente(this.value)" autocomplete="off">
+              <div id="pacResults" class="pac-results" style="display:none"></div>
+            </div>
+          </div>
+          <div id="pacSelecionadoBox" style="display:none; background:var(--sage-dim); border:1.5px solid var(--sage-light); border-radius:12px; padding:14px 16px; margin-top:4px;">
+            <div style="font-weight:800; color:var(--sage-light); font-size:.85rem;">✅ Paciente Selecionado</div>
+            <div id="pacSelecionadoNome" style="font-weight:800; color:var(--text-title); margin-top:4px;"></div>
+            <div id="pacSelecionadoDetalhe" style="font-size:.78rem; color:var(--text-muted); margin-top:2px;"></div>
+          </div>
+        </div>
+
+        <!-- Formulário novo paciente -->
+        <div id="formNovo" style="display:none; display:flex; flex-direction:column; gap:14px;">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nome Completo *</label>
+              <input type="text" id="nNome" class="form-control" placeholder="Ex: Ana Paula Ribeiro">
+            </div>
+            <div class="form-group">
+              <label>CPF *</label>
+              <input type="text" id="nCPF" class="form-control" placeholder="000.000.000-00" oninput="mascaraCPF(this)">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>WhatsApp</label>
+              <input type="text" id="nWA" class="form-control" placeholder="(21) 99999-9999" oninput="mascaraPhone(this)">
+            </div>
+            <div class="form-group">
+              <label>Data de Nascimento</label>
+              <input type="date" id="nNasc" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>E-mail (receberá acesso e PDF) *</label>
+            <input type="email" id="nEmail" class="form-control" placeholder="paciente@email.com">
+          </div>
+          <div class="form-group">
+            <label>Objetivo Clínico Principal</label>
+            <select id="nObjetivo" class="form-control">
+              <option>Reeducação Alimentar & Emagrecimento</option>
+              <option>Nutrição Esportiva & Hipertrofia</option>
+              <option>Saúde Intestinal & Bio-Reset</option>
+              <option>Controle de Diabetes & Doenças Crônicas</option>
+              <option>Nutrição na Gestação & Amamentação</option>
+              <option>Longevidade & Medicina Preventiva</option>
+              <option>Nutrição Comportamental</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+          <button class="btn" onclick="irParaPasso2()" id="btnPasso2">Próximo: Consulta →</button>
+        </div>
+      </div>
+
+      <!-- PASSO 2 — CONSULTA -->
+      <div id="stepConsulta" style="display:none; display:flex; flex-direction:column; gap:18px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">📅 Detalhes da Consulta</div>
+            <div class="modal-subtitle" id="step2PacNome" style="color:var(--sage-light); font-weight:700;"></div>
+          </div>
+          <button class="modal-close" onclick="fecharModal()">✕</button>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Data</label>
+            <label>Data *</label>
             <input type="date" id="agData" class="form-control" required>
           </div>
           <div class="form-group">
-            <label>Horário</label>
+            <label>Horário *</label>
             <input type="time" id="agHora" class="form-control" value="09:00" required>
           </div>
         </div>
@@ -511,10 +348,11 @@ body.in-iframe .container { padding-top: 16px !important; }
           <div class="form-group">
             <label>Tipo de Consulta</label>
             <select id="agTipo" class="form-control">
+              <option value="Avaliação Inicial">Avaliação Inicial</option>
               <option value="Online (Google Meet)">Online (Google Meet)</option>
               <option value="Presencial">Presencial no Consultório</option>
               <option value="Retorno de Avaliação">Retorno de Avaliação</option>
-              <option value="Avaliação Inicial">Avaliação Inicial</option>
+              <option value="Retorno Online">Retorno Online</option>
             </select>
           </div>
           <div class="form-group">
@@ -528,407 +366,476 @@ body.in-iframe .container { padding-top: 16px !important; }
           <input type="text" id="agObs" class="form-control" placeholder="Ex: Trazer exames laboratoriais">
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px; padding-top:8px; border-top:1px solid var(--border-forest);">
-          <button type="button" class="btn btn-secondary" onclick="closeNovoAgendamento()">Cancelar</button>
-          <button type="submit" class="btn" id="btnSalvar">💾 Confirmar Agendamento</button>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="voltarPasso1()">← Voltar</button>
+          <button class="btn" onclick="salvarConsulta()" id="btnSalvar">💾 Confirmar &amp; Salvar</button>
         </div>
       </div>
 
-    </form>
-  </div>
-</div>
+      <!-- PASSO 3 — SUCESSO -->
+      <div id="stepSucesso" style="display:none">
+        <div class="success-view">
+          <div class="success-icon">🌿</div>
+          <div class="success-title">Consulta Agendada!</div>
+          <div class="success-detail" id="successMsg"></div>
+          <div id="emailBadge" style="display:none">
+            <span class="success-badge">📧 E-mail com acesso e PDF enviado</span>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+            <button class="btn btn-secondary" onclick="fecharModal()">Fechar</button>
+            <button class="btn" onclick="fecharModal();abrirModal()">+ Nova Consulta</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+  </div><!-- /modal-card -->
+</div><!-- /modal -->
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec';
 
-// ─── Estado global ─────────────────────────────────────────
+// ── Estado ─────────────────────────────────────────────────────────
 let allAgendamentos = [];
-let selectedDate = new Date();
-let currentMonth = new Date();
-currentMonth.setDate(1);
+let selectedDate    = new Date();
+let currentMonth    = new Date(); currentMonth.setDate(1);
+let pacienteSelecionado = null; // { id, nome, cpf, whatsapp, email }
+let pacientesBD = [];
 
-// ─── Iframe Detection ──────────────────────────────────────
-if (window.self !== window.top) {
-  document.body.classList.add('in-iframe');
+// ── Iframe + Theme ─────────────────────────────────────────────────
+if (window.self !== window.top) document.body.classList.add('in-iframe');
+window.addEventListener('message', e => {
+  if (e.data?.type === 'SET_THEME') document.documentElement.setAttribute('data-theme', e.data.theme);
+});
+
+// ── API ────────────────────────────────────────────────────────────
+async function apiCall(action, payload = {}, method = 'GET') {
+  try {
+    if (method === 'POST') {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action, ...payload }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return await res.json();
+    }
+    const params = new URLSearchParams({ action, ...payload });
+    const res    = await fetch(`${API_URL}?${params}`);
+    return await res.json();
+  } catch(e) { return null; }
 }
 
-// ─── Theme listener (parent→iframe) ───────────────────────
+// ── Máscaras ───────────────────────────────────────────────────────
+function mascaraCPF(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  el.value = v.slice(0,14);
+}
+function mascaraPhone(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length <= 10) v = v.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{4})(\d)/,'$1-$2');
+  else v = v.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2');
+  el.value = v.slice(0,15);
+}
+
+// ── Calendário ─────────────────────────────────────────────────────
+const DIAS   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MESES  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function renderCalendar() {
+  const grid = document.getElementById('calGrid');
+  const title = document.getElementById('calMonthTitle');
+  if (!grid||!title) return;
+  const year=currentMonth.getFullYear(), month=currentMonth.getMonth();
+  const today=new Date();
+  title.textContent = `${MESES[month]} ${year}`;
+
+  const daysWithEvents = new Set();
+  allAgendamentos.forEach(ag => {
+    const d = parseDate(ag.data);
+    if (d && d.getFullYear()===year && d.getMonth()===month) daysWithEvents.add(d.getDate());
+  });
+
+  const firstDay   = new Date(year,month,1).getDay();
+  const daysInMon  = new Date(year,month+1,0).getDate();
+  const prevDays   = new Date(year,month,0).getDate();
+  let html = DIAS.map(d=>`<div class="cal-day-header">${d}</div>`).join('');
+
+  for (let i=firstDay-1; i>=0; i--) html += `<div class="cal-day other-month">${prevDays-i}</div>`;
+
+  for (let d=1; d<=daysInMon; d++) {
+    const isToday    = d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+    const isSel      = d===selectedDate.getDate()&&month===selectedDate.getMonth()&&year===selectedDate.getFullYear();
+    const hasEv      = daysWithEvents.has(d);
+    const cls        = ['cal-day',isToday?'today':'',isSel?'selected':'',hasEv?'has-events':''].filter(Boolean).join(' ');
+    const dt         = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    html += `<div class="${cls}" onclick="selectDay('${dt}')">${d}</div>`;
+  }
+
+  const totalCells = Math.ceil((firstDay+daysInMon)/7)*7;
+  for (let d=1; d<=totalCells-firstDay-daysInMon; d++) html+=`<div class="cal-day other-month">${d}</div>`;
+  grid.innerHTML = html;
+  updateMonthStats();
+}
+
+function changeMonth(dir) { currentMonth.setMonth(currentMonth.getMonth()+dir); renderCalendar(); }
+
+function selectDay(dt) {
+  const [y,m,d] = dt.split('-').map(Number);
+  selectedDate = new Date(y,m-1,d);
+  renderCalendar();
+  renderDayList();
+}
+
+function updateMonthStats() {
+  const year=currentMonth.getFullYear(), month=currentMonth.getMonth(), today=new Date();
+  const mesAgs  = allAgendamentos.filter(ag=>{ const d=parseDate(ag.data); return d&&d.getFullYear()===year&&d.getMonth()===month; });
+  const hojeAgs = allAgendamentos.filter(ag=>{ const d=parseDate(ag.data); return d&&isSameDay(d,today); });
+  document.getElementById('statTotal').textContent    = mesAgs.length;
+  document.getElementById('statHoje').textContent     = hojeAgs.length;
+  document.getElementById('statOnline').textContent   = mesAgs.filter(a=>String(a.tipo||'').toLowerCase().includes('online')).length;
+  document.getElementById('statPresencial').textContent = mesAgs.filter(a=>String(a.tipo||'').toLowerCase().includes('presencial')).length;
+}
+
+// ── Helpers de data ────────────────────────────────────────────────
+function parseDate(val) {
+  if (!val) return null;
+  const s = String(val).trim();
+  if (s.includes('T')) return new Date(s);
+  if (s.includes('/')) { const [d,m,y]=s.split('/'); return new Date(+y,+m-1,+d); }
+  if (s.includes('-')) { const [y,m,d]=s.split('-'); return new Date(+y,+m-1,+d); }
+  return null;
+}
+function isSameDay(a,b) { return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function formatTime(val) {
+  if (!val) return '';
+  const s = String(val).trim();
+  if (s.includes('T')) { const p=s.split('T')[1]?.split(':'); if(p?.length>=2) return `${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`; }
+  if (s.includes(':')) { const p=s.split(':'); return `${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`; }
+  return s;
+}
+
+// ── Lista do Dia ───────────────────────────────────────────────────
+function renderDayList() {
+  const list     = document.getElementById('consultList');
+  const dayTitle = document.getElementById('dayTitle');
+  const daySub   = document.getElementById('daySubtitle');
+  if (!list) return;
+  dayTitle.textContent = selectedDate.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  const dayAgs = allAgendamentos
+    .filter(ag=>{ const d=parseDate(ag.data); return d&&isSameDay(d,selectedDate); })
+    .sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+  daySub.textContent = dayAgs.length===0 ? 'Nenhuma consulta' : `${dayAgs.length} consulta${dayAgs.length>1?'s':''} agendada${dayAgs.length>1?'s':''}`;
+  if (dayAgs.length===0) {
+    list.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Nenhuma consulta aqui</div><p style="font-size:.85rem;color:var(--text-muted);max-width:240px;text-align:center">Clique em "+ Agendar" para marcar uma consulta neste dia.</p></div>`;
+    return;
+  }
+  list.innerHTML = dayAgs.map(ag => buildCard(ag)).join('');
+}
+
+function buildCard(ag) {
+  const hora   = formatTime(ag.hora)||ag.hora||'--:--';
+  const periodo = Number(hora.split(':')[0])<12?'AM':'PM';
+  const nome   = ag.paciente_nome||ag.nome||'Paciente';
+  const tipo   = ag.tipo||'Consulta';
+  const status = ag.status||'Confirmado';
+  const valor  = ag.valor ? `R$ ${parseFloat(ag.valor).toFixed(2).replace('.',',')}` : '';
+  const obs    = ag.observacao||'';
+  const id     = ag.id||'';
+  const pacId  = ag.paciente_id||'';
+
+  let tagClass = 'tag-online';
+  if (tipo.toLowerCase().includes('presencial')) tagClass='tag-presencial';
+  if (tipo.toLowerCase().includes('retorno'))   tagClass='tag-retorno';
+  if (tipo.toLowerCase().includes('avaliação')) tagClass='tag-presencial';
+
+  let statusClass = 'status-confirmado';
+  if (status.toLowerCase().includes('aguard')) statusClass='status-aguardando';
+  if (status.toLowerCase().includes('realiz')) statusClass='status-realizado';
+  if (status.toLowerCase().includes('cancel')) statusClass='status-cancelado';
+
+  const phone = String(ag.paciente_whatsapp||ag.whatsapp||'').replace(/\D/g,'');
+  const waTxt = encodeURIComponent(`Olá ${nome}! 🌿 Lembrando da sua consulta com a Dra. Silvia Lemos hoje às ${hora}. Te esperamos!`);
+
+  return `<div class="consult-card ${statusClass}" id="card-${id}">
+    <div class="consult-time">${hora}<div class="consult-time-period">${periodo}</div></div>
+    <div class="consult-info">
+      <div class="consult-name">${nome}</div>
+      <div class="consult-type">${tipo}${obs ? ' · '+obs : ''}</div>
+      <div class="consult-meta">
+        <span class="tag ${tagClass}">${tipo.split('(')[0].trim()}</span>
+        ${valor?`<span style="font-size:.75rem;font-weight:700;color:var(--text-muted)">${valor}</span>`:''}
+      </div>
+    </div>
+    <div class="consult-actions">
+      <button class="btn-start" onclick="iniciarAtendimento('${id}','${pacId}')">▶ Iniciar</button>
+      <select class="status-select" onchange="alterarStatus('${id}',this)">
+        <option value="Confirmado"  ${status==='Confirmado' ?'selected':''}>✅ Confirmado</option>
+        <option value="Aguardando" ${status==='Aguardando'?'selected':''}>⏳ Aguardando</option>
+        <option value="Realizado"  ${status==='Realizado' ?'selected':''}>🎉 Realizado</option>
+        <option value="Cancelado"  ${status==='Cancelado' ?'selected':''}>❌ Cancelado</option>
+      </select>
+      ${phone?`<button class="whats-btn" onclick="window.open('https://wa.me/${phone}?text=${waTxt}','_blank')">💬 WhatsApp</button>`:''}
+    </div>
+  </div>`;
+}
+
+function iniciarAtendimento(agId, pacId) {
+  // Abre o prontuário no iframe pai ou navega direto
+  const url = `atendimento.html?ag_id=${agId}&pac_id=${pacId}`;
+  if (window.self !== window.top) {
+    window.parent.postMessage({ type:'OPEN_IFRAME', url }, '*');
+  } else {
+    window.location.href = url;
+  }
+}
+
+async function alterarStatus(id, sel) {
+  const novoStatus = sel.value;
+  const ag = allAgendamentos.find(a=>a.id===id);
+  if (ag) ag.status=novoStatus;
+  const card = document.getElementById(`card-${id}`);
+  if (card) card.className = 'consult-card status-'+novoStatus.toLowerCase();
+  try { await apiCall('updateAgendamento',{id, fields:{status:novoStatus}},'POST'); } catch(e){}
+}
+
+// ── Modal stepper ──────────────────────────────────────────────────
+let currentStep = 1;
+
+function abrirModal() {
+  pacienteSelecionado = null;
+  currentStep = 1;
+  irParaStep(1);
+  // Preenche data selecionada
+  const m=String(selectedDate.getMonth()+1).padStart(2,'0');
+  const d=String(selectedDate.getDate()).padStart(2,'0');
+  const y=selectedDate.getFullYear();
+  const agData = document.getElementById('agData');
+  if (agData) agData.value=`${y}-${m}-${d}`;
+  // Reset busca
+  document.getElementById('inputBusca').value='';
+  document.getElementById('pacResults').style.display='none';
+  document.getElementById('pacSelecionadoBox').style.display='none';
+  // Reset novo paciente
+  ['nNome','nCPF','nWA','nEmail','nNasc'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('rExistente').checked=true;
+  togglePacForm();
+  document.getElementById('modalNovaConsulta').classList.add('active');
+}
+
+function fecharModal() {
+  document.getElementById('modalNovaConsulta').classList.remove('active');
+}
+
+function irParaStep(n) {
+  currentStep = n;
+  ['stepPaciente','stepConsulta','stepSucesso'].forEach((id,i)=>{
+    document.getElementById(id).style.display = (i+1===n)?'flex':'none';
+    if (i+1===n) document.getElementById(id).style.flexDirection='column';
+  });
+  // Atualiza stepper visual
+  for (let i=1;i<=3;i++) {
+    const item=document.getElementById(`step${i}Item`);
+    const num =document.getElementById(`step${i}Num`);
+    item.classList.remove('active','done');
+    if (i<n) { item.classList.add('done'); num.textContent='✓'; }
+    else if (i===n) { item.classList.add('active'); num.textContent=i; }
+    else { num.textContent=i; }
+  }
+  [1,2].forEach(i=>{
+    const line=document.getElementById(`stepLine${i}`);
+    if(line) line.className=`step-line${i<=n-1?' done':''}`;
+  });
+}
+
+function voltarPasso1() { irParaStep(1); }
+
+function togglePacForm() {
+  const isNovo = document.getElementById('rNovo').checked;
+  document.getElementById('formExistente').style.display = isNovo?'none':'block';
+  document.getElementById('formNovo').style.display      = isNovo?'flex':'none';
+  if(isNovo) document.getElementById('formNovo').style.flexDirection='column';
+}
+
+// Busca live de paciente
+let searchTimeout;
+async function buscarPaciente(q) {
+  clearTimeout(searchTimeout);
+  const results = document.getElementById('pacResults');
+  if (q.length < 2) { results.style.display='none'; return; }
+  searchTimeout = setTimeout(async () => {
+    // Busca local primeiro
+    const lower = q.toLowerCase().replace(/\D/g,'') || q.toLowerCase();
+    const local = pacientesBD.filter(p =>
+      String(p.nome||'').toLowerCase().includes(q.toLowerCase()) ||
+      String(p.cpf||'').replace(/\D/g,'').includes(q.replace(/\D/g,''))
+    ).slice(0,8);
+
+    if (local.length > 0) {
+      exibirResultados(local);
+    } else {
+      const res = await apiCall('buscarPacientes',{q});
+      if (res?.success && res.data?.length) {
+        exibirResultados(res.data);
+      } else {
+        results.innerHTML=`<div style="padding:16px;color:var(--text-muted);text-align:center;font-size:.85rem">Nenhum paciente encontrado com "${q}"</div>`;
+        results.style.display='block';
+      }
+    }
+  }, 300);
+}
+
+function exibirResultados(pacientes) {
+  const results = document.getElementById('pacResults');
+  results.innerHTML = pacientes.map(p => `
+    <div class="pac-result-item" onclick="selecionarPaciente(${JSON.stringify(JSON.stringify(p))})">
+      <div class="pac-result-name">${p.nome||'—'}</div>
+      <div class="pac-result-detail">CPF: ${maskCPF(p.cpf||'')} · ${p.whatsapp||p.email||''}</div>
+    </div>`).join('');
+  results.style.display='block';
+}
+
+function selecionarPaciente(jsonStr) {
+  const p = JSON.parse(jsonStr);
+  pacienteSelecionado = p;
+  document.getElementById('inputBusca').value = p.nome;
+  document.getElementById('pacResults').style.display='none';
+  document.getElementById('pacSelecionadoBox').style.display='block';
+  document.getElementById('pacSelecionadoNome').textContent = p.nome;
+  document.getElementById('pacSelecionadoDetalhe').textContent =
+    `CPF: ${maskCPF(p.cpf||'')} · WhatsApp: ${maskPhone(p.whatsapp||'')} · ${p.email||''}`;
+}
+
+function maskCPF(v){ return String(v||'').replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2').slice(0,14); }
+function maskPhone(v){ const d=String(v||'').replace(/\D/g,''); return d.length<=10?d.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{4})(\d)/,'$1-$2').slice(0,14):d.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2').slice(0,15); }
+
+function irParaPasso2() {
+  const isNovo = document.getElementById('rNovo').checked;
+  if (!isNovo && !pacienteSelecionado) {
+    alert('Por favor, selecione um paciente existente ou mude para "Novo Paciente".');
+    return;
+  }
+  if (isNovo) {
+    const nome = document.getElementById('nNome').value.trim();
+    if (!nome) { alert('Informe o nome completo do paciente.'); return; }
+  }
+  // Atualiza label step 2
+  const nome = isNovo ? document.getElementById('nNome').value.trim() : pacienteSelecionado.nome;
+  document.getElementById('step2PacNome').textContent = '👤 '+nome;
+  irParaStep(2);
+}
+
+async function salvarConsulta() {
+  const btn = document.getElementById('btnSalvar');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner-ring" style="width:16px;height:16px;border-width:2px"></div> Salvando...';
+
+  const isNovo = document.getElementById('rNovo').checked;
+
+  // Monta paciente
+  let paciente;
+  if (isNovo) {
+    paciente = {
+      id:       'NOVO',
+      nome:     document.getElementById('nNome').value.trim(),
+      cpf:      document.getElementById('nCPF').value.replace(/\D/g,''),
+      whatsapp: document.getElementById('nWA').value.replace(/\D/g,''),
+      email:    document.getElementById('nEmail').value.trim(),
+      data_nascimento: document.getElementById('nNasc').value,
+      objetivo: document.getElementById('nObjetivo').value,
+      tipo:     'PACIENTE'
+    };
+  } else {
+    paciente = { id: pacienteSelecionado.id };
+  }
+
+  // Monta agendamento
+  const agendamento = {
+    data:        document.getElementById('agData').value,
+    hora:        document.getElementById('agHora').value,
+    tipo:        document.getElementById('agTipo').value,
+    valor:       document.getElementById('agValor').value,
+    observacao:  document.getElementById('agObs').value,
+    status:      'Confirmado'
+  };
+
+  try {
+    const res = await apiCall('saveConsultaCompleta',{paciente,agendamento},'POST');
+    if (res?.success) {
+      const d = res.data;
+      const dtFmt = formatDateBR(agendamento.data);
+      const successMsg = document.getElementById('successMsg');
+      successMsg.innerHTML = `<b>${d?.paciente?.nome||paciente.nome}</b><br>📅 ${dtFmt} às ${agendamento.hora}<br>🏥 ${agendamento.tipo}`;
+      if (d?.emailEnviado) {
+        document.getElementById('emailBadge').style.display='block';
+      }
+      irParaStep(3);
+      // Adicionar localmente para atualizar a lista sem recarregar
+      const novAg = {
+        id: d?.agendamento?.id || 'LOCAL-'+Date.now(),
+        paciente_id: d?.paciente?.id || pacienteSelecionado?.id,
+        paciente_nome: d?.paciente?.nome || paciente.nome,
+        paciente_whatsapp: d?.paciente?.whatsapp || paciente.whatsapp || '',
+        ...agendamento
+      };
+      allAgendamentos.push(novAg);
+      renderCalendar();
+      renderDayList();
+    } else {
+      alert('Erro ao salvar: '+(res?.error||'Tente novamente.'));
+    }
+  } catch(err) {
+    alert('Erro de conexão: '+err.message);
+  }
+  btn.disabled=false;
+  btn.innerHTML='💾 Confirmar & Salvar';
+}
+
+function formatDateBR(v) {
+  if (!v) return '';
+  const s=String(v).trim();
+  if (s.includes('T')){ const [y,m,d]=s.split('T')[0].split('-'); return `${d}/${m}/${y}`; }
+  if (s.includes('-')){ const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+  return s;
+}
+
+// ── Listener para abrir atendimento no parent ──────────────────────
 window.addEventListener('message', e => {
   if (e.data?.type === 'SET_THEME') {
     document.documentElement.setAttribute('data-theme', e.data.theme);
   }
 });
 
-// ─── API ────────────────────────────────────────────────────
-async function apiCall(action, payload = {}) {
-  try {
-    const params = new URLSearchParams({ action, ...payload });
-    const res = await fetch(`${API_URL}?${params}`);
-    return await res.json();
-  } catch(e) {
-    return null;
-  }
-}
-
-// ─── Formatar data BR ──────────────────────────────────────
-function formatDateBR(v) {
-  if (!v) return '';
-  const str = String(v).trim();
-  if (str.includes('T')) {
-    const parts = str.split('T')[0].split('-');
-    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  if (str.includes('-')) {
-    const parts = str.split('-');
-    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  return str;
-}
-
-function formatTime(val) {
-  if (!val) return '';
-  const str = String(val).trim();
-  if (str.includes('T')) {
-    const timePart = str.split('T')[1];
-    if (timePart) {
-      const parts = timePart.split(':');
-      if (parts.length >= 2) return `${parts[0].padStart(2,'0')}:${parts[1].padStart(2,'0')}`;
-    }
-  }
-  if (str.includes(':')) {
-    const parts = str.split(':');
-    return `${parts[0].padStart(2,'0')}:${parts[1].padStart(2,'0')}`;
-  }
-  return str;
-}
-
-// ─── Calendário ─────────────────────────────────────────────
-const DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-function renderCalendar() {
-  const grid = document.getElementById('calGrid');
-  const title = document.getElementById('calMonthTitle');
-  if (!grid || !title) return;
-
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  const today = new Date();
-
-  title.textContent = `${MESES[month]} ${year}`;
-
-  // Dias com agendamentos neste mês
-  const daysWithEvents = new Set();
-  allAgendamentos.forEach(ag => {
-    const agDate = parseAgDate(ag.data);
-    if (agDate && agDate.getFullYear() === year && agDate.getMonth() === month) {
-      daysWithEvents.add(agDate.getDate());
-    }
-  });
-
-  // Build grid
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const prevDays = new Date(year, month, 0).getDate();
-
-  let html = DIAS.map(d => `<div class="cal-day-header">${d}</div>`).join('');
-
-  // Células do mês anterior
-  for (let i = firstDay - 1; i >= 0; i--) {
-    html += `<div class="cal-day other-month">${prevDays - i}</div>`;
-  }
-
-  // Células do mês atual
-  for (let d = 1; d <= daysInMonth; d++) {
-    const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-    const isSelected = d === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear();
-    const hasEv = daysWithEvents.has(d);
-    const classes = ['cal-day', isToday ? 'today' : '', isSelected ? 'selected' : '', hasEv ? 'has-events' : ''].filter(Boolean).join(' ');
-    const dt = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    html += `<div class="${classes}" onclick="selectDay('${dt}')">${d}</div>`;
-  }
-
-  // Células do próximo mês
-  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-  for (let d = 1; d <= totalCells - firstDay - daysInMonth; d++) {
-    html += `<div class="cal-day other-month">${d}</div>`;
-  }
-
-  grid.innerHTML = html;
-  updateMonthStats();
-}
-
-function changeMonth(dir) {
-  currentMonth.setMonth(currentMonth.getMonth() + dir);
-  renderCalendar();
-}
-
-function selectDay(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  selectedDate = new Date(y, m - 1, d);
-  renderCalendar();
-  renderDayList();
-}
-
-// ─── Parse date de agendamento ─────────────────────────────
-function parseAgDate(val) {
-  if (!val) return null;
-  const str = String(val).trim();
-  // ISO: 2026-08-06T...
-  if (str.includes('T')) return new Date(str);
-  // dd/mm/yyyy
-  if (str.includes('/')) {
-    const [dd, mm, yyyy] = str.split('/');
-    return new Date(+yyyy, +mm - 1, +dd);
-  }
-  // yyyy-mm-dd
-  if (str.includes('-')) {
-    const [yyyy, mm, dd] = str.split('-');
-    return new Date(+yyyy, +mm - 1, +dd);
-  }
-  return null;
-}
-
-function isSameDay(date1, date2) {
-  return date1.getFullYear() === date2.getFullYear()
-    && date1.getMonth() === date2.getMonth()
-    && date1.getDate() === date2.getDate();
-}
-
-// ─── Estatísticas do mês ───────────────────────────────────
-function updateMonthStats() {
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  const today = new Date();
-
-  const mesAgs = allAgendamentos.filter(ag => {
-    const d = parseAgDate(ag.data);
-    return d && d.getFullYear() === year && d.getMonth() === month;
-  });
-
-  const hojeAgs = allAgendamentos.filter(ag => {
-    const d = parseAgDate(ag.data);
-    return d && isSameDay(d, today);
-  });
-
-  document.getElementById('statTotal').textContent = mesAgs.length;
-  document.getElementById('statHoje').textContent = hojeAgs.length;
-  document.getElementById('statOnline').textContent = mesAgs.filter(a => String(a.tipo || '').toLowerCase().includes('online')).length;
-  document.getElementById('statPresencial').textContent = mesAgs.filter(a => String(a.tipo || '').toLowerCase().includes('presencial')).length;
-}
-
-// ─── Renderizar lista do dia ───────────────────────────────
-function renderDayList() {
-  const list = document.getElementById('consultList');
-  const dayTitle = document.getElementById('dayTitle');
-  const daySubtitle = document.getElementById('daySubtitle');
-  if (!list) return;
-
-  const dOpts = { weekday: 'long', day: 'numeric', month: 'long' };
-  dayTitle.textContent = selectedDate.toLocaleDateString('pt-BR', dOpts);
-
-  const dayAgs = allAgendamentos
-    .filter(ag => {
-      const d = parseAgDate(ag.data);
-      return d && isSameDay(d, selectedDate);
-    })
-    .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
-
-  daySubtitle.textContent = dayAgs.length === 0
-    ? 'Nenhuma consulta nesta data'
-    : `${dayAgs.length} consulta${dayAgs.length > 1 ? 's' : ''} agendada${dayAgs.length > 1 ? 's' : ''}`;
-
-  if (dayAgs.length === 0) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">📭</div>
-        <div class="empty-state-title">Nenhuma consulta aqui</div>
-        <p style="font-size:0.85rem; color:var(--text-muted); max-width:260px; text-align:center;">Clique em "+ Agendar" para adicionar uma consulta neste dia.</p>
-      </div>`;
-    return;
-  }
-
-  list.innerHTML = dayAgs.map(ag => buildConsultCard(ag)).join('');
-}
-
-function buildConsultCard(ag) {
-  const hora = formatTime(ag.hora) || ag.hora || '--:--';
-  const periodo = Number(hora.split(':')[0]) < 12 ? 'AM' : 'PM';
-  const nome = ag.paciente || ag.nome || 'Paciente';
-  const tipo = ag.tipo || 'Online (Google Meet)';
-  const status = ag.status || 'Confirmado';
-  const valor = ag.valor ? `R$ ${parseFloat(ag.valor).toFixed(2).replace('.',',')}` : '';
-  const obs = ag.observacao || '';
-  const id = ag.id || '';
-
-  let tagClass = 'tag-online';
-  if (tipo.toLowerCase().includes('presencial')) tagClass = 'tag-presencial';
-  if (tipo.toLowerCase().includes('retorno')) tagClass = 'tag-retorno';
-
-  let statusClass = 'status-confirmado';
-  if (status.toLowerCase().includes('aguard')) statusClass = 'status-aguardando';
-  if (status.toLowerCase().includes('realiz')) statusClass = 'status-realizado';
-  if (status.toLowerCase().includes('cancel')) statusClass = 'status-cancelado';
-
-  const cardClass = `consult-card status-${status.toLowerCase().replace(/\s+/g,'')}`;
-  const phone = String(ag.whatsapp || '').replace(/\D/g, '');
-  const waMsgConfirm = encodeURIComponent(`Olá ${nome}! 🌿 Confirmando sua consulta com a Dra. Silvia Lemos amanhã às ${hora}. Qualquer dúvida, estamos à disposição!`);
-  const waMsgLembrete = encodeURIComponent(`Olá ${nome}! 🌿 Lembrando da sua consulta com a Dra. Silvia Lemos hoje às ${hora}. Te esperamos! 😊`);
-
-  return `
-  <div class="${cardClass}" id="card-${id}">
-    <div class="consult-time">
-      ${hora}
-      <div class="consult-time-period">${periodo}</div>
-    </div>
-    <div class="consult-info">
-      <div class="consult-name">${nome}</div>
-      <div class="consult-type">${tipo}${obs ? ` · ${obs}` : ''}</div>
-      <div class="consult-meta">
-        <span class="tag ${tagClass}">${tipo.split('(')[0].trim()}</span>
-        ${valor ? `<span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">${valor}</span>` : ''}
-      </div>
-    </div>
-    <div class="consult-actions">
-      <select class="status-badge ${statusClass}" onchange="alterarStatus('${id}', this)" title="Alterar status">
-        <option value="Confirmado" ${status==='Confirmado'?'selected':''}>✅ Confirmado</option>
-        <option value="Aguardando" ${status==='Aguardando'?'selected':''}>⏳ Aguardando</option>
-        <option value="Realizado"  ${status==='Realizado' ?'selected':''}>🎉 Realizado</option>
-        <option value="Cancelado"  ${status==='Cancelado' ?'selected':''}>❌ Cancelado</option>
-      </select>
-      ${phone ? `<button class="whats-btn" onclick="window.open('https://wa.me/${phone}?text=${waMsgLembrete}','_blank')">💬 WhatsApp</button>` : ''}
-    </div>
-  </div>`;
-}
-
-// ─── Alterar Status ────────────────────────────────────────
-async function alterarStatus(id, selectEl) {
-  const novoStatus = selectEl.value;
-  const ag = allAgendamentos.find(a => a.id === id);
-  if (ag) ag.status = novoStatus;
-
-  // Reaplic a class no card
-  const card = document.getElementById(`card-${id}`);
-  if (card) {
-    card.className = card.className.replace(/status-\w+/, `status-${novoStatus.toLowerCase()}`);
-  }
-
-  // Sincronizar com o backend
-  try {
-    await apiCall('updateAgendamento', { id, status: novoStatus });
-  } catch(e) {}
-}
-
-// ─── Modal ─────────────────────────────────────────────────
-function openNovoAgendamento() {
-  // Preenche data selecionada no calendário
-  const m = String(selectedDate.getMonth() + 1).padStart(2,'0');
-  const d = String(selectedDate.getDate()).padStart(2,'0');
-  const y = selectedDate.getFullYear();
-  const agData = document.getElementById('agData');
-  if (agData) agData.value = `${y}-${m}-${d}`;
-
-  document.getElementById('modalNovoAg').classList.add('active');
-}
-
-function closeNovoAgendamento() {
-  document.getElementById('modalNovoAg').classList.remove('active');
-}
-
-async function salvarAgendamento(e) {
-  e.preventDefault();
-  const btn = document.getElementById('btnSalvar');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner-ring" style="width:16px;height:16px;"></div> Salvando...';
-
-  const pacienteEl = document.getElementById('agPaciente');
-  const nomePaciente = pacienteEl.options[pacienteEl.selectedIndex]?.text || pacienteEl.value;
-
-  const payload = {
-    paciente: nomePaciente,
-    data: document.getElementById('agData').value,
-    hora: document.getElementById('agHora').value,
-    tipo: document.getElementById('agTipo').value,
-    valor: document.getElementById('agValor').value,
-    observacao: document.getElementById('agObs').value,
-    status: 'Confirmado',
-  };
-
-  try {
-    const res = await apiCall('saveAgendamento', payload);
-    if (res && res.success) {
-      alert('✅ Consulta agendada com sucesso!');
-      closeNovoAgendamento();
-      await carregarAgendamentos();
-    } else {
-      // Adicionar localmente se o backend não suportar ainda
-      const ag = { ...payload, id: 'LOCAL-' + Date.now() };
-      allAgendamentos.push(ag);
-      renderCalendar();
-      renderDayList();
-      closeNovoAgendamento();
-      alert('📋 Agendamento registrado localmente.\n(Backend com suporte em breve)');
-    }
-  } catch(err) {
-    alert('Erro ao salvar: ' + err.message);
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '💾 Confirmar Agendamento';
-}
-
-// ─── Carregar dados ────────────────────────────────────────
-async function carregarPacientesSelect() {
-  try {
-    const res = await apiCall('getPacientes');
-    const sel = document.getElementById('agPaciente');
-    if (res?.success && res.data && sel) {
-      const pacientes = res.data.filter(p => !p.tipo || p.tipo === 'PACIENTE');
-      sel.innerHTML = '<option value="">Selecione o paciente...</option>' +
-        pacientes.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
-    }
-  } catch(e) {}
+// ── Carga inicial ──────────────────────────────────────────────────
+async function carregarPacientesBD() {
+  const res = await apiCall('getPacientes');
+  if (res?.success && res.data) pacientesBD = res.data;
 }
 
 async function carregarAgendamentos() {
-  try {
-    const res = await apiCall('getAgendamentos');
-    if (res?.success && res.data) {
-      allAgendamentos = res.data;
-    } else {
-      // Dados de demonstração enquanto o backend não retornar
-      const hoje = new Date();
-      const amanha = new Date(hoje); amanha.setDate(hoje.getDate() + 1);
-      const depoisAmanha = new Date(hoje); depoisAmanha.setDate(hoje.getDate() + 2);
-
-      const fmt = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
-
-      allAgendamentos = [
-        { id:'AG-01', paciente:'Juliana Mendes', data: fmt(hoje), hora:'09:00', tipo:'Online (Google Meet)', status:'Confirmado', valor:'250', whatsapp:'5521999998888' },
-        { id:'AG-02', paciente:'Carlos Eduardo Torres', data: fmt(hoje), hora:'10:30', tipo:'Presencial', status:'Aguardando', valor:'280', whatsapp:'5521988887777' },
-        { id:'AG-03', paciente:'Ana Paula Ribeiro', data: fmt(hoje), hora:'14:00', tipo:'Retorno de Avaliação', status:'Confirmado', valor:'200', whatsapp:'5521977776666' },
-        { id:'AG-04', paciente:'Fernanda Costa', data: fmt(amanha), hora:'09:30', tipo:'Online (Google Meet)', status:'Confirmado', valor:'250', whatsapp:'5521966665555' },
-        { id:'AG-05', paciente:'Marcos Vinícius', data: fmt(amanha), hora:'11:00', tipo:'Avaliação Inicial', status:'Aguardando', valor:'300', whatsapp:'5521955554444' },
-        { id:'AG-06', paciente:'Beatriz Lima', data: fmt(depoisAmanha), hora:'08:00', tipo:'Presencial', status:'Confirmado', valor:'280', whatsapp:'5521944443333' },
-      ];
-    }
-  } catch(e) {
-    allAgendamentos = [];
+  const res = await apiCall('getAgendamentos');
+  if (res?.success && res.data?.length) {
+    allAgendamentos = res.data;
+  } else {
+    // Dados demo
+    const hoje = new Date(), am = new Date(hoje); am.setDate(hoje.getDate()+1);
+    const fmt = dt=>`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    allAgendamentos = [
+      {id:'AG-01',paciente_id:'PAC-01',paciente_nome:'Juliana Mendes',paciente_whatsapp:'5521999998888',data:fmt(hoje),hora:'09:00',tipo:'Online (Google Meet)',status:'Confirmado',valor:'250'},
+      {id:'AG-02',paciente_id:'PAC-02',paciente_nome:'Carlos Eduardo Torres',paciente_whatsapp:'5521988887777',data:fmt(hoje),hora:'10:30',tipo:'Presencial',status:'Aguardando',valor:'280'},
+      {id:'AG-03',paciente_id:'PAC-03',paciente_nome:'Mariana Castro Silva',paciente_whatsapp:'5521977776666',data:fmt(hoje),hora:'14:00',tipo:'Retorno de Avaliação',status:'Confirmado',valor:'200'},
+      {id:'AG-04',paciente_id:'PAC-01',paciente_nome:'Juliana Mendes',paciente_whatsapp:'5521999998888',data:fmt(am),hora:'09:30',tipo:'Online (Google Meet)',status:'Confirmado',valor:'250'},
+    ];
   }
-
   renderCalendar();
   renderDayList();
 }
 
-// ─── Init ──────────────────────────────────────────────────
-(async function init() {
-  // Tema salvo
-  const savedTheme = localStorage.getItem('kos_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-
-  await Promise.all([carregarAgendamentos(), carregarPacientesSelect()]);
+(async()=>{
+  const savedTheme=localStorage.getItem('kos_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',savedTheme);
+  await Promise.all([carregarAgendamentos(), carregarPacientesBD()]);
 })();
 </script>
-
 </body>
 </html>

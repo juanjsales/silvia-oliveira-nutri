@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prontuário · Dra. Silvia Lemos</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root,[data-theme="dark"]{
+  --bg-deep:#0e1a12;--bg-card:#182a1f;--bg-header:#203528;
+  --text-primary:#eef4e5;--text-title:#ffffff;--text-muted:#a0b399;--text-light:#d1e0cc;
+  --border-forest:rgba(140,164,129,0.25);--sage-light:#8ca481;--sage-dim:rgba(140,164,129,0.15);
+  --forest-card:#152219;--forest-dark:#0a120c;
+  --tr:all 0.25s cubic-bezier(0.16,1,0.3,1);--radius:16px;
+}
+[data-theme="light"]{
+  --bg-deep:#f3f6f1;--bg-card:#ffffff;--bg-header:#e6ede0;
+  --text-primary:#1c2e22;--text-title:#142419;--text-muted:#57695b;--text-light:#3a5040;
+  --border-forest:#cbe0c9;--sage-light:#3d5a35;--sage-dim:rgba(61,90,53,0.10);
+  --forest-card:#f0f5ee;--forest-dark:#1a2e1e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+*{scrollbar-width:thin;scrollbar-color:var(--border-forest) var(--bg-deep)}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-track{background:var(--bg-deep);border-radius:4px}
+*::-webkit-scrollbar-thumb{background:var(--border-forest);border-radius:4px}
+*::-webkit-scrollbar-thumb:hover{background:var(--sage-light)}
+body{background:var(--bg-deep);color:var(--text-primary);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+body.in-iframe .top-header{display:none!important}
+body.in-iframe .main-container{padding-top:16px!important}
+
+/* HEADER */
+.top-header{background:var(--bg-header);border-bottom:1px solid var(--border-forest);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+.brand-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--text-title)}
+
+/* LAYOUT */
+.main-container{max-width:1300px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+
+/* PACIENTE HEADER CARD */
+.pac-header{background:var(--forest-card);border:1px solid var(--border-forest);border-radius:var(--radius);padding:22px 28px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.pac-avatar{width:56px;height:56px;border-radius:50%;background:var(--sage-dim);border:2px solid var(--sage-light);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+.pac-info{flex:1}
+.pac-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--text-title)}
+.pac-details{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.pac-detail{font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:4px}
+.pac-tags{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.ag-badge{background:var(--sage-dim);border:1px solid var(--sage-light);color:var(--sage-light);padding:6px 14px;border-radius:10px;font-size:.8rem;font-weight:700;text-align:center;white-space:nowrap}
+.ag-badge small{display:block;font-size:.7rem;color:var(--text-muted);font-weight:600;margin-top:2px}
+
+/* STATUS ATENDIMENTO */
+.status-bar{background:var(--bg-card);border:1px solid var(--border-forest);border-radius:12px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.status-bar-label{font-size:.82rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:800;border:1.5px solid}
+.status-andamento{background:rgba(251,191,36,.12);color:#fbbf24;border-color:rgba(251,191,36,.4)}
+.status-realizado{background:rgba(52,211,153,.12);color:#34d399;border-color:rgba(52,211,153,.4)}
+
+/* TABS */
+.tabs-nav{display:flex;gap:4px;background:var(--bg-card);border:1px solid var(--border-forest);border-radius:var(--radius);padding:6px;flex-wrap:wrap}
+.tab-btn{padding:10px 16px;border-radius:10px;border:none;background:transparent;color:var(--text-muted);font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;transition:var(--tr);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab-btn:hover{background:var(--sage-dim);color:var(--sage-light)}
+.tab-btn.active{background:var(--sage-light);color:var(--forest-dark)}
+.tab-content{display:none;flex-direction:column;gap:20px}
+.tab-content.active{display:flex}
+
+/* CARD */
+.card{background:var(--forest-card);border:1px solid var(--border-forest);border-radius:var(--radius);padding:24px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.card-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--text-title)}
+.card-subtitle{font-size:.78rem;color:var(--text-muted);margin-top:2px}
+.section-divider{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--sage-light);padding:6px 0;border-bottom:1px solid var(--border-forest);margin-bottom:12px}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--sage-light);letter-spacing:.05em}
+.form-group label.required::after{content:' *';color:#f87171}
+.form-control{background:var(--bg-deep);border:1.5px solid var(--border-forest);padding:10px 14px;border-radius:12px;color:var(--text-primary);font-family:inherit;font-size:.9rem;outline:none;transition:var(--tr);width:100%}
+.form-control:focus{border-color:var(--sage-light)}
+.form-control option{background:var(--bg-card)}
+textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
+.col-span-2{grid-column:1/-1}
+
+/* BOTÕES */
+.btn{background:var(--sage-light);color:var(--forest-dark);border:none;padding:10px 18px;border-radius:12px;font-weight:800;font-size:.85rem;cursor:pointer;transition:var(--tr);text-decoration:none;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-family:inherit}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:transparent;border:1.5px solid var(--border-forest);color:var(--text-primary)}
+.btn-secondary:hover{border-color:var(--sage-light);color:var(--sage-light)}
+.btn-danger{background:rgba(248,113,113,.15);border:1.5px solid rgba(248,113,113,.3);color:#f87171}
+.btn-danger:hover{background:rgba(248,113,113,.25)}
+.btn-success{background:rgba(52,211,153,.15);border:1.5px solid rgba(52,211,153,.4);color:#34d399;font-weight:900}
+.btn-success:hover{background:rgba(52,211,153,.25)}
+
+/* SPINNER */
+.spinner-ring{width:20px;height:20px;border:3px solid rgba(140,164,129,.25);border-top-color:var(--sage-light);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--bg-card);border:1.5px solid var(--sage-light);border-radius:14px;padding:14px 20px;font-size:.88rem;font-weight:700;color:var(--sage-light);box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);display:flex;align-items:center;gap:10px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{border-color:#f87171;color:#f87171}
+
+/* SUPLEMENTOS */
+.sup-list{display:flex;flex-direction:column;gap:10px}
+.sup-card{background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+.sup-name{font-weight:800;color:var(--text-title);font-size:.9rem}
+.sup-detail{font-size:.78rem;color:var(--text-muted);margin-top:2px}
+.btn-remove{background:transparent;border:1px solid rgba(248,113,113,.3);color:#f87171;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;transition:var(--tr);flex-shrink:0;font-family:inherit}
+.btn-remove:hover{background:rgba(248,113,113,.15)}
+
+/* FINALIZAR */
+.finish-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.finish-item{background:var(--bg-card);border:1px solid var(--border-forest);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px}
+.finish-icon{font-size:1.5rem}
+.finish-label{font-size:.78rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.finish-val{font-weight:800;color:var(--text-title);margin-top:2px;font-size:.9rem}
+.finish-done{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.05)}
+.finish-pending{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.05)}
+
+/* ESTADO VAZIO */
+.empty-inline{text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem}
+.empty-inline-icon{font-size:2rem;opacity:.5;margin-bottom:8px}
+
+/* EVOLUÇÃO CHART */
+.evo-chart-wrap{height:200px;position:relative;margin-top:16px}
+.evo-hist-list{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto}
+.evo-hist-item{background:var(--bg-card);border:1px solid var(--border-forest);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:.85rem}
+.evo-hist-date{color:var(--text-muted);font-size:.78rem}
+.evo-hist-vals{display:flex;gap:14px;flex-wrap:wrap}
+.evo-val-badge{font-weight:800;color:var(--sage-light)}
+
+@media(max-width:768px){
+  .form-grid,.form-grid-3,.finish-grid{grid-template-columns:1fr}
+  .pac-header{flex-direction:column;align-items:flex-start}
+  .tabs-nav{overflow-x:auto;flex-wrap:nowrap}
+  .tab-btn{flex-shrink:0}
+}
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <div class="brand-title">🏥 Prontuário do Atendimento</div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
+    <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px" disabled>✅ Finalizar</button>
+  </div>
+</header>
+
+<div class="main-container">
+
+  <!-- CARD DO PACIENTE -->
+  <div class="pac-header" id="pacHeader">
+    <div class="pac-avatar" id="pacAvatar">🌿</div>
+    <div class="pac-info">
+      <div class="pac-name" id="pacName">Carregando...</div>
+      <div class="pac-details" id="pacDetails"></div>
+    </div>
+    <div class="pac-tags" id="pacTags">
+      <div class="spinner-ring" style="width:18px;height:18px"></div>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div>
+      <div class="status-bar-label">Status do Atendimento</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="status-pill status-andamento" id="statusPill">⏳ Em Andamento</span>
+      <span id="agInfo" style="font-size:.82rem;color:var(--text-muted)"></span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-nav" id="tabsNav">
+    <button class="tab-btn active" onclick="openTab('anamnese',this)">📝 Anamnese</button>
+    <button class="tab-btn" onclick="openTab('bioimpedancia',this)">⚖️ Bioimpedância</button>
+    <button class="tab-btn" onclick="openTab('plano',this)">🥗 Plano Alimentar</button>
+    <button class="tab-btn" onclick="openTab('suplementos',this)">💊 Suplementos</button>
+    <button class="tab-btn" onclick="openTab('notas',this)">📓 Anotações</button>
+    <button class="tab-btn" onclick="openTab('finalizar',this)">✅ Finalizar</button>
+  </div>
+
+  <!-- ── TAB ANAMNESE ── -->
+  <div class="tab-content active" id="tab-anamnese">
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">📝 Ficha de Anamnese Clínica</div><div class="card-subtitle">Preencha ou atualize os dados clínicos do paciente</div></div>
+        <button class="btn btn-secondary" id="btnSalvarAnam" onclick="salvarAnamnese()">💾 Salvar Anamnese</button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="section-divider">Histórico de Saúde</div>
+        <div class="form-grid">
+          <div class="form-group col-span-2">
+            <label class="required">Histórico de Saúde (doenças, condições)</label>
+            <textarea id="anHistorico" class="form-control" placeholder="Ex: Hipertensão controlada, histórico de anemia..."></textarea>
+          </div>
+          <div class="form-group col-span-2">
+            <label>Cirurgias / Internações Anteriores</label>
+            <textarea id="anCirurgias" class="form-control" style="min-height:60px" placeholder="Ex: Colecistectomia (2018), nenhuma internação..."></textarea>
+          </div>
+          <div class="form-group col-span-2">
+            <label>Histórico Familiar (doenças em parentes diretos)</label>
+            <textarea id="anHistFam" class="form-control" style="min-height:60px" placeholder="Ex: Diabetes tipo 2 na mãe, hipertensão no pai..."></textarea>
+          </div>
+        </div>
+
+        <div class="section-divider">Medicamentos & Suplementos Atuais</div>
+        <div class="form-grid">
+          <div class="form-group col-span-2">
+            <label>Medicamentos em Uso (nome, dose, frequência)</label>
+            <textarea id="anMeds" class="form-control" placeholder="Ex: Metformina 500mg 2x/dia, Atenolol 25mg 1x/dia..."></textarea>
+          </div>
+          <div class="form-group col-span-2">
+            <label>Suplementos Atuais</label>
+            <textarea id="anSups" class="form-control" style="min-height:60px" placeholder="Ex: Whey protein, Creatina 5g/dia, Vitamina D 5000UI..."></textarea>
+          </div>
+        </div>
+
+        <div class="section-divider">Estilo de Vida</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Qualidade do Sono</label>
+            <select id="anSono" class="form-control">
+              <option>7-8h por noite (ideal)</option><option>Menos de 6h (insuficiente)</option>
+              <option>6-7h por noite</option><option>Mais de 9h</option><option>Irregular</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Funcionamento Intestinal</label>
+            <select id="anIntestino" class="form-control">
+              <option>Regular (todos os dias)</option><option>Constipado (menos de 3x/semana)</option>
+              <option>Diarreia frequente</option><option>Alternado (constipação e diarreia)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nível de Atividade Física</label>
+            <select id="anAtividade" class="form-control">
+              <option>Sedentário (sem exercícios)</option><option>Levemente ativo (1-2x/semana)</option>
+              <option>Moderadamente ativo (3-4x/semana)</option><option>Muito ativo (5-6x/semana)</option>
+              <option>Atleta (treinos intensos diários)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ingestão de Água (litros/dia)</label>
+            <select id="anAgua" class="form-control">
+              <option value="menos-1">Menos de 1 L/dia</option><option value="1-1.5">1 a 1,5 L/dia</option>
+              <option value="1.5-2" selected>1,5 a 2 L/dia</option><option value="2-2.5">2 a 2,5 L/dia</option>
+              <option value="mais-2.5">Mais de 2,5 L/dia</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-divider">Preferências & Restrições Alimentares</div>
+        <div class="form-grid">
+          <div class="form-group col-span-2">
+            <label class="required">Alergias &amp; Intolerâncias Alimentares</label>
+            <textarea id="anAlergias" class="form-control" style="min-height:60px" placeholder="Ex: Intolerância à lactose, alergia a amendoim, glúten..."></textarea>
+          </div>
+          <div class="form-group col-span-2">
+            <label>Preferências &amp; Aversões Alimentares</label>
+            <textarea id="anPref" class="form-control" style="min-height:60px" placeholder="Ex: Ama comida japonesa, não gosta de brócolis..."></textarea>
+          </div>
+          <div class="form-group col-span-2">
+            <label>Restrições Dietéticas (vegano, sem glúten, etc.)</label>
+            <textarea id="anRestricoes" class="form-control" style="min-height:60px" placeholder="Ex: Vegetariano, sem glúten por preferência..."></textarea>
+          </div>
+          <div class="form-group col-span-2">
+            <label>Objetivo Detalhado (nas palavras do paciente)</label>
+            <textarea id="anObjetivo" class="form-control" placeholder="Ex: Perder 8kg, ganhar massa muscular para corrida, regular diabetes..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB BIOIMPEDÂNCIA ── -->
+  <div class="tab-content" id="tab-bioimpedancia">
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">⚖️ Avaliação de Bioimpedância</div><div class="card-subtitle">Registre as medidas de hoje</div></div>
+        <button class="btn btn-secondary" onclick="salvarBioimpedancia()">💾 Salvar Medidas</button>
+      </div>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="required">Peso (kg)</label>
+          <input type="number" id="bioPeso" class="form-control" step="0.1" placeholder="Ex: 68.4" oninput="calcIMC()">
+        </div>
+        <div class="form-group">
+          <label class="required">Altura (cm)</label>
+          <input type="number" id="bioAltura" class="form-control" step="0.5" placeholder="Ex: 165" oninput="calcIMC()">
+        </div>
+        <div class="form-group">
+          <label>IMC (calculado)</label>
+          <input type="text" id="bioIMC" class="form-control" readonly placeholder="—" style="background:var(--sage-dim);color:var(--sage-light);font-weight:800">
+        </div>
+        <div class="form-group">
+          <label>% Gordura</label>
+          <input type="number" id="bioGordura" class="form-control" step="0.1" placeholder="Ex: 24.5">
+        </div>
+        <div class="form-group">
+          <label>Massa Magra (kg)</label>
+          <input type="number" id="bioMagra" class="form-control" step="0.1" placeholder="Ex: 44.2">
+        </div>
+        <div class="form-group">
+          <label>Cintura (cm)</label>
+          <input type="number" id="bioCintura" class="form-control" step="0.5" placeholder="Ex: 78">
+        </div>
+        <div class="form-group">
+          <label>Quadril (cm)</label>
+          <input type="number" id="bioQuadril" class="form-control" step="0.5" placeholder="Ex: 96">
+        </div>
+        <div class="form-group">
+          <label>Data da Avaliação</label>
+          <input type="date" id="bioData" class="form-control">
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO / GRÁFICO -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 Evolução Corporal</div>
+      </div>
+      <div id="evoGraphWrap">
+        <div class="empty-inline"><div class="empty-state-icon spinner-ring" style="width:24px;height:24px;margin:0 auto 12px"></div>Carregando histórico...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB PLANO ALIMENTAR ── -->
+  <div class="tab-content" id="tab-plano">
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">🥗 Plano Alimentar da Consulta</div><div class="card-subtitle">Adicione, edite e salve as refeições</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="addRefeicao()" style="font-size:.8rem;padding:8px 12px">+ Refeição</button>
+          <button class="btn" onclick="salvarPlano()" style="font-size:.8rem;padding:8px 14px">💾 Salvar Plano</button>
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-forest)">
+        <span style="font-size:.78rem;font-weight:800;color:var(--text-muted);align-self:center">Presets:</span>
+        <button class="btn btn-secondary" onclick="carregarPreset('emagrecimento')" style="font-size:.78rem;padding:6px 12px">🔥 Emagrecimento</button>
+        <button class="btn btn-secondary" onclick="carregarPreset('hipertrofia')" style="font-size:.78rem;padding:6px 12px">⚡ Hipertrofia</button>
+        <button class="btn btn-secondary" onclick="carregarPreset('manutencao')" style="font-size:.78rem;padding:6px 12px">⚖️ Manutenção</button>
+        <button class="btn btn-secondary" onclick="carregarPreset('saude')" style="font-size:.78rem;padding:6px 12px">🌱 Saúde Intestinal</button>
+      </div>
+
+      <!-- Macros resumo -->
+      <div id="macroSummary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">
+        <div style="background:var(--sage-dim);border:1px solid var(--border-forest);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:900;color:var(--sage-light)" id="mc_kcal">—</div>
+          <div style="font-size:.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">kcal</div>
+        </div>
+        <div style="background:var(--sage-dim);border:1px solid var(--border-forest);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:900;color:#63b3ed" id="mc_prot">—</div>
+          <div style="font-size:.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Proteínas</div>
+        </div>
+        <div style="background:var(--sage-dim);border:1px solid var(--border-forest);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:900;color:#fbbf24" id="mc_carb">—</div>
+          <div style="font-size:.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Carboidratos</div>
+        </div>
+        <div style="background:var(--sage-dim);border:1px solid var(--border-forest);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:900;color:#f87171" id="mc_gord">—</div>
+          <div style="font-size:.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Gorduras</div>
+        </div>
+        <div style="background:var(--sage-dim);border:1px solid var(--border-forest);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:900;color:#a78bfa" id="mc_agua">—</div>
+          <div style="font-size:.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Água</div>
+        </div>
+      </div>
+
+      <!-- Lista de refeições -->
+      <div id="refeicoesWrap" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB SUPLEMENTOS ── -->
+  <div class="tab-content" id="tab-suplementos">
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">💊 Prescrição de Suplementos</div><div class="card-subtitle">Suplementos e fitoterápicos recomendados nesta consulta</div></div>
+      </div>
+
+      <!-- Formulário de adição -->
+      <div style="background:var(--bg-card);border:1px solid var(--border-forest);border-radius:12px;padding:18px;margin-bottom:20px">
+        <div class="section-divider" style="margin-bottom:14px">Adicionar Prescrição</div>
+        <div class="form-grid" style="margin-bottom:12px">
+          <div class="form-group">
+            <label class="required">Suplemento / Fitoterápico</label>
+            <input type="text" id="supNome" class="form-control" placeholder="Ex: Vitamina D3, Ashwagandha, Whey Protein...">
+          </div>
+          <div class="form-group">
+            <label class="required">Dosagem</label>
+            <input type="text" id="supDose" class="form-control" placeholder="Ex: 5000 UI, 500mg, 30g">
+          </div>
+          <div class="form-group">
+            <label class="required">Posologia</label>
+            <input type="text" id="supPoso" class="form-control" placeholder="Ex: 1x ao dia com o almoço">
+          </div>
+          <div class="form-group">
+            <label>Forma Farmacêutica</label>
+            <select id="supForma" class="form-control">
+              <option>Cápsula</option><option>Comprimido</option><option>Pó</option>
+              <option>Líquido</option><option>Goma</option><option>Spray sublingual</option><option>Injetável</option>
+            </select>
+          </div>
+          <div class="form-group col-span-2">
+            <label>Observação</label>
+            <input type="text" id="supObs" class="form-control" placeholder="Ex: Tomar longe de café, preferir após refeição...">
+          </div>
+        </div>
+        <button class="btn" onclick="addSuplemento()" style="font-size:.82rem;padding:8px 16px">+ Adicionar Prescrição</button>
+      </div>
+
+      <!-- Lista de prescrições -->
+      <div id="supList" class="sup-list">
+        <div class="empty-inline"><div class="empty-inline-icon">💊</div>Nenhuma prescrição adicionada</div>
+      </div>
+
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-forest)">
+        <button class="btn" onclick="salvarSuplementos()" id="btnSalvarSups" style="font-size:.85rem" disabled>💾 Salvar Prescrições</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB ANOTAÇÕES ── -->
+  <div class="tab-content" id="tab-notas">
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">📓 Anotações da Consulta</div><div class="card-subtitle">Registro livre para evoluções, observações e condutas</div></div>
+        <button class="btn btn-secondary" onclick="salvarNotas()">💾 Salvar Notas</button>
+      </div>
+      <div class="form-group">
+        <label>Evolução &amp; Conduta (registro clínico)</label>
+        <textarea id="notasTexto" class="form-control" style="min-height:220px;line-height:1.8" placeholder="Ex:
+Paciente relata melhora da disposição nas últimas semanas.
+Peso atual: 67,4 kg (redução de 1,6 kg em relação ao último retorno).
+Cumprindo o plano alimentar com dificuldade no jantar.
+Conduta: ajustar jantar para opções mais práticas, manter deficit calórico.
+Próxima consulta agendada para 30 dias."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB FINALIZAR ── -->
+  <div class="tab-content" id="tab-finalizar">
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">✅ Finalizar Atendimento</div><div class="card-subtitle">Revise o que foi salvo e encerre a consulta</div></div>
+      </div>
+
+      <div class="finish-grid" id="finishGrid">
+        <div class="finish-item" id="finAnam"><div class="finish-icon">📝</div><div><div class="finish-label">Anamnese</div><div class="finish-val" id="finAnamVal">Pendente</div></div></div>
+        <div class="finish-item" id="finBio"><div class="finish-icon">⚖️</div><div><div class="finish-label">Bioimpedância</div><div class="finish-val" id="finBioVal">Pendente</div></div></div>
+        <div class="finish-item" id="finPlan"><div class="finish-icon">🥗</div><div><div class="finish-label">Plano Alimentar</div><div class="finish-val" id="finPlanVal">Pendente</div></div></div>
+        <div class="finish-item" id="finSup"><div class="finish-icon">💊</div><div><div class="finish-label">Suplementos</div><div class="finish-val" id="finSupVal">Não prescrito</div></div></div>
+        <div class="finish-item" id="finNot"><div class="finish-icon">📓</div><div><div class="finish-label">Anotações</div><div class="finish-val" id="finNotVal">Pendente</div></div></div>
+      </div>
+
+      <div style="margin-top:24px;padding:20px;background:var(--bg-card);border:1px solid var(--border-forest);border-radius:14px">
+        <div class="form-group" style="margin-bottom:14px">
+          <label>Próxima Consulta (opcional)</label>
+          <input type="date" id="proxConsulta" class="form-control" style="max-width:260px">
+        </div>
+        <div class="form-group">
+          <label>Tipo da Próxima Consulta</label>
+          <select id="proxTipo" class="form-control" style="max-width:320px">
+            <option>Retorno de Avaliação</option><option>Retorno Online</option>
+            <option>Avaliação de Bioimpedância</option><option>Consulta Presencial</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-success" id="btnFinalizar" onclick="finalizarAtendimento()" style="font-size:.9rem;padding:12px 24px">
+          🏁 Finalizar &amp; Marcar como Realizado
+        </button>
+        <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.88rem">Voltar para Agenda</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-container -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec';
+
+// ── Estado ─────────────────────────────────────────────────────────
+const params   = new URLSearchParams(window.location.search);
+const AG_ID    = params.get('ag_id') || '';
+const PAC_ID   = params.get('pac_id') || '';
+
+let paciente   = null;
+let agendamento= null;
+let evolucao   = [];
+let refeicoes  = [];
+let suplementos= [];
+let saved      = { anamnese:false, bio:false, plano:false, sups:false, notas:false };
+let evoChart   = null;
+
+// ── Setup ──────────────────────────────────────────────────────────
+if (window.self !== window.top) document.body.classList.add('in-iframe');
+
+window.addEventListener('message', e => {
+  if (e.data?.type === 'SET_THEME') document.documentElement.setAttribute('data-theme', e.data.theme);
+});
+
+// ── API ────────────────────────────────────────────────────────────
+async function apiCall(action, payload={}, method='GET') {
+  try {
+    if (method==='POST') {
+      const res = await fetch(API_URL,{method:'POST',body:JSON.stringify({action,...payload}),headers:{'Content-Type':'application/json'}});
+      return await res.json();
+    }
+    const res = await fetch(`${API_URL}?${new URLSearchParams({action,...payload})}`);
+    return await res.json();
+  } catch(e){ return null; }
+}
+
+// ── Toast ──────────────────────────────────────────────────────────
+function toast(msg, isError=false) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(isError?' error':'');
+  setTimeout(()=>t.classList.add('show'),10);
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────
+function openTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  updateFinishStatus();
+}
+function scrollToFinish() {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{ if(i===5) b.click(); });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Formatação ─────────────────────────────────────────────────────
+function fmt(v){ if(!v)return''; const s=String(v).trim(); if(s.includes('T')){const[y,m,d]=s.split('T')[0].split('-');return`${d}/${m}/${y}`} if(s.includes('-')){const[y,m,d]=s.split('-');return`${d}/${m}/${y}`} return s; }
+function fmtHora(v){ if(!v)return''; const s=String(v).trim(); if(s.includes('T')){const p=s.split('T')[1]?.split(':');if(p?.length>=2)return`${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`;} if(s.includes(':')){ const p=s.split(':');return`${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`; } return s; }
+
+// ── Carregar dados ─────────────────────────────────────────────────
+async function carregarDados() {
+  if (!PAC_ID) { showNoPaciente(); return; }
+
+  // Paralelo
+  const [resAg, resHist] = await Promise.all([
+    AG_ID ? apiCall('getAgendamento',{id:AG_ID}) : Promise.resolve(null),
+    apiCall('getHistoricoCompleto',{paciente_id:PAC_ID})
+  ]);
+
+  // Agendamento
+  if (resAg?.success && resAg.data) {
+    agendamento = resAg.data;
+    document.getElementById('agInfo').textContent =
+      `${fmt(agendamento.data)} às ${fmtHora(agendamento.hora)} · ${agendamento.tipo||'Consulta'}`;
+  }
+
+  // Paciente (buscar pelos dados do agendamento ou do histórico)
+  const resPac = await apiCall('getPacienteById',{id:PAC_ID});
+  if (resPac?.success && resPac.data) {
+    paciente = resPac.data;
+  } else if (agendamento) {
+    paciente = { id:PAC_ID, nome:agendamento.paciente_nome, whatsapp:agendamento.paciente_whatsapp, objetivo:'—' };
+  }
+  renderPacHeader();
+
+  // Histórico
+  if (resHist?.success && resHist.data) {
+    const hist = resHist.data;
+
+    // Anamnese
+    if (hist.anamnese) preencherAnamnese(hist.anamnese);
+
+    // Evolução
+    if (hist.evolucao?.length) {
+      evolucao = hist.evolucao;
+      renderEvolucao();
+    } else {
+      document.getElementById('evoGraphWrap').innerHTML=`<div class="empty-inline"><div class="empty-inline-icon">📊</div>Sem histórico de medidas ainda</div>`;
+    }
+
+    // Plano
+    if (hist.plano) {
+      refeicoes = hist.plano.refeicoes || [];
+      renderRefeicoes();
+      if (hist.plano.extras) preencherMacros(hist.plano.extras);
+    } else {
+      renderRefeicoes();
+    }
+
+    // Suplementos
+    if (hist.suplementos?.length) {
+      suplementos = hist.suplementos;
+      renderSupList();
+    }
+  } else {
+    renderRefeicoes();
+    document.getElementById('evoGraphWrap').innerHTML=`<div class="empty-inline"><div class="empty-inline-icon">📊</div>Sem histórico ainda</div>`;
+  }
+
+  // Data padrão da bioimpedância
+  document.getElementById('bioData').value = new Date().toISOString().split('T')[0];
+  document.getElementById('btnFinalizarTop').disabled = false;
+}
+
+function showNoPaciente() {
+  document.getElementById('pacName').textContent='Nenhum paciente selecionado';
+  document.getElementById('pacDetails').innerHTML='<span style="color:var(--text-muted)">Abra esta página a partir da agenda de consultas</span>';
+}
+
+function renderPacHeader() {
+  if (!paciente) return;
+  document.getElementById('pacName').textContent = paciente.nome || '—';
+  document.getElementById('pacAvatar').textContent = (paciente.nome||'P')[0].toUpperCase();
+  const details = [
+    paciente.cpf ? `🪪 ${maskCPF(paciente.cpf)}` : '',
+    paciente.whatsapp ? `📱 ${maskPhone(paciente.whatsapp)}` : '',
+    paciente.email ? `📧 ${paciente.email}` : '',
+    paciente.data_nascimento ? `🎂 ${fmt(paciente.data_nascimento)}` : ''
+  ].filter(Boolean).map(d=>`<span class="pac-detail">${d}</span>`).join('');
+  document.getElementById('pacDetails').innerHTML = details;
+
+  const tags = document.getElementById('pacTags');
+  tags.innerHTML = `
+    <div class="ag-badge">${agendamento?.tipo||'Consulta'}<small>${fmt(agendamento?.data)} · ${fmtHora(agendamento?.hora)}</small></div>
+    <div style="font-size:.8rem;font-weight:800;background:var(--sage-dim);border:1px solid var(--border-forest);color:var(--sage-light);padding:6px 14px;border-radius:10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${paciente.objetivo||'Reeducação Alimentar'}</div>`;
+}
+
+function maskCPF(v){ return String(v||'').replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2').slice(0,14); }
+function maskPhone(v){ const d=String(v||'').replace(/\D/g,''); return d.length<=10?d.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{4})(\d)/,'$1-$2').slice(0,14):d.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2').slice(0,15); }
+
+// ── Anamnese ────────────────────────────────────────────────────────
+function preencherAnamnese(an) {
+  const m = { anHistorico:'historico_saude', anCirurgias:'cirurgias', anHistFam:'historico_familiar',
+              anMeds:'medicamentos', anSups:'suplementos_atuais', anSono:'rotina_sono',
+              anIntestino:'intestino', anAtividade:'nivel_atividade', anAlergias:'alergias',
+              anPref:'preferencias', anRestricoes:'restricoes_alimentares', anObjetivo:'objetivo_detalhado' };
+  Object.keys(m).forEach(id => {
+    const el = document.getElementById(id);
+    if (el && an[m[id]]) el.value = an[m[id]];
+  });
+}
+
+async function salvarAnamnese() {
+  if (!PAC_ID) { toast('Sem paciente vinculado',true); return; }
+  const btn = document.getElementById('btnSalvarAnam');
+  btn.disabled=true; btn.innerHTML='<div class="spinner-ring" style="width:14px;height:14px;border-width:2px"></div> Salvando...';
+
+  const an = {
+    paciente_id: PAC_ID,
+    historico_saude:         document.getElementById('anHistorico').value,
+    cirurgias:               document.getElementById('anCirurgias').value,
+    historico_familiar:      document.getElementById('anHistFam').value,
+    medicamentos:            document.getElementById('anMeds').value,
+    suplementos_atuais:      document.getElementById('anSups').value,
+    rotina_sono:             document.getElementById('anSono').value,
+    intestino:               document.getElementById('anIntestino').value,
+    nivel_atividade:         document.getElementById('anAtividade').value,
+    alergias:                document.getElementById('anAlergias').value,
+    preferencias:            document.getElementById('anPref').value,
+    restricoes_alimentares:  document.getElementById('anRestricoes').value,
+    objetivo_detalhado:      document.getElementById('anObjetivo').value
+  };
+
+  const res = await apiCall('saveAnamnese',{anamnese:an},'POST');
+  btn.disabled=false; btn.innerHTML='💾 Salvar Anamnese';
+  if (res?.success) { toast('✅ Anamnese salva com sucesso!'); saved.anamnese=true; updateFinishStatus(); }
+  else { toast('Erro ao salvar anamnese',true); }
+}
+
+// ── Bioimpedância ───────────────────────────────────────────────────
+function calcIMC() {
+  const peso = parseFloat(document.getElementById('bioPeso').value)||0;
+  const alt  = parseFloat(document.getElementById('bioAltura').value)||0;
+  const imcEl = document.getElementById('bioIMC');
+  if (peso>0 && alt>0) {
+    const altM = alt/100;
+    const imc  = (peso/(altM*altM)).toFixed(1);
+    let cat = imc<18.5?'Abaixo do peso':imc<25?'Normal':imc<30?'Sobrepeso':'Obeso';
+    imcEl.value = `${imc} · ${cat}`;
+  } else { imcEl.value='—'; }
+}
+
+async function salvarBioimpedancia() {
+  if (!PAC_ID) { toast('Sem paciente',true); return; }
+  const ev = {
+    paciente_id:        PAC_ID,
+    peso:               document.getElementById('bioPeso').value,
+    altura:             document.getElementById('bioAltura').value,
+    percentual_gordura: document.getElementById('bioGordura').value,
+    massa_magra:        document.getElementById('bioMagra').value,
+    cintura:            document.getElementById('bioCintura').value,
+    quadril:            document.getElementById('bioQuadril').value,
+    data:               document.getElementById('bioData').value
+  };
+  if (!ev.peso) { toast('Informe ao menos o peso',true); return; }
+  const res = await apiCall('saveEvolucao',{evolucao:ev},'POST');
+  if (res?.success) {
+    toast('✅ Medidas salvas!'); saved.bio=true; updateFinishStatus();
+    evolucao.push({...ev, imc: document.getElementById('bioIMC').value.split(' ·')[0]});
+    renderEvolucao();
+  } else { toast('Erro ao salvar medidas',true); }
+}
+
+function renderEvolucao() {
+  const wrap = document.getElementById('evoGraphWrap');
+  if (!evolucao||evolucao.length===0) {
+    wrap.innerHTML=`<div class="empty-inline"><div class="empty-inline-icon">📊</div>Sem histórico de medidas</div>`;
+    return;
+  }
+  const sorted = [...evolucao].sort((a,b)=>String(a.data).localeCompare(String(b.data)));
+  const labels = sorted.map(e=>fmt(e.data));
+  const pesos  = sorted.map(e=>parseFloat(e.peso)||null);
+  const gorduras=sorted.map(e=>parseFloat(e.percentual_gordura)||null);
+
+  wrap.innerHTML=`<div class="evo-chart-wrap"><canvas id="chartEvo"></canvas></div>
+  <div style="margin-top:16px"><div class="section-divider">Histórico de Medidas</div><div class="evo-hist-list">${sorted.map(e=>`
+    <div class="evo-hist-item">
+      <span class="evo-hist-date">${fmt(e.data)}</span>
+      <div class="evo-hist-vals">
+        ${e.peso?`<span class="evo-val-badge">⚖️ ${e.peso}kg</span>`:''}
+        ${e.percentual_gordura?`<span class="evo-val-badge">🔥 ${e.percentual_gordura}%</span>`:''}
+        ${e.massa_magra?`<span class="evo-val-badge">💪 ${e.massa_magra}kg</span>`:''}
+        ${e.cintura?`<span class="evo-val-badge">📏 ${e.cintura}cm</span>`:''}
+      </div>
+    </div>`).join('')}</div></div>`;
+
+  if (evoChart) { evoChart.destroy(); evoChart=null; }
+  const ctx = document.getElementById('chartEvo')?.getContext('2d');
+  if (ctx) {
+    evoChart = new Chart(ctx,{
+      type:'line',
+      data:{labels, datasets:[
+        {label:'Peso (kg)',data:pesos,borderColor:'#8ca481',backgroundColor:'rgba(140,164,129,.12)',tension:.4,pointRadius:5,fill:true,yAxisID:'y'},
+        {label:'% Gordura',data:gorduras,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.08)',tension:.4,pointRadius:5,fill:false,yAxisID:'y2'}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#a0b399',font:{size:11}}}},
+        scales:{
+          y:{ticks:{color:'#a0b399',font:{size:11}},grid:{color:'rgba(255,255,255,.04)'}},
+          y2:{position:'right',ticks:{color:'#fbbf24',font:{size:11}},grid:{display:false}}
+        }}
+    });
+  }
+}
+
+// ── Plano Alimentar ─────────────────────────────────────────────────
+const PRESETS = {
+  emagrecimento:{
+    macros:{kcal:'1600 kcal',prot:'120g',carb:'140g',gord:'50g',agua:'2.0 L'},
+    refeicoes:[
+      {nome:'Café da Manhã (07:30)',kcal:'320 kcal',itens:'2 ovos mexidos + 1 fatia pão integral + café preto sem açúcar + 1/2 banana'},
+      {nome:'Almoço (12:00)',kcal:'550 kcal',itens:'50% folhas verdes + 25% frango grelhado (120g) + 25% arroz integral + feijão (2 colheres)'},
+      {nome:'Lanche Tarde (16:00)',kcal:'200 kcal',itens:'1 iogurte natural desnatado + 1 colher aveia + frutas vermelhas'},
+      {nome:'Jantar (19:30)',kcal:'380 kcal',itens:'Omelete 2 ovos + espinafre + tomate + salada verde à vontade'}
+    ]
+  },
+  hipertrofia:{
+    macros:{kcal:'2800 kcal',prot:'200g',carb:'320g',gord:'70g',agua:'3.0 L'},
+    refeicoes:[
+      {nome:'Café da Manhã (07:00)',kcal:'600 kcal',itens:'4 ovos mexidos + 3 fatias pão integral + 1 banana + café preto'},
+      {nome:'Pré-treino (10:00)',kcal:'400 kcal',itens:'Shake: 30g whey + 1 banana + 200ml leite desnatado + aveia 40g'},
+      {nome:'Almoço (13:00)',kcal:'700 kcal',itens:'Arroz integral (5 col.) + feijão + 180g carne magra grelhada + legumes refogados + salada'},
+      {nome:'Pós-treino (17:00)',kcal:'450 kcal',itens:'30g whey protein + 40g maltodextrina + 1 banana'},
+      {nome:'Jantar (20:00)',kcal:'650 kcal',itens:'200g frango ou peixe grelhado + batata doce 150g + salada verde à vontade'}
+    ]
+  },
+  manutencao:{
+    macros:{kcal:'2000 kcal',prot:'140g',carb:'230g',gord:'60g',agua:'2.3 L'},
+    refeicoes:[
+      {nome:'Café da Manhã (08:00)',kcal:'400 kcal',itens:'2 ovos + 2 fatias pão integral + 1 fruta + café'},
+      {nome:'Almoço (12:30)',kcal:'650 kcal',itens:'Prato equilibrado: proteína + carboidrato + vegetais'},
+      {nome:'Lanche (16:00)',kcal:'250 kcal',itens:'Iogurte grego + granola light + frutas'},
+      {nome:'Jantar (19:30)',kcal:'500 kcal',itens:'Proteína leve + salada + carboidrato moderado'}
+    ]
+  },
+  saude:{
+    macros:{kcal:'1800 kcal',prot:'120g',carb:'200g',gord:'55g',agua:'2.5 L'},
+    refeicoes:[
+      {nome:'Café da Manhã (08:00)',kcal:'350 kcal',itens:'Mingau de aveia + linhaça + frutas vermelhas + chá de gengibre'},
+      {nome:'Almoço (12:30)',kcal:'600 kcal',itens:'Arroz integral + feijão + proteína magra + legumes no vapor + prebióticos (chucrute ou iogurte)'},
+      {nome:'Lanche (16:00)',kcal:'220 kcal',itens:'Kefir + 1 fruta + castanhas (porção pequena)'},
+      {nome:'Jantar (19:30)',kcal:'450 kcal',itens:'Sopa de legumes + frango desfiado + mix de sementes'},
+      {nome:'Ceia (21:00)',kcal:'180 kcal',itens:'Iogurte natural probiótico + mel + canela'}
+    ]
+  }
+};
+
+function carregarPreset(tipo) {
+  const p = PRESETS[tipo];
+  if (!p) return;
+  refeicoes = p.refeicoes.map((r,i)=>({id:'R'+i,nome:r.nome,kcal:r.kcal,itens:r.itens}));
+  renderRefeicoes();
+  preencherMacros(p.macros);
+  toast('Preset carregado: '+tipo);
+}
+
+function preencherMacros(m) {
+  const map = {mc_kcal:'calorias_totais',mc_prot:'proteinas',mc_carb:'carboidratos',mc_gord:'gorduras',mc_agua:'agua_diaria'};
+  // macros vindos do backend usam nome diferente
+  if (m.kcal||m.calorias_totais) document.getElementById('mc_kcal').textContent = m.kcal||m.calorias_totais||'—';
+  if (m.prot||m.proteinas) document.getElementById('mc_prot').textContent = m.prot||m.proteinas||'—';
+  if (m.carb||m.carboidratos) document.getElementById('mc_carb').textContent = m.carb||m.carboidratos||'—';
+  if (m.gord||m.gorduras) document.getElementById('mc_gord').textContent = m.gord||m.gorduras||'—';
+  if (m.agua||m.agua_diaria) document.getElementById('mc_agua').textContent = m.agua||m.agua_diaria||'—';
+}
+
+function renderRefeicoes() {
+  const wrap = document.getElementById('refeicoesWrap');
+  if (refeicoes.length===0) {
+    wrap.innerHTML=`<div class="empty-inline"><div class="empty-inline-icon">🥗</div>Nenhuma refeição. Use um preset ou clique em "+ Refeição"</div>`;
+    return;
+  }
+  wrap.innerHTML = refeicoes.map((r,i)=>`
+    <div style="background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:12px;padding:16px 18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <input type="text" value="${r.nome||''}" class="form-control" style="font-weight:800;max-width:280px;font-size:.88rem" onchange="refeicoes[${i}].nome=this.value" placeholder="Nome da Refeição">
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" value="${r.kcal||''}" class="form-control" style="width:100px;font-size:.82rem;text-align:center" onchange="refeicoes[${i}].kcal=this.value" placeholder="kcal">
+          <button class="btn-remove" onclick="removerRefeicao(${i})">✕</button>
+        </div>
+      </div>
+      <textarea class="form-control" style="min-height:70px;font-size:.86rem" onchange="refeicoes[${i}].itens=this.value" placeholder="Alimentos e porções...">${r.itens||''}</textarea>
+    </div>`).join('');
+}
+
+function addRefeicao() {
+  refeicoes.push({id:'R'+Date.now(),nome:'Nova Refeição',kcal:'',itens:''});
+  renderRefeicoes();
+}
+function removerRefeicao(i) { refeicoes.splice(i,1); renderRefeicoes(); }
+
+async function salvarPlano() {
+  if (!PAC_ID) { toast('Sem paciente',true); return; }
+  const pl = {
+    paciente_id: PAC_ID,
+    refeicoes,
+    extras: {
+      calorias_totais: document.getElementById('mc_kcal').textContent,
+      proteinas:       document.getElementById('mc_prot').textContent,
+      carboidratos:    document.getElementById('mc_carb').textContent,
+      gorduras:        document.getElementById('mc_gord').textContent,
+      agua_diaria:     document.getElementById('mc_agua').textContent
+    }
+  };
+  const res = await apiCall('savePlano',{plano:pl},'POST');
+  if (res?.success) { toast('✅ Plano salvo!'); saved.plano=true; updateFinishStatus(); }
+  else { toast('Erro ao salvar plano',true); }
+}
+
+// ── Suplementos ─────────────────────────────────────────────────────
+function addSuplemento() {
+  const nome = document.getElementById('supNome').value.trim();
+  const dose = document.getElementById('supDose').value.trim();
+  const poso = document.getElementById('supPoso').value.trim();
+  if (!nome||!dose) { toast('Informe nome e dosagem',true); return; }
+  suplementos.push({
+    nome,dose,poso,
+    forma: document.getElementById('supForma').value,
+    obs:   document.getElementById('supObs').value
+  });
+  ['supNome','supDose','supPoso','supObs'].forEach(id=>document.getElementById(id).value='');
+  renderSupList();
+  document.getElementById('btnSalvarSups').disabled=false;
+}
+
+function removerSup(i) { suplementos.splice(i,1); renderSupList(); }
+
+function renderSupList() {
+  const list = document.getElementById('supList');
+  if (suplementos.length===0) {
+    list.innerHTML=`<div class="empty-inline"><div class="empty-inline-icon">💊</div>Nenhuma prescrição adicionada</div>`;
+    document.getElementById('btnSalvarSups').disabled=true;
+    return;
+  }
+  list.innerHTML=`<div class="sup-list">${suplementos.map((s,i)=>`
+    <div class="sup-card">
+      <div style="flex:1"><div class="sup-name">${s.suplemento_nome||s.nome||'—'} · ${s.dosagem||s.dose||''}</div><div class="sup-detail">${s.posologia||s.poso||''} · ${s.forma_farmaceutica||s.forma||''} ${s.observacao||s.obs?'· '+( s.observacao||s.obs):''}</div></div>
+      <button class="btn-remove" onclick="removerSup(${i})">✕</button>
+    </div>`).join('')}</div>`;
+}
+
+async function salvarSuplementos() {
+  if (!PAC_ID||suplementos.length===0) return;
+  for (const s of suplementos) {
+    await apiCall('saveSuplemento',{suplemento:{paciente_id:PAC_ID,ag_id:AG_ID,suplemento_nome:s.nome||s.suplemento_nome,dosagem:s.dose||s.dosagem,posologia:s.poso||s.posologia,forma_farmaceutica:s.forma||s.forma_farmaceutica,observacao:s.obs||s.observacao||''}},'POST');
+  }
+  toast('✅ Prescrições salvas!'); saved.sups=true; updateFinishStatus();
+}
+
+// ── Anotações ────────────────────────────────────────────────────────
+async function salvarNotas() {
+  if (!AG_ID) { toast('Sem agendamento',true); return; }
+  const notas = document.getElementById('notasTexto').value;
+  const res   = await apiCall('saveConsultaNotas',{ag_id:AG_ID,notas},'POST');
+  if (res?.success) { toast('✅ Anotações salvas!'); saved.notas=true; updateFinishStatus(); }
+  else { toast('Erro ao salvar',true); }
+}
+
+// ── Finalizar ─────────────────────────────────────────────────────────
+function updateFinishStatus() {
+  const items = {anamnese:'finAnam',bio:'finBio',plano:'finPlan',sups:'finSup',notas:'finNot'};
+  const labels= {anamnese:'finAnamVal',bio:'finBioVal',plano:'finPlanVal',sups:'finSupVal',notas:'finNotVal'};
+  Object.keys(saved).forEach(key=>{
+    const card=document.getElementById(items[key]);
+    const val =document.getElementById(labels[key]);
+    if(card&&val){
+      if(saved[key]){
+        card.className='finish-item finish-done';
+        val.textContent='✅ Salvo nesta consulta';
+        val.style.color='#34d399';
+      } else {
+        card.className='finish-item finish-pending';
+        if(key==='sups') { val.textContent='Não prescrito'; val.style.color='var(--text-muted)'; }
+        else { val.textContent='Pendente'; val.style.color='#fbbf24'; }
+      }
+    }
+  });
+}
+
+async function finalizarAtendimento() {
+  if (!AG_ID) { toast('Sem agendamento vinculado',true); return; }
+  const btn = document.getElementById('btnFinalizar');
+  btn.disabled=true; btn.innerHTML='<div class="spinner-ring" style="width:16px;height:16px;border-width:2px"></div> Finalizando...';
+
+  // Salvar notas se preenchidas
+  const notas = document.getElementById('notasTexto').value;
+  if (notas && !saved.notas) await salvarNotas();
+
+  // Marcar agendamento como realizado
+  const res = await apiCall('updateAgendamento',{id:AG_ID,fields:{status:'Realizado'}},'POST');
+
+  btn.disabled=false; btn.innerHTML='🏁 Finalizar & Marcar como Realizado';
+
+  if (res?.success||res?.data?.updated) {
+    document.getElementById('statusPill').className='status-pill status-realizado';
+    document.getElementById('statusPill').textContent='🎉 Atendimento Realizado';
+    toast('🌿 Atendimento finalizado com sucesso!');
+
+    // Agenda próxima consulta se definida
+    const proxData = document.getElementById('proxConsulta').value;
+    if (proxData && PAC_ID) {
+      const proxAg = {
+        paciente_id: PAC_ID,
+        paciente_nome: paciente?.nome||'',
+        data: proxData,
+        hora: agendamento?.hora||'09:00',
+        tipo: document.getElementById('proxTipo').value,
+        valor: agendamento?.valor||250,
+        status:'Confirmado'
+      };
+      await apiCall('saveAgendamento',{agendamento:proxAg},'POST');
+      toast('📅 Próxima consulta agendada!');
+    }
+  } else { toast('Erro ao finalizar',true); }
+}
+
+function voltarAgenda() {
+  if (window.self !== window.top) {
+    window.parent.postMessage({type:'OPEN_IFRAME',url:'agendamento.html'},'*');
+  } else { window.location.href='agendamento.html'; }
+}
+
+// ── Init ───────────────────────────────────────────────────────────
+(async()=>{
+  const theme=localStorage.getItem('kos_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('bioData').value=new Date().toISOString().split('T')[0];
+  await carregarDados();
+})();
+</script>
+</body>
+</html>

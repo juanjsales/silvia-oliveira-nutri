@@ -1404,6 +1404,7 @@ function openIframe(url, el) {
 
   if (pageTitle) {
     if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Lemos';
+    else if (url.includes('atendimento')) pageTitle.innerText = 'Prontuário do Atendimento · Dra. Silvia Lemos';
     else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Lemos';
     else if (url.includes('gerenciador')) pageTitle.innerText = 'Gerenciador de Cardápios & PDF · Dra. Silvia Lemos';
     else if (url.includes('bioimpedancia')) pageTitle.innerText = 'Bioimpedância & Evolução · Dra. Silvia Lemos';
@@ -1412,6 +1413,30 @@ function openIframe(url, el) {
   document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
   if (el) el.classList.add('active');
 }
+
+// MENSAGENS DOS IFRAMES FILHOS (OPEN_IFRAME)
+window.addEventListener('message', e => {
+  if (e.data?.type === 'OPEN_IFRAME') {
+    const iframe = document.getElementById('adminIframe');
+    const iframeView = document.getElementById('iframeView');
+    const homeView = document.getElementById('homeView');
+    const pageTitle = document.getElementById('pageTitle');
+    if (iframe) iframe.src = e.data.url;
+    if (iframeView) iframeView.style.display = 'block';
+    if (homeView) homeView.style.display = 'none';
+    if (pageTitle) {
+      const url = e.data.url;
+      if (url.includes('atendimento')) pageTitle.innerText = 'Prontuário do Atendimento · Dra. Silvia Lemos';
+      else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Lemos';
+      else if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Lemos';
+    }
+    // Propaga tema para o novo iframe
+    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    setTimeout(() => {
+      try { iframe?.contentWindow?.postMessage({ type: 'SET_THEME', theme }, '*'); } catch(e){}
+    }, 600);
+  }
+});
 
 // INICIALIZAR GRÁFICOS DA HOME E DASHBOARD
 window.addEventListener('DOMContentLoaded', () => {
