@@ -429,6 +429,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="nav-item" onclick="openIframe('pacientes.html', this)">
       <span>👤</span> Pacientes &amp; Anamneses
     </div>
+    <div class="nav-item" onclick="openIframe('agendamento.html', this)">
+      <span>📅</span> Agendamento de Consultas
+    </div>
     <div class="nav-item" onclick="openIframe('gerenciador-plano.html', this)">
       <span>🥗</span> Gerenciador de Cardápios
     </div>
@@ -1401,6 +1404,7 @@ function openIframe(url, el) {
 
   if (pageTitle) {
     if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Lemos';
+    else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Lemos';
     else if (url.includes('gerenciador')) pageTitle.innerText = 'Gerenciador de Cardápios & PDF · Dra. Silvia Lemos';
     else if (url.includes('bioimpedancia')) pageTitle.innerText = 'Bioimpedância & Evolução · Dra. Silvia Lemos';
   }
