@@ -1773,7 +1773,137 @@ async function salvarNovaSenhaAdmin(e) {
     alert("⚠️ Erro ao alterar senha: " + (res ? res.error || "Senha atual incorreta." : "Verifique sua conexão."));
   }
 }
+
+function abrirModalNovoLancamentoFin() {
+  const m = document.getElementById('modalNovoLancamentoFin');
+  if (m) m.style.display = 'flex';
+  const d = document.getElementById('finData');
+  if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+}
+function fecharModalNovoLancamentoFin() {
+  const m = document.getElementById('modalNovoLancamentoFin');
+  if (m) m.style.display = 'none';
+}
+async function salvarNovoLancamentoFin(e) {
+  e.preventDefault();
+  const paciente_nome = document.getElementById('finPacienteNome').value;
+  const data = document.getElementById('finData').value;
+  const valor = document.getElementById('finValor').value;
+  const descricao = document.getElementById('finDesc').value;
+  const forma_pagamento = document.getElementById('finForma').value;
+  const status = document.getElementById('finStatus').value;
+
+  const res = await apiCall('saveLancamentoFinanceiro', {
+    lancamento: { paciente_nome, data, valor, descricao, forma_pagamento, status }
+  }, 'POST');
+
+  if (res && res.success) {
+    alert("✅ Lançamento financeiro registrado com sucesso!");
+    fecharModalNovoLancamentoFin();
+    carregarFinanceiro();
+  } else {
+    alert("⚠️ Erro ao salvar lançamento.");
+  }
+}
+
+function abrirModalGerarRecibo() {
+  const m = document.getElementById('modalGerarRecibo');
+  if (m) m.style.display = 'flex';
+  const d = document.getElementById('recData');
+  if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+}
+function fecharModalGerarRecibo() {
+  const m = document.getElementById('modalGerarRecibo');
+  if (m) m.style.display = 'none';
+}
+function imprimirReciboModal(e) {
+  e.preventDefault();
+  const nome = document.getElementById('recNome').value;
+  const valor = document.getElementById('recValor').value;
+  const data = document.getElementById('recData').value;
+  fecharModalGerarRecibo();
+  imprimirReciboDireto(nome, valor, data);
+}
 </script>
+
+<!-- MODAL DE NOVO LANÇAMENTO FINANCEIRO -->
+<div id="modalNovoLancamentoFin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:28px; width:100%; max-width:460px; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:20px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:#fff;">💰 Lançar Entradas / Consultas</div>
+      <button onclick="fecharModalNovoLancamentoFin()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+    </div>
+    <form onsubmit="salvarNovoLancamentoFin(event)" style="display:flex; flex-direction:column; gap:14px;">
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nome do Paciente</label>
+        <input type="text" id="finPacienteNome" class="form-control" placeholder="Ex: Juliana Mendes" required>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Data</label>
+          <input type="date" id="finData" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Valor (R$)</label>
+          <input type="number" step="0.01" id="finValor" class="form-control" placeholder="250.00" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Descrição / Serviço</label>
+        <input type="text" id="finDesc" class="form-control" placeholder="Ex: Consulta Presencial + Plano Nutricional" value="Consulta Nutricional Clínica">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Forma de Pagto</label>
+          <select id="finForma" class="form-control">
+            <option>Pix</option><option>Cartão de Crédito</option><option>Cartão de Débito</option><option>Dinheiro</option><option>Transferência</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Status</label>
+          <select id="finStatus" class="form-control">
+            <option value="Confirmado">🟢 Confirmado (Pago)</option>
+            <option value="Pendente">🟡 Pendente</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn btn-secondary" onclick="fecharModalNovoLancamentoFin()">Cancelar</button>
+        <button type="submit" class="btn">💾 Salvar Lançamento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DE EMISSÃO DE RECIBO DE REEMBOLSO -->
+<div id="modalGerarRecibo" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:28px; width:100%; max-width:440px; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:20px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:#fff;">📄 Emitir Recibo Reembolso</div>
+      <button onclick="fecharModalGerarRecibo()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+    </div>
+    <form onsubmit="imprimirReciboModal(event)" style="display:flex; flex-direction:column; gap:14px;">
+      <div class="form-group">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nome do Paciente</label>
+        <input type="text" id="recNome" class="form-control" placeholder="Ex: Juliana Mendes" required>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Data do Atendimento</label>
+          <input type="date" id="recData" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Valor Pago (R$)</label>
+          <input type="number" step="0.01" id="recValor" class="form-control" placeholder="250.00" required>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn btn-secondary" onclick="fecharModalGerarRecibo()">Cancelar</button>
+        <button type="submit" class="btn">🖨️ Gerar PDF / Imprimir</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- MODAL DE ALTERAÇÃO DE SENHA DO ADMIN -->
 <div id="modalTrocarSenhaAdmin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
@@ -1804,7 +1934,6 @@ async function salvarNovaSenhaAdmin(e) {
         <button type="submit" class="btn" id="btnSalvarAdmPwd">💾 Salvar Nova Senha</button>
       </div>
     </form>
-  </div>
   </div>
 </div>
 </body>
