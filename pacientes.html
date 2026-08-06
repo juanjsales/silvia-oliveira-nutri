@@ -338,18 +338,12 @@ async function verAnamnesePaciente(pacienteId, pacienteNome) {
     } else {
       body.innerHTML = `
         <div style="text-align:center; padding:24px; color:var(--text-muted);">
-          Nenhuma ficha de anamnese cadastrada para este paciente ainda.<br><br>
-          <button class="btn" onclick="copiarLinkAnamnesePublica('${pacienteId}')">🔗 Copiar Link de Anamnese Pré-Consulta</button>
+          Nenhuma ficha de anamnese cadastrada para este paciente ainda.<br>
+          <span style="font-size:0.8rem; color:var(--sage-light); font-weight:700; margin-top:6px; display:block;">ℹ️ A Anamnese é preenchida no dia do Atendimento.</span>
         </div>
       `;
     }
   }
-}
-
-function copiarLinkAnamnesePublica(pacienteId) {
-  const link = `https://silviaoliveira.vercel.app/anamnese-publica.html?paciente_id=${pacienteId}`;
-  navigator.clipboard.writeText(link);
-  alert(`✅ Link copiado!\nEnvie para o paciente:\n${link}`);
 }
 
 function formatDateBR(v) {
