@@ -22,6 +22,13 @@
   --radius: 20px;
 }
 
+/* PADRONIZAÇÃO DE BARRAS DE ROLAGEM (SCROLLBARS) BOTÂNICAS */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-deep, #0e1a12); }
+::-webkit-scrollbar-thumb { background: var(--border-forest, rgba(140, 164, 129, 0.35)); border-radius: 4px; border: 2px solid var(--bg-deep, #0e1a12); }
+::-webkit-scrollbar-thumb:hover { background: var(--sage-light, #8ca481); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-forest, rgba(140, 164, 129, 0.35)) var(--bg-deep, #0e1a12); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
 
