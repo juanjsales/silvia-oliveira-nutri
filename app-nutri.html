@@ -1568,36 +1568,29 @@ async function deletarLancamentoFin(id) {
 
 function imprimirReciboDireto(nome, valor, data) {
   const win = window.open('', '_blank');
-  win.document.write(`
-    <html>
-    <head>
-      <title>Recibo Nutricional - Dra. Silvia Lemos</title>
-      <style>
-        body { font-family: sans-serif; padding: 40px; color: #111; max-width: 650px; margin: 0 auto; line-height: 1.6; }
-        .hdr { text-align: center; border-bottom: 2px solid #203528; padding-bottom: 20px; margin-bottom: 30px; }
-        .title { font-size: 22px; font-weight: bold; color: #203528; }
-        .sub { font-size: 14px; color: #555; margin-top: 4px; }
-        .box { border: 1px solid #ccc; padding: 24px; border-radius: 8px; background: #fafafa; margin-bottom: 30px; }
-        .val { font-size: 20px; font-weight: bold; color: #203528; }
-        .signature { margin-top: 60px; text-align: center; border-top: 1px solid #000; padding-top: 10px; width: 280px; margin-left: auto; margin-right: auto; }
-      </style>
-    </head>
-    <body>
-      <div class="hdr">
-        <div class="title">RECIBO DE ATENDIMENTO NUTRICIONAL</div>
-        <div class="sub">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div>
-      </div>
-      <div class="box">
-        Recebi de <strong>${nome||'Paciente'}</strong> a quantia de <span class="val">R$ ${parseFloat(valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span> referente aos serviços prestados de Acompanhamento Nutricional e Consulta Clínica no dia ${fmtDate(data)}.
-      </div>
-      <div class="signature">
-        <strong>Dra. Silvia de Oliveira Lemos</strong><br>
-        Nutricionista · CRN-4 25104731
-      </div>
-      <script>window.print();</script>
-    </body>
-    </html>
-  `);
+  if (!win) return;
+  const valNum = parseFloat(valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  const dtFmt = fmtDate(data);
+  const printScript = '<' + 'script>window.print();<' + '/script>';
+  const htmlParts = [
+    '<!DOCTYPE html><html><head><title>Recibo Nutricional - Dra. Silvia Lemos</title>',
+    '<style>',
+    'body { font-family: sans-serif; padding: 40px; color: #111; max-width: 650px; margin: 0 auto; line-height: 1.6; }',
+    '.hdr { text-align: center; border-bottom: 2px solid #203528; padding-bottom: 20px; margin-bottom: 30px; }',
+    '.title { font-size: 22px; font-weight: bold; color: #203528; }',
+    '.sub { font-size: 14px; color: #555; margin-top: 4px; }',
+    '.box { border: 1px solid #ccc; padding: 24px; border-radius: 8px; background: #fafafa; margin-bottom: 30px; }',
+    '.val { font-size: 20px; font-weight: bold; color: #203528; }',
+    '.signature { margin-top: 60px; text-align: center; border-top: 1px solid #000; padding-top: 10px; width: 280px; margin-left: auto; margin-right: auto; }',
+    '</style></head><body>',
+    '<div class="hdr"><div class="title">RECIBO DE ATENDIMENTO NUTRICIONAL</div><div class="sub">Dra. Silvia de Oliveira Lemos · CRN-4 25104731</div></div>',
+    '<div class="box">Recebi de <strong>' + (nome || 'Paciente') + '</strong> a quantia de <span class="val">R$ ' + valNum + '</span> referente aos serviços prestados de Acompanhamento Nutricional e Consulta Clínica no dia ' + dtFmt + '.</div>',
+    '<div class="signature"><strong>Dra. Silvia de Oliveira Lemos</strong><br>Nutricionista · CRN-4 25104731</div>',
+    printScript,
+    '</body></html>'
+  ];
+  win.document.write(htmlParts.join(''));
+  win.document.close();
 }
 
 // MENSAGENS DOS IFRAMES FILHOS (OPEN_IFRAME)
