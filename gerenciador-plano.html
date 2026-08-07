@@ -275,6 +275,36 @@ body.in-iframe .manager-container { padding-top: 12px !important; }
         <span>TMB: <strong id="dispTMB" style="color:#fff;">1420 kcal</strong></span>
         <span>VET Alvo: <strong id="dispVET" style="color:#fff;">1952 kcal</strong></span>
       </div>
+
+      <!-- RESUMO GLOBAL DE MACROS E CALORIAS DO PLANO -->
+      <div style="background: rgba(0,0,0,0.35); border: 1.5px solid var(--border-forest); padding: 14px; border-radius: 14px; margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">📊 Prescrição Diária do Plano</span>
+          <span style="font-size:0.92rem; font-weight:900; color:#fff;" id="dispTotKcalPlano">0 kcal</span>
+        </div>
+        
+        <!-- Barra de Progresso VET -->
+        <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+          <div id="barProgressoVET" style="width:0%; height:100%; background:var(--sage-light); transition:width .3s;"></div>
+        </div>
+        <div style="font-size:0.72rem; color:var(--text-muted); text-align:right;" id="dispProgressoVET">0% do VET Alvo</div>
+
+        <!-- Macros Breakdown -->
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:2px; text-align:center;">
+          <div style="background:rgba(99,179,237,0.12); border:1px solid rgba(99,179,237,0.3); padding:8px 4px; border-radius:8px;">
+            <div style="font-size:0.68rem; color:#63b3ed; font-weight:800;">🍚 CARBS</div>
+            <div style="font-size:0.85rem; font-weight:900; color:#fff;" id="dispTotCarbPlano">0g</div>
+          </div>
+          <div style="background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); padding:8px 4px; border-radius:8px;">
+            <div style="font-size:0.68rem; color:#fbbf24; font-weight:800;">💪 PROT</div>
+            <div style="font-size:0.85rem; font-weight:900; color:#fff;" id="dispTotProtPlano">0g</div>
+          </div>
+          <div style="background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.3); padding:8px 4px; border-radius:8px;">
+            <div style="font-size:0.68rem; color:#f87171; font-weight:800;">🥑 GORD</div>
+            <div style="font-size:0.85rem; font-weight:900; color:#fff;" id="dispTotGordPlano">0g</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="section-divider">📖 Capa &amp; Apresentação</div>
@@ -450,21 +480,41 @@ function carregarLocalStorage() {
   } else {
     carregarPreset('hipertrofia');
   }
+  calcularTotaisPlano();
 }
 
 function renderInputs() {
   const mContainer = document.getElementById('mealsInputs');
   if (!mContainer) return;
   mContainer.innerHTML = '';
+  calcularTotaisPlano();
   refeicoes.forEach((m, idx) => {
+    let foodBadgesHTML = '';
+    if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
+      foodBadgesHTML = `
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; margin-bottom:8px;">
+          ${m.alimentosList.map((al, aIdx) => `
+            <span style="background:rgba(140,164,129,0.18); border:1px solid var(--border-sage); padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; color:var(--sage-light); display:inline-flex; align-items:center; gap:6px;">
+              ${al.qtd}g ${al.nome} (${al.kcal}k | C:${al.carb}g P:${al.prot}g)
+              <span onclick="removerAlimentoDaRefeicao(${idx}, ${aIdx})" style="cursor:pointer; color:#f87171; font-weight:900; margin-left:2px;" title="Remover item">✕</span>
+            </span>
+          `).join('')}
+        </div>
+      `;
+    }
+
     mContainer.innerHTML += `
       <div class="card-box">
         <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remover</button>
         <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
-        <div class="form-group"><label>Alimentos &amp; Quantidades</label><textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar();">${m.itens}</textarea></div>
+        <div class="form-group">
+          <label>Alimentos &amp; Quantidades</label>
+          ${foodBadgesHTML}
+          <textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();">${m.itens}</textarea>
+        </div>
         <div class="form-row">
-          <div class="form-group"><label>Calorias</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar();"></div>
-          <div class="form-group"><label>Proteínas</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar();"></div>
+          <div class="form-group"><label>Calorias</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
+          <div class="form-group"><label>Proteínas</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
         </div>
         <div class="form-group" style="margin:0;"><label>Substituições / Obs</label><input type="text" class="form-control" value="${m.obs}" oninput="refeicoes[${idx}].obs=this.value; salvarELocal(); atualizar();"></div>
       </div>
@@ -929,6 +979,75 @@ function atualizarCalcMacrosTaco() {
   }
 }
 
+function calcularTotaisPlano() {
+  let totKcal = 0, totProt = 0, totCarb = 0, totGord = 0;
+
+  refeicoes.forEach(m => {
+    if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
+      m.alimentosList.forEach(a => {
+        totKcal += parseFloat(a.kcal) || 0;
+        totProt += parseFloat(a.prot) || 0;
+        totCarb += parseFloat(a.carb) || 0;
+        totGord += parseFloat(a.gord) || 0;
+      });
+    } else {
+      const k = parseInt(String(m.calorias || '').replace(/\D/g, '')) || 0;
+      const p = parseFloat(String(m.proteina || '').replace(/[^\d.]/g, '')) || 0;
+      totKcal += k;
+      totProt += p;
+    }
+  });
+
+  totKcal = Math.round(totKcal);
+  totProt = Math.round(totProt * 10) / 10;
+  totCarb = Math.round(totCarb * 10) / 10;
+  totGord = Math.round(totGord * 10) / 10;
+
+  if (document.getElementById('dispTotKcalPlano')) document.getElementById('dispTotKcalPlano').textContent = `${totKcal} kcal`;
+  if (document.getElementById('dispTotCarbPlano')) document.getElementById('dispTotCarbPlano').textContent = `${totCarb}g`;
+  if (document.getElementById('dispTotProtPlano')) document.getElementById('dispTotProtPlano').textContent = `${totProt}g`;
+  if (document.getElementById('dispTotGordPlano')) document.getElementById('dispTotGordPlano').textContent = `${totGord}g`;
+
+  // Calcular % da Meta VET
+  const vetText = document.getElementById('dispVET')?.textContent || '0';
+  const vetVal = parseInt(vetText.replace(/\D/g, '')) || 1952;
+  const pctVET = vetVal > 0 ? Math.min(Math.round((totKcal / vetVal) * 100), 150) : 0;
+
+  if (document.getElementById('barProgressoVET')) document.getElementById('barProgressoVET').style.width = `${Math.min(pctVET, 100)}%`;
+  if (document.getElementById('dispProgressoVET')) document.getElementById('dispProgressoVET').textContent = `${pctVET}% do VET Alvo (${totKcal} / ${vetVal} kcal)`;
+}
+
+function recalculaRefeicaoPorAlimentos(idxRef) {
+  const ref = refeicoes[idxRef];
+  if (!ref || !ref.alimentosList || ref.alimentosList.length === 0) return;
+
+  let k = 0, c = 0, p = 0, g = 0;
+  const itensTxt = ref.alimentosList.map(a => {
+    k += parseFloat(a.kcal) || 0;
+    c += parseFloat(a.carb) || 0;
+    p += parseFloat(a.prot) || 0;
+    g += parseFloat(a.gord) || 0;
+    return `- ${a.qtd}g de ${a.nome} (${a.kcal} kcal | C:${a.carb}g P:${a.prot}g G:${a.gord}g)`;
+  }).join('\n');
+
+  ref.itens = itensTxt;
+  ref.calorias = `${Math.round(k)} kcal`;
+  ref.proteina = `${Math.round(p * 10) / 10}g`;
+  ref.carbos = `${Math.round(c * 10) / 10}g`;
+  ref.gorduras = `${Math.round(g * 10) / 10}g`;
+}
+
+function removerAlimentoDaRefeicao(idxRef, idxItem) {
+  if (refeicoes[idxRef] && refeicoes[idxRef].alimentosList && refeicoes[idxRef].alimentosList[idxItem]) {
+    refeicoes[idxRef].alimentosList.splice(idxItem, 1);
+    recalculaRefeicaoPorAlimentos(idxRef);
+    renderInputs();
+    salvarELocal();
+    atualizar();
+    calcularTotaisPlano();
+  }
+}
+
 function confirmarInsercaoTacoNoPlano() {
   if (!alimentoTacoSelecionado) return;
   const qtd = parseFloat(document.getElementById('tacoSelQtd')?.value) || 100;
@@ -936,22 +1055,27 @@ function confirmarInsercaoTacoNoPlano() {
   const idxRef = parseInt(document.getElementById('tacoSelRefeicao')?.value || "0");
 
   if (refeicoes[idxRef]) {
-    const textoAlimento = `${qtd}g de ${calc.nome} (${calc.kcal} kcal | C:${calc.carb}g P:${calc.prot}g G:${calc.gord}g)`;
-    if (refeicoes[idxRef].itens) {
-      refeicoes[idxRef].itens += `\n- ${textoAlimento}`;
-    } else {
-      refeicoes[idxRef].itens = `- ${textoAlimento}`;
-    }
-    
-    const kcalAtual = parseInt((refeicoes[idxRef].calorias || '0').replace(/\D/g, '')) || 0;
-    const novKcal = kcalAtual + calc.kcal;
-    refeicoes[idxRef].calorias = `${novKcal} kcal`;
+    if (!refeicoes[idxRef].alimentosList) refeicoes[idxRef].alimentosList = [];
+
+    const novoAlimento = {
+      id: alimentoTacoSelecionado.id || ('item_' + Date.now()),
+      nome: calc.nome,
+      qtd: qtd,
+      unidade: 'g',
+      kcal: calc.kcal,
+      carb: calc.carb,
+      prot: calc.prot,
+      gord: calc.gord
+    };
+
+    refeicoes[idxRef].alimentosList.push(novoAlimento);
+    recalculaRefeicaoPorAlimentos(idxRef);
 
     renderInputs();
     salvarELocal();
     atualizar();
+    calcularTotaisPlano();
     fecharModalTaco();
-    alert(`✅ ${calc.nome} (${calc.kcal} kcal) adicionado a ${refeicoes[idxRef].titulo}!`);
   }
 }
 </script>
