@@ -393,16 +393,45 @@ function gerarPINTemporario() {
 
 function formatarDataPTBR(val) {
   if (!val) return "";
-  const s = String(val).trim();
-  if (s.includes("T")) {
-    const [y,m,d] = s.split("T")[0].split("-");
-    return `${d}/${m}/${y}`;
+  try {
+    const s = String(val).trim();
+    if (!s) return "";
+    if (s.includes("T")) {
+      const parts = s.split("T")[0].split("-");
+      if (parts.length === 3) return `${parts[2].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[0]}`;
+    }
+    if (s.includes("-")) {
+      const parts = s.split("-");
+      if (parts.length === 3) return `${parts[2].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[0]}`;
+    }
+    if (s.includes("/")) {
+      const parts = s.split("/");
+      if (parts.length === 3) {
+        if (parts[0].length === 4) return `${parts[2].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[0]}`;
+        return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2]}`;
+      }
+    }
+    return s;
+  } catch(e) {
+    return String(val || "");
   }
-  if (s.includes("-")) {
-    const [y,m,d] = s.split("-");
-    return `${d}/${m}/${y}`;
+}
+
+function formatarHoraPTBR(val) {
+  if (!val) return "";
+  try {
+    const s = String(val).trim();
+    if (!s) return "";
+    const parts = s.split(":");
+    if (parts.length >= 2) {
+      const h = parts[0].padStart(2, "0");
+      const m = parts[1].padStart(2, "0");
+      return `${h}:${m}`;
+    }
+    return s;
+  } catch(e) {
+    return String(val || "");
   }
-  return s;
 }
 
 function calcularIdadePorDataNascimento(dataNasc) {

@@ -931,7 +931,8 @@ function scrollToFinish() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function fmt(v){ if(!v)return''; const s=String(v).trim(); if(s.includes('T')){const[y,m,d]=s.split('T')[0].split('-');return`${d}/${m}/${y}`} if(s.includes('-')){const[y,m,d]=s.split('-');return`${d}/${m}/${y}`} return s; }
+function fmt(v){ if(!v)return''; try{ const s=String(v).trim(); if(s.includes('T')){const p=s.split('T')[0].split('-');return`${p[2].padStart(2,'0')}/${p[1].padStart(2,'0')}/${p[0]}`} if(s.includes('-')){const p=s.split('-');return`${p[2].padStart(2,'0')}/${p[1].padStart(2,'0')}/${p[0]}`} if(s.includes('/')){const p=s.split('/');if(p[0].length===4)return`${p[2].padStart(2,'0')}/${p[1].padStart(2,'0')}/${p[0]}`;return`${p[0].padStart(2,'0')}/${p[1].padStart(2,'0')}/${p[2]}`} return s; }catch(e){return String(v||'');} }
+function fmtTime(v){ if(!v)return''; try{ const s=String(v).trim(); const p=s.split(':'); return p.length>=2?`${p[0].padStart(2,'0')}:${p[1].padStart(2,'0')}`:s; }catch(e){return String(v||'');} }
 
 async function carregarDados() {
   if (!PAC_ID) { return; }
@@ -942,7 +943,7 @@ async function carregarDados() {
 
   if (resAg?.success && resAg.data) {
     agendamento = resAg.data;
-    if (document.getElementById('agInfo')) document.getElementById('agInfo').textContent = `${fmt(agendamento.data)} às ${agendamento.hora||''} · ${agendamento.tipo||'Consulta'}`;
+    if (document.getElementById('agInfo')) document.getElementById('agInfo').textContent = `${fmt(agendamento.data)} às ${fmtTime(agendamento.hora)} · ${agendamento.tipo||'Consulta'}`;
   }
 
   const resPac = await apiCall('getPacienteById',{id:PAC_ID});
