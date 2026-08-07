@@ -1163,7 +1163,7 @@ function recalculaRefeicaoPorAlimentos(idxRef) {
     c += parseFloat(a.carb) || 0;
     p += parseFloat(a.prot) || 0;
     g += parseFloat(a.gord) || 0;
-    return `- ${a.qtd}g de ${a.nome} (${a.kcal} kcal | C:${a.carb}g P:${a.prot}g G:${a.gord}g)`;
+    return `• ${a.qtd}${a.unidade || 'g'} de ${a.nome}`;
   }).join('\n');
 
   ref.itens = itensTxt;
