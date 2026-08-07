@@ -881,7 +881,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
 
   </div>
-</main>
 
 <script>
 const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
@@ -2013,9 +2012,7 @@ function imprimirReciboModal(e) {
   const valor = document.getElementById('recValor').value;
   const data = document.getElementById('recData').value;
   fecharModalGerarRecibo();
-  imprimirReciboDireto(nome, valor, data);
 }
-</script>
 
 <!-- MODAL DE NOVO LANÇAMENTO FINANCEIRO -->
 <div id="modalNovoLancamentoFin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
@@ -2128,5 +2125,7 @@ function imprimirReciboModal(e) {
     </form>
   </div>
 </div>
+
+</script>
 </body>
 </html>
