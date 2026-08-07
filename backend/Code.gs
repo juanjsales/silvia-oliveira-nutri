@@ -91,7 +91,7 @@ function handleRequest(e, method) {
         response.data = loginAdmin(params.emailInput||params.email, params.passInput||params.senha);
         response.success = true; break;
       case "loginUsuario":
-        response.data = loginUsuario(params.identifierInput||params.email||params.cpf, params.senha_pin||params.senha||params.pinInput);
+        response.data = loginUsuario(params.identifierInput||params.email||params.cpf, params.passwordInput||params.senha_pin||params.senha||params.pinInput);
         response.success = true; break;
       case "alterarSenha":
         response.data = alterarSenha(params);
@@ -444,14 +444,14 @@ function loginAdmin(emailInput, passInput) {
                     (passInput === targetHashConfig) ||
                     (passInput === "silvia2026");
     if (!isMatch) throw new Error("Senha incorreta.");
-    return { authenticated: true, id: admin.id || "ADM-01", tipo: "ADMIN", nome: admin.nome || "Dra. Silvia de Oliveira Lemos", email: admin.email || rawEmail };
+    return { authenticated: true, id: admin.id || "ADM-01", tipo: "ADMIN", nome: admin.nome || "Dra. Silvia Oliveira Lemos", email: admin.email || rawEmail };
   }
 
   // Fallback se não encontrar registro na tabela Usuarios
   const targetEmail = (configs.find(c => c.chave === "admin_email") || {}).valor || "silviadeoliveira24.nutri@gmail.com";
   if (rawEmail !== targetEmail.toLowerCase() && rawEmail !== "admin") throw new Error("E-mail incorreto.");
   if (inputHash !== targetHashConfig && passInput !== targetHashConfig && passInput !== "silvia2026") throw new Error("Senha incorreta.");
-  return { authenticated: true, id: "ADM-01", tipo: "ADMIN", nome: "Dra. Silvia de Oliveira Lemos", email: targetEmail };
+  return { authenticated: true, id: "ADM-01", tipo: "ADMIN", nome: "Dra. Silvia Oliveira Lemos", email: targetEmail };
 }
 
 function loginUsuario(id, pass) {
@@ -480,7 +480,7 @@ function loginUsuario(id, pass) {
         authenticated: true,
         id: usuario ? usuario.id : "ADM-01",
         cpf: usuario ? usuario.cpf : "00000000000",
-        nome: usuario ? usuario.nome : "Dra. Silvia de Oliveira Lemos",
+        nome: usuario ? usuario.nome : "Dra. Silvia Oliveira Lemos",
         email: usuario ? usuario.email : "silviadeoliveira24.nutri@gmail.com",
         tipo: "ADMIN"
       };

@@ -139,7 +139,7 @@ body.in-iframe .container { padding-top: 16px !important; }
     <div class="form-grid-2">
       <div class="form-group">
         <label>Nome Profissional / Clínica *</label>
-        <input type="text" id="cfgClinicaNome" class="form-control" placeholder="Dra. Silvia de Oliveira Lemos">
+        <input type="text" id="cfgClinicaNome" class="form-control" placeholder="Dra. Silvia Oliveira Lemos">
       </div>
       <div class="form-group">
         <label>Registro Profissional (CRN) *</label>
@@ -297,7 +297,7 @@ async function carregarConfiguracoes() {
   const res = await apiCall('getConfiguracoes');
   if (res && res.success && res.data) {
     const cfg = res.data;
-    if (document.getElementById('cfgClinicaNome')) document.getElementById('cfgClinicaNome').value = cfg.clinica_nome || "Dra. Silvia de Oliveira Lemos";
+    if (document.getElementById('cfgClinicaNome')) document.getElementById('cfgClinicaNome').value = cfg.clinica_nome || "Dra. Silvia Oliveira Lemos";
     if (document.getElementById('cfgClinicaCRN')) document.getElementById('cfgClinicaCRN').value = cfg.clinica_crn || "CRN-4 25104731";
     if (document.getElementById('cfgClinicaWhatsapp')) document.getElementById('cfgClinicaWhatsapp').value = cfg.clinica_whatsapp || "5521987385146";
     if (document.getElementById('cfgClinicaEmail')) document.getElementById('cfgClinicaEmail').value = cfg.clinica_email || "silviadeoliveira24.nutri@gmail.com";

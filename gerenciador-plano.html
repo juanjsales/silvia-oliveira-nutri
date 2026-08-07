@@ -491,8 +491,12 @@ function renderInputs() {
   const mContainer = document.getElementById('mealsInputs');
   if (!mContainer) return;
   mContainer.innerHTML = '';
-  calcularTotaisPlano();
+  
   refeicoes.forEach((m, idx) => {
+    if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
+      recalculaRefeicaoPorAlimentos(idx);
+    }
+
     let foodBadgesHTML = '';
     if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
       foodBadgesHTML = `
@@ -529,13 +533,15 @@ function renderInputs() {
           <textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();">${m.itens}</textarea>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>Calorias</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
-          <div class="form-group"><label>Proteínas</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
+          <div class="form-group"><label>🔥 Calorias (Calculado TACO)</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
+          <div class="form-group"><label>💪 Proteínas (Calculado TACO)</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
         </div>
         <div class="form-group" style="margin:0;"><label>Substituições / Obs</label><input type="text" class="form-control" value="${m.obs}" oninput="refeicoes[${idx}].obs=this.value; salvarELocal(); atualizar();"></div>
       </div>
     `;
   });
+
+  calcularTotaisPlano();
 
   const eContainer = document.getElementById('extrasInputs');
   if (!eContainer) return;
@@ -666,7 +672,7 @@ function atualizar() {
           </div>
 
           <div class="page-ftr">
-            Dra. Silvia de Oliveira Lemos · Nutricionista · CRN-4 25104731
+            Dra. Silvia Oliveira Lemos · Nutricionista · CRN-4 25104731
           </div>
         </div>
       `;
@@ -700,7 +706,7 @@ function atualizar() {
         </div>
 
         <div class="page-ftr">
-          Dra. Silvia de Oliveira Lemos · Nutricionista · CRN-4 25104731
+          Dra. Silvia Oliveira Lemos · Nutricionista · CRN-4 25104731
         </div>
       </div>
     `;

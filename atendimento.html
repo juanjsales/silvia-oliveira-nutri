@@ -1231,6 +1231,63 @@ async function salvarNotas() {
   if (res?.success) { toast('✅ Anotações salvas!'); saved.notas=true; updateFinishStatus(); }
 }
 
+async function salvarAnamnese() {
+  if (!PAC_ID) { toast('Sem paciente selecionado', true); return; }
+  const btn = document.getElementById('btnSalvarAnam');
+  if (btn) { btn.disabled = true; btn.innerText = 'Salvando...'; }
+
+  const anam = {
+    paciente_id: PAC_ID,
+    escolaridade: document.getElementById('anEscolaridade')?.value || '',
+    profissao: document.getElementById('anProfissao')?.value || '',
+    estado_civil: document.getElementById('anEstadoCivil')?.value || '',
+    renda: document.getElementById('anRenda')?.value || '',
+    dependentes: document.getElementById('anDependentes')?.value || '',
+    tabagismo: document.getElementById('anTabagismo')?.value || 'Não',
+    etilismo: document.getElementById('anEtilismo')?.value || 'Não',
+    agua: document.getElementById('anAgua')?.value || '',
+    historico_saude: document.getElementById('anHistorico')?.value || '',
+    medicamentos: document.getElementById('anMeds')?.value || '',
+    historico_familiar: document.getElementById('anHistFam')?.value || '',
+    intestino: document.getElementById('anIntestino')?.value || '',
+    sintomas_emocionais: document.getElementById('anSintomasEmocionais')?.value || '',
+    alergias: document.getElementById('anAlergias')?.value || '',
+    aversoes: document.getElementById('anPref')?.value || '',
+    objetivo: document.getElementById('anObjetivo')?.value || ''
+  };
+
+  const res = await apiCall('saveAnamnese', { anamnese: anam }, 'POST');
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Anamnese'; }
+
+  if (res && res.success) {
+    toast('✅ Ficha de Anamnese salva com sucesso!');
+    saved.anamnese = true;
+    updateFinishStatus();
+  } else {
+    toast('Erro ao salvar anamnese', true);
+  }
+}
+
+function preencherAnamnese(anam) {
+  if (!anam) return;
+  if (document.getElementById('anEscolaridade')) document.getElementById('anEscolaridade').value = anam.escolaridade || '';
+  if (document.getElementById('anProfissao')) document.getElementById('anProfissao').value = anam.profissao || '';
+  if (document.getElementById('anEstadoCivil')) document.getElementById('anEstadoCivil').value = anam.estado_civil || '';
+  if (document.getElementById('anRenda')) document.getElementById('anRenda').value = anam.renda || '';
+  if (document.getElementById('anDependentes')) document.getElementById('anDependentes').value = anam.dependentes || '';
+  if (document.getElementById('anTabagismo')) document.getElementById('anTabagismo').value = anam.tabagismo || 'Não';
+  if (document.getElementById('anEtilismo')) document.getElementById('anEtilismo').value = anam.etilismo || 'Não';
+  if (document.getElementById('anAgua')) document.getElementById('anAgua').value = anam.agua || '';
+  if (document.getElementById('anHistorico')) document.getElementById('anHistorico').value = anam.historico_saude || '';
+  if (document.getElementById('anMeds')) document.getElementById('anMeds').value = anam.medicamentos || '';
+  if (document.getElementById('anHistFam')) document.getElementById('anHistFam').value = anam.historico_familiar || '';
+  if (document.getElementById('anIntestino')) document.getElementById('anIntestino').value = anam.intestino || '';
+  if (document.getElementById('anSintomasEmocionais')) document.getElementById('anSintomasEmocionais').value = anam.sintomas_emocionais || '';
+  if (document.getElementById('anAlergias')) document.getElementById('anAlergias').value = anam.alergias || '';
+  if (document.getElementById('anPref')) document.getElementById('anPref').value = anam.aversoes || '';
+  if (document.getElementById('anObjetivo')) document.getElementById('anObjetivo').value = anam.objetivo || '';
+}
+
 function updateFinishStatus() {
   ['finAnam','finBio','finPlan','finSup','finNot'].forEach((id,i)=>{
     const keys=['anamnese','bio','plano','sups','notas'];
