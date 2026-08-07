@@ -508,7 +508,19 @@ function renderInputs() {
         <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remover</button>
         <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
         <div class="form-group">
-          <label>Alimentos &amp; Quantidades</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label>Alimentos &amp; Quantidades</label>
+            <button type="button" class="btn-preset" onclick="abrirModalTacoCalculadora(${idx})" style="padding:3px 8px; font-size:0.72rem; color:var(--sage-light); border-color:var(--sage-light); background:rgba(140,164,129,0.15);">
+              🔍 + Calculadora TACO
+            </button>
+          </div>
+
+          <!-- BUSCA INLINE RÁPIDA DENTRO DA REFEIÇÃO -->
+          <div style="position:relative; margin-bottom:8px;">
+            <input type="text" class="form-control" style="font-size:0.8rem; padding:8px 12px; border-color:var(--border-sage); background:rgba(0,0,0,0.5);" placeholder="🔍 Buscar na TACO (ex: Arroz, Frango, Ovo, Banana)..." oninput="buscarAlimentoInlineNaRefeicao(this.value, ${idx})">
+            <div id="inlineTacoResults_${idx}" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--forest-card); border:1.5px solid var(--sage-light); border-radius:10px; z-index:999; max-height:220px; overflow-y:auto; box-shadow:0 12px 30px rgba(0,0,0,0.85); padding:6px;"></div>
+          </div>
+
           ${foodBadgesHTML}
           <textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();">${m.itens}</textarea>
         </div>
@@ -909,7 +921,7 @@ function importarReceitaNoPlano(nome, itens) {
 
 let alimentoTacoSelecionado = null;
 
-function abrirModalTacoCalculadora() {
+function abrirModalTacoCalculadora(targetMealIndex) {
   const m = document.getElementById('modalTacoCalculadora');
   if (!m) return;
   m.style.display = 'flex';
@@ -917,12 +929,71 @@ function abrirModalTacoCalculadora() {
   const selRef = document.getElementById('tacoSelRefeicao');
   if (selRef) {
     selRef.innerHTML = refeicoes.map((r, i) => `<option value="${i}">${r.titulo || 'Refeição ' + (i+1)}</option>`).join('');
+    if (targetMealIndex !== undefined && targetMealIndex !== null) {
+      selRef.value = targetMealIndex;
+    }
   }
 }
 
 function fecharModalTaco() {
   const m = document.getElementById('modalTacoCalculadora');
   if (m) m.style.display = 'none';
+}
+
+async function buscarAlimentoInlineNaRefeicao(q, idxRef) {
+  const box = document.getElementById(`inlineTacoResults_${idxRef}`);
+  if (!box) return;
+  if (!q || q.trim().length < 2) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+
+  let resultados = window.TacoDB ? window.TacoDB.search(q) : [];
+  if (resultados.length === 0 && window.TacoDB) {
+    resultados = await window.TacoDB.searchOpenFoodFacts(q);
+  }
+
+  if (resultados.length === 0) {
+    box.style.display = 'block';
+    box.innerHTML = `<div style="padding:10px; font-size:0.78rem; color:var(--text-muted); text-align:center;">Nenhum alimento encontrado.</div>`;
+    return;
+  }
+
+  box.style.display = 'block';
+  box.innerHTML = resultados.slice(0, 6).map(item => `
+    <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:8px 10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; cursor:pointer;" onclick="adicionarAlimentoInlineDirect(${idxRef}, '${item.id}', '${item.nome.replace(/'/g, "\\'")}', ${item.kcal}, ${item.carb}, ${item.prot}, ${item.gord})">
+      <div>
+        <div style="font-weight:800; color:var(--sage-light); font-size:0.8rem;">${item.nome}</div>
+        <div style="font-size:0.7rem; color:var(--text-muted);">${item.kcal} kcal | C:${item.carb}g P:${item.prot}g (100g)</div>
+      </div>
+      <button type="button" class="btn btn-secondary" style="font-size:0.7rem; padding:3px 8px; color:var(--sage-light);">+ Adicionar 100g</button>
+    </div>
+  `).join('');
+}
+
+function adicionarAlimentoInlineDirect(idxRef, id, nome, kcal, carb, prot, gord) {
+  if (!refeicoes[idxRef]) return;
+  if (!refeicoes[idxRef].alimentosList) refeicoes[idxRef].alimentosList = [];
+
+  const novoAlimento = {
+    id: id || ('item_' + Date.now()),
+    nome: nome,
+    qtd: 100,
+    unidade: 'g',
+    kcal: kcal,
+    carb: carb,
+    prot: prot,
+    gord: gord
+  };
+
+  refeicoes[idxRef].alimentosList.push(novoAlimento);
+  recalculaRefeicaoPorAlimentos(idxRef);
+
+  renderInputs();
+  salvarELocal();
+  atualizar();
+  calcularTotaisPlano();
 }
 
 async function buscarAlimentosTaco(q) {
