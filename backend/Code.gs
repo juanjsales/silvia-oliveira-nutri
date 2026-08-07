@@ -79,9 +79,11 @@ function handleRequest(e, method) {
     const action = params.action;
     switch (action) {
 
-      // ── Seed ───────────────────────────────────────────────────
+      // ── Seed & Limpeza ─────────────────────────────────────────
       case "seedDatabase":
         response.data = populateInitialData(); response.success = true; break;
+      case "limparDadosFicticios":
+        response.data = limparDadosFicticios(); response.success = true; break;
 
       // ── Auth ───────────────────────────────────────────────────
       case "loginPaciente":
@@ -1274,4 +1276,42 @@ function populateInitialData() {
   }
 
   return { message:"Banco populado com sucesso!" };
+}
+
+function limparDadosFicticios() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  const sheetsToClear = [
+    SHEETS.AGENDAMENTOS,
+    SHEETS.ANAMNESES,
+    SHEETS.EVOLUCAO,
+    SHEETS.PLANOS,
+    SHEETS.SUPLEMENTOS,
+    SHEETS.EXAMES,
+    SHEETS.RETORNOS,
+    SHEETS.FINANCEIRO
+  ];
+
+  sheetsToClear.forEach(sheetName => {
+    const s = ss.getSheetByName(sheetName);
+    if (s && s.getLastRow() > 1) {
+      s.getRange(2, 1, s.getLastRow() - 1, s.getLastColumn()).clearContent();
+    }
+  });
+
+  const uSheet = ss.getSheetByName(SHEETS.USUARIOS);
+  if (uSheet && uSheet.getLastRow() > 1) {
+    const data = uSheet.getDataRange().getValues();
+    const headers = data[0];
+    const tipoColIdx = headers.indexOf("tipo");
+    
+    for (let i = data.length; i >= 2; i--) {
+      const tipoVal = tipoColIdx >= 0 ? String(data[i-1][tipoColIdx]).toUpperCase() : "";
+      if (tipoVal !== "ADMIN") {
+        uSheet.deleteRow(i);
+      }
+    }
+  }
+
+  return { cleared: true, message: "Todos os dados fictícios de teste foram limpos com sucesso!" };
 }

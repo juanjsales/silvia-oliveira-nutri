@@ -241,6 +241,22 @@ body.in-iframe .container { padding-top: 16px !important; }
       <label>Modelo de Mensagem Pós-Consulta / Envio de Resumo</label>
       <textarea id="cfgMsgPosConsulta" class="form-control" style="min-height:90px;" placeholder="Olá {NOME}! Foi excelente nossa consulta. Seu plano alimentar já está atualizado no seu Portal do Paciente!"></textarea>
     </div>
+  <!-- 5. MANUTENÇÃO & LIMPEZA DE DADOS DE TESTE -->
+  <div class="card" style="border-color: rgba(248,113,113,0.3);">
+    <div class="card-header">
+      <div>
+        <div class="card-title" style="color: #f87171;">🧹 Manutenção &amp; Produção</div>
+        <div class="card-subtitle">Remova todos os pacientes fictícios de teste e agendamentos demonstrativos para iniciar o uso real em produção</div>
+      </div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="font-size:0.85rem; color:var(--text-muted); max-width:550px;">
+        Esta ação limpa as tabelas de Agendamentos, Prontuários, Evoluções, Planos e Usuários de teste mantendo apenas os acessos administrativos da Dra. Silvia.
+      </div>
+      <button type="button" class="btn" style="background:#ef4444; border-color:#dc2626; color:#fff;" onclick="executarLimpezaFicticia()">
+        🧹 Zerar Planilha para Produção
+      </button>
+    </div>
   </div>
 
   <!-- BOTÃO FLUTUANTE / RODAPÉ DE AÇÃO -->
