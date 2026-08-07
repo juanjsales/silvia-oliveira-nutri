@@ -1256,9 +1256,10 @@
         page-break-inside: avoid !important;
         -webkit-column-break-inside: avoid !important;
       }
+    }
 
-      /* ULTRA-PREMIUM GLOBAL PRELOADER & SKELETON SHIMMER */
-      #topProgressBar {
+    /* ULTRA-PREMIUM GLOBAL PRELOADER & SKELETON SHIMMER */
+    #topProgressBar {
         position: fixed;
         top: 0;
         left: 0;
@@ -2673,16 +2674,43 @@
       }
     });
 
+    // CONTROLE DA BARRA DE PROGRESSO E PRELOADER GLOBAL
+    function setTopProgress(percent) {
+      const bar = document.getElementById('topProgressBar');
+      if (!bar) return;
+      bar.style.opacity = '1';
+      bar.style.width = percent + '%';
+      if (percent >= 100) {
+        setTimeout(() => {
+          bar.style.opacity = '0';
+          setTimeout(() => { bar.style.width = '0%'; }, 450);
+        }, 350);
+      }
+    }
+
+    function hideGlobalLoader() {
+      const loader = document.getElementById('globalPageLoader');
+      if (loader) loader.classList.add('hidden');
+    }
+
+    function showGlobalLoader() {
+      const loader = document.getElementById('globalPageLoader');
+      if (loader) loader.classList.remove('hidden');
+    }
+
     // INICIALIZAR GRÁFICOS DA HOME E DASHBOARD
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      setTopProgress(30);
       initTheme();
       if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
         window.location.href = "login.html";
         return;
       }
 
-      carregarDadosDashboard();
-
+      setTopProgress(65);
+      await carregarDadosDashboard();
+      setTopProgress(100);
+      setTimeout(() => hideGlobalLoader(), 400);
       // 1. GRÁFICO DE ATENDIMENTOS & FATURAMENTO NA HOME
       const ctxAtend = document.getElementById('chartAtendimentosHome');
       if (ctxAtend) {
