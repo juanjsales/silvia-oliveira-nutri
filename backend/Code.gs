@@ -721,24 +721,49 @@ function recuperarSenha(params) {
 
 // ── CRUD ───────────────────────────────────────────────────────────
 function savePaciente(p) {
-  const sheet = getSheet(SHEETS.USUARIOS);
-  const id    = p.id || "PAC-"+Date.now();
-  const dt    = p.data_cadastro || new Date().toISOString().split("T")[0];
-  const pin   = hashPassword(p.senha_pin || "123456");
-  sheet.appendRow([id, cleanCPF(p.cpf), p.nome, p.email||"", p.whatsapp||"",
-                   p.data_nascimento||"", p.objetivo||"Reeducação Alimentar",
-                   p.tipo||"PACIENTE", dt, pin]);
-  return { id, ...p };
+  const isNewId = !p.id || String(p.id).trim() === "" || String(p.id).trim().toUpperCase() === "NOVO";
+  const realId  = isNewId ? "PAC-" + Date.now() : String(p.id).trim();
+  const dt      = p.data_cadastro || new Date().toISOString().split("T")[0];
+  const pin     = hashPassword(p.senha_pin || "123456");
+
+  const pacienteObj = {
+    ...p,
+    id: realId,
+    cpf: cleanCPF(p.cpf),
+    nome: p.nome || "",
+    email: p.email || "",
+    whatsapp: p.whatsapp || "",
+    data_nascimento: p.data_nascimento || "",
+    objetivo: p.objetivo || "Reeducação Alimentar",
+    tipo: p.tipo || "PACIENTE",
+    data_cadastro: dt,
+    senha_pin: pin
+  };
+
+  return saveGeneric(SHEETS.USUARIOS, pacienteObj, SCHEMAS.Usuarios);
 }
 
 function saveAgendamento(ag) {
-  const sheet = getSheet(SHEETS.AGENDAMENTOS);
-  const id    = ag.id || "AG-"+Date.now();
-  sheet.appendRow([id, ag.paciente_id||"", ag.paciente_nome||"", ag.paciente_whatsapp||"",
-                   ag.data||"", ag.hora||"", ag.tipo||"Consulta Nutricional",
-                   ag.valor||250, ag.status||"Confirmado", ag.observacao||"",
-                   ag.notas_consulta||"", ag.meet_url||""]);
-  return { id, ...ag };
+  const isNewId = !ag.id || String(ag.id).trim() === "" || String(ag.id).trim().toUpperCase() === "NOVO";
+  const realId  = isNewId ? "AG-" + Date.now() : String(ag.id).trim();
+
+  const agendamentoObj = {
+    ...ag,
+    id: realId,
+    paciente_id: ag.paciente_id || "",
+    paciente_nome: ag.paciente_nome || "",
+    paciente_whatsapp: ag.paciente_whatsapp || "",
+    data: ag.data || "",
+    hora: ag.hora || "",
+    tipo: ag.tipo || "Consulta Nutricional",
+    valor: ag.valor || 250,
+    status: ag.status || "Confirmado",
+    observacao: ag.observacao || "",
+    notas_consulta: ag.notas_consulta || "",
+    meet_url: ag.meet_url || ""
+  };
+
+  return saveGeneric(SHEETS.AGENDAMENTOS, agendamentoObj, SCHEMAS.Agendamentos);
 }
 
 function criarEventoGoogleCalendar(agendamento, paciente) {
