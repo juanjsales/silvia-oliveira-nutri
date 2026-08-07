@@ -493,9 +493,7 @@ function renderInputs() {
   mContainer.innerHTML = '';
   
   refeicoes.forEach((m, idx) => {
-    if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
-      recalculaRefeicaoPorAlimentos(idx);
-    }
+    recalculaRefeicaoPorAlimentos(idx);
 
     let foodBadgesHTML = '';
     if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
@@ -1237,22 +1235,29 @@ function calcularTotaisPlano() {
 
 function recalculaRefeicaoPorAlimentos(idxRef) {
   const ref = refeicoes[idxRef];
-  if (!ref || !ref.alimentosList || ref.alimentosList.length === 0) return;
+  if (!ref) return;
 
-  let k = 0, c = 0, p = 0, g = 0;
-  const itensTxt = ref.alimentosList.map(a => {
-    k += parseFloat(a.kcal) || 0;
-    c += parseFloat(a.carb) || 0;
-    p += parseFloat(a.prot) || 0;
-    g += parseFloat(a.gord) || 0;
-    return `• ${a.qtd}${a.unidade || 'g'} de ${a.nome}`;
-  }).join('\n');
+  if (ref.alimentosList && Array.isArray(ref.alimentosList) && ref.alimentosList.length > 0) {
+    let k = 0, c = 0, p = 0, g = 0;
+    const itensTxt = ref.alimentosList.map(a => {
+      k += parseFloat(a.kcal) || 0;
+      c += parseFloat(a.carb) || 0;
+      p += parseFloat(a.prot) || 0;
+      g += parseFloat(a.gord) || 0;
+      return `• ${a.qtd}${a.unidade || 'g'} de ${a.nome}`;
+    }).join('\n');
 
-  ref.itens = itensTxt;
-  ref.calorias = `${Math.round(k)} kcal`;
-  ref.proteina = `${Math.round(p * 10) / 10}g`;
-  ref.carbos = `${Math.round(c * 10) / 10}g`;
-  ref.gorduras = `${Math.round(g * 10) / 10}g`;
+    ref.itens = itensTxt;
+    ref.calorias = `${Math.round(k)} kcal`;
+    ref.proteina = `${Math.round(p * 10) / 10}g`;
+    ref.carbos = `${Math.round(c * 10) / 10}g`;
+    ref.gorduras = `${Math.round(g * 10) / 10}g`;
+  } else if (!ref.itens || ref.itens.trim() === "") {
+    ref.calorias = "0 kcal";
+    ref.proteina = "0g";
+    ref.carbos = "0g";
+    ref.gorduras = "0g";
+  }
 }
 
 function removerAlimentoDaRefeicao(idxRef, idxItem) {
