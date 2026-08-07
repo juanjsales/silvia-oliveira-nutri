@@ -515,26 +515,46 @@ function renderInputs() {
       <div class="card-box">
         <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remover</button>
         <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
+        
         <div class="form-group">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <label>Alimentos &amp; Quantidades</label>
-            <button type="button" class="btn-preset" onclick="abrirModalTacoCalculadora(${idx})" style="padding:3px 8px; font-size:0.72rem; color:var(--sage-light); border-color:var(--sage-light); background:rgba(140,164,129,0.15);">
-              🔍 + Calculadora TACO
-            </button>
+          <div style="background:rgba(0,0,0,0.25); border:1.5px solid var(--border-forest); border-radius:12px; padding:10px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">➕ Adicionar Alimento</span>
+              <div style="display:flex; gap:6px;">
+                <button type="button" class="btn-preset" onclick="alternarModoAddAlimento(${idx}, 'taco')" id="btnModoTaco_${idx}" style="padding:3px 8px; font-size:0.7rem; background:rgba(140,164,129,0.2); color:var(--sage-light); border-color:var(--border-sage);">🔍 Tabela TACO</button>
+                <button type="button" class="btn-preset" onclick="alternarModoAddAlimento(${idx}, 'manual')" id="btnModoManual_${idx}" style="padding:3px 8px; font-size:0.7rem; opacity:0.7; border-color:var(--border-sage);">✍️ Digitar Manual</button>
+              </div>
+            </div>
+
+            <!-- OPÇÃO A: BUSCA TACO AUTOMÁTICA -->
+            <div id="boxAddTaco_${idx}" style="position:relative;">
+              <input type="text" class="form-control" style="font-size:0.8rem; padding:8px 12px; border-color:var(--border-sage); background:rgba(0,0,0,0.5);" placeholder="🔍 Digite para buscar na TACO (ex: Arroz, Frango, Ovo, Banana)..." oninput="buscarAlimentoInlineNaRefeicao(this.value, ${idx})">
+              <div id="inlineTacoResults_${idx}" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--forest-card); border:1.5px solid var(--sage-light); border-radius:10px; z-index:999; max-height:220px; overflow-y:auto; box-shadow:0 12px 30px rgba(0,0,0,0.85); padding:6px;"></div>
+            </div>
+
+            <!-- OPÇÃO B: INSERÇÃO MANUAL RÁPIDA -->
+            <div id="boxAddManual_${idx}" style="display:none; flex-direction:column; gap:6px;">
+              <div style="display:grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap:6px;">
+                <input type="text" id="manualNome_${idx}" class="form-control" style="font-size:0.78rem; padding:6px;" placeholder="Nome Alimento">
+                <input type="text" id="manualQtd_${idx}" class="form-control" style="font-size:0.78rem; padding:6px;" placeholder="Porção (ex: 1 un)">
+                <input type="number" id="manualKcal_${idx}" class="form-control" style="font-size:0.78rem; padding:6px;" placeholder="Kcal">
+                <input type="number" id="manualProt_${idx}" class="form-control" style="font-size:0.78rem; padding:6px;" placeholder="Prot (g)">
+              </div>
+              <div style="display:flex; justify-content:flex-end; margin-top:2px;">
+                <button type="button" class="btn btn-secondary" onclick="adicionarAlimentoManualNaRefeicao(${idx})" style="padding:4px 12px; font-size:0.75rem; color:var(--sage-light); border-color:var(--border-sage);">
+                  ➕ Inserir Alimento Manual
+                </button>
+              </div>
+            </div>
           </div>
 
-          <!-- BUSCA INLINE RÁPIDA DENTRO DA REFEIÇÃO -->
-          <div style="position:relative; margin-bottom:8px;">
-            <input type="text" class="form-control" style="font-size:0.8rem; padding:8px 12px; border-color:var(--border-sage); background:rgba(0,0,0,0.5);" placeholder="🔍 Buscar na TACO (ex: Arroz, Frango, Ovo, Banana)..." oninput="buscarAlimentoInlineNaRefeicao(this.value, ${idx})">
-            <div id="inlineTacoResults_${idx}" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--forest-card); border:1.5px solid var(--sage-light); border-radius:10px; z-index:999; max-height:220px; overflow-y:auto; box-shadow:0 12px 30px rgba(0,0,0,0.85); padding:6px;"></div>
-          </div>
-
+          <label style="margin-bottom:4px;">Cardápio da Refeição (Visualizado no PDF)</label>
           ${foodBadgesHTML}
           <textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();">${m.itens}</textarea>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>🔥 Calorias (Calculado TACO)</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
-          <div class="form-group"><label>💪 Proteínas (Calculado TACO)</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
+          <div class="form-group"><label>🔥 Calorias da Refeição</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
+          <div class="form-group"><label>💪 Proteínas da Refeição</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
         </div>
         <div class="form-group" style="margin:0;"><label>Substituições / Obs</label><input type="text" class="form-control" value="${m.obs}" oninput="refeicoes[${idx}].obs=this.value; salvarELocal(); atualizar();"></div>
       </div>
@@ -987,6 +1007,62 @@ async function buscarAlimentoInlineNaRefeicao(q, idxRef) {
       <button type="button" class="btn btn-secondary" style="font-size:0.7rem; padding:3px 8px; color:var(--sage-light);">+ Adicionar 100g</button>
     </div>
   `).join('');
+}
+
+function alternarModoAddAlimento(idxRef, modo) {
+  const boxTaco = document.getElementById(`boxAddTaco_${idxRef}`);
+  const boxMan = document.getElementById(`boxAddManual_${idxRef}`);
+  const btnT = document.getElementById(`btnModoTaco_${idxRef}`);
+  const btnM = document.getElementById(`btnModoManual_${idxRef}`);
+
+  if (modo === 'manual') {
+    if (boxTaco) boxTaco.style.display = 'none';
+    if (boxMan) boxMan.style.display = 'flex';
+    if (btnT) { btnT.style.opacity = '0.6'; btnT.style.background = 'transparent'; }
+    if (btnM) { btnM.style.opacity = '1'; btnM.style.background = 'rgba(140,164,129,0.2)'; btnM.style.color = 'var(--sage-light)'; }
+  } else {
+    if (boxTaco) boxTaco.style.display = 'block';
+    if (boxMan) boxMan.style.display = 'none';
+    if (btnT) { btnT.style.opacity = '1'; btnT.style.background = 'rgba(140,164,129,0.2)'; btnT.style.color = 'var(--sage-light)'; }
+    if (btnM) { btnM.style.opacity = '0.6'; btnM.style.background = 'transparent'; }
+  }
+}
+
+function adicionarAlimentoManualNaRefeicao(idxRef) {
+  const nomeEl = document.getElementById(`manualNome_${idxRef}`);
+  const qtdEl = document.getElementById(`manualQtd_${idxRef}`);
+  const kcalEl = document.getElementById(`manualKcal_${idxRef}`);
+  const protEl = document.getElementById(`manualProt_${idxRef}`);
+
+  const nome = nomeEl?.value.trim();
+  if (!nome) { alert('Digite o nome do alimento'); return; }
+
+  const qtdStr = qtdEl?.value.trim() || '1 porção';
+  const kcal = parseFloat(kcalEl?.value) || 0;
+  const prot = parseFloat(protEl?.value) || 0;
+
+  const novoAlimento = {
+    id: 'manual_' + Date.now(),
+    nome: `${nome} (${qtdStr})`,
+    qtd: 1,
+    unidade: 'item',
+    kcal: kcal,
+    carb: 0,
+    prot: prot,
+    gord: 0
+  };
+
+  adicionarAlimentoOuConsolidar(idxRef, novoAlimento);
+
+  if (nomeEl) nomeEl.value = '';
+  if (qtdEl) qtdEl.value = '';
+  if (kcalEl) kcalEl.value = '';
+  if (protEl) protEl.value = '';
+
+  renderInputs();
+  salvarELocal();
+  atualizar();
+  calcularTotaisPlano();
 }
 
 function adicionarAlimentoOuConsolidar(idxRef, novoAlimento) {
