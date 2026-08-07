@@ -606,7 +606,7 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
       <div class="card-header">
         <div><div class="card-title">🥗 Plano Alimentar da Consulta</div><div class="card-subtitle">Adicione, edite e salve as refeições</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-secondary" onclick="abrirGerenciadorA4()" style="font-size:.8rem;padding:8px 12px">🎨 Gerenciador A4 (PDF)</button>
+          <button class="btn btn-secondary" onclick="abrirGerenciadorA4()" style="font-size:.8rem;padding:8px 12px">🎨 Gerenciador de Plano Nutricional (PDF)</button>
           <button class="btn btn-secondary" onclick="addRefeicao()" style="font-size:.8rem;padding:8px 12px">+ Refeição</button>
           <button class="btn" onclick="salvarPlano()" style="font-size:.8rem;padding:8px 14px">💾 Salvar Plano</button>
         </div>
@@ -729,6 +729,9 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
     <div class="card">
       <div class="card-header">
         <div><div class="card-title">💊 Prescrição de Suplementos</div><div class="card-subtitle">Suplementos e fitoterápicos recomendados</div></div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-secondary" onclick="imprimirPDFSuplementos()" style="font-size:.8rem; padding:8px 14px;">🎨 Gerar PDF da Suplementação (A4)</button>
+        </div>
       </div>
 
       <div style="background:var(--bg-card);border:1px solid var(--border-forest);border-radius:12px;padding:18px;margin-bottom:20px">
@@ -749,7 +752,7 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
           <div class="form-group">
             <label>Forma Farmacêutica</label>
             <select id="supForma" class="form-control">
-              <option>Cápsula</option><option>Comprimido</option><option>Pó</option><option>Líquido</option>
+              <option>Cápsula</option><option>Comprimido</option><option>Pó</option><option>Líquido</option><option>Gotas</option><option>Sachê</option>
             </select>
           </div>
           <div class="form-group col-span-2">
@@ -764,7 +767,8 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
         <div class="empty-inline"><div class="empty-inline-icon">💊</div>Nenhuma prescrição adicionada</div>
       </div>
 
-      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-forest)">
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-forest); display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn btn-secondary" onclick="imprimirPDFSuplementos()" style="font-size:.85rem">🎨 Visualizar PDF A4</button>
         <button class="btn" onclick="salvarSuplementos()" id="btnSalvarSups" style="font-size:.85rem" disabled>💾 Salvar Prescrições</button>
       </div>
     </div>
@@ -1206,23 +1210,192 @@ async function salvarPlano() {
 }
 
 function addSuplemento() {
-  const nome=document.getElementById('supNome').value;
-  const dose=document.getElementById('supDose').value;
-  if (!nome) return;
-  suplementos.push({nome,dose,poso:document.getElementById('supPoso').value});
+  const nome = document.getElementById('supNome')?.value.trim();
+  const dose = document.getElementById('supDose')?.value.trim();
+  const poso = document.getElementById('supPoso')?.value.trim();
+  const forma = document.getElementById('supForma')?.value || 'Cápsula';
+  const obs = document.getElementById('supObs')?.value.trim() || '';
+
+  if (!nome) { alert('Digite o nome do suplemento ou manipulado'); return; }
+
+  suplementos.push({
+    nome: nome,
+    suplemento_nome: nome,
+    dose: dose || 'Conforme orientação',
+    dosagem: dose || 'Conforme orientação',
+    poso: poso || 'Conforme prescrição',
+    posologia: poso || 'Conforme prescrição',
+    forma: forma,
+    forma_farmaceutica: forma,
+    obs: obs,
+    observacao: obs
+  });
+
   renderSupList();
-  document.getElementById('btnSalvarSups').disabled=false;
+  if (document.getElementById('btnSalvarSups')) document.getElementById('btnSalvarSups').disabled = false;
+
+  if (document.getElementById('supNome')) document.getElementById('supNome').value = '';
+  if (document.getElementById('supDose')) document.getElementById('supDose').value = '';
+  if (document.getElementById('supPoso')) document.getElementById('supPoso').value = '';
+  if (document.getElementById('supObs')) document.getElementById('supObs').value = '';
 }
 
 function renderSupList() {
   const list = document.getElementById('supList');
-  if (suplementos.length===0) return;
-  list.innerHTML = suplementos.map(s=>`<div class="sup-card"><div class="sup-name">${s.nome} (${s.dose})</div></div>`).join('');
+  if (!list) return;
+  if (!suplementos || suplementos.length === 0) {
+    list.innerHTML = '<div class="empty-inline"><div class="empty-inline-icon">💊</div>Nenhuma prescrição adicionada</div>';
+    return;
+  }
+  list.innerHTML = suplementos.map((s, idx) => `
+    <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); padding:14px; border-radius:12px; margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:800; color:var(--text-title); font-size:0.95rem;">
+          💊 ${s.nome || s.suplemento_nome} <span style="font-size:0.75rem; color:var(--sage-light); font-weight:700;">(${s.dose || s.dosagem || ''})</span>
+        </div>
+        <button type="button" class="btn-remove" onclick="removerSuplemento(${idx})" style="padding:2px 8px; font-size:0.72rem;">✖ Remover</button>
+      </div>
+      <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">
+        ⏰ <strong>Posologia:</strong> ${s.poso || s.posologia || 'Conforme orientação'}
+        ${(s.forma || s.forma_farmaceutica) ? ` · 🧪 <strong>Forma:</strong> ${s.forma || s.forma_farmaceutica}` : ''}
+      </div>
+      ${(s.obs || s.observacao) ? `<div style="font-size:0.78rem; color:var(--sage-light); margin-top:4px;">📝 ${s.obs || s.observacao}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function removerSuplemento(idx) {
+  suplementos.splice(idx, 1);
+  renderSupList();
+}
+
+function imprimirPDFSuplementos() {
+  if (!suplementos || suplementos.length === 0) {
+    alert('Adicione ao menos um suplemento para gerar o PDF da Prescrição.');
+    return;
+  }
+  const nomePaciente = paciente ? paciente.nome : 'PACIENTE';
+  const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <title>Prescrição de Suplementos · ${nomePaciente}</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0b140e; color: #f2f5f1; padding: 30px; }
+        
+        .pdf-container { max-width: 800px; margin: 0 auto; background: #132218; border: 1.5px solid #203528; border-radius: 16px; padding: 36px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        
+        .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #203528; padding-bottom: 20px; margin-bottom: 24px; }
+        .pdf-brand { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #8ca481; font-weight: 700; }
+        .pdf-sub { font-size: 0.78rem; color: #a3b899; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+        
+        .pdf-meta { background: rgba(0,0,0,0.3); border: 1px solid #203528; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; display: flex; justify-content: space-between; font-size: 0.88rem; }
+        
+        .section-title { font-size: 1.1rem; font-weight: 800; color: #8ca481; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #203528; padding-bottom: 8px; }
+        
+        .sup-grid { display: flex; flex-direction: column; gap: 14px; }
+        .sup-item-card { background: rgba(0,0,0,0.35); border: 1.5px solid #203528; border-radius: 14px; padding: 18px; position: relative; }
+        .sup-item-title { font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .sup-badge { background: rgba(140,164,129,0.18); border: 1px solid #8ca481; color: #8ca481; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; }
+        
+        .sup-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; font-size: 0.85rem; }
+        .sup-detail-label { font-size: 0.72rem; color: #a3b899; font-weight: 800; text-transform: uppercase; }
+        .sup-detail-val { color: #f2f5f1; font-weight: 700; margin-top: 2px; }
+        
+        .pdf-footer { margin-top: 40px; border-top: 1px solid #203528; padding-top: 20px; text-align: center; font-size: 0.78rem; color: #a3b899; }
+        
+        @media print {
+          body { background: #fff !important; color: #000 !important; padding: 0; }
+          .pdf-container { border: 1px solid #ccc; background: #fff !important; color: #000 !important; box-shadow: none; padding: 20px; }
+          .pdf-brand, .section-title, .sup-item-title { color: #1e3a29 !important; }
+          .sup-item-card { background: #f9fbf9 !important; border: 1px solid #ccc !important; }
+          .sup-detail-val { color: #111 !important; }
+          .no-print { display: none !important; }
+        }
+      </style>
+    </head>
+    <body>
+      <div style="text-align:center; margin-bottom:20px;" class="no-print">
+        <button onclick="window.print()" style="background:#8ca481; color:#0b140e; font-weight:900; padding:12px 28px; border:none; border-radius:10px; font-size:1rem; cursor:pointer;">🖨️ Imprimir / Salvar em PDF</button>
+      </div>
+
+      <div class="pdf-container">
+        <div class="pdf-header">
+          <div>
+            <div class="pdf-brand">DRA. SILVIA OLIVEIRA LEMOS</div>
+            <div class="pdf-sub">Nutricionista · CRN-4 25104731</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.95rem; font-weight:800; color:#8ca481;">💊 Prescrição de Suplementação</div>
+            <div style="font-size:0.75rem; color:#a3b899;">Receituário Nutricional Personalizado</div>
+          </div>
+        </div>
+
+        <div class="pdf-meta">
+          <div><strong>Paciente:</strong> ${nomePaciente}</div>
+          <div><strong>Data da Prescrição:</strong> ${dataHoje}</div>
+        </div>
+
+        <div class="section-title">💊 Suplementos &amp; Manipulados Prescritos</div>
+
+        <div class="sup-grid">
+          ${suplementos.map(s => `
+            <div class="sup-item-card">
+              <div class="sup-item-title">
+                <span>${s.nome || s.suplemento_nome}</span>
+                ${(s.forma || s.forma_farmaceutica) ? `<span class="sup-badge">${s.forma || s.forma_farmaceutica}</span>` : ''}
+              </div>
+              <div class="sup-details">
+                <div>
+                  <div class="sup-detail-label">💊 Dosagem / Concentração</div>
+                  <div class="sup-detail-val">${s.dose || s.dosagem || 'Conforme orientação'}</div>
+                </div>
+                <div>
+                  <div class="sup-detail-label">⏰ Posologia &amp; Horário</div>
+                  <div class="sup-detail-val">${s.poso || s.posologia || 'Conforme prescrição'}</div>
+                </div>
+              </div>
+              ${(s.obs || s.observacao) ? `
+                <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #203528; font-size:0.82rem; color:#a3b899;">
+                  <strong>Observações / Modo de Preparo:</strong> ${s.obs || s.observacao}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="pdf-footer">
+          Dra. Silvia Oliveira Lemos · CRN-4 25104731 · Nutrição Clínica &amp; Esportiva<br>
+          Atendimento Presencial e Online · Rio de Janeiro / RJ
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+  win.document.close();
 }
 
 async function salvarSuplementos() {
-  for (const s of suplementos) await apiCall('saveSuplemento',{suplemento:{paciente_id:PAC_ID,suplemento_nome:s.nome,dosagem:s.dose,posologia:s.poso}},'POST');
-  toast('✅ Suplementos salvos!'); saved.sups=true; updateFinishStatus();
+  for (const s of suplementos) {
+    await apiCall('saveSuplemento',{
+      suplemento:{
+        paciente_id: PAC_ID,
+        suplemento_nome: s.nome || s.suplemento_nome,
+        dosagem: s.dose || s.dosagem,
+        posologia: s.poso || s.posologia,
+        forma_farmaceutica: s.forma || s.forma_farmaceutica,
+        observacao: s.obs || s.observacao
+      }
+    },'POST');
+  }
+  toast('✅ Suplementos salvos com sucesso!'); saved.sups=true; updateFinishStatus();
 }
 
 async function salvarNotas() {
