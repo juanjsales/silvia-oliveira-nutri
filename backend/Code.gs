@@ -135,16 +135,28 @@ function handleRequest(e, method) {
         response.success = true; break;
 
       // ── Histórico completo ────────────────────────────────────
-      case "getHistoricoCompleto":
+      case "getHistoricoCompleto": {
+        const pacienteData = getByField(SHEETS.USUARIOS, "id", params.paciente_id) || {};
+        const evolucoesList = getAllByField(SHEETS.EVOLUCAO, "paciente_id", params.paciente_id) || [];
+        const ultimaEv = evolucoesList.length > 0 ? evolucoesList[evolucoesList.length - 1] : null;
+        const idadeCalc = calcularIdadePorDataNascimento(pacienteData.data_nascimento);
+
         response.data = {
+          paciente: {
+            ...pacienteData,
+            idade: idadeCalc || pacienteData.idade || "",
+            peso: ultimaEv ? (ultimaEv.peso || ultimaEv.peso_kg) : (pacienteData.peso || ""),
+            altura: ultimaEv ? (ultimaEv.altura || ultimaEv.altura_cm) : (pacienteData.altura || "")
+          },
           anamnese: getByField(SHEETS.ANAMNESES,"paciente_id",params.paciente_id),
-          evolucao: getAllByField(SHEETS.EVOLUCAO,"paciente_id",params.paciente_id),
+          evolucao: evolucoesList,
           plano:    getPlanoVigente(params.paciente_id),
           suplementos: getAllByField(SHEETS.SUPLEMENTOS,"paciente_id",params.paciente_id),
           agendamentos: getAllByField(SHEETS.AGENDAMENTOS,"paciente_id",params.paciente_id),
           retornos: getAllByField(SHEETS.RETORNOS,"paciente_id",params.paciente_id)
         };
         response.success = true; break;
+      }
 
       // ── Questionário de Retorno ───────────────────────────────
       case "saveRetorno":
@@ -391,9 +403,60 @@ function formatarDataPTBR(val) {
   return s;
 }
 
+function calcularIdadePorDataNascimento(dataNasc) {
+  if (!dataNasc) return "";
+  try {
+    const str = String(dataNasc).trim();
+    if (!str) return "";
+    const parts = str.split(/[-/]/);
+    if (parts.length < 3) return "";
+
+    let d, m, y;
+    if (parts[0].length === 4) {
+      y = parseInt(parts[0], 10);
+      m = parseInt(parts[1], 10) - 1;
+      d = parseInt(parts[2], 10);
+    } else {
+      d = parseInt(parts[0], 10);
+      m = parseInt(parts[1], 10) - 1;
+      y = parseInt(parts[2], 10);
+    }
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return "";
+
+    const birth = new Date(y, m, d);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const mDiff = today.getMonth() - birth.getMonth();
+    if (mDiff < 0 || (mDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age > 0 ? age : "";
+  } catch(e) {
+    return "";
+  }
+}
+
 // ── Auth ───────────────────────────────────────────────────────────
 function getPacientes() {
-  return getTableData(SHEETS.USUARIOS).filter(u => !u.tipo || String(u.tipo).toUpperCase()==="PACIENTE");
+  const usuarios = getTableData(SHEETS.USUARIOS).filter(u => !u.tipo || String(u.tipo).toUpperCase()==="PACIENTE");
+  const evolucoes = getTableData(SHEETS.EVOLUCAO);
+
+  return usuarios.map(u => {
+    const idadeCalculada = calcularIdadePorDataNascimento(u.data_nascimento);
+    const evsDoPaciente = evolucoes.filter(e => String(e.paciente_id).trim() === String(u.id).trim());
+    const ultimaEv = evsDoPaciente.length > 0 ? evsDoPaciente[evsDoPaciente.length - 1] : null;
+
+    const pesoAtual = (ultimaEv && (ultimaEv.peso || ultimaEv.peso_kg)) ? (ultimaEv.peso || ultimaEv.peso_kg) : (u.peso || "");
+    const alturaAtual = (ultimaEv && (ultimaEv.altura || ultimaEv.altura_cm)) ? (ultimaEv.altura || ultimaEv.altura_cm) : (u.altura || "");
+
+    return {
+      ...u,
+      idade: idadeCalculada || u.idade || "",
+      peso: pesoAtual,
+      altura: alturaAtual,
+      ultima_evolucao_data: ultimaEv ? (ultimaEv.data || ultimaEv.data_medicao) : ""
+    };
+  });
 }
 
 function buscarPacientes(q) {
