@@ -1373,14 +1373,13 @@ function renderProximaConsulta(agendamentos) {
   }
 
   if (meetBtn) {
-    const isOnline = (ag.tipo || '').toLowerCase().includes('online') || (ag.tipo || '').toLowerCase().includes('meet');
+    const tipoStr = (ag.tipo || '').toLowerCase();
+    const isOnline = tipoStr.includes('online') || tipoStr.includes('meet') || tipoStr.includes('virtual') || tipoStr.includes('teleconsulta');
     const meetUrl = ag.meet_url || '';
-    if (isOnline && meetUrl) {
-      meetBtn.href = meetUrl;
+    if (isOnline || meetUrl) {
+      meetBtn.href = meetUrl || ('https://meet.jit.si/SilviaNutri-' + (ag.paciente_id || 'Atendimento'));
       meetBtn.style.display = 'inline-flex';
-    } else if (isOnline) {
-      meetBtn.href = 'https://meet.google.com';
-      meetBtn.style.display = 'inline-flex';
+      meetBtn.title = meetUrl ? 'Abrir sala do Google Meet' : 'Entrar na sala de teleconsulta ao vivo da Dra. Silvia';
     } else {
       meetBtn.style.display = 'none';
     }
