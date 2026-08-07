@@ -971,18 +971,10 @@ async function carregarPacientesBD() {
 
 async function carregarAgendamentos() {
   const res = await apiCall('getAgendamentos');
-  if (res?.success && res.data?.length) {
+  if (res && res.success && Array.isArray(res.data)) {
     allAgendamentos = res.data;
   } else {
-    // Dados demo
-    const hoje = new Date(), am = new Date(hoje); am.setDate(hoje.getDate()+1);
-    const fmt = dt=>`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
-    allAgendamentos = [
-      {id:'AG-01',paciente_id:'PAC-01',paciente_nome:'Juliana Mendes',paciente_whatsapp:'5521999998888',data:fmt(hoje),hora:'09:00',tipo:'Online (Google Meet)',status:'Confirmado',valor:'250'},
-      {id:'AG-02',paciente_id:'PAC-02',paciente_nome:'Carlos Eduardo Torres',paciente_whatsapp:'5521988887777',data:fmt(hoje),hora:'10:30',tipo:'Presencial',status:'Aguardando',valor:'280'},
-      {id:'AG-03',paciente_id:'PAC-03',paciente_nome:'Mariana Castro Silva',paciente_whatsapp:'5521977776666',data:fmt(hoje),hora:'14:00',tipo:'Retorno de Avaliação',status:'Confirmado',valor:'200'},
-      {id:'AG-04',paciente_id:'PAC-01',paciente_nome:'Juliana Mendes',paciente_whatsapp:'5521999998888',data:fmt(am),hora:'09:30',tipo:'Online (Google Meet)',status:'Confirmado',valor:'250'},
-    ];
+    allAgendamentos = [];
   }
   renderCalendar();
   renderDayList();

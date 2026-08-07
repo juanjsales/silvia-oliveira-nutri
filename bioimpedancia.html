@@ -577,14 +577,13 @@ async function inicializarPacientes() {
 
     carregarEvolucaoPaciente();
   } else {
-    sel.innerHTML = '<option value="PAC-01">Juliana Mendes (PAC-01)</option>';
-    carregarEvolucaoPaciente();
+    sel.innerHTML = '<option value="">Nenhum paciente cadastrado</option>';
   }
 }
 
 async function carregarEvolucaoPaciente() {
   const sel = document.getElementById('selPacienteEvolucao');
-  const pacienteId = sel ? sel.value : 'PAC-01';
+  const pacienteId = sel ? sel.value : '';
   const pacienteObj = listaPacientes.find(p => p.id === pacienteId) || { nome: 'Paciente' };
   const tblHist = document.getElementById('tblHistoricoEvolucao');
   const statusEvo = document.getElementById('statusEvolucao');
