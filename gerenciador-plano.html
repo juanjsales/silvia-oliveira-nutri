@@ -501,8 +501,10 @@ function renderInputs() {
         <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; margin-bottom:8px;">
           ${m.alimentosList.map((al, aIdx) => `
             <span style="background:rgba(140,164,129,0.18); border:1px solid var(--border-sage); padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; color:var(--sage-light); display:inline-flex; align-items:center; gap:6px;">
-              ${al.qtd}g ${al.nome} (${al.kcal}k | C:${al.carb}g P:${al.prot}g)
-              <span onclick="removerAlimentoDaRefeicao(${idx}, ${aIdx})" style="cursor:pointer; color:#f87171; font-weight:900; margin-left:2px;" title="Remover item">✕</span>
+              <input type="number" value="${al.qtd}" onchange="editarQtdAlimento(${idx}, ${aIdx}, this.value)" onclick="event.stopPropagation()" style="width:52px; background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); color:var(--text-title); border-radius:6px; padding:2px 4px; font-weight:800; font-size:0.75rem; text-align:center;" title="Clique para alterar a quantidade em gramas (ex: 15g, 30g, 50g, 150g)"> g
+              <span>${al.nome}</span>
+              <span style="color:var(--text-muted); font-size:0.7rem;">(${al.kcal}k | C:${al.carb}g P:${al.prot}g)</span>
+              <span onclick="removerAlimentoDaRefeicao(${idx}, ${aIdx})" style="cursor:pointer; color:#f87171; font-weight:900; margin-left:4px;" title="Remover item">✕</span>
             </span>
           `).join('')}
         </div>
@@ -1258,6 +1260,41 @@ function recalculaRefeicaoPorAlimentos(idxRef) {
     ref.carbos = "0g";
     ref.gorduras = "0g";
   }
+}
+
+function editarQtdAlimento(idxRef, idxItem, novaQtdVal) {
+  const ref = refeicoes[idxRef];
+  if (!ref || !ref.alimentosList || !ref.alimentosList[idxItem]) return;
+
+  const al = ref.alimentosList[idxItem];
+  const q = Math.max(0, parseFloat(novaQtdVal) || 0);
+
+  const qtdAntiga = parseFloat(al.qtd) || 100;
+  const fatorAtual = qtdAntiga / 100;
+
+  // Preserva base de 100g de referência se não existir
+  const baseK = al.baseKcal !== undefined ? al.baseKcal : (parseFloat(al.kcal) / (fatorAtual || 1));
+  const baseC = al.baseCarb !== undefined ? al.baseCarb : (parseFloat(al.carb) / (fatorAtual || 1));
+  const baseP = al.baseProt !== undefined ? al.baseProt : (parseFloat(al.prot) / (fatorAtual || 1));
+  const baseG = al.baseGord !== undefined ? al.baseGord : (parseFloat(al.gord) / (fatorAtual || 1));
+
+  al.baseKcal = baseK;
+  al.baseCarb = baseC;
+  al.baseProt = baseP;
+  al.baseGord = baseG;
+
+  al.qtd = q;
+  const ratio = q / 100;
+  al.kcal = Math.round(baseK * ratio);
+  al.carb = Math.round(baseC * ratio * 10) / 10;
+  al.prot = Math.round(baseP * ratio * 10) / 10;
+  al.gord = Math.round(baseG * ratio * 10) / 10;
+
+  recalculaRefeicaoPorAlimentos(idxRef);
+  renderInputs();
+  salvarELocal();
+  atualizar();
+  calcularTotaisPlano();
 }
 
 function removerAlimentoDaRefeicao(idxRef, idxItem) {
