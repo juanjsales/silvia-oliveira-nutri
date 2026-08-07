@@ -9,6 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assets/js/taco-db.js"></script>
 <style>
 :root,[data-theme="dark"]{
   --bg-deep:#0e1a12;--bg-card:#182a1f;--bg-header:#203528;
@@ -160,6 +161,9 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
       <div class="pac-details" id="pacDetails"></div>
     </div>
     <div class="pac-tags" id="pacTags">
+      <a id="btnMeetHeader" href="#" target="_blank" class="btn btn-secondary" style="display:none; font-size:.8rem; padding:8px 12px; color:#63b3ed; border-color:rgba(99,179,237,.3); background:rgba(99,179,237,.12);">
+        📹 Entrar no Google Meet
+      </a>
       <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
       <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px" disabled>✅ Finalizar Atendimento</button>
     </div>
@@ -199,6 +203,7 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
   <!-- TABS -->
   <div class="tabs-nav" id="tabsNav">
     <button class="tab-btn active" onclick="openTab('anamnese',this)">📝 Anamnese</button>
+    <button class="tab-btn" onclick="openTab('retorno',this)">🔄 Consulta de Retorno</button>
     <button class="tab-btn" onclick="openTab('bioimpedancia',this)">⚖️ Antropometria &amp; Bioimpedância</button>
     <button class="tab-btn" onclick="openTab('exames',this)">🔬 Exames Laboratoriais</button>
     <button class="tab-btn" onclick="openTab('plano',this)">🥗 Plano Alimentar</button>
@@ -314,6 +319,196 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
     </div>
   </div>
 
+  <!-- ── TAB CONSULTA DE RETORNO ── -->
+  <div class="tab-content" id="tab-retorno">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🔄 Questionário de Retorno Nutricional</div>
+          <div class="card-subtitle">Avaliação da evolução, adesão ao plano, sintomas e novas metas do paciente</div>
+        </div>
+        <button class="btn btn-secondary" id="btnSalvarRetorno" onclick="salvarRetornoAtend()">💾 Salvar Questionário de Retorno</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <!-- SEÇÃO 1: EVOLUÇÃO DESDE A ÚLTIMA CONSULTA -->
+        <div class="section-divider">1. Evolução desde a última consulta</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>1. Avaliação da alimentação desde a última consulta</label>
+            <select id="retAvaliacaoAlimentacao" class="form-control">
+              <option value="Excelente">Excelente</option>
+              <option value="Boa" selected>Boa</option>
+              <option value="Regular">Regular</option>
+              <option value="Ruim">Ruim</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>2. Conseguia seguir o plano proposto?</label>
+            <select id="retSeguimentoPlano" class="form-control">
+              <option value="Sempre">Sempre</option>
+              <option value="Na maior parte do tempo" selected>Na maior parte do tempo</option>
+              <option value="Às vezes">Às vezes</option>
+              <option value="Raramente">Raramente</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>3. Mudança significativa na rotina?</label>
+            <select id="retMudancaRotina" class="form-control" onchange="document.getElementById('retMudancaRotinaQualGroup').style.display = this.value === 'Sim' ? 'flex' : 'none'">
+              <option value="Não" selected>Não</option>
+              <option value="Sim">Sim</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="retMudancaRotinaQualGroup" style="display:none;">
+          <label>Detalhes da mudança na rotina (trabalho, estudos, viagens, etc)</label>
+          <input type="text" id="retMudancaRotinaQual" class="form-control" placeholder="Ex: Mudança de horário de trabalho, viagem a negócios...">
+        </div>
+
+        <!-- SEÇÃO 2: ALIMENTAÇÃO -->
+        <div class="section-divider">2. Hábitos Alimentares &amp; Comportamento</div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>4. Refeições com maior dificuldade em seguir conforme planejado</label>
+            <input type="text" id="retDificuldadeRefeicoes" class="form-control" placeholder="Ex: Jantar, lanche da tarde...">
+          </div>
+          <div class="form-group">
+            <label>5. Percepção de Fome / Saciedade</label>
+            <input type="text" id="retFomeNivel" class="form-control" placeholder="Ex: Fome normal, mais fome no final do dia...">
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>6. Episódios de exagero ou compulsão?</label>
+            <select id="retCompulsaoExagero" class="form-control" onchange="document.getElementById('retCompulsaoSitGroup').style.display = this.value === 'Sim' ? 'flex' : 'none'">
+              <option value="Não" selected>Não</option>
+              <option value="Sim">Sim</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>7. Consumo de água (Litros/dia)</label>
+            <input type="text" id="retAguaDiaria" class="form-control" placeholder="Ex: 2.5 L/dia">
+          </div>
+          <div class="form-group">
+            <label>8. Consumo de bebidas alcoólicas?</label>
+            <select id="retAlcoolConsumo" class="form-control" onchange="document.getElementById('retAlcoolFreqGroup').style.display = this.value === 'Sim' ? 'flex' : 'none'">
+              <option value="Não" selected>Não</option>
+              <option value="Sim">Sim</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group" id="retCompulsaoSitGroup" style="display:none;">
+            <label>Em quais situações ocorreu o exagero?</label>
+            <input type="text" id="retCompulsaoSituacao" class="form-control" placeholder="Ex: Finais de semana, ansiedade à noite...">
+          </div>
+          <div class="form-group" id="retAlcoolFreqGroup" style="display:none;">
+            <label>Frequência e quantidade de álcool</label>
+            <input type="text" id="retAlcoolFrequencia" class="form-control" placeholder="Ex: 2 taças de vinho no fim de semana...">
+          </div>
+        </div>
+
+        <!-- SEÇÃO 3: SINTOMAS E SAÚDE -->
+        <div class="section-divider">3. Sintomas, Disposição &amp; Saúde</div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>9. Disposição e Nível de Energia</label>
+            <input type="text" id="retEnergiaDisposicao" class="form-control" placeholder="Ex: Boa energia pela manhã, sem queda à tarde...">
+          </div>
+          <div class="form-group">
+            <label>11. Alterações na qualidade do sono</label>
+            <input type="text" id="retAlteracaoSono" class="form-control" placeholder="Ex: Dormindo 7h contínuas, sem insônia...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>10. Sintomas apresentados desde a última consulta (Selecione todos que se aplicam)</label>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; background:rgba(0,0,0,0.25); padding:14px; border-radius:10px; border:1px solid var(--border-forest);">
+            <label style="font-size:0.82rem; cursor:pointer;"><input type="checkbox" class="chk-ret-sintoma" value="Inchaço"> 🎈 Inchaço</label>
+            <label style="font-size:0.82rem; cursor:pointer;"><input type="checkbox" class="chk-ret-sintoma" value="Azia"> 🔥 Azia</label>
+            <label style="font-size:0.82rem; cursor:pointer;"><input type="checkbox" class="chk-ret-sintoma" value="Constipação"> 📦 Constipação</label>
+            <label style="font-size:0.82rem; cursor:pointer;"><input type="checkbox" class="chk-ret-sintoma" value="Diarreia"> 💧 Diarreia</label>
+            <label style="font-size:0.82rem; cursor:pointer;"><input type="checkbox" class="chk-ret-sintoma" value="Gases"> 💨 Gases</label>
+            <label style="font-size:0.82rem; cursor:pointer;"><input type="checkbox" class="chk-ret-sintoma" value="Dor de cabeça"> 🤯 Dor de cabeça</label>
+            <label style="font-size:0.82rem; cursor:pointer;"><input type="checkbox" class="chk-ret-sintoma" value="Nenhum" id="chkSintomaNenhum" onchange="toggleNenhumSintoma(this)"> ✨ Nenhum sintoma</label>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>12. Utilizando algum medicamento ou suplemento novo?</label>
+            <select id="retMedicamentoNovo" class="form-control" onchange="document.getElementById('retMedQualGroup').style.display = this.value === 'Sim' ? 'flex' : 'none'">
+              <option value="Não" selected>Não</option>
+              <option value="Sim">Sim</option>
+            </select>
+          </div>
+          <div class="form-group" id="retMedQualGroup" style="display:none;">
+            <label>Qual medicamento / suplemento novo?</label>
+            <input type="text" id="retMedicamentoQual" class="form-control" placeholder="Ex: Vitamina D 2000UI, Omega 3...">
+          </div>
+        </div>
+
+        <!-- SEÇÃO 4: ATIVIDADE FÍSICA -->
+        <div class="section-divider">4. Atividade Física &amp; Performance</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>13. Praticando atividade física?</label>
+            <select id="retAtividadeStatus" class="form-control">
+              <option value="Sim" selected>Sim</option>
+              <option value="Não">Não</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>14. Qual atividade e frequência?</label>
+            <input type="text" id="retAtividadeFrequencia" class="form-control" placeholder="Ex: Musculação 4x na semana + Cardio 2x">
+          </div>
+          <div class="form-group">
+            <label>15. Avaliação do desempenho e recuperação</label>
+            <input type="text" id="retDesempenhoTreino" class="form-control" placeholder="Ex: Boa progressão de carga, pouca fadiga pós-treino">
+          </div>
+        </div>
+
+        <!-- SEÇÃO 5: RESULTADOS E METAS -->
+        <div class="section-divider">5. Resultados, Dificuldades &amp; Metas Futuras</div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>16. Mudanças no peso e medidas corporais percebidas</label>
+            <textarea id="retMudancaPesoPercebida" class="form-control" style="min-height:70px;" placeholder="Ex: Roupas mais soltas na cintura, redução de inchaço visível..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>17. Resultados positivos observados desde a última consulta</label>
+            <textarea id="retResultadosPositivos" class="form-control" style="min-height:70px;" placeholder="Ex: Mais disposição, intestino regulado, perda de gordura..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>18. Maiores dificuldades encontradas no período</label>
+            <textarea id="retMaioresDificuldades" class="form-control" style="min-height:70px;" placeholder="Ex: Preparar marmitas na quarta-feira, beber 3L de água nos dias frios..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>19. Principal meta para o próximo período</label>
+            <textarea id="retMetaProximoPeriodo" class="form-control" style="min-height:70px;" placeholder="Ex: Aumentar ingestão de fibras, manter 4 treinos/semana..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>20. Ajustes desejados no plano alimentar atual</label>
+          <textarea id="retAjustePlanoDesejado" class="form-control" style="min-height:70px;" placeholder="Ex: Incluir opção de lanche prático, variar opções de carboidratos..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Observações Adicionais da Nutricionista</label>
+          <textarea id="retObservacoesAdicionais" class="form-control" style="min-height:90px;" placeholder="Anotações livres sobre a conduta alinhada nesta consulta de retorno..."></textarea>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- ── TAB ANTROPOMETRIA & BIOIMPEDÂNCIA ── -->
   <div class="tab-content" id="tab-bioimpedancia">
     <div class="card">
@@ -363,6 +558,28 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
         <div class="form-group"><label>Razão Cintura/Quadril (RCQ)</label><input type="text" id="bioRCQ" class="form-control" readonly placeholder="—" style="background:var(--sage-dim);color:var(--sage-light);font-weight:800"></div>
       </div>
 
+      <div class="section-divider">Cálculo de Gastos Energéticos (TMB &amp; VET)</div>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label>Fator de Atividade Física</label>
+          <select id="bioFatorAtiv" class="form-control" onchange="calcTMBAtend()">
+            <option value="1.2">Sedentário (1.2x)</option>
+            <option value="1.375" selected>Leve (1.375x)</option>
+            <option value="1.55">Moderado (1.55x)</option>
+            <option value="1.725">Intenso (1.725x)</option>
+            <option value="1.9">Extremamente Ativo (1.9x)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>TMB - Basal (Mifflin-St Jeor)</label>
+          <input type="text" id="bioTMB" class="form-control" readonly placeholder="—" style="background:var(--sage-dim);color:var(--sage-light);font-weight:800">
+        </div>
+        <div class="form-group">
+          <label>VET - Gasto Diário Total</label>
+          <input type="text" id="bioVET" class="form-control" readonly placeholder="—" style="background:var(--sage-dim);color:#34d399;font-weight:900">
+        </div>
+      </div>
+
       <div class="section-divider">Dobras Cutâneas (mm) - Adipômetro</div>
       <div class="form-grid-4">
         <div class="form-group"><label>Bicipital (mm)</label><input type="number" id="bioDobraBicipital" class="form-control" step="0.5"></div>
@@ -388,7 +605,8 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
     <div class="card">
       <div class="card-header">
         <div><div class="card-title">🥗 Plano Alimentar da Consulta</div><div class="card-subtitle">Adicione, edite e salve as refeições</div></div>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="abrirGerenciadorA4()" style="font-size:.8rem;padding:8px 12px">🎨 Gerenciador A4 (PDF)</button>
           <button class="btn btn-secondary" onclick="addRefeicao()" style="font-size:.8rem;padding:8px 12px">+ Refeição</button>
           <button class="btn" onclick="salvarPlano()" style="font-size:.8rem;padding:8px 14px">💾 Salvar Plano</button>
         </div>
@@ -599,6 +817,12 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
         <button class="btn btn-success" id="btnFinalizar" onclick="finalizarAtendimento()" style="font-size:.9rem;padding:12px 24px">
           🏁 Finalizar &amp; Marcar como Realizado
         </button>
+        <button class="btn btn-secondary" onclick="enviarResumoWhatsApp()" style="font-size:.88rem; color:#25d366; border-color:rgba(37,211,102,.4); background:rgba(37,211,102,.1);">
+          💬 Enviar Resumo no WhatsApp
+        </button>
+        <button class="btn btn-secondary" onclick="window.print()" style="font-size:.88rem">
+          🖨️ Imprimir Prontuário
+        </button>
         <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.88rem">Voltar para Agenda</button>
       </div>
     </div>
@@ -725,6 +949,7 @@ async function carregarDados() {
   if (resHist?.success && resHist.data) {
     const hist = resHist.data;
     if (hist.anamnese) preencherAnamnese(hist.anamnese);
+    if (hist.retornos?.length) preencherRetorno(hist.retornos[hist.retornos.length - 1]);
     if (hist.evolucao?.length) { evolucao = hist.evolucao; renderEvolucao(); }
     if (hist.plano) { refeicoes = hist.plano.refeicoes || []; renderRefeicoes(); }
     if (hist.suplementos?.length) { suplementos = hist.suplementos; renderSupList(); }
@@ -850,70 +1075,35 @@ function renderPacHeader() {
     paciente.email ? `📧 ${paciente.email}` : ''
   ].filter(Boolean).map(d=>`<span class="pac-detail">${d}</span>`).join('');
 
+  const isOnline = agendamento?.tipo && (agendamento.tipo.toLowerCase().includes('online') || agendamento.tipo.toLowerCase().includes('meet'));
+  const meetUrl = agendamento?.meet_url || (isOnline ? 'https://meet.google.com' : '');
+
   document.getElementById('pacTags').innerHTML = `
-    <div class="ag-badge">${agendamento?.tipo||'Consulta'}</div>`;
+    ${isOnline ? `<a id="btnMeetHeader" href="${meetUrl}" target="_blank" class="btn btn-secondary" style="font-size:.8rem; padding:8px 12px; color:#63b3ed; border-color:rgba(99,179,237,.3); background:rgba(99,179,237,.12);">📹 Entrar no Google Meet</a>` : ''}
+    <div class="ag-badge">${agendamento?.tipo||'Consulta'}</div>
+    <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
+    <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px">✅ Finalizar Atendimento</button>`;
 }
 
-function preencherAnamnese(an) {
-  if (!an) return;
-  const m = { anEscolaridade:'escolaridade', anProfissao:'profissao', anRenda:'renda_familiar',
-              anDependentes:'dependentes_renda', anEstadoCivil:'estado_civil', anTabagismo:'tabagismo_status',
-              anEtilismo:'etilismo_status', anAgua:'ingestao_hidrica', anHistorico:'historico_saude',
-              anMeds:'medicamentos', anHistFam:'historico_familiar', anIntestino:'intestino',
-              anSintomasEmocionais:'ansiedade', anAlergias:'alergias', anPref:'preferencias', anObjetivo:'objetivo_detalhado' };
-  Object.keys(m).forEach(id => {
-    const el = document.getElementById(id);
-    if (el && an[m[id]]) el.value = an[m[id]];
-  });
+function calcTMBAtend() {
+  const peso = parseFloat(document.getElementById('bioPeso').value) || 0;
+  const alt  = parseFloat(document.getElementById('bioAltura').value) || 0;
+  const tmbEl = document.getElementById('bioTMB');
+  const vetEl = document.getElementById('bioVET');
+  const fator = parseFloat(document.getElementById('bioFatorAtiv')?.value) || 1.375;
 
-  // Alertas Clínicos Automáticos no Prontuário
-  const alertas = [];
-  if (an.alergias) alertas.push(`🚨 <strong>Alergias:</strong> ${an.alergias}`);
-  if (an.intolerancias) alertas.push(`⚠️ <strong>Intolerâncias:</strong> ${an.intolerancias}`);
-  if (an.aversao_alimentar) alertas.push(`🚫 <strong>Aversões:</strong> ${an.aversao_alimentar}`);
-  if (an.medicamentos) alertas.push(`💊 <strong>Medicamentos:</strong> ${an.medicamentos}`);
-  if (an.restricoes_alimentares) alertas.push(`⛔ <strong>Restrições:</strong> ${an.restricoes_alimentares}`);
+  if (peso > 0 && alt > 0) {
+    const isFem = (perfilClinicoAtend || '').toLowerCase().includes('feminino');
+    const idade = 30;
+    const tmb = isFem ? (10 * peso + 6.25 * alt - 5 * idade - 161) : (10 * peso + 6.25 * alt - 5 * idade + 5);
+    const vet = Math.round(tmb * fator);
 
-  const box = document.getElementById('alertaClinicoBox');
-  const txt = document.getElementById('alertaClinicoTexto');
-  if (alertas.length > 0 && box && txt) {
-    txt.innerHTML = alertas.join('<br>');
-    box.style.display = 'block';
-  } else if (box) {
-    box.style.display = 'none';
+    if (tmbEl) tmbEl.value = `${Math.round(tmb)} kcal/dia`;
+    if (vetEl) vetEl.value = `${vet} kcal/dia`;
+  } else {
+    if (tmbEl) tmbEl.value = '—';
+    if (vetEl) vetEl.value = '—';
   }
-}
-
-async function salvarAnamnese() {
-  if (!PAC_ID) { toast('Sem paciente vinculado',true); return; }
-  const btn = document.getElementById('btnSalvarAnam');
-  btn.disabled=true; btn.innerHTML='Salvando...';
-
-  const an = {
-    paciente_id: PAC_ID,
-    perfil_clinico: perfilClinicoAtend,
-    escolaridade: document.getElementById('anEscolaridade').value,
-    profissao: document.getElementById('anProfissao').value,
-    estado_civil: document.getElementById('anEstadoCivil').value,
-    renda_familiar: document.getElementById('anRenda').value,
-    dependentes_renda: document.getElementById('anDependentes').value,
-    tabagismo_status: document.getElementById('anTabagismo').value,
-    etilismo_status: document.getElementById('anEtilismo').value,
-    ingestao_hidrica: document.getElementById('anAgua').value,
-    historico_saude: document.getElementById('anHistorico').value,
-    medicamentos: document.getElementById('anMeds').value,
-    historico_familiar: document.getElementById('anHistFam').value,
-    intestino: document.getElementById('anIntestino').value,
-    ansiedade: document.getElementById('anSintomasEmocionais').value,
-    alergias: document.getElementById('anAlergias').value,
-    preferencias: document.getElementById('anPref').value,
-    objetivo_detalhado: document.getElementById('anObjetivo').value
-  };
-
-  const res = await apiCall('saveAnamnese',{anamnese:an},'POST');
-  btn.disabled=false; btn.innerHTML='💾 Salvar Anamnese';
-  if (res?.success) { toast('✅ Anamnese salva!'); saved.anamnese=true; updateFinishStatus(); }
-  else { toast('Erro ao salvar anamnese',true); }
 }
 
 function calcIMCAtend() {
@@ -924,6 +1114,7 @@ function calcIMCAtend() {
     const imc = (peso/((alt/100)*(alt/100))).toFixed(1);
     imcEl.value = `${imc} · ${imc<18.5?'Abaixo':imc<25?'Normal':imc<30?'Sobrepeso':'Obesidade'}`;
   } else imcEl.value='—';
+  calcTMBAtend();
 }
 
 function calcRCQAtend() {
@@ -948,6 +1139,8 @@ async function salvarBioimpedancia() {
     imc: document.getElementById('bioIMC').value.split(' ·')[0],
     percentual_gordura: parseFloat(document.getElementById('bioGordura').value)||0,
     massa_magra: parseFloat(document.getElementById('bioMagra').value)||0,
+    tmb: document.getElementById('bioTMB')?.value || '',
+    vet: document.getElementById('bioVET')?.value || '',
     braco: parseFloat(document.getElementById('bioBraco').value)||0,
     cintura: parseFloat(document.getElementById('bioCintura').value)||0,
     abdomen: parseFloat(document.getElementById('bioAbdomen').value)||0,
@@ -1057,6 +1250,133 @@ async function finalizarAtendimento() {
 function voltarAgenda() {
   if (window.self !== window.top) window.parent.postMessage({type:'OPEN_IFRAME',url:'agendamento.html'},'*');
   else window.location.href='agendamento.html';
+}
+
+function abrirGerenciadorA4() {
+  if (!PAC_ID) { toast('Sem paciente vinculado', true); return; }
+  window.open(`gerenciador-plano.html?paciente_id=${encodeURIComponent(PAC_ID)}`, '_blank');
+}
+
+function enviarResumoWhatsApp() {
+  if (!paciente) { toast('Sem paciente vinculado', true); return; }
+  const phone = String(paciente.whatsapp || '').replace(/\D/g, '');
+  if (!phone) { alert('O paciente não possui WhatsApp cadastrado.'); return; }
+
+  const proxDt = document.getElementById('proxConsulta')?.value;
+  const proxTipo = document.getElementById('proxTipo')?.value || 'Retorno';
+  const dtFmt = proxDt ? fmt(proxDt) : 'A definir';
+
+  let msg = `Olá ${paciente.nome}! 🌿\n\nAqui é a Dra. Silvia Lemos. Foi ótimo estar com você na consulta de hoje!\n\n`;
+  msg += `📋 *Próxima Consulta/Retorno:* ${dtFmt} (${proxTipo})\n`;
+  msg += `🥗 Seu plano alimentar atualizado já está disponível no seu Portal do Paciente!\n\n`;
+  msg += `Qualquer dúvida, estou à disposição! Um abraço saudável. 🌱`;
+
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function toggleNenhumSintoma(chk) {
+  if (chk.checked) {
+    document.querySelectorAll('.chk-ret-sintoma').forEach(c => {
+      if (c !== chk) c.checked = false;
+    });
+  }
+}
+
+async function salvarRetornoAtend() {
+  if (!PAC_ID) { toast('Sem paciente selecionado', true); return; }
+  const btn = document.getElementById('btnSalvarRetorno');
+  if (btn) { btn.disabled = true; btn.innerText = 'Salvando...'; }
+
+  const sintomasArr = [];
+  document.querySelectorAll('.chk-ret-sintoma:checked').forEach(c => sintomasArr.push(c.value));
+
+  const dtStr = new Date().toISOString().split('T')[0];
+
+  const ret = {
+    paciente_id: PAC_ID,
+    data: dtStr,
+    avaliacao_alimentacao: document.getElementById('retAvaliacaoAlimentacao')?.value || 'Boa',
+    seguimento_plano: document.getElementById('retSeguimentoPlano')?.value || 'Na maior parte do tempo',
+    mudanca_rotina: document.getElementById('retMudancaRotina')?.value || 'Não',
+    mudanca_rotina_qual: document.getElementById('retMudancaRotinaQual')?.value || '',
+    dificuldade_refeicoes: document.getElementById('retDificuldadeRefeicoes')?.value || '',
+    fome_nivel: document.getElementById('retFomeNivel')?.value || '',
+    compulsao_exagero: document.getElementById('retCompulsaoExagero')?.value || 'Não',
+    compulsao_situacao: document.getElementById('retCompulsaoSituacao')?.value || '',
+    agua_diaria: document.getElementById('retAguaDiaria')?.value || '',
+    alcool_consumo: document.getElementById('retAlcoolConsumo')?.value || 'Não',
+    alcool_frequencia: document.getElementById('retAlcoolFrequencia')?.value || '',
+    energia_disposicao: document.getElementById('retEnergiaDisposicao')?.value || '',
+    sintomas_lista: sintomasArr.join(', '),
+    alteracao_sono: document.getElementById('retAlteracaoSono')?.value || '',
+    medicamento_novo: document.getElementById('retMedicamentoNovo')?.value || 'Não',
+    medicamento_qual: document.getElementById('retMedicamentoQual')?.value || '',
+    atividade_fisica_status: document.getElementById('retAtividadeStatus')?.value || 'Sim',
+    atividade_fisica_frequencia: document.getElementById('retAtividadeFrequencia')?.value || '',
+    desempenho_treino: document.getElementById('retDesempenhoTreino')?.value || '',
+    mudanca_peso_percebida: document.getElementById('retMudancaPesoPercebida')?.value || '',
+    resultados_positivos: document.getElementById('retResultadosPositivos')?.value || '',
+    maiores_dificuldades: document.getElementById('retMaioresDificuldades')?.value || '',
+    meta_proximo_periodo: document.getElementById('retMetaProximoPeriodo')?.value || '',
+    ajuste_plano_desejado: document.getElementById('retAjustePlanoDesejado')?.value || '',
+    observacoes_adicionais: document.getElementById('retObservacoesAdicionais')?.value || ''
+  };
+
+  const res = await apiCall('saveRetorno', { retorno: ret }, 'POST');
+
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Questionário de Retorno'; }
+
+  if (res && res.success) {
+    toast('✅ Questionário de Retorno salvo com sucesso!');
+  } else {
+    toast('Erro ao salvar questionário de retorno', true);
+  }
+}
+
+function preencherRetorno(ret) {
+  if (!ret) return;
+  if (document.getElementById('retAvaliacaoAlimentacao')) document.getElementById('retAvaliacaoAlimentacao').value = ret.avaliacao_alimentacao || 'Boa';
+  if (document.getElementById('retSeguimentoPlano')) document.getElementById('retSeguimentoPlano').value = ret.seguimento_plano || 'Na maior parte do tempo';
+  if (document.getElementById('retMudancaRotina')) {
+    document.getElementById('retMudancaRotina').value = ret.mudanca_rotina || 'Não';
+    document.getElementById('retMudancaRotinaQualGroup').style.display = ret.mudanca_rotina === 'Sim' ? 'flex' : 'none';
+  }
+  if (document.getElementById('retMudancaRotinaQual')) document.getElementById('retMudancaRotinaQual').value = ret.mudanca_rotina_qual || '';
+  if (document.getElementById('retDificuldadeRefeicoes')) document.getElementById('retDificuldadeRefeicoes').value = ret.dificuldade_refeicoes || '';
+  if (document.getElementById('retFomeNivel')) document.getElementById('retFomeNivel').value = ret.fome_nivel || '';
+  if (document.getElementById('retCompulsaoExagero')) {
+    document.getElementById('retCompulsaoExagero').value = ret.compulsao_exagero || 'Não';
+    document.getElementById('retCompulsaoSitGroup').style.display = ret.compulsao_exagero === 'Sim' ? 'flex' : 'none';
+  }
+  if (document.getElementById('retCompulsaoSituacao')) document.getElementById('retCompulsaoSituacao').value = ret.compulsao_situacao || '';
+  if (document.getElementById('retAguaDiaria')) document.getElementById('retAguaDiaria').value = ret.agua_diaria || '';
+  if (document.getElementById('retAlcoolConsumo')) {
+    document.getElementById('retAlcoolConsumo').value = ret.alcool_consumo || 'Não';
+    document.getElementById('retAlcoolFreqGroup').style.display = ret.alcool_consumo === 'Sim' ? 'flex' : 'none';
+  }
+  if (document.getElementById('retAlcoolFrequencia')) document.getElementById('retAlcoolFrequencia').value = ret.alcool_frequencia || '';
+  if (document.getElementById('retEnergiaDisposicao')) document.getElementById('retEnergiaDisposicao').value = ret.energia_disposicao || '';
+  
+  const sints = String(ret.sintomas_lista || '').split(',').map(s => s.trim());
+  document.querySelectorAll('.chk-ret-sintoma').forEach(c => {
+    c.checked = sints.includes(c.value);
+  });
+
+  if (document.getElementById('retAlteracaoSono')) document.getElementById('retAlteracaoSono').value = ret.alteracao_sono || '';
+  if (document.getElementById('retMedicamentoNovo')) {
+    document.getElementById('retMedicamentoNovo').value = ret.medicamento_novo || 'Não';
+    document.getElementById('retMedQualGroup').style.display = ret.medicamento_novo === 'Sim' ? 'flex' : 'none';
+  }
+  if (document.getElementById('retMedicamentoQual')) document.getElementById('retMedicamentoQual').value = ret.medicamento_qual || '';
+  if (document.getElementById('retAtividadeStatus')) document.getElementById('retAtividadeStatus').value = ret.atividade_fisica_status || 'Sim';
+  if (document.getElementById('retAtividadeFrequencia')) document.getElementById('retAtividadeFrequencia').value = ret.atividade_fisica_frequencia || '';
+  if (document.getElementById('retDesempenhoTreino')) document.getElementById('retDesempenhoTreino').value = ret.desempenho_treino || '';
+  if (document.getElementById('retMudancaPesoPercebida')) document.getElementById('retMudancaPesoPercebida').value = ret.mudanca_peso_percebida || '';
+  if (document.getElementById('retResultadosPositivos')) document.getElementById('retResultadosPositivos').value = ret.resultados_positivos || '';
+  if (document.getElementById('retMaioresDificuldades')) document.getElementById('retMaioresDificuldades').value = ret.maiores_dificuldades || '';
+  if (document.getElementById('retMetaProximoPeriodo')) document.getElementById('retMetaProximoPeriodo').value = ret.meta_proximo_periodo || '';
+  if (document.getElementById('retAjustePlanoDesejado')) document.getElementById('retAjustePlanoDesejado').value = ret.ajuste_plano_desejado || '';
+  if (document.getElementById('retObservacoesAdicionais')) document.getElementById('retObservacoesAdicionais').value = ret.observacoes_adicionais || '';
 }
 
 (async()=>{

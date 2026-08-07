@@ -149,10 +149,41 @@ body.in-iframe .container { padding-top: 16px !important; }
 
 
 <main class="container">
+
+  <!-- KPI CARDS -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+    <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+      <div style="font-size:1.8rem; background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">👥</div>
+      <div>
+        <div style="font-size:1.6rem; font-weight:900; color:var(--sage-light); line-height:1;" id="kpiTotalPacientes">0</div>
+        <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">Pacientes Cadastrados</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+      <div style="font-size:1.8rem; background:rgba(226, 184, 87, 0.15); border:1px solid rgba(226, 184, 87, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">🥗</div>
+      <div>
+        <div style="font-size:1.6rem; font-weight:900; color:var(--text-title); line-height:1;" id="kpiFocoTop">Reeducação</div>
+        <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">Foco Predominante</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+      <div style="font-size:1.8rem; background:rgba(52, 211, 153, 0.15); border:1px solid rgba(52, 211, 153, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">⚡</div>
+      <div>
+        <div style="font-size:1.6rem; font-weight:900; color:#34d399; line-height:1;">100%</div>
+        <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">Base Sincronizada</div>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="flex-wrap:wrap; gap:14px;">
       <div class="card-title">👤 Pacientes Cadastrados &amp; Fichas Clínicas</div>
-      <a href="agendamento.html" class="btn">📅 Novo Agendamento (Cadastrar Paciente)</a>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <input type="text" id="inputBuscaPacientes" class="form-control" placeholder="🔍 Buscar por nome, CPF, WhatsApp ou objetivo..." oninput="filtrarPacientes(this.value)" style="width:300px; padding:10px 14px; font-size:0.86rem;">
+        <a href="agendamento.html" class="btn" style="white-space:nowrap;">📅 Novo Agendamento</a>
+      </div>
     </div>
 
     <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:12px; padding:12px 16px; margin-bottom:20px; font-size:0.84rem; color:var(--text-primary); display:flex; align-items:center; gap:12px;">
@@ -168,7 +199,7 @@ body.in-iframe .container { padding-top: 16px !important; }
             <th>Nome do Paciente</th>
             <th>CPF / WhatsApp</th>
             <th>Objetivo Clínico</th>
-            <th>Ações</th>
+            <th>Ações Clínicas</th>
           </tr>
         </thead>
         <tbody id="tblPacientes">
@@ -465,13 +496,18 @@ function renderizarTabelaPacientes(lista) {
   tbl.innerHTML = '';
   const filtrados = (lista || []).filter(p => !p.tipo || String(p.tipo).toUpperCase() === "PACIENTE");
 
+  // Atualiza KPI Total de Pacientes
+  const kpiTotal = document.getElementById('kpiTotalPacientes');
+  if (kpiTotal) kpiTotal.textContent = (window.pacientesLista || []).filter(p => !p.tipo || String(p.tipo).toUpperCase() === "PACIENTE").length;
+
   if (filtrados.length === 0) {
-    tbl.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Nenhum paciente cadastrado.</td></tr>`;
+    tbl.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Nenhum paciente encontrado.</td></tr>`;
     return;
   }
 
   filtrados.forEach(p => {
     const cpfFmt = p.cpf ? maskCPF(p.cpf) : '--';
+    const rawWsp = String(p.whatsapp || '').replace(/\D/g, '');
     const wspFmt = p.whatsapp ? maskPhone(p.whatsapp) : '--';
     const dtFmt = p.data_cadastro ? formatDateBR(p.data_cadastro) : '';
     const nomeEscaped = (p.nome || '').replace(/'/g, "\\'");
@@ -480,18 +516,41 @@ function renderizarTabelaPacientes(lista) {
     tr.innerHTML = `
       <td style="white-space:nowrap;"><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
       <td style="white-space:nowrap;"><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
-      <td style="white-space:nowrap;">${cpfFmt}<br><span style="font-size:0.78rem; color:var(--text-muted);">${wspFmt}</span></td>
+      <td style="white-space:nowrap;">
+        ${cpfFmt}<br>
+        ${rawWsp ? `<a href="https://wa.me/${rawWsp}" target="_blank" style="font-size:0.78rem; color:#25d366; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">💬 ${wspFmt}</a>` : `<span style="font-size:0.78rem; color:var(--text-muted);">${wspFmt}</span>`}
+      </td>
       <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700; display:inline-block; white-space:nowrap;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
       <td style="white-space:nowrap;">
         <div style="display:flex; gap:6px; flex-wrap:nowrap; align-items:center;">
+          <a href="atendimento.html?pac_id=${encodeURIComponent(p.id)}" class="btn" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap; background:rgba(140,164,129,.18); color:var(--sage-light); border:1.5px solid var(--sage-light);">▶ Atender</a>
           <button class="btn btn-secondary" onclick="verAnamnesePaciente('${p.id}', '${nomeEscaped}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📋 Anamnese</button>
-          <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🥗 Cardápio</a>
+          <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🥗 Cardápio</a>
           <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</a>
         </div>
       </td>
     `;
     tbl.appendChild(tr);
   });
+}
+
+function filtrarPacientes(q) {
+  const term = String(q || '').toLowerCase().trim();
+  if (!term) {
+    renderizarTabelaPacientes(window.pacientesLista);
+    return;
+  }
+  const cleanQ = term.replace(/\D/g, '');
+  const filtrados = (window.pacientesLista || []).filter(p => {
+    const nomeMatch = String(p.nome || '').toLowerCase().includes(term);
+    const emailMatch = String(p.email || '').toLowerCase().includes(term);
+    const objMatch = String(p.objetivo || '').toLowerCase().includes(term);
+    const idMatch = String(p.id || '').toLowerCase().includes(term);
+    const cpfMatch = cleanQ !== '' && String(p.cpf || '').replace(/\D/g, '').includes(cleanQ);
+    const wspMatch = cleanQ !== '' && String(p.whatsapp || '').replace(/\D/g, '').includes(cleanQ);
+    return nomeMatch || emailMatch || objMatch || idMatch || cpfMatch || wspMatch;
+  });
+  renderizarTabelaPacientes(filtrados);
 }
 
 async function carregarPacientes() {

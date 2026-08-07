@@ -188,9 +188,9 @@ body.in-iframe .container{padding-top:16px!important}
     <!-- CALENDÁRIO -->
     <div class="card">
       <div class="calendar-nav">
-        <button class="btn-icon" onclick="changeMonth(-1)">‹</button>
+        <button class="btn-icon" onclick="changeMonth(-1)" aria-label="Mês anterior">‹</button>
         <div class="calendar-nav-title" id="calMonthTitle">—</div>
-        <button class="btn-icon" onclick="changeMonth(1)">›</button>
+        <button class="btn-icon" onclick="changeMonth(1)" aria-label="Próximo mês">›</button>
       </div>
       <div class="calendar-grid" id="calGrid"></div>
       <div class="month-summary">
@@ -350,7 +350,7 @@ body.in-iframe .container{padding-top:16px!important}
         <div class="form-row">
           <div class="form-group">
             <label>Tipo de Consulta</label>
-            <select id="agTipo" class="form-control">
+            <select id="agTipo" class="form-control" onchange="toggleMeetField()">
               <option value="Avaliação Inicial">Avaliação Inicial</option>
               <option value="Online (Google Meet)">Online (Google Meet)</option>
               <option value="Presencial">Presencial no Consultório</option>
@@ -361,6 +361,14 @@ body.in-iframe .container{padding-top:16px!important}
           <div class="form-group">
             <label>Valor (R$)</label>
             <input type="number" id="agValor" class="form-control" value="250" min="0">
+          </div>
+        </div>
+
+        <div class="form-group" id="meetGroup" style="display:none">
+          <label>Link da Sala Google Meet 📹</label>
+          <div style="display:flex;gap:8px">
+            <input type="url" id="agMeetUrl" class="form-control" placeholder="https://meet.google.com/abc-defg-hij">
+            <button type="button" class="btn btn-secondary" onclick="gerarLinkMeet()" style="font-size:0.78rem;padding:6px 12px" title="Criar ou abrir sala Google Meet">+ Nova Sala</button>
           </div>
         </div>
 
@@ -381,6 +389,15 @@ body.in-iframe .container{padding-top:16px!important}
           <div class="success-icon">🌿</div>
           <div class="success-title">Consulta Agendada com Sucesso!</div>
           <div class="success-detail" id="successMsg"></div>
+
+          <div id="meetLinkSuccessBox" style="display:none; margin-top:10px; width:100%; background:rgba(99,179,237,.12); border:1px solid rgba(99,179,237,.3); border-radius:12px; padding:12px 16px; text-align:center;">
+            <div style="font-size:0.8rem; font-weight:800; color:#63b3ed; margin-bottom:6px;">📹 LINK DO GOOGLE MEET:</div>
+            <a id="successMeetLink" href="#" target="_blank" style="color:var(--text-title); font-weight:800; font-size:0.9rem; word-break:break-all; text-decoration:underline;"></a>
+            <div style="margin-top:8px">
+              <button class="btn btn-secondary" style="font-size:0.75rem; padding:4px 10px;" onclick="copiarLinkMeet()">📋 Copiar Link</button>
+            </div>
+          </div>
+
           <div id="emailBadge" style="display:none; margin-top:10px;">
             <span class="success-badge">📧 E-mail com confirmação e credenciais de acesso enviado ao paciente</span>
           </div>
@@ -389,6 +406,7 @@ body.in-iframe .container{padding-top:16px!important}
           </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px">
             <button class="btn" onclick="fecharModal()">Concluir</button>
+            <a id="successWaBtn" href="#" target="_blank" class="whats-btn" style="display:none; padding:10px 18px; font-size:0.85rem; text-decoration:none;">💬 Enviar Lembrete no WhatsApp</a>
             <a href="pacientes.html" class="btn btn-secondary" style="text-decoration:none;">📋 Ir para Lista de Pacientes</a>
           </div>
         </div>
@@ -753,6 +771,36 @@ function maskCPF(v){ return String(v||'').replace(/\D/g,'').replace(/(\d{3})(\d)
 function mascaraCPF(el){ if(!el) return; el.value = maskCPF(el.value); }
 function maskPhone(v){ const d=String(v||'').replace(/\D/g,''); return d.length<=10?d.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{4})(\d)/,'$1-$2').slice(0,14):d.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2').slice(0,15); }
 
+function toggleMeetField() {
+  const tipo = document.getElementById('agTipo').value;
+  const isOnline = tipo.toLowerCase().includes('online') || tipo.toLowerCase().includes('meet');
+  const meetGroup = document.getElementById('meetGroup');
+  if (meetGroup) meetGroup.style.display = isOnline ? 'flex' : 'none';
+  if (isOnline && meetGroup) meetGroup.style.flexDirection = 'column';
+}
+
+function gerarLinkMeet() {
+  const input = document.getElementById('agMeetUrl');
+  if (input && !input.value) {
+    const roomCode = 'silvia-nutri-' + Math.random().toString(36).substring(2, 7);
+    input.value = `https://meet.google.com/${roomCode}`;
+  }
+  if (input && input.value) {
+    window.open(input.value, '_blank');
+  }
+}
+
+function copiarLinkMeet() {
+  const meetLink = document.getElementById('successMeetLink');
+  if (meetLink && meetLink.href) {
+    navigator.clipboard.writeText(meetLink.href).then(() => {
+      alert('📋 Link do Google Meet copiado!');
+    }).catch(() => {
+      prompt('Copie o link do Meet:', meetLink.href);
+    });
+  }
+}
+
 function irParaPasso2() {
   const isNovo = document.getElementById('rNovo').checked;
   if (!isNovo && !pacienteSelecionado) {
@@ -776,6 +824,7 @@ function irParaPasso2() {
     btnSalvar.innerHTML = isAdmin ? '💾 Confirmar &amp; Salvar no Banco' : '💬 Enviar Solicitação no WhatsApp →';
   }
 
+  toggleMeetField();
   irParaStep(2);
 }
 
@@ -786,10 +835,13 @@ async function salvarConsulta() {
   const data = document.getElementById('agData').value;
   const hora = document.getElementById('agHora').value;
   const tipo = document.getElementById('agTipo').value;
+  const meetUrl = (document.getElementById('agMeetUrl')?.value || '').trim();
 
   if (!isAdmin) {
     // Visitante (Paciente na LP): Envia solicitação com data e horário direto no WhatsApp da Dra. Silvia
-    const msgText = encodeURIComponent(`Olá Dra. Silvia! Gostaria de agendar uma consulta para o dia ${formatDateBR(data)} às ${hora} (${tipo}). Meu nome é ${nome}.`);
+    let msgStr = `Olá Dra. Silvia! Gostaria de agendar uma consulta para o dia ${formatDateBR(data)} às ${hora} (${tipo}). Meu nome é ${nome}.`;
+    if (meetUrl) msgStr += ` Link Meet: ${meetUrl}`;
+    const msgText = encodeURIComponent(msgStr);
     window.open(`https://wa.me/5521987385146?text=${msgText}`, '_blank');
     fecharModal();
     return;
@@ -822,6 +874,7 @@ async function salvarConsulta() {
     tipo:        tipo,
     valor:       document.getElementById('agValor').value,
     observacao:  document.getElementById('agObs').value,
+    meet_url:    meetUrl,
     status:      'Confirmado'
   };
 
@@ -840,8 +893,42 @@ async function salvarConsulta() {
       allAgendamentos.push(novAg);
       renderCalendar();
       renderDayList();
-      fecharModal();
-      alert(`✅ Consulta agendada com sucesso para ${d?.paciente?.nome || paciente.nome} em ${dtFmt} às ${agendamento.hora}!\n\n📧 Um e-mail com os detalhes e acesso ao portal foi enviado ao paciente.`);
+
+      // Atualiza visualmente o Passo 3 do modal (Sucesso)
+      const successMsg = document.getElementById('successMsg');
+      if (successMsg) {
+        successMsg.innerHTML = `Consulta de <strong>${d?.paciente?.nome || paciente.nome}</strong> confirmada para <strong>${dtFmt}</strong> às <strong>${agendamento.hora}</strong> (${agendamento.tipo}).`;
+      }
+
+      const emailBadge = document.getElementById('emailBadge');
+      if (emailBadge) {
+        emailBadge.style.display = (isNovo || d?.emailEnviado) ? 'inline-flex' : 'none';
+      }
+
+      const meetBox = document.getElementById('meetLinkSuccessBox');
+      const meetLink = document.getElementById('successMeetLink');
+      if (meetBox && meetLink) {
+        if (agendamento.meet_url) {
+          meetLink.href = agendamento.meet_url;
+          meetLink.textContent = agendamento.meet_url;
+          meetBox.style.display = 'block';
+        } else {
+          meetBox.style.display = 'none';
+        }
+      }
+
+      const waBtn = document.getElementById('successWaBtn');
+      const phone = String(d?.paciente?.whatsapp || paciente.whatsapp || '').replace(/\D/g, '');
+      if (waBtn && phone) {
+        let waMsg = `Olá ${d?.paciente?.nome || paciente.nome}! 🌿 Sua consulta com a Dra. Silvia Lemos foi agendada para ${dtFmt} às ${agendamento.hora}.`;
+        if (agendamento.meet_url) waMsg += ` Link do Google Meet: ${agendamento.meet_url}`;
+        waBtn.href = `https://wa.me/${phone}?text=${encodeURIComponent(waMsg)}`;
+        waBtn.style.display = 'inline-flex';
+      } else if (waBtn) {
+        waBtn.style.display = 'none';
+      }
+
+      irParaStep(3);
     } else {
       alert('Erro ao salvar: '+(res?.error||'Tente novamente.'));
     }
@@ -849,7 +936,7 @@ async function salvarConsulta() {
     alert('Erro de conexão: '+err.message);
   }
   btn.disabled=false;
-  btn.innerHTML='💾 Confirmar & Salvar';
+  btn.innerHTML='💾 Confirmar &amp; Salvar';
 }
 
 function formatDateBR(v) {

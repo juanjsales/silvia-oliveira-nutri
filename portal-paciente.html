@@ -578,14 +578,19 @@ body {
     </div>
 
     <!-- CONSULTA AGENDADA -->
-    <div class="score-card" style="border-color: var(--sage-light);">
+    <div class="score-card" style="border-color: var(--sage-light);" id="cardProximaConsulta">
       <div style="font-size:2.2rem; flex-shrink:0;">📅</div>
       <div style="flex:1;">
         <div style="font-size:0.75rem; font-weight:800; color:var(--gold-accent); text-transform:uppercase;">Próxima Consulta</div>
-        <div style="font-size:1.1rem; font-weight:900; color:var(--text-title);" id="apDateText">10 de Agosto às 14:00</div>
-        <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20confirmar%20minha%20consulta." target="_blank" style="font-size:0.78rem; color:var(--sage-light); font-weight:800; text-decoration:none; margin-top:4px; display:inline-block;">
-          💬 Confirmar via WhatsApp →
-        </a>
+        <div style="font-size:1.1rem; font-weight:900; color:var(--text-title);" id="apDateText">Buscando agendamento...</div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:6px;">
+          <a id="apWaBtn" href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20confirmar%20minha%20consulta." target="_blank" style="font-size:0.78rem; color:var(--sage-light); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            💬 Confirmar via WhatsApp →
+          </a>
+          <a id="apMeetBtn" href="#" target="_blank" style="display:none; font-size:0.78rem; color:#63b3ed; font-weight:800; text-decoration:none; background:rgba(99,179,237,.15); padding:4px 10px; border-radius:8px; border:1px solid rgba(99,179,237,.3); align-items:center; gap:4px;">
+            📹 Entrar no Google Meet
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -643,6 +648,27 @@ body {
       <button class="btn-sec" onclick="window.print()" style="padding:6px 14px; font-size:0.78rem;">
         📥 PDF do Plano
       </button>
+    </div>
+
+    <!-- WIDGET RASTREADOR DE CALORIAS DIÁRIAS (CONSUMIDO / META KCAL) -->
+    <div style="background: linear-gradient(135deg, rgba(20, 40, 28, 0.6) 0%, rgba(10, 25, 18, 0.8) 100%); border: 1.5px solid var(--border-forest); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 800; font-size: 0.95rem; color: var(--sage-light); display: flex; align-items: center; gap: 8px;">
+          🔥 Consumo Calórico Diário
+        </div>
+        <div style="font-size: 0.9rem; font-weight: 900; color: var(--text-title);" id="dispCaloriasProgresso">
+          0 / 1.800 kcal
+        </div>
+      </div>
+
+      <div style="width: 100%; height: 16px; background: rgba(0,0,0,0.4); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-forest);">
+        <div id="barCaloriasFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #34d399 0%, #059669 100%); border-radius: 12px; transition: width 0.4s ease;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">
+        <span id="dispCaloriasRestantes">Restam: 1.800 kcal</span>
+        <span id="dispCaloriasPercent">0% da meta atingida</span>
+      </div>
     </div>
 
     <!-- METAS MACRO -->
@@ -995,6 +1021,33 @@ function toggleHabit(id) {
   updateAdherenceScore();
 }
 
+function updateCalorieTrackerUI() {
+  const targetKcal = window.userTargetKcal || 1800;
+  let consumedKcal = 0;
+
+  document.querySelectorAll('.meal-card-v2').forEach(card => {
+    const chk = card.querySelector('input[type="checkbox"]');
+    if (chk && chk.checked) {
+      const kcalAttr = card.getAttribute('data-kcal');
+      const kcalNum = parseInt(kcalAttr || '0', 10);
+      if (!isNaN(kcalNum)) consumedKcal += kcalNum;
+    }
+  });
+
+  const percent = Math.min(100, Math.round((consumedKcal / targetKcal) * 100));
+  const rest = Math.max(0, targetKcal - consumedKcal);
+
+  const disp = document.getElementById('dispCaloriasProgresso');
+  const bar = document.getElementById('barCaloriasFill');
+  const dispRest = document.getElementById('dispCaloriasRestantes');
+  const dispPct = document.getElementById('dispCaloriasPercent');
+
+  if (disp) disp.textContent = `${consumedKcal.toLocaleString('pt-BR')} / ${targetKcal.toLocaleString('pt-BR')} kcal`;
+  if (bar) bar.style.width = `${percent}%`;
+  if (dispRest) dispRest.textContent = `Restam: ${rest.toLocaleString('pt-BR')} kcal`;
+  if (dispPct) dispPct.textContent = `${percent}% da meta atingida`;
+}
+
 // TOGGLE REFEIÇÃO
 function toggleMeal(id) {
   const card = document.getElementById(id);
@@ -1003,6 +1056,7 @@ function toggleMeal(id) {
   mealsCompleted[id] = chk ? chk.checked : false;
   card.classList.toggle('completed', mealsCompleted[id]);
   updateAdherenceScore();
+  updateCalorieTrackerUI();
 }
 
 // TOGGLE SUBSTITUIÇÕES
@@ -1011,11 +1065,42 @@ function toggleSubst(id) {
   if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
+// PERSISTÊNCIA DA LISTA DE COMPRAS
+function saveShopState() {
+  if (!currentPacId) return;
+  const state = [];
+  document.querySelectorAll('.shop-item-row').forEach((row, idx) => {
+    const chk = row.querySelector('input[type="checkbox"]');
+    if (chk && chk.checked) state.push(idx);
+  });
+  localStorage.setItem(`kos_shop_${currentPacId}`, JSON.stringify(state));
+}
+
+function loadShopState() {
+  if (!currentPacId) return;
+  const raw = localStorage.getItem(`kos_shop_${currentPacId}`);
+  if (!raw) return;
+  try {
+    const state = JSON.parse(raw);
+    const rows = document.querySelectorAll('.shop-item-row');
+    state.forEach(idx => {
+      if (rows[idx]) {
+        const chk = rows[idx].querySelector('input[type="checkbox"]');
+        if (chk) {
+          chk.checked = true;
+          rows[idx].classList.add('checked');
+        }
+      }
+    });
+  } catch(e){}
+}
+
 // TOGGLE ITEM COMPRAS
 function toggleShopRow(el) {
   const chk = el.querySelector('input[type="checkbox"]');
   if (chk) {
     el.classList.toggle('checked', chk.checked);
+    saveShopState();
   }
 }
 
@@ -1201,9 +1286,80 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+function formatarDataPTBR(val) {
+  if (!val) return '';
+  const s = String(val).trim();
+  if (s.includes('T')) {
+    const [y,m,d] = s.split('T')[0].split('-');
+    return `${d}/${m}/${y}`;
+  }
+  if (s.includes('-')) {
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  return s;
+}
+
+function renderProximaConsulta(agendamentos) {
+  const dateTxt = document.getElementById('apDateText');
+  const waBtn = document.getElementById('apWaBtn');
+  const meetBtn = document.getElementById('apMeetBtn');
+  if (!dateTxt) return;
+
+  if (!agendamentos || agendamentos.length === 0) {
+    dateTxt.textContent = "Nenhuma consulta agendada";
+    if (waBtn) {
+      waBtn.innerHTML = "📅 Agendar pelo WhatsApp →";
+      waBtn.href = "https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20agendar%20uma%20consulta.";
+    }
+    if (meetBtn) meetBtn.style.display = "none";
+    return;
+  }
+
+  const hojeStr = new Date().toISOString().split('T')[0];
+  const ativas = agendamentos
+    .filter(a => String(a.status || '').toLowerCase() !== 'cancelado')
+    .sort((a, b) => String(a.data || '').localeCompare(String(b.data || '')));
+
+  const futuras = ativas.filter(a => String(a.data) >= hojeStr);
+  const ag = futuras[0] || ativas[ativas.length - 1];
+
+  if (!ag) {
+    dateTxt.textContent = "Nenhuma consulta agendada";
+    return;
+  }
+
+  const dtFmt = formatarDataPTBR(ag.data);
+  const horaFmt = ag.hora ? ` às ${ag.hora}` : '';
+  const tipoFmt = ag.tipo ? ` (${ag.tipo})` : '';
+
+  dateTxt.textContent = `${dtFmt}${horaFmt}${tipoFmt}`;
+
+  if (waBtn) {
+    const waMsg = encodeURIComponent(`Olá Dra. Silvia! Gostaria de confirmar minha consulta do dia ${dtFmt}${horaFmt}.`);
+    waBtn.href = `https://wa.me/5521987385146?text=${waMsg}`;
+  }
+
+  if (meetBtn) {
+    const isOnline = (ag.tipo || '').toLowerCase().includes('online') || (ag.tipo || '').toLowerCase().includes('meet');
+    const meetUrl = ag.meet_url || '';
+    if (isOnline && meetUrl) {
+      meetBtn.href = meetUrl;
+      meetBtn.style.display = 'inline-flex';
+    } else if (isOnline) {
+      meetBtn.href = 'https://meet.google.com';
+      meetBtn.style.display = 'inline-flex';
+    } else {
+      meetBtn.style.display = 'none';
+    }
+  }
+}
+
 async function carregarDadosHistorico(pacienteId) {
   if (!pacienteId) return;
   currentPacId = pacienteId;
+  loadShopState();
+
   try {
     const res = await fetch(KOS_API_URL, {
       method: "POST",
@@ -1212,7 +1368,12 @@ async function carregarDadosHistorico(pacienteId) {
     }).then(r => r.json()).catch(() => null);
 
     if (res && res.success && res.data) {
-      const { anamnese, plano, suplementos, evolucao } = res.data;
+      const { anamnese, plano, suplementos, evolucao, agendamentos } = res.data;
+
+      // Renderiza Próxima Consulta
+      if (agendamentos) {
+        renderProximaConsulta(agendamentos);
+      }
 
       // 0. Conectar Meta de Hidratação Reais Prescrita no Banco de Dados
       if (anamnese && anamnese.ingestao_hidrica) {
@@ -1238,12 +1399,18 @@ async function carregarDadosHistorico(pacienteId) {
         try {
           const meallist = typeof plano.json_refeicoes === 'string' ? JSON.parse(plano.json_refeicoes) : plano.json_refeicoes;
           if (Array.isArray(meallist) && meallist.length > 0) {
+            let totalPlanoKcal = 0;
             const container = document.querySelector('.meals-timeline');
             if (container) {
-              container.innerHTML = meallist.map((m, idx) => `
-                <div class="meal-card-v2" id="meal-${idx+1}">
+              container.innerHTML = meallist.map((m, idx) => {
+                const kcalStr = m.kcal || m.calorias || '';
+                const kcalVal = parseInt(String(kcalStr).replace(/\D/g, ''), 10) || 350;
+                totalPlanoKcal += kcalVal;
+
+                return `
+                <div class="meal-card-v2" id="meal-${idx+1}" data-kcal="${kcalVal}">
                   <div class="meal-v2-header">
-                    <div class="meal-v2-name">${m.icone || '🥗'} ${m.nome || ('Refeição ' + (idx+1))}</div>
+                    <div class="meal-v2-name">${m.icone || '🥗'} ${m.nome || m.titulo || ('Refeição ' + (idx+1))} ${kcalStr ? `<span style="font-size:0.75rem; color:var(--sage-light); font-weight:800;">(${kcalStr})</span>` : ''}</div>
                     <div style="display:flex; align-items:center; gap:10px;">
                       <span class="meal-v2-time">${m.horario || 'Flexível'}</span>
                       <label class="meal-check-btn">
@@ -1260,7 +1427,11 @@ async function carregarDadosHistorico(pacienteId) {
                     </div>
                   ` : ''}
                 </div>
-              `).join('');
+              `;
+              }).join('');
+
+              if (totalPlanoKcal > 0) window.userTargetKcal = totalPlanoKcal;
+              updateCalorieTrackerUI();
             }
           }
         } catch(e){}

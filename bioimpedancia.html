@@ -135,7 +135,9 @@ tr:hover td { background: var(--sage-dim); }
             <option value="">Carregando pacientes...</option>
           </select>
         </div>
-        <a href="agendamento.html" class="btn btn-secondary" style="font-size:0.8rem; padding:9px 14px; margin-top:14px; text-decoration:none;">📅 Agendar Novo Paciente</a>
+        <button id="btnAtenderShortcut" class="btn btn-secondary" onclick="irParaAtendimento()" style="font-size:0.8rem; padding:9px 14px; margin-top:14px;">▶ Atender</button>
+        <button id="btnCardapioShortcut" class="btn btn-secondary" onclick="irParaCardapioA4()" style="font-size:0.8rem; padding:9px 14px; margin-top:14px;">🥗 Cardápio A4</button>
+        <a href="agendamento.html" class="btn btn-secondary" style="font-size:0.8rem; padding:9px 14px; margin-top:14px; text-decoration:none;">📅 Agenda</a>
       </div>
 
       <button class="btn" onclick="abrirModalAvaliacao()">📋 + Nova Avaliação Física</button>
@@ -146,7 +148,12 @@ tr:hover td { background: var(--sage-dim); }
   <div class="card">
     <div class="card-header">
       <div class="card-title">📈 Curva de Evolução Física</div>
-      <div id="statusEvolucao" style="font-size: 0.8rem; color: var(--sage-light); font-weight: 700;"></div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="enviarEvolucaoWhatsApp()" style="font-size:0.78rem; padding:6px 12px; color:#25d366; border-color:rgba(37,211,102,.4); background:rgba(37,211,102,.1);">
+          💬 Enviar Evolução no WhatsApp
+        </button>
+        <div id="statusEvolucao" style="font-size: 0.8rem; color: var(--sage-light); font-weight: 700;"></div>
+      </div>
     </div>
 
     <div style="height: 320px; position: relative;">
@@ -838,6 +845,36 @@ async function salvarModalAvaliacao() {
   } else {
     alert("Erro ao salvar avaliação física: " + (res.error || "Tente novamente."));
   }
+}
+
+function irParaAtendimento() {
+  const sel = document.getElementById('selPacienteEvolucao');
+  const pacienteId = sel ? sel.value : '';
+  if (!pacienteId) { alert('Selecione um paciente'); return; }
+  window.location.href = `atendimento.html?pac_id=${encodeURIComponent(pacienteId)}`;
+}
+
+function irParaCardapioA4() {
+  const sel = document.getElementById('selPacienteEvolucao');
+  const pacienteId = sel ? sel.value : '';
+  if (!pacienteId) { alert('Selecione um paciente'); return; }
+  window.location.href = `gerenciador-plano.html?paciente_id=${encodeURIComponent(pacienteId)}`;
+}
+
+function enviarEvolucaoWhatsApp() {
+  const sel = document.getElementById('selPacienteEvolucao');
+  const pacienteId = sel ? sel.value : '';
+  const pacienteObj = (window.listaPacientes || []).find(p => p.id === pacienteId);
+  if (!pacienteObj) { alert('Selecione um paciente'); return; }
+
+  const phone = String(pacienteObj.whatsapp || '').replace(/\D/g, '');
+  if (!phone) { alert('O paciente não possui WhatsApp cadastrado.'); return; }
+
+  let msg = `Olá ${pacienteObj.nome}! 📈\n\nAqui é a Dra. Silvia Lemos. Passando para compartilhar seu relatório de evolução física!\n\n`;
+  msg += `✨ Parabéns pela dedicação e foco no seu acompanhamento nutricional! Seu progresso está gravado no seu Portal do Paciente.\n\n`;
+  msg += `Continue firme na rotina. Qualquer dúvida, estou por aqui! 🌱`;
+
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 window.addEventListener('DOMContentLoaded', () => {

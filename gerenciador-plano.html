@@ -9,6 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script src="assets/js/taco-db.js"></script>
 
 <style>
 :root {
@@ -221,11 +222,13 @@ body.in-iframe .manager-container { padding-top: 12px !important; }
     <h2>✏️ Prescrição Nutricional</h2>
     <p>Monte o plano alimentar em tempo real com pré-visualização A4 imediata.</p>
 
-    <div class="preset-bar">
+    <div class="preset-bar" style="grid-template-columns: 1fr 1fr; margin-bottom: 8px;">
       <button class="btn-preset" onclick="carregarPreset('hipertrofia')">⚡ Hipertrofia</button>
       <button class="btn-preset" onclick="carregarPreset('emagrecimento')">🔥 Emagrecer</button>
+    </div>
+    <div class="preset-bar" style="grid-template-columns: 1fr 1fr; margin-bottom: 8px;">
+      <button class="btn-preset" onclick="abrirModalTacoCalculadora()" style="border-color:#34d399; color:#34d399;">🍎 Alimentos (TACO)</button>
       <button class="btn-preset" onclick="abrirModalReceitasFit()" style="border-color:var(--sage-light); color:var(--sage-light);">📖 Receitas Fit</button>
-      <button class="btn-preset btn-preset-danger" onclick="limparTudo()">🗑️ Limpar</button>
     </div>
 
     <!-- SELETOR DE PACIENTE DO BANCO DE DADOS -->
@@ -679,7 +682,7 @@ async function carregarPacientesNoGerenciador() {
   }
 }
 
-function selecionarPacienteDoBanco() {
+async function selecionarPacienteDoBanco() {
   const sel = document.getElementById('selPacientePlano');
   if (!sel) return;
   const pacienteId = sel.value;
@@ -690,7 +693,33 @@ function selecionarPacienteDoBanco() {
     const inObj = document.getElementById('inObjetivo');
     if (inNome) inNome.value = paciente.nome;
     if (inObj && paciente.objetivo) inObj.value = paciente.objetivo;
-    
+
+    // Tenta carregar o plano ativo do paciente vindo do banco de dados
+    try {
+      const resPlano = await apiCall('getPlanoVigente', { paciente_id: pacienteId });
+      if (resPlano && resPlano.success && resPlano.data && resPlano.data.refeicoes) {
+        let meallist = typeof resPlano.data.refeicoes === 'string' ? JSON.parse(resPlano.data.refeicoes) : resPlano.data.refeicoes;
+        if (Array.isArray(meallist) && meallist.length > 0) {
+          refeicoes = meallist.map(m => ({
+            titulo: (m.titulo || m.nome || 'REFEIÇÃO').toUpperCase(),
+            calorias: m.calorias || m.kcal || '',
+            proteina: m.proteina || '',
+            itens: m.itens || m.alimentos || '',
+            obs: m.obs || (m.substituicoes ? `Substituições: ${m.substituicoes}` : '')
+          }));
+          if (resPlano.data.extras) {
+            if (resPlano.data.extras.apresentacao && document.getElementById('inApresentacao')) {
+              document.getElementById('inApresentacao').value = resPlano.data.extras.apresentacao;
+            }
+            if (resPlano.data.extras.objetivo && document.getElementById('inObjetivo')) {
+              document.getElementById('inObjetivo').value = resPlano.data.extras.objetivo;
+            }
+          }
+          renderInputs();
+        }
+      }
+    } catch(e){}
+
     salvarELocal();
     atualizar();
   }
@@ -820,11 +849,110 @@ function fecharModalReceitasFit() {
 }
 
 function importarReceitaNoPlano(nome, itens) {
-  refeicoes.push({ nome: nome, kcal: '350 kcal', itens: itens, icone: '📖' });
+  refeicoes.push({ titulo: nome.toUpperCase(), calorias: '350 kcal', proteina: '20g', itens: itens, obs: 'Consumir conforme orientação' });
   renderInputs();
+  salvarELocal();
   atualizar();
   fecharModalReceitasFit();
-  toast('✅ Receita "' + nome + '" importada para o plano!');
+  alert('✅ Receita "' + nome + '" importada para o plano alimentar!');
+}
+
+let alimentoTacoSelecionado = null;
+
+function abrirModalTacoCalculadora() {
+  const m = document.getElementById('modalTacoCalculadora');
+  if (!m) return;
+  m.style.display = 'flex';
+  
+  const selRef = document.getElementById('tacoSelRefeicao');
+  if (selRef) {
+    selRef.innerHTML = refeicoes.map((r, i) => `<option value="${i}">${r.titulo || 'Refeição ' + (i+1)}</option>`).join('');
+  }
+}
+
+function fecharModalTaco() {
+  const m = document.getElementById('modalTacoCalculadora');
+  if (m) m.style.display = 'none';
+}
+
+async function buscarAlimentosTaco(q) {
+  const list = document.getElementById('resTacoList');
+  if (!list) return;
+  
+  if (!q || q.trim().length < 2) {
+    list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Digite ao menos 2 letras para pesquisar alimentos na Tabela TACO...</div>`;
+    return;
+  }
+
+  let resultados = window.TacoDB ? window.TacoDB.search(q) : [];
+  
+  if (resultados.length === 0 && window.TacoDB) {
+    list.innerHTML = `<div style="text-align:center; padding:12px; color:var(--sage-light); font-size:0.8rem;">Buscando em bancos adicionais (Open Food Facts)...</div>`;
+    const resAPI = await window.TacoDB.searchOpenFoodFacts(q);
+    resultados = resAPI;
+  }
+
+  if (resultados.length === 0) {
+    list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Nenhum alimento encontrado para "${q}".</div>`;
+    return;
+  }
+
+  list.innerHTML = resultados.map(item => `
+    <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:12px 14px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="selecionarAlimentoTaco('${item.id}', '${item.nome.replace(/'/g, "\\'")}', ${item.kcal}, ${item.carb}, ${item.prot}, ${item.gord})">
+      <div>
+        <div style="font-weight:800; color:var(--sage-light); font-size:0.88rem;">${item.nome}</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${item.kcal} kcal | Carb: ${item.carb}g | Prot: ${item.prot}g | Gord: ${item.gord}g (por 100g)</div>
+      </div>
+      <button class="btn btn-secondary" style="font-size:0.75rem; padding:4px 10px;">Selecionar</button>
+    </div>
+  `).join('');
+}
+
+function selecionarAlimentoTaco(id, nome, kcal, carb, prot, gord) {
+  alimentoTacoSelecionado = { id, nome, kcal, carb, prot, gord };
+  const box = document.getElementById('boxTacoCalcSelect');
+  const txt = document.getElementById('tacoSelNome');
+  if (txt) txt.textContent = nome;
+  if (box) box.style.display = 'block';
+  atualizarCalcMacrosTaco();
+}
+
+function atualizarCalcMacrosTaco() {
+  if (!alimentoTacoSelecionado) return;
+  const qtd = parseFloat(document.getElementById('tacoSelQtd')?.value) || 100;
+  const calc = window.TacoDB.calc(alimentoTacoSelecionado, qtd);
+  if (calc) {
+    if (document.getElementById('tacoDispKcal')) document.getElementById('tacoDispKcal').textContent = `${calc.kcal} kcal`;
+    if (document.getElementById('tacoDispCarb')) document.getElementById('tacoDispCarb').textContent = `${calc.carb}g`;
+    if (document.getElementById('tacoDispProt')) document.getElementById('tacoDispProt').textContent = `${calc.prot}g`;
+    if (document.getElementById('tacoDispGord')) document.getElementById('tacoDispGord').textContent = `${calc.gord}g`;
+  }
+}
+
+function confirmarInsercaoTacoNoPlano() {
+  if (!alimentoTacoSelecionado) return;
+  const qtd = parseFloat(document.getElementById('tacoSelQtd')?.value) || 100;
+  const calc = window.TacoDB.calc(alimentoTacoSelecionado, qtd);
+  const idxRef = parseInt(document.getElementById('tacoSelRefeicao')?.value || "0");
+
+  if (refeicoes[idxRef]) {
+    const textoAlimento = `${qtd}g de ${calc.nome} (${calc.kcal} kcal | C:${calc.carb}g P:${calc.prot}g G:${calc.gord}g)`;
+    if (refeicoes[idxRef].itens) {
+      refeicoes[idxRef].itens += `\n- ${textoAlimento}`;
+    } else {
+      refeicoes[idxRef].itens = `- ${textoAlimento}`;
+    }
+    
+    const kcalAtual = parseInt((refeicoes[idxRef].calorias || '0').replace(/\D/g, '')) || 0;
+    const novKcal = kcalAtual + calc.kcal;
+    refeicoes[idxRef].calorias = `${novKcal} kcal`;
+
+    renderInputs();
+    salvarELocal();
+    atualizar();
+    fecharModalTaco();
+    alert(`✅ ${calc.nome} (${calc.kcal} kcal) adicionado a ${refeicoes[idxRef].titulo}!`);
+  }
 }
 </script>
 
@@ -863,6 +991,64 @@ function importarReceitaNoPlano(nome, itens) {
         </div>
         <button class="btn btn-secondary" onclick="importarReceitaNoPlano('Crepioca Recheada de Frango', '1 ovo + 2 colheres de goma de tapioca. Misturar, dourar na frigideira e rechear com 80g de frango desfiado temperado.')" style="font-size:0.75rem; padding:6px 12px;">⚡ Importar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CALCULADORA TACO / IBGE -->
+<div id="modalTacoCalculadora" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--forest-card); border:1.5px solid var(--border-forest); border-radius:18px; padding:24px; width:100%; max-width:620px; box-shadow:0 24px 60px rgba(0,0,0,0.6); display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:12px;">
+      <div>
+        <div style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:#fff;">🍎 Calculadora de Alimentos (TACO / IBGE)</div>
+        <div style="font-size:0.78rem; color:var(--sage-light); margin-top:2px;">Pesquise o alimento e informe a quantidade em gramas</div>
+      </div>
+      <button onclick="fecharModalTaco()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <input type="text" id="inTacoSearch" class="form-control" placeholder="Digite o alimento (ex: Arroz, Frango, Ovo, Tapioca...)" oninput="buscarAlimentosTaco(this.value)">
+    </div>
+
+    <div id="resTacoList" style="display:flex; flex-direction:column; gap:8px; max-height:240px; overflow-y:auto; padding-right:4px;">
+      <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Digite ao menos 2 letras para pesquisar alimentos na Tabela TACO...</div>
+    </div>
+
+    <div id="boxTacoCalcSelect" style="display:none; background:rgba(0,0,0,0.3); border:1px solid var(--sage-light); padding:16px; border-radius:12px;">
+      <div style="font-weight:800; color:#fff; font-size:0.95rem;" id="tacoSelNome">Alimento Selecionado</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+        <div class="form-group">
+          <label>Quantidade (g / ml)</label>
+          <input type="number" id="tacoSelQtd" class="form-control" value="100" oninput="atualizarCalcMacrosTaco()">
+        </div>
+        <div class="form-group">
+          <label>Inserir na Refeição</label>
+          <select id="tacoSelRefeicao" class="form-control"></select>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; text-align:center;">
+        <div style="background:rgba(140,164,129,0.15); padding:8px; border-radius:8px;">
+          <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Calorias</div>
+          <div style="font-weight:900; color:var(--sage-light); font-size:1rem;" id="tacoDispKcal">0 kcal</div>
+        </div>
+        <div style="background:rgba(99,179,237,0.15); padding:8px; border-radius:8px;">
+          <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Carboidrato</div>
+          <div style="font-weight:900; color:#63b3ed; font-size:1rem;" id="tacoDispCarb">0g</div>
+        </div>
+        <div style="background:rgba(251,191,36,0.15); padding:8px; border-radius:8px;">
+          <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Proteína</div>
+          <div style="font-weight:900; color:#fbbf24; font-size:1rem;" id="tacoDispProt">0g</div>
+        </div>
+        <div style="background:rgba(248,113,113,0.15); padding:8px; border-radius:8px;">
+          <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Gordura</div>
+          <div style="font-weight:900; color:#f87171; font-size:1rem;" id="tacoDispGord">0g</div>
+        </div>
+      </div>
+
+      <button class="btn-action" onclick="confirmarInsercaoTacoNoPlano()" style="margin-top:14px; background:var(--sage-light); color:var(--forest-dark);">
+        ➕ Adicionar alimento à Refeição
+      </button>
     </div>
   </div>
 </div>

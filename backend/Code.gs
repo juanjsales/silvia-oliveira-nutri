@@ -17,15 +17,16 @@ const SHEETS = {
   RECORDATORIO:"Recordatorio_24h",
   RECEITAS:    "Receitas_Presets",
   FINANCEIRO:  "Financeiro",
-  CONFIG:      "Configuracoes"
+  CONFIG:      "Configuracoes",
+  RETORNOS:    "Retornos"
 };
 
 // ── Schemas completos ───────────────────────────────────────────────
 const SCHEMAS = {
   Usuarios:              ["id","cpf","nome","email","whatsapp","data_nascimento","objetivo","tipo","data_cadastro","senha_pin"],
-  Agendamentos:          ["id","paciente_id","paciente_nome","paciente_whatsapp","data","hora","tipo","valor","status","observacao","notas_consulta"],
+  Agendamentos:          ["id","paciente_id","paciente_nome","paciente_whatsapp","data","hora","tipo","valor","status","observacao","notas_consulta","meet_url"],
   Anamneses:             ["id","paciente_id","data","perfil_clinico","alergias","intolerancias","aversao_alimentar","historico_saude","rotina_sono","intestino","preferencias","medicamentos","suplementos_atuais","cirurgias","historico_familiar","nivel_atividade","objetivo_detalhado","restricoes_alimentares","escolaridade","profissao","ocupacao","renda_familiar","dependentes_renda","estado_civil","tabagismo_status","tabagismo_macos","tabagismo_tempo","etilismo_status","etilismo_frequencia","etilismo_quantidade","ansiedade","depressao","outros_sintomas","ingestao_hidrica","horario_acorda","horario_dormir"],
-  Evolucao:              ["id","paciente_id","data","perfil_clinico","peso","altura","imc","percentual_gordura","massa_magra","percentual_musculo","tmb","idade_metabolica","massa_ossea","braco","cintura","abdomen","quadril","panturrilha","pescoca","rcq","dobra_bicipital","dobra_tricipital","dobra_suprailiaca","dobra_subescapular","gestante_semanas","gestante_peso_pre","gestante_dum","pediatria_percentil","pediatria_perimetro_cefalico","diagnostico_nutricional","json_exames"],
+  Evolucao:              ["id","paciente_id","data","perfil_clinico","peso","altura","imc","percentual_gordura","massa_magra","percentual_musculo","tmb","vet","idade_metabolica","massa_ossea","braco","cintura","abdomen","quadril","panturrilha","pescoca","rcq","dobra_bicipital","dobra_tricipital","dobra_suprailiaca","dobra_subescapular","gestante_semanas","gestante_peso_pre","gestante_dum","pediatria_percentil","pediatria_perimetro_cefalico","diagnostico_nutricional","json_exames"],
   Planos:                ["id","paciente_id","data","json_refeicoes","json_extras","json_lista_compras"],
   Exames_Laboratoriais:  ["id","paciente_id","data_exame","marcador","valor","unidade","valor_referencia","status","observacao"],
   Dobras_Cutaneas:       ["id","paciente_id","data","tricipital","subescapular","suprailiaca","abdominal","coxa","braco_relaxado","braco_contraido","cintura","quadril"],
@@ -33,7 +34,8 @@ const SCHEMAS = {
   Recordatorio_24h:      ["id","paciente_id","data","refeicao","horario","alimentos","escala_bristol_tipo"],
   Receitas_Presets:      ["id","titulo","categoria","tempo_preparo","rendimento","ingredientes","modo_preparo","macros","data_criacao"],
   Financeiro:            ["id","paciente_id","paciente_nome","data","descricao","valor","forma_pagamento","status","categoria","observacao"],
-  Configuracoes:         ["chave","valor"]
+  Configuracoes:         ["chave","valor"],
+  Retornos:              ["id","paciente_id","data","avaliacao_alimentacao","seguimento_plano","mudanca_rotina","mudanca_rotina_qual","dificuldade_refeicoes","fome_nivel","compulsao_exagero","compulsao_situacao","agua_diaria","alcool_consumo","alcool_frequencia","energia_disposicao","sintomas_lista","alteracao_sono","medicamento_novo","medicamento_qual","atividade_fisica_status","atividade_fisica_frequencia","desempenho_treino","mudanca_peso_percebida","resultados_positivos","maiores_dificuldades","meta_proximo_periodo","ajuste_plano_desejado","observacoes_adicionais"]
 };
 
 // ── Setup / Migração automática ────────────────────────────────────
@@ -138,8 +140,18 @@ function handleRequest(e, method) {
           anamnese: getByField(SHEETS.ANAMNESES,"paciente_id",params.paciente_id),
           evolucao: getAllByField(SHEETS.EVOLUCAO,"paciente_id",params.paciente_id),
           plano:    getPlanoVigente(params.paciente_id),
-          suplementos: getAllByField(SHEETS.SUPLEMENTOS,"paciente_id",params.paciente_id)
+          suplementos: getAllByField(SHEETS.SUPLEMENTOS,"paciente_id",params.paciente_id),
+          agendamentos: getAllByField(SHEETS.AGENDAMENTOS,"paciente_id",params.paciente_id),
+          retornos: getAllByField(SHEETS.RETORNOS,"paciente_id",params.paciente_id)
         };
+        response.success = true; break;
+
+      // ── Questionário de Retorno ───────────────────────────────
+      case "saveRetorno":
+        response.data = saveGeneric(SHEETS.RETORNOS, params.retorno||params, SCHEMAS.Retornos);
+        response.success = true; break;
+      case "getRetornos":
+        response.data = getAllByField(SHEETS.RETORNOS, "paciente_id", params.paciente_id);
         response.success = true; break;
 
       // ── Anamnese ──────────────────────────────────────────────
@@ -697,8 +709,33 @@ function saveAgendamento(ag) {
   sheet.appendRow([id, ag.paciente_id||"", ag.paciente_nome||"", ag.paciente_whatsapp||"",
                    ag.data||"", ag.hora||"", ag.tipo||"Consulta Nutricional",
                    ag.valor||250, ag.status||"Confirmado", ag.observacao||"",
-                   ag.notas_consulta||""]);
+                   ag.notas_consulta||"", ag.meet_url||""]);
   return { id, ...ag };
+}
+
+function criarEventoGoogleCalendar(agendamento, paciente) {
+  try {
+    const cal = CalendarApp.getDefaultCalendar();
+    if (!cal) return null;
+    const [y, m, d] = String(agendamento.data).split('-').map(Number);
+    const [h, min]  = String(agendamento.hora || '09:00').split(':').map(Number);
+    const start = new Date(y, m - 1, d, h, min);
+    const end   = new Date(start.getTime() + 60 * 60 * 1000);
+    const title = `🌿 Consulta Nutricional: ${paciente.nome} (${agendamento.tipo})`;
+    const desc  = `Paciente: ${paciente.nome}\n` +
+                  `WhatsApp: ${paciente.whatsapp || 'Não informado'}\n` +
+                  `E-mail: ${paciente.email || 'Não informado'}\n` +
+                  `Tipo: ${agendamento.tipo}\n` +
+                  (agendamento.meet_url ? `Meet: ${agendamento.meet_url}\n` : '') +
+                  `Observação: ${agendamento.observacao || 'Nenhuma'}`;
+    const options = { description: desc, sendInvites: paciente.email ? true : false };
+    if (paciente.email) options.guests = paciente.email;
+    const event = cal.createEvent(title, start, end, options);
+    return event ? event.getId() : null;
+  } catch(err) {
+    Logger.log("Erro CalendarApp: " + err.toString());
+    return null;
+  }
 }
 
 function updateAgendamento(id, fields) {
@@ -808,6 +845,13 @@ function saveConsultaCompleta(pacienteData, agendamentoData) {
     paciente_nome:     paciente.nome,
     paciente_whatsapp: paciente.whatsapp || ""
   });
+
+  // Criar evento no Google Calendar da nutricionista
+  try {
+    criarEventoGoogleCalendar(agendamento, paciente);
+  } catch(e) {
+    Logger.log("Calendar create fail: " + e.toString());
+  }
 
   // Enviar e-mail de boas-vindas para novo paciente
   let emailEnviado = false;

@@ -132,6 +132,16 @@ body {
     </div>
   </div>
 
+  <!-- SELETOR VISUAL DE AMBIENTE -->
+  <div style="display:flex; background:rgba(0,0,0,0.25); border:1px solid var(--border-forest); border-radius:12px; padding:4px; gap:4px;">
+    <div style="flex:1; text-align:center; padding:8px; border-radius:8px; font-size:0.75rem; font-weight:800; background:var(--sage-light); color:var(--forest-dark);">
+      🌿 Login Unificado
+    </div>
+    <div style="flex:1; text-align:center; padding:8px; border-radius:8px; font-size:0.75rem; font-weight:800; color:var(--text-muted);">
+      ✨ Detecção Automática
+    </div>
+  </div>
+
   <div id="statusBox" class="status-msg"></div>
 
   <!-- FORMULÁRIO DE LOGIN ÚNICO UNIFICADO -->
@@ -146,7 +156,10 @@ body {
         <label>Sua Senha ou PIN</label>
         <a href="#" onclick="abrirModalEsqueciSenha(event)" style="font-size:0.75rem; color:var(--sage-light); text-decoration:none; font-weight:700;">Esqueci minha senha</a>
       </div>
-      <input type="password" id="passInput" class="form-control" placeholder="Digite sua senha de acesso" required>
+      <div style="position:relative; width:100%;">
+        <input type="password" id="passInput" class="form-control" placeholder="Digite sua senha de acesso" required style="padding-right:45px;">
+        <button type="button" onclick="togglePassVisibility()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:var(--sage-light); font-size:1.1rem; cursor:pointer; padding:4px;">👁️</button>
+      </div>
     </div>
 
     <button type="submit" class="btn-submit">
@@ -196,6 +209,13 @@ function maskCPF(v) {
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
     .slice(0, 14);
+}
+
+function togglePassVisibility() {
+  const inp = document.getElementById('passInput');
+  if (inp) {
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
