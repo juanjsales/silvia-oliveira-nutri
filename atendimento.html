@@ -141,7 +141,41 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
 .evo-hist-vals{display:flex;gap:14px;flex-wrap:wrap}
 .evo-val-badge{font-weight:800;color:var(--sage-light)}
 
-@media(max-width:768px){
+/* TELECONSULTA SPLIT-SCREEN MODE */
+.main-container.teleconsulta-split-active {
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 480px 1fr !important;
+  gap: 16px !important;
+  padding: 14px !important;
+}
+
+.teleconsulta-frame-box {
+  display: none;
+  background: var(--bg-card);
+  border: 1.5px solid var(--sage-light);
+  border-radius: var(--radius);
+  padding: 16px;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+  position: sticky;
+  top: 70px;
+  height: calc(100vh - 90px);
+}
+
+.teleconsulta-split-active .teleconsulta-frame-box {
+  display: flex !important;
+}
+
+@media(max-width:960px){
+  .main-container.teleconsulta-split-active {
+    grid-template-columns: 1fr !important;
+  }
+  .teleconsulta-frame-box {
+    position: static;
+    height: 400px;
+  }
   .form-grid,.form-grid-3,.form-grid-4,.finish-grid{grid-template-columns:1fr}
   .pac-header{flex-direction:column;align-items:flex-start}
   .tabs-nav{overflow-x:auto;flex-wrap:nowrap}
@@ -151,23 +185,47 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
 </head>
 <body>
 
-<div class="main-container">
-
-  <!-- CARD DO PACIENTE -->
-  <div class="pac-header" id="pacHeader">
-    <div class="pac-avatar" id="pacAvatar">🌿</div>
-    <div class="pac-info">
-      <div class="pac-name" id="pacName">Carregando paciente...</div>
-      <div class="pac-details" id="pacDetails"></div>
+  <!-- PAINEL DE TELECONSULTA EMBUTIDA (SPLIT-SCREEN SIDE-BY-SIDE) -->
+  <div class="teleconsulta-frame-box" id="teleconsultaFrameBox">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:10px;">
+      <div style="font-size:0.95rem; font-weight:800; color:var(--sage-light); display:flex; align-items:center; gap:6px;">
+        📹 Teleconsulta ao Vivo
+      </div>
+      <button type="button" class="btn btn-secondary" onclick="toggleTeleconsultaSplit()" style="padding:4px 10px; font-size:0.75rem;">✕ Sair do Split</button>
     </div>
-    <div class="pac-tags" id="pacTags">
-      <a id="btnMeetHeader" href="#" target="_blank" class="btn btn-secondary" style="display:none; font-size:.8rem; padding:8px 12px; color:#63b3ed; border-color:rgba(99,179,237,.3); background:rgba(99,179,237,.12);">
-        📹 Entrar no Google Meet
-      </a>
-      <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
-      <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px" disabled>✅ Finalizar Atendimento</button>
+
+    <div style="display:flex; gap:6px; align-items:center;">
+      <input type="url" id="inTeleconsultaUrl" class="form-control" style="font-size:0.8rem; padding:6px 10px;" placeholder="https://meet.google.com/..." value="https://meet.jit.si/SilviaNutri-Atendimento">
+      <button type="button" class="btn" onclick="carregarVideoframeMeet()" style="padding:6px 12px; font-size:0.78rem;">Conectar</button>
+    </div>
+
+    <iframe id="iframeMeetCall" src="https://meet.jit.si/SilviaNutri-Atendimento" style="width:100%; height:100%; border:none; border-radius:12px; background:#000;" allow="camera; microphone; display-capture; autoplay; clipboard-write"></iframe>
+
+    <div style="font-size:0.72rem; color:var(--text-muted); text-align:center;">
+      💡 Sala de Vídeo HD em tempo real integrada com o Prontuário Eletrônico da Dra. Silvia O. Lemos.
     </div>
   </div>
+
+  <div style="display:flex; flex-direction:column; gap:20px; width:100%;">
+
+    <!-- CARD DO PACIENTE -->
+    <div class="pac-header" id="pacHeader">
+      <div class="pac-avatar" id="pacAvatar">🌿</div>
+      <div class="pac-info">
+        <div class="pac-name" id="pacName">Carregando paciente...</div>
+        <div class="pac-details" id="pacDetails"></div>
+      </div>
+      <div class="pac-tags" id="pacTags">
+        <button type="button" class="btn btn-secondary" onclick="toggleTeleconsultaSplit()" style="font-size:.8rem; padding:8px 12px; color:#63b3ed; border-color:rgba(99,179,237,.3); background:rgba(99,179,237,.12);" title="Abrir painel de vídeo side-by-side no atendimento">
+          📹 Teleconsulta Lado a Lado
+        </button>
+        <a id="btnMeetHeader" href="#" target="_blank" class="btn btn-secondary" style="display:none; font-size:.8rem; padding:8px 12px; color:#63b3ed; border-color:rgba(99,179,237,.3); background:rgba(99,179,237,.12);">
+          📹 Abrir no Meet
+        </a>
+        <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
+        <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px" disabled>✅ Finalizar Atendimento</button>
+      </div>
+    </div>
 
   <!-- ALERTAS CLÍNICOS AUTOMÁTICOS DA ANAMNESE -->
   <div id="alertaClinicoBox" style="display:none; background:rgba(248,113,113,0.12); border:1.5px solid rgba(248,113,113,0.35); border-radius:14px; padding:14px 18px;">
@@ -1608,6 +1666,31 @@ function preencherRetorno(ret) {
   if (document.getElementById('retMetaProximoPeriodo')) document.getElementById('retMetaProximoPeriodo').value = ret.meta_proximo_periodo || '';
   if (document.getElementById('retAjustePlanoDesejado')) document.getElementById('retAjustePlanoDesejado').value = ret.ajuste_plano_desejado || '';
   if (document.getElementById('retObservacoesAdicionais')) document.getElementById('retObservacoesAdicionais').value = ret.observacoes_adicionais || '';
+}
+
+function toggleTeleconsultaSplit() {
+  const container = document.querySelector('.main-container');
+  const box = document.getElementById('teleconsultaFrameBox');
+  if (!container) return;
+
+  const isActive = container.classList.toggle('teleconsulta-split-active');
+  if (box) box.style.display = isActive ? 'flex' : 'none';
+
+  if (isActive) {
+    const meetUrl = agendamento?.meet_url || ('https://meet.jit.si/SilviaNutri-' + (PAC_ID || 'Atendimento'));
+    const inUrl = document.getElementById('inTeleconsultaUrl');
+    const iframe = document.getElementById('iframeMeetCall');
+    if (inUrl) inUrl.value = meetUrl;
+    if (iframe) iframe.src = meetUrl;
+  }
+}
+
+function carregarVideoframeMeet() {
+  const inUrl = document.getElementById('inTeleconsultaUrl')?.value.trim();
+  const iframe = document.getElementById('iframeMeetCall');
+  if (inUrl && iframe) {
+    iframe.src = inUrl;
+  }
 }
 
 (async()=>{
