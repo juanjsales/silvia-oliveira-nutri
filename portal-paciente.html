@@ -973,7 +973,7 @@ const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpweh
 
 let currentWater = 0;
 let waterTarget = 2500;
-let currentPacId = 'PAC-01';
+let currentPacId = '';
 let chartInstance = null;
 
 // HÁBITOS CONCLUÍDOS
@@ -1251,7 +1251,7 @@ async function salvarNovaSenha(e) {
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({
       action: 'alterarSenha',
-      usuario_id: pacienteObj ? pacienteObj.id : 'PAC-01',
+      usuario_id: pacienteObj ? pacienteObj.id : '',
       senha_atual: atual,
       nova_senha: nova
     })

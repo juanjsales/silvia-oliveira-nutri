@@ -134,7 +134,7 @@ async function apiCall(action, payload = {}) {
 async function enviarAnamnese(e) {
   e.preventDefault();
   const urlParams = new URLSearchParams(window.location.search);
-  const pacienteId = urlParams.get('paciente') || 'PAC-01';
+  const pacienteId = urlParams.get('paciente') || urlParams.get('paciente_id') || '';
 
   const btn = document.querySelector('button[type="submit"]');
   if (btn) btn.innerText = "🟡 Enviando para a Planilha...";

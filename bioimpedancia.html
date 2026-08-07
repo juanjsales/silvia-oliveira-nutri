@@ -596,14 +596,7 @@ async function carregarEvolucaoPaciente() {
   if (res && res.success && res.data && res.data.length > 0) {
     dadosEvolucao = res.data;
   } else {
-    if (pacienteId === 'PAC-01') {
-      dadosEvolucao = [
-        { data: '2026-05-10', perfil_clinico: 'Adulto Feminino', peso: 71.2, altura: 168, imc: '25.2', percentual_gordura: 28.5, massa_magra: 37.8, cintura: 78, quadril: 98, rcq: '0.79' },
-        { data: '2026-06-12', perfil_clinico: 'Adulto Feminino', peso: 69.0, altura: 168, imc: '24.4', percentual_gordura: 26.1, massa_magra: 38.0, cintura: 75, quadril: 96, rcq: '0.78' },
-        { data: '2026-07-15', perfil_clinico: 'Adulto Feminino', peso: 67.4, altura: 168, imc: '23.8', percentual_gordura: 24.0, massa_magra: 38.3, cintura: 73, quadril: 94, rcq: '0.77' },
-        { data: '2026-08-05', perfil_clinico: 'Adulto Feminino', peso: 65.5, altura: 168, imc: '23.2', percentual_gordura: 22.4, massa_magra: 38.6, cintura: 71, quadril: 93, rcq: '0.76' }
-      ];
-    }
+    dadosEvolucao = [];
   }
 
   if (statusEvo) statusEvo.innerText = `${dadosEvolucao.length} avaliação(ões) física(s) registrada(s)`;

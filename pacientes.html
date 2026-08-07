@@ -435,35 +435,6 @@ async function verAnamnesePaciente(pacienteId, pacienteNome) {
       </div>
     `;
   } else {
-    // Exemplo de prévia caso seja o PAC-01 de teste
-    if (pacienteId === 'PAC-01') {
-      body.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:14px; font-size:0.9rem; line-height:1.6;">
-          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-            <strong style="color:var(--sage-light); display:block;">🗓️ Data do Preenchimento:</strong> 2026-05-10
-          </div>
-          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-            <strong style="color:var(--sage-light); display:block;">⚠️ Alergias / Intolerâncias:</strong> Intolerância leve à lactose
-          </div>
-          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-            <strong style="color:var(--sage-light); display:block;">🏥 Histórico de Saúde &amp; Medicamentos:</strong> Histórico de enxaqueca moderada
-          </div>
-          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-            <strong style="color:var(--sage-light); display:block;">😴 Qualidade do Sono:</strong> 7h a 8h por noite
-          </div>
-          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-            <strong style="color:var(--sage-light); display:block;">🚽 Saúde Intestinal:</strong> Regular (Todos os dias)
-          </div>
-          <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-            <strong style="color:var(--sage-light); display:block;">🍎 Preferências &amp; Aversões Alimentares:</strong> Adora comida japonesa, não gosta de quiabo
-          </div>
-        </div>
-      `;
-    } else {
-      body.innerHTML = `
-        <div style="text-align:center; padding:24px; color:var(--text-muted);">
-          Nenhuma ficha de anamnese cadastrada para este paciente ainda.<br>
-          <span style="font-size:0.8rem; color:var(--sage-light); font-weight:700; margin-top:6px; display:block;">ℹ️ A Anamnese é preenchida no dia do Atendimento.</span>
         </div>
       `;
     }

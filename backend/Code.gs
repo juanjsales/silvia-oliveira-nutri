@@ -1275,56 +1275,24 @@ function gerarPDFRecomendacoes(paciente, agendamento) {
 // ── Seed ───────────────────────────────────────────────────────────
 function populateInitialData() {
   setupDatabase();
-  const defPin   = hashPassword("123456");
-  const admPass  = hashPassword("silvia2026");
+  const admPass = hashPassword("silvia2026");
 
   const uSheet = getSheet(SHEETS.USUARIOS);
-  if (uSheet.getLastRow()<=1) {
-    uSheet.appendRow(["ADM-01","00000000000","Dra. Silvia de Oliveira Lemos",
-      "silviadeoliveira24.nutri@gmail.com","5521987385146","1985-01-01",
-      "Nutrição Clínica & Esportiva","ADMIN","2026-01-01",admPass]);
-    uSheet.appendRow(["PAC-01","12345678900","Juliana Mendes","juliana.mendes@gmail.com",
-      "5521999998888","1995-04-12","Reeducação Alimentar & Emagrecimento","PACIENTE","2026-05-10",defPin]);
-    uSheet.appendRow(["PAC-02","98765432111","Carlos Eduardo Torres","carlos.torres@hotmail.com",
-      "5521988887777","1988-11-23","Nutrição Esportiva & Hipertrofia","PACIENTE","2026-06-01",defPin]);
-    uSheet.appendRow(["PAC-03","45678912322","Mariana Castro Silva","mari.castro@gmail.com",
-      "5521977776666","2000-07-08","Saúde Intestinal & Bio-Reset","PACIENTE","2026-07-15",defPin]);
+  if (uSheet.getLastRow() <= 1) {
+    uSheet.appendRow(["ADM-01", "00000000000", "Dra. Silvia de Oliveira Lemos",
+      "silviadeoliveira24.nutri@gmail.com", "5521987385146", "1985-01-01",
+      "Nutrição Clínica & Esportiva", "ADMIN", "2026-01-01", admPass]);
   }
 
   const cfgSheet = getSheet(SHEETS.CONFIG);
-  if (cfgSheet.getLastRow()<=1) {
-    cfgSheet.appendRow(["admin_email","silviadeoliveira24.nutri@gmail.com"]);
-    cfgSheet.appendRow(["admin_senha",admPass]);
-    cfgSheet.appendRow(["clinica_nome","Dra. Silvia de Oliveira Lemos"]);
-    cfgSheet.appendRow(["clinica_crn","CRN-4 25104731"]);
+  if (cfgSheet.getLastRow() <= 1) {
+    cfgSheet.appendRow(["admin_email", "silviadeoliveira24.nutri@gmail.com"]);
+    cfgSheet.appendRow(["admin_senha", admPass]);
+    cfgSheet.appendRow(["clinica_nome", "Dra. Silvia de Oliveira Lemos"]);
+    cfgSheet.appendRow(["clinica_crn", "CRN-4 25104731"]);
   }
 
-  const aSheet = getSheet(SHEETS.AGENDAMENTOS);
-  if (aSheet.getLastRow()<=1) {
-    const hoje = new Date().toISOString().split("T")[0];
-    aSheet.appendRow(["AG-01","PAC-01","Juliana Mendes","5521999998888",hoje,"09:00","Online (Google Meet)",250,"Confirmado","",""]); 
-    aSheet.appendRow(["AG-02","PAC-02","Carlos Eduardo Torres","5521988887777",hoje,"10:30","Presencial",280,"Aguardando","",""]); 
-    aSheet.appendRow(["AG-03","PAC-03","Mariana Castro Silva","5521977776666",hoje,"14:00","Retorno de Avaliação",200,"Confirmado","Trazer exames",""]); 
-  }
-
-  const anSheet = getSheet(SHEETS.ANAMNESES);
-  if (anSheet.getLastRow()<=1) {
-    anSheet.appendRow(["ANAM-01","PAC-01","2026-05-10","Intolerância leve à lactose",
-      "Histórico de enxaqueca moderada","7-8h por noite","Regular diário",
-      "Adora comida japonesa, não gosta de quiabo","Nenhum","Whey protein",
-      "Nenhuma","Diabetes tipo 2 (mãe)","Sedentária","Emagrecer 8kg e ter mais energia",
-      "Sem glúten fortemente não; lactose evitar"]);
-  }
-
-  const evSheet = getSheet(SHEETS.EVOLUCAO);
-  if (evSheet.getLastRow()<=1) {
-    evSheet.appendRow(["EVO-01","PAC-01","2026-05-10",71.2,28.5,34.0,82,102,27.4]);
-    evSheet.appendRow(["EVO-02","PAC-01","2026-06-10",69.0,26.1,35.2,78,99,26.7]);
-    evSheet.appendRow(["EVO-03","PAC-01","2026-07-10",67.4,24.0,36.5,75,96,25.9]);
-    evSheet.appendRow(["EVO-04","PAC-01","2026-08-05",65.5,22.4,38.1,72,94,25.2]);
-  }
-
-  return { message:"Banco populado com sucesso!" };
+  return { message: "Estrutura do banco inicializada com sucesso!" };
 }
 
 function limparDadosFicticios() {

@@ -1314,7 +1314,7 @@ async function salvarPlanoNoBancoSheets() {
   const apresentacao = document.getElementById('inApresentacao').value;
   const objetivo = document.getElementById('inObjetivo').value;
 
-  const pacienteIdPrompt = prompt(`Digite o CPF ou ID do Paciente para vincular o plano de ${nome}:`, "PAC-01");
+  const pacienteIdPrompt = prompt(`Digite o CPF ou ID do Paciente para vincular o plano de ${nome}:`, "");
   if (!pacienteIdPrompt) return;
 
   const planoData = {
