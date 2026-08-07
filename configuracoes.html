@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurações do Sistema · Dra. Silvia Lemos</title>
+<meta name="kos-auth-level" content="admin">
+<script src="assets/js/auth-guard.js"></script>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+:root, [data-theme="dark"] {
+  --bg-deep: #0e1a12;
+  --bg-card: #182a1f;
+  --bg-header: #203528;
+  --text-primary: #eef4e5;
+  --text-title: #ffffff;
+  --text-muted: #a0b399;
+  --border-forest: rgba(140, 164, 129, 0.25);
+  --sage-light: #8ca481;
+  --sage-dim: rgba(140, 164, 129, 0.15);
+  --forest-card: #152219;
+  --forest-dark: #0a120c;
+  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 16px;
+}
+
+[data-theme="light"] {
+  --bg-deep: #f3f6f1;
+  --bg-card: #ffffff;
+  --bg-header: #e6ede0;
+  --text-primary: #1c2e22;
+  --text-title: #142419;
+  --text-muted: #57695b;
+  --border-forest: #cbe0c9;
+  --sage-light: #3d5a35;
+  --sage-dim: rgba(61, 90, 53, 0.12);
+  --forest-card: #ffffff;
+  --forest-dark: #1a2e1e;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-forest); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sage-light); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-forest) var(--bg-deep); }
+
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  transition: background .3s, color .3s;
+}
+body.in-iframe .top-header { display: none !important; }
+body.in-iframe .container { padding-top: 16px !important; }
+
+/* HEADER TOPO */
+.top-header {
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-forest);
+  padding: 14px 28px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 12px;
+}
+.brand-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--text-title); }
+
+/* LAYOUT */
+.container { max-width: 1100px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.card { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 18px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-forest); padding-bottom: 14px; flex-wrap: wrap; gap: 12px; }
+.card-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
+.card-subtitle { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+
+/* FORM & BUTTONS */
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.74rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+.form-control {
+  background: var(--bg-deep); border: 1.5px solid var(--border-forest);
+  padding: 12px 14px; border-radius: 12px; color: var(--text-primary);
+  font-family: inherit; font-size: 0.9rem; outline: none; transition: var(--tr); width: 100%; box-sizing: border-box;
+}
+.form-control:focus { border-color: var(--sage-light); box-shadow: 0 0 0 3px var(--sage-dim); }
+
+.btn {
+  background: var(--sage-light); color: var(--forest-dark); border: none;
+  padding: 12px 22px; border-radius: 12px; font-weight: 800; font-size: 0.88rem;
+  cursor: pointer; transition: var(--tr); text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px; font-family: inherit; white-space: nowrap;
+}
+.btn:hover { opacity: .9; transform: translateY(-1px); }
+.btn-secondary { background: transparent; border: 1.5px solid var(--border-forest); color: var(--text-primary); }
+.btn-secondary:hover { border-color: var(--sage-light); color: var(--sage-light); }
+
+.section-divider {
+  font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
+  color: var(--sage-light); letter-spacing: 0.06em; border-bottom: 1px solid var(--border-forest);
+  padding-bottom: 4px; margin-top: 8px; margin-bottom: 6px;
+}
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--bg-card);
+  border: 1.5px solid var(--sage-light); color: var(--text-primary);
+  padding: 14px 22px; border-radius: 14px; font-weight: 700; font-size: 0.88rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; transform: translateY(100px); opacity: 0; transition: var(--tr);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { border-color: #f87171; color: #f87171; }
+
+@media(max-width:768px) {
+  .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP HEADER -->
+<header class="top-header">
+  <div class="brand-title">⚙️ Configurações do Sistema · Dra. Silvia Lemos</div>
+  <button class="btn" onclick="salvarTodasConfiguracoes()">💾 Salvar Todas as Configurações</button>
+</header>
+
+<main class="container">
+
+  <!-- 1. IDENTIDADE DA CLÍNICA & PROFISSIONAL -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">🏢 Identidade Profissional &amp; Clínica</div>
+        <div class="card-subtitle">Informações que aparecem em recibos, e-mails e impressões A4</div>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label>Nome Profissional / Clínica *</label>
+        <input type="text" id="cfgClinicaNome" class="form-control" placeholder="Dra. Silvia de Oliveira Lemos">
+      </div>
+      <div class="form-group">
+        <label>Registro Profissional (CRN) *</label>
+        <input type="text" id="cfgClinicaCRN" class="form-control" placeholder="CRN-4 25104731">
+      </div>
+      <div class="form-group">
+        <label>WhatsApp Oficial de Atendimento *</label>
+        <input type="text" id="cfgClinicaWhatsapp" class="form-control" placeholder="5521987385146" oninput="mascaraTelefone(this)">
+      </div>
+      <div class="form-group">
+        <label>E-mail Oficial de Atendimento *</label>
+        <input type="email" id="cfgClinicaEmail" class="form-control" placeholder="silviadeoliveira24.nutri@gmail.com">
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SEGURANÇA E CREDENCIAIS DO ADMINISTRADOR -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">🔐 Acesso &amp; Segurança da Nutricionista</div>
+        <div class="card-subtitle">Alteração do e-mail de login administrativo e redefinição de senha</div>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label>E-mail de Login do Administrador</label>
+        <input type="email" id="cfgAdminEmail" class="form-control" placeholder="silviadeoliveira24.nutri@gmail.com">
+      </div>
+      <div class="form-group" style="justify-content: flex-end;">
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:4px;">Chave armazenada na aba Configuracoes</div>
+        <button class="btn btn-secondary" onclick="salvarEmailAdminApenas()">📧 Atualizar E-mail de Login</button>
+      </div>
+    </div>
+
+    <div class="section-divider">Alterar Senha do Administrador</div>
+    <form onsubmit="handleTrocaSenhaAdmin(event)" class="form-grid-3">
+      <div class="form-group">
+        <label>Senha Atual</label>
+        <input type="password" id="passAtual" class="form-control" placeholder="Digite sua senha atual" required>
+      </div>
+      <div class="form-group">
+        <label>Nova Senha (mín. 4 caracteres)</label>
+        <input type="password" id="passNova" class="form-control" placeholder="Digite a nova senha" required>
+      </div>
+      <div class="form-group" style="justify-content: flex-end;">
+        <label style="opacity:0;">Ação</label>
+        <button type="submit" class="btn" id="btnTrocarSenha">🔑 Alterar Senha</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 3. CONSULTAS, VALORES & GOOGLE MEET -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">💰 Parâmetros de Consulta &amp; Agendamento</div>
+        <div class="card-subtitle">Definição de valores padrão para novos agendamentos e salas virtuais</div>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label>Valor Padrão Consulta Presencial (R$)</label>
+        <input type="number" id="cfgValorPresencial" class="form-control" placeholder="280" step="10">
+      </div>
+      <div class="form-group">
+        <label>Valor Padrão Consulta Online (R$)</label>
+        <input type="number" id="cfgValorOnline" class="form-control" placeholder="250" step="10">
+      </div>
+      <div class="form-group">
+        <label>Duração Padrão da Consulta (minutos)</label>
+        <input type="number" id="cfgDuracaoConsulta" class="form-control" placeholder="60">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Link / Sala Padrão do Google Meet</label>
+      <input type="url" id="cfgMeetUrl" class="form-control" placeholder="https://meet.google.com/silvia-nutri">
+    </div>
+  </div>
+
+  <!-- 4. MODELOS DE MENSAGENS PARA WHATSAPP -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">💬 Modelos de Mensagem (WhatsApp)</div>
+        <div class="card-subtitle">Personalize os textos enviados aos pacientes pelo sistema</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Modelo de Mensagem de Lembrete / Confirmação de Consulta</label>
+      <textarea id="cfgMsgLembrete" class="form-control" style="min-height:90px;" placeholder="Olá {NOME}! Passando para lembrar da sua consulta nutricional agendada para {DATA} às {HORA}."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Modelo de Mensagem Pós-Consulta / Envio de Resumo</label>
+      <textarea id="cfgMsgPosConsulta" class="form-control" style="min-height:90px;" placeholder="Olá {NOME}! Foi excelente nossa consulta. Seu plano alimentar já está atualizado no seu Portal do Paciente!"></textarea>
+    </div>
+  </div>
+
+  <!-- BOTÃO FLUTUANTE / RODAPÉ DE AÇÃO -->
+  <div style="display:flex; justify-content:flex-end; gap:12px; margin-bottom:40px;">
+    <button class="btn btn-secondary" onclick="carregarConfiguracoes()">🔄 Restaurar Dados do Banco</button>
+    <button class="btn" onclick="salvarTodasConfiguracoes()">💾 Salvar Todas as Configurações</button>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+
+if (window.self !== window.top) {
+  document.body.classList.add('in-iframe');
+}
+
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SET_THEME') {
+    document.documentElement.setAttribute('data-theme', e.data.theme);
+  }
+});
+
+function toast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function mascaraTelefone(el) {
+  let v = el.value.replace(/\D/g, '');
+  el.value = v;
+}
+
+async function apiCall(action, payload = {}) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
+async function carregarConfiguracoes() {
+  toast("Buscando configurações no banco de dados...");
+  const res = await apiCall('getConfiguracoes');
+  if (res && res.success && res.data) {
+    const cfg = res.data;
+    if (document.getElementById('cfgClinicaNome')) document.getElementById('cfgClinicaNome').value = cfg.clinica_nome || "Dra. Silvia de Oliveira Lemos";
+    if (document.getElementById('cfgClinicaCRN')) document.getElementById('cfgClinicaCRN').value = cfg.clinica_crn || "CRN-4 25104731";
+    if (document.getElementById('cfgClinicaWhatsapp')) document.getElementById('cfgClinicaWhatsapp').value = cfg.clinica_whatsapp || "5521987385146";
+    if (document.getElementById('cfgClinicaEmail')) document.getElementById('cfgClinicaEmail').value = cfg.clinica_email || "silviadeoliveira24.nutri@gmail.com";
+    
+    if (document.getElementById('cfgAdminEmail')) document.getElementById('cfgAdminEmail').value = cfg.admin_email || "silviadeoliveira24.nutri@gmail.com";
+    
+    if (document.getElementById('cfgValorPresencial')) document.getElementById('cfgValorPresencial').value = cfg.valor_presencial || "280";
+    if (document.getElementById('cfgValorOnline')) document.getElementById('cfgValorOnline').value = cfg.valor_online || "250";
+    if (document.getElementById('cfgDuracaoConsulta')) document.getElementById('cfgDuracaoConsulta').value = cfg.duracao_consulta || "60";
+    if (document.getElementById('cfgMeetUrl')) document.getElementById('cfgMeetUrl').value = cfg.meet_url || "https://meet.google.com/silvia-nutri";
+    
+    if (document.getElementById('cfgMsgLembrete')) document.getElementById('cfgMsgLembrete').value = cfg.msg_lembrete || "Olá {NOME}! Passando para lembrar da sua consulta nutricional agendada para {DATA} às {HORA}.";
+    if (document.getElementById('cfgMsgPosConsulta')) document.getElementById('cfgMsgPosConsulta').value = cfg.msg_pos_consulta || "Olá {NOME}! Foi excelente nossa consulta de hoje. Seu plano alimentar já está disponível no seu Portal do Paciente!";
+
+    toast("✅ Configurações carregadas com sucesso!");
+  } else {
+    toast("Aviso: usando valores padrão.", true);
+  }
+}
+
+async function salvarTodasConfiguracoes() {
+  const payload = {
+    clinica_nome: document.getElementById('cfgClinicaNome').value.trim(),
+    clinica_crn: document.getElementById('cfgClinicaCRN').value.trim(),
+    clinica_whatsapp: document.getElementById('cfgClinicaWhatsapp').value.trim(),
+    clinica_email: document.getElementById('cfgClinicaEmail').value.trim(),
+    admin_email: document.getElementById('cfgAdminEmail').value.trim(),
+    valor_presencial: document.getElementById('cfgValorPresencial').value,
+    valor_online: document.getElementById('cfgValorOnline').value,
+    duracao_consulta: document.getElementById('cfgDuracaoConsulta').value,
+    meet_url: document.getElementById('cfgMeetUrl').value.trim(),
+    msg_lembrete: document.getElementById('cfgMsgLembrete').value.trim(),
+    msg_pos_consulta: document.getElementById('cfgMsgPosConsulta').value.trim()
+  };
+
+  toast("Salvando configurações...");
+  const res = await apiCall('saveConfiguracoes', { configuracoes: payload });
+
+  if (res && res.success) {
+    toast("✅ Todas as configurações foram salvas com sucesso!");
+  } else {
+    toast("Erro ao salvar configurações: " + (res.error || "Tente novamente"), true);
+  }
+}
+
+async function salvarEmailAdminApenas() {
+  const email = document.getElementById('cfgAdminEmail').value.trim();
+  if (!email) { alert("Informe o e-mail do administrador."); return; }
+  const res = await apiCall('saveConfiguracoes', { configuracoes: { admin_email: email } });
+  if (res && res.success) {
+    toast("✅ E-mail do Administrador atualizado!");
+  } else {
+    toast("Erro ao atualizar e-mail.", true);
+  }
+}
+
+async function handleTrocaSenhaAdmin(e) {
+  e.preventDefault();
+  const senhaAtual = document.getElementById('passAtual').value.trim();
+  const novaSenha  = document.getElementById('passNova').value.trim();
+  const btn = document.getElementById('btnTrocarSenha');
+
+  if (!senhaAtual || !novaSenha) {
+    alert("Preencha a senha atual e a nova senha.");
+    return;
+  }
+  if (novaSenha.length < 4) {
+    alert("A nova senha deve ter no mínimo 4 caracteres.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Alterando...";
+
+  const res = await apiCall('alterarSenha', {
+    identifier: "silviadeoliveira24.nutri@gmail.com",
+    senha_atual: senhaAtual,
+    nova_senha: novaSenha
+  });
+
+  btn.disabled = false;
+  btn.innerText = "🔑 Alterar Senha";
+
+  if (res && res.success) {
+    toast("✅ Senha da administração alterada com sucesso!");
+    document.getElementById('passAtual').value = '';
+    document.getElementById('passNova').value = '';
+  } else {
+    toast(res.error || "Erro ao alterar senha. Verifique a senha atual.", true);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('kos_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  carregarConfiguracoes();
+});
+</script>
+</body>
+</html>

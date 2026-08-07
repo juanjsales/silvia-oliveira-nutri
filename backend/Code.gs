@@ -216,6 +216,14 @@ function handleRequest(e, method) {
         response.data = deleteByField(SHEETS.FINANCEIRO, "id", params.id);
         response.success = true; break;
 
+      // ── Configurações ─────────────────────────────────────────
+      case "getConfiguracoes":
+        response.data = getConfiguracoes();
+        response.success = true; break;
+      case "saveConfiguracoes":
+        response.data = saveConfiguracoes(params.configuracoes||params);
+        response.success = true; break;
+
       default:
         response.error = "Ação inválida: " + action;
     }
@@ -340,6 +348,26 @@ function updateConfigValue(chave, valor) {
     }
   }
   sheet.appendRow([chave, valor]);
+}
+
+function getConfiguracoes() {
+  const data = getTableData(SHEETS.CONFIG);
+  const configMap = {};
+  data.forEach(item => {
+    if (item.chave) configMap[item.chave] = item.valor;
+  });
+  return configMap;
+}
+
+function saveConfiguracoes(cfg) {
+  if (!cfg || typeof cfg !== 'object') return { updated: false };
+  Object.keys(cfg).forEach(key => {
+    // Não permite sobrescrever admin_senha em texto claro por acidente através deste método genérico
+    if (key !== 'admin_senha' && key !== 'action') {
+      updateConfigValue(key, cfg[key]);
+    }
+  });
+  return { updated: true, configuracoes: getConfiguracoes() };
 }
 
 function gerarPINTemporario() {
