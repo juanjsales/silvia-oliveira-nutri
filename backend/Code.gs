@@ -815,17 +815,37 @@ function recuperarSenha(params) {
 
 // ── CRUD ───────────────────────────────────────────────────────────
 function savePaciente(p) {
-  const isNewId = !p.id || String(p.id).trim() === "" || String(p.id).trim().toUpperCase() === "NOVO";
-  const realId  = isNewId ? "PAC-" + Date.now() : String(p.id).trim();
-  const dt      = p.data_cadastro || new Date().toISOString().split("T")[0];
-  const pin     = hashPassword(p.senha_pin || "123456");
+  const isNew = !p.id || String(p.id).trim() === "" || String(p.id).trim().toUpperCase() === "NOVO";
+  const realId = isNew ? "PAC-" + Date.now() : String(p.id).trim();
+  const cleanCpf = cleanCPF(p.cpf);
+  const cleanEmail = String(p.email || "").trim().toLowerCase();
+
+  // Validação de duplicidade na tabela Usuários
+  const todosUsuarios = getTableData(SHEETS.USUARIOS);
+
+  if (cleanCpf) {
+    const dupCpf = todosUsuarios.find(u => (isNew || String(u.id).trim() !== realId) && cleanCPF(u.cpf) === cleanCpf);
+    if (dupCpf) {
+      throw new Error(`⚠️ Já existe um paciente cadastrado com o CPF informado (Paciente: ${dupCpf.nome}).`);
+    }
+  }
+
+  if (cleanEmail) {
+    const dupEmail = todosUsuarios.find(u => (isNew || String(u.id).trim() !== realId) && String(u.email || "").trim().toLowerCase() === cleanEmail);
+    if (dupEmail) {
+      throw new Error(`⚠️ O e-mail '${cleanEmail}' já pertence ao paciente ${dupEmail.nome}.`);
+    }
+  }
+
+  const dt  = p.data_cadastro || new Date().toISOString().split("T")[0];
+  const pin = hashPassword(p.senha_pin || "123456");
 
   const pacienteObj = {
     ...p,
     id: realId,
-    cpf: cleanCPF(p.cpf),
+    cpf: cleanCpf,
     nome: p.nome || "",
-    email: p.email || "",
+    email: cleanEmail,
     whatsapp: p.whatsapp || "",
     data_nascimento: p.data_nascimento || "",
     objetivo: p.objetivo || "Reeducação Alimentar",
