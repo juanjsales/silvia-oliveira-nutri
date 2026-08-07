@@ -109,13 +109,13 @@ body.in-iframe .container{padding-top:16px!important}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── MODAL STEPPER ─────────────────────────────────────────── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(.16,1,.3,1)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(.16,1,.3,1);overflow-y:auto}
 .modal-overlay.active{opacity:1;pointer-events:auto}
-.modal-card{background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:var(--radius);width:100%;max-width:580px;box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .25s cubic-bezier(.16,1,.3,1);position:relative}
+.modal-card{background:var(--bg-card);border:1.5px solid var(--border-forest);border-radius:var(--radius);width:100%;max-width:580px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .25s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
 .modal-overlay.active .modal-card{transform:scale(1)}
 
 /* Stepper header */
-.stepper{display:flex;align-items:center;background:var(--bg-deep);padding:20px 28px;gap:0;border-bottom:1px solid var(--border-forest);border-radius:var(--radius) var(--radius) 0 0}
+.stepper{display:flex;align-items:center;background:var(--bg-deep);padding:18px 24px;gap:0;border-bottom:1px solid var(--border-forest);border-radius:var(--radius) var(--radius) 0 0;flex-shrink:0}
 .step-item{display:flex;align-items:center;gap:8px;flex:1}
 .step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;border:2px solid var(--border-forest);color:var(--text-muted);transition:var(--tr);flex-shrink:0}
 .step-item.active .step-num{border-color:var(--sage-light);color:var(--sage-light);background:var(--sage-dim)}
@@ -127,13 +127,13 @@ body.in-iframe .container{padding-top:16px!important}
 .step-line.done{background:var(--sage-light)}
 
 /* Modal body */
-.modal-body{padding:28px;display:flex;flex-direction:column;gap:18px;position:relative}
+.modal-body{padding:24px;display:flex;flex-direction:column;gap:18px;position:relative;overflow-y:auto;flex:1}
 .modal-header{display:flex;justify-content:space-between;align-items:flex-start}
 .modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--text-title)}
 .modal-subtitle{font-size:0.82rem;color:var(--text-muted);margin-top:4px}
 .modal-close{background:transparent;border:none;color:var(--text-muted);font-size:1.4rem;cursor:pointer;transition:var(--tr);flex-shrink:0;line-height:1}
 .modal-close:hover{color:#f87171}
-.modal-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border-forest)}
+.modal-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border-forest);flex-shrink:0}
 
 /* Form */
 .form-group{display:flex;flex-direction:column;gap:6px;position:relative}
@@ -142,6 +142,15 @@ body.in-iframe .container{padding-top:16px!important}
 .form-control:focus{border-color:var(--sage-light)}
 .form-control option{background:var(--bg-card)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+@media (max-width: 600px) {
+  .modal-overlay{padding:10px !important}
+  .modal-card{max-width:100% !important;max-height:94vh !important;border-radius:16px !important}
+  .modal-body{padding:16px 12px !important;gap:14px !important}
+  .stepper{padding:12px 10px !important}
+  .step-label{display:none !important}
+  .form-row{grid-template-columns:1fr !important;gap:10px !important}
+}
 
 /* Radio toggle pac tipo */
 .radio-toggle{display:flex;background:var(--bg-deep);border:1.5px solid var(--border-forest);border-radius:12px;padding:4px;gap:4px}
