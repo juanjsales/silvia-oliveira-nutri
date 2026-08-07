@@ -80,9 +80,9 @@ body.in-iframe .main-container{padding-top:16px!important}
 .section-divider{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--sage-light);padding:6px 0;border-bottom:1px solid var(--border-forest);margin-bottom:12px}
 
 /* FORM */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.form-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px}
+.form-grid-3{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px}
+.form-grid-4{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px}
 .form-group{display:flex;flex-direction:column;gap:5px}
 .form-group label{font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--sage-light);letter-spacing:.05em}
 .form-group label.required::after{content:' *';color:#f87171}
