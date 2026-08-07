@@ -2793,12 +2793,17 @@
         if (kpiConsultas) kpiConsultas.innerText = consultasHoje.length > 0 ? consultasHoje.length : agendamentos.length;
         if (kpiOnline) kpiOnline.innerText = online.length;
         if (kpiPresencial) kpiPresencial.innerText = presencial.length;
-        if (kpiFatura) kpiFatura.innerText = 'R$ ' + (totalFaturamento > 0 ? totalFaturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '10.500,00');
+        if (kpiFatura) kpiFatura.innerText = 'R$ ' + (totalFaturamento > 0 ? totalFaturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00');
       } else {
-        document.getElementById('kpiConsultas').innerText = '4';
-        document.getElementById('kpiOnline').innerText = '18';
-        document.getElementById('kpiPresencial').innerText = '24';
-        document.getElementById('kpiFatura').innerText = 'R$ 10.500,00';
+        // Sem dados reais — mostra zeros honestos
+        const kpiConsultas = document.getElementById('kpiConsultas');
+        const kpiOnline    = document.getElementById('kpiOnline');
+        const kpiPresencial= document.getElementById('kpiPresencial');
+        const kpiFatura    = document.getElementById('kpiFatura');
+        if (kpiConsultas) kpiConsultas.innerText = '0';
+        if (kpiOnline)    kpiOnline.innerText    = '0';
+        if (kpiPresencial)kpiPresencial.innerText = '0';
+        if (kpiFatura)    kpiFatura.innerText     = 'R$ 0,00';
       }
     }
 

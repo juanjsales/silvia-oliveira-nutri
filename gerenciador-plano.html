@@ -494,7 +494,7 @@ function renderInputs() {
         <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; margin-bottom:8px;">
           ${m.alimentosList.map((al, aIdx) => `
             <span style="background:rgba(140,164,129,0.18); border:1px solid var(--border-sage); padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; color:var(--sage-light); display:inline-flex; align-items:center; gap:6px;">
-              <input type="number" value="${al.qtd}" onchange="editarQtdAlimento(${idx}, ${aIdx}, this.value)" onclick="event.stopPropagation()" style="width:52px; background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); color:var(--text-title); border-radius:6px; padding:2px 4px; font-weight:800; font-size:0.75rem; text-align:center;" title="Clique para alterar a quantidade em gramas (ex: 15g, 30g, 50g, 150g)"> g
+              <input type="number" value="${al.qtd}" min="1" step="0.5" onchange="editarQtdAlimento(${idx}, ${aIdx}, this.value)" onclick="event.stopPropagation()" style="width:52px; background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); color:var(--text-title); border-radius:6px; padding:2px 4px; font-weight:800; font-size:0.75rem; text-align:center;" title="Quantidade em gramas (ex: 15g, 30g, 50g, 150g)"> g
               <span>${al.nome}</span>
               <span style="color:var(--text-muted); font-size:0.7rem;">(${al.kcal}k | C:${al.carb}g P:${al.prot}g)</span>
               <span onclick="removerAlimentoDaRefeicao(${idx}, ${aIdx})" style="cursor:pointer; color:#f87171; font-weight:900; margin-left:4px;" title="Remover item">✕</span>
@@ -1396,7 +1396,7 @@ function confirmarInsercaoTacoNoPlano() {
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
         <div class="form-group">
           <label>Quantidade (g / ml)</label>
-          <input type="number" id="tacoSelQtd" class="form-control" value="100" oninput="atualizarCalcMacrosTaco()">
+          <input type="number" id="tacoSelQtd" class="form-control" value="100" min="1" step="0.5" placeholder="Ex: 30" oninput="atualizarCalcMacrosTaco()">
         </div>
         <div class="form-group">
           <label>Inserir na Refeição</label>

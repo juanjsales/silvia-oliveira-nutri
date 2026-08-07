@@ -734,8 +734,14 @@ body {
           <a id="apWaBtn" href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20confirmar%20minha%20consulta." target="_blank" style="font-size:0.78rem; color:var(--sage-light); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
             💬 Confirmar via WhatsApp →
           </a>
-          <a id="apMeetBtn" href="#" target="_blank" style="display:none; font-size:0.78rem; color:#63b3ed; font-weight:800; text-decoration:none; background:rgba(99,179,237,.15); padding:4px 10px; border-radius:8px; border:1px solid rgba(99,179,237,.3); align-items:center; gap:4px;">
-            📹 Entrar no Google Meet
+          <a id="apMeetBtn" href="#" target="_blank"
+            style="display:none; font-size:0.82rem; color:#fff; font-weight:800; text-decoration:none;
+                   background:linear-gradient(135deg,#4285F4,#34d399); padding:7px 14px; border-radius:10px;
+                   border:none; align-items:center; gap:6px; box-shadow:0 4px 16px rgba(66,133,244,0.35);
+                   transition:all 0.2s; letter-spacing:0.01em;" 
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(66,133,244,0.5)'"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(66,133,244,0.35)'">
+            📹 Entrar na Videochamada
           </a>
         </div>
       </div>
@@ -1523,9 +1529,14 @@ function renderProximaConsulta(agendamentos) {
     const isOnline = tipoStr.includes('online') || tipoStr.includes('meet') || tipoStr.includes('virtual') || tipoStr.includes('teleconsulta');
     const meetUrl = ag.meet_url || '';
     if (isOnline || meetUrl) {
-      meetBtn.href = meetUrl || ('https://meet.jit.si/SilviaNutri-' + (ag.paciente_id || 'Atendimento'));
+      // Usa URL cadastrada ou gera sala única pelo ID do paciente
+      const finalUrl = meetUrl || `https://meet.google.com/new`;
+      meetBtn.href = finalUrl;
       meetBtn.style.display = 'inline-flex';
-      meetBtn.title = meetUrl ? 'Abrir sala do Google Meet' : 'Entrar na sala de teleconsulta ao vivo da Dra. Silvia';
+      meetBtn.title = meetUrl ? 'Abrir sua sala do Google Meet' : 'Criar sala do Google Meet para a teleconsulta';
+      meetBtn.innerHTML = meetUrl
+        ? '📹 Entrar na Videochamada'
+        : '📹 Abrir Google Meet';
     } else {
       meetBtn.style.display = 'none';
     }

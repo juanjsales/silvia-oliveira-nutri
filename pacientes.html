@@ -654,10 +654,17 @@ async function salvarNovoPacienteEAgendamento(e) {
       closePacienteModal();
       alert(`✅ Paciente ${nome} cadastrado e consulta agendada para ${dataFmt} às ${hora}!\n\n📧 Um e-mail com a confirmação e credenciais do Portal do Paciente foi enviado para ${email}.`);
     } else {
-      alert('Erro ao salvar: ' + (res?.error || 'Tente novamente.'));
+      const errMsg = (res?.error || '').toLowerCase();
+      if (errMsg.includes('cpf') && (errMsg.includes('duplicado') || errMsg.includes('já cadastrado') || errMsg.includes('already') || errMsg.includes('exist'))) {
+        alert(`⚠️ CPF já cadastrado!\n\nO CPF "${pacienteObj.cpf}" já está vinculado a outro paciente no sistema.\n\nSe for o mesmo paciente, localize-o na lista e agende uma nova consulta pelo botão de agendamento.`);
+      } else if (errMsg.includes('email') && (errMsg.includes('duplicado') || errMsg.includes('já cadastrado') || errMsg.includes('already') || errMsg.includes('exist'))) {
+        alert(`⚠️ E-mail já cadastrado!\n\nO e-mail "${email}" já está vinculado a outro paciente.\n\nUtilize outro endereço de e-mail ou localize o paciente existente na lista.`);
+      } else {
+        alert('⚠️ Erro ao salvar: ' + (res?.error || 'Tente novamente ou verifique sua conexão.'));
+      }
     }
   } catch(err) {
-    alert('Erro de conexão: ' + err.message);
+    alert('❌ Erro de conexão: ' + err.message);
   }
 
   if (btn) { btn.disabled = false; btn.innerText = '💾 Confirmar & Salvar no Banco'; }
