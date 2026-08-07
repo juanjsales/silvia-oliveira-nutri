@@ -316,6 +316,10 @@ body.in-iframe .manager-container { padding-top: 12px !important; }
       <label>Objetivo Principal</label>
       <input type="text" id="inObjetivo" class="form-control" value="Preservar e aumentar massa muscular com alto aporte proteico, distribuição equilibrada de carboidratos e gorduras saudáveis." oninput="salvarELocal(); atualizar();">
     </div>
+    <div class="form-group">
+      <label>💧 Meta de Hidratação Recomendada (Litros/dia)</label>
+      <input type="number" id="inMetaAgua" class="form-control" value="2.5" step="0.1" min="1" max="6" placeholder="Ex: 2.5" oninput="salvarELocal(); atualizar();">
+    </div>
 
     <div class="section-divider">🍳 Refeições (Cards)</div>
     <div id="mealsInputs"></div>
@@ -794,12 +798,19 @@ async function salvarPlanoNoBancoSheets() {
   const nome = document.getElementById('inNome').value || 'PACIENTE';
   const apresentacao = document.getElementById('inApresentacao').value;
   const objetivo = document.getElementById('inObjetivo').value;
+  const metaAguaLitros = parseFloat(document.getElementById('inMetaAgua')?.value || 2.5) || 2.5;
+  const metaAguaMl = Math.round(metaAguaLitros * 1000);
 
   const planoData = {
     paciente_id: pacienteId,
     paciente_nome: nome,
     refeicoes: refeicoes,
-    extras: { apresentacao, objetivo },
+    extras: {
+      apresentacao,
+      objetivo,
+      meta_agua_litros: metaAguaLitros,
+      meta_agua_ml: metaAguaMl
+    },
     lista_compras: {}
   };
 

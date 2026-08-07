@@ -1395,9 +1395,23 @@ async function carregarDadosHistorico(pacienteId) {
       }
 
       // 1. Renderizar Plano Alimentar Real se existir
-      if (plano && plano.json_refeicoes) {
+      if (plano && (plano.json_refeicoes || plano.refeicoes)) {
         try {
-          const meallist = typeof plano.json_refeicoes === 'string' ? JSON.parse(plano.json_refeicoes) : plano.json_refeicoes;
+          const meallist = typeof plano.json_refeicoes === 'string' ? JSON.parse(plano.json_refeicoes) : (plano.json_refeicoes || plano.refeicoes);
+          
+          // Sincronizar Meta de Hidratação em tempo real
+          let extrasObj = {};
+          if (plano.json_extras) extrasObj = typeof plano.json_extras === 'string' ? JSON.parse(plano.json_extras) : plano.json_extras;
+          else if (plano.extras) extrasObj = typeof plano.extras === 'string' ? JSON.parse(plano.extras) : plano.extras;
+
+          if (extrasObj && (extrasObj.meta_agua_ml || extrasObj.meta_agua_litros)) {
+            const ml = extrasObj.meta_agua_ml || Math.round(parseFloat(extrasObj.meta_agua_litros) * 1000);
+            if (ml > 0) {
+              waterTarget = ml;
+              updateWaterUI();
+            }
+          }
+
           if (Array.isArray(meallist) && meallist.length > 0) {
             let totalPlanoKcal = 0;
             const container = document.querySelector('.meals-timeline');
@@ -1420,10 +1434,10 @@ async function carregarDadosHistorico(pacienteId) {
                     </div>
                   </div>
                   <div class="meal-items-text">${m.alimentos || m.itens || 'Consulte sua prescrição.'}</div>
-                  ${m.substituicoes ? `
-                    <button class="btn-subst-trigger" onclick="toggleSubst('sub-${idx+1}')">🔄 Opções de Substituição</button>
+                  ${m.substituicoes || m.obs ? `
+                    <button class="btn-subst-trigger" onclick="toggleSubst('sub-${idx+1}')">🔄 Opções de Substituição / Obs</button>
                     <div class="subst-box-v2" id="sub-${idx+1}">
-                      <strong>Substituições permitidas:</strong><br>${m.substituicoes}
+                      <strong>Substituições / Observações:</strong><br>${m.substituicoes || m.obs}
                     </div>
                   ` : ''}
                 </div>
