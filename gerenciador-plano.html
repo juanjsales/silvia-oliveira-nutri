@@ -983,9 +983,36 @@ async function buscarAlimentoInlineNaRefeicao(q, idxRef) {
   `).join('');
 }
 
-function adicionarAlimentoInlineDirect(idxRef, id, nome, kcal, carb, prot, gord) {
+function adicionarAlimentoOuConsolidar(idxRef, novoAlimento) {
   if (!refeicoes[idxRef]) return;
   if (!refeicoes[idxRef].alimentosList) refeicoes[idxRef].alimentosList = [];
+
+  const list = refeicoes[idxRef].alimentosList;
+  const nomeLimpo = String(novoAlimento.nome || '').trim().toLowerCase();
+
+  // Buscar se o alimento já existe nesta refeição (mesmo ID ou mesmo nome exato)
+  const existente = list.find(a => 
+    (a.id && novoAlimento.id && a.id === novoAlimento.id) || 
+    String(a.nome || '').trim().toLowerCase() === nomeLimpo
+  );
+
+  if (existente) {
+    // Consolidar: somar quantidade e somar macros proporcionalmente
+    existente.qtd = (parseFloat(existente.qtd) || 0) + (parseFloat(novoAlimento.qtd) || 0);
+    existente.kcal = Math.round((parseFloat(existente.kcal) || 0) + (parseFloat(novoAlimento.kcal) || 0));
+    existente.carb = Math.round(((parseFloat(existente.carb) || 0) + (parseFloat(novoAlimento.carb) || 0)) * 10) / 10;
+    existente.prot = Math.round(((parseFloat(existente.prot) || 0) + (parseFloat(novoAlimento.prot) || 0)) * 10) / 10;
+    existente.gord = Math.round(((parseFloat(existente.gord) || 0) + (parseFloat(novoAlimento.gord) || 0)) * 10) / 10;
+  } else {
+    // Novo item
+    list.push(novoAlimento);
+  }
+
+  recalculaRefeicaoPorAlimentos(idxRef);
+}
+
+function adicionarAlimentoInlineDirect(idxRef, id, nome, kcal, carb, prot, gord) {
+  if (!refeicoes[idxRef]) return;
 
   const novoAlimento = {
     id: id || ('item_' + Date.now()),
@@ -998,13 +1025,40 @@ function adicionarAlimentoInlineDirect(idxRef, id, nome, kcal, carb, prot, gord)
     gord: gord
   };
 
-  refeicoes[idxRef].alimentosList.push(novoAlimento);
-  recalculaRefeicaoPorAlimentos(idxRef);
+  adicionarAlimentoOuConsolidar(idxRef, novoAlimento);
 
   renderInputs();
   salvarELocal();
   atualizar();
   calcularTotaisPlano();
+}
+
+function confirmarInsercaoTacoNoPlano() {
+  if (!alimentoTacoSelecionado) return;
+  const qtd = parseFloat(document.getElementById('tacoSelQtd')?.value) || 100;
+  const calc = window.TacoDB.calc(alimentoTacoSelecionado, qtd);
+  const idxRef = parseInt(document.getElementById('tacoSelRefeicao')?.value || "0");
+
+  if (refeicoes[idxRef]) {
+    const novoAlimento = {
+      id: alimentoTacoSelecionado.id || ('item_' + Date.now()),
+      nome: calc.nome,
+      qtd: qtd,
+      unidade: 'g',
+      kcal: calc.kcal,
+      carb: calc.carb,
+      prot: calc.prot,
+      gord: calc.gord
+    };
+
+    adicionarAlimentoOuConsolidar(idxRef, novoAlimento);
+
+    renderInputs();
+    salvarELocal();
+    atualizar();
+    calcularTotaisPlano();
+    fecharModalTaco();
+  }
 }
 
 async function buscarAlimentosTaco(q) {
