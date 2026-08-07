@@ -675,19 +675,19 @@ body {
     <div class="macros-row">
       <div class="macro-box">
         <span class="macro-lbl">Calorias</span>
-        <span class="macro-num">1.800 kcal</span>
+        <span class="macro-num" id="pacMacroKcal">— kcal</span>
       </div>
       <div class="macro-box">
         <span class="macro-lbl">Proteínas</span>
-        <span class="macro-num">130g</span>
+        <span class="macro-num" id="pacMacroProt">—g</span>
       </div>
       <div class="macro-box">
         <span class="macro-lbl">Carboidratos</span>
-        <span class="macro-num">180g</span>
+        <span class="macro-num" id="pacMacroCarb">—g</span>
       </div>
       <div class="macro-box">
         <span class="macro-lbl">Gorduras</span>
-        <span class="macro-num">55g</span>
+        <span class="macro-num" id="pacMacroGord">—g</span>
       </div>
     </div>
 
@@ -1413,13 +1413,26 @@ async function carregarDadosHistorico(pacienteId) {
           }
 
           if (Array.isArray(meallist) && meallist.length > 0) {
-            let totalPlanoKcal = 0;
+            let totalPlanoKcal = 0, totalPlanoProt = 0, totalPlanoCarb = 0, totalPlanoGord = 0;
+
             const container = document.querySelector('.meals-timeline');
             if (container) {
               container.innerHTML = meallist.map((m, idx) => {
                 const kcalStr = m.kcal || m.calorias || '';
-                const kcalVal = parseInt(String(kcalStr).replace(/\D/g, ''), 10) || 350;
+                const kcalVal = parseInt(String(kcalStr).replace(/\D/g, ''), 10) || 0;
                 totalPlanoKcal += kcalVal;
+
+                if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
+                  m.alimentosList.forEach(a => {
+                    totalPlanoCarb += parseFloat(a.carb) || 0;
+                    totalPlanoProt += parseFloat(a.prot) || 0;
+                    totalPlanoGord += parseFloat(a.gord) || 0;
+                  });
+                } else {
+                  totalPlanoProt += parseFloat(String(m.proteina || '0').replace(/[^\d.]/g, '')) || 0;
+                  totalPlanoCarb += parseFloat(String(m.carbos || '0').replace(/[^\d.]/g, '')) || 0;
+                  totalPlanoGord += parseFloat(String(m.gorduras || '0').replace(/[^\d.]/g, '')) || 0;
+                }
 
                 return `
                 <div class="meal-card-v2" id="meal-${idx+1}" data-kcal="${kcalVal}">
@@ -1443,6 +1456,16 @@ async function carregarDadosHistorico(pacienteId) {
                 </div>
               `;
               }).join('');
+
+              totalPlanoKcal = Math.round(totalPlanoKcal);
+              totalPlanoProt = Math.round(totalPlanoProt * 10) / 10;
+              totalPlanoCarb = Math.round(totalPlanoCarb * 10) / 10;
+              totalPlanoGord = Math.round(totalPlanoGord * 10) / 10;
+
+              if (document.getElementById('pacMacroKcal')) document.getElementById('pacMacroKcal').textContent = `${totalPlanoKcal} kcal`;
+              if (document.getElementById('pacMacroProt')) document.getElementById('pacMacroProt').textContent = `${totalPlanoProt}g`;
+              if (document.getElementById('pacMacroCarb')) document.getElementById('pacMacroCarb').textContent = `${totalPlanoCarb}g`;
+              if (document.getElementById('pacMacroGord')) document.getElementById('pacMacroGord').textContent = `${totalPlanoGord}g`;
 
               if (totalPlanoKcal > 0) window.userTargetKcal = totalPlanoKcal;
               updateCalorieTrackerUI();
