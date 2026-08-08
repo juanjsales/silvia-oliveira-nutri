@@ -1493,7 +1493,7 @@
     <div class="loader-brand-box">
       <div class="loader-logo-ring">🌿</div>
       <div>
-        <div class="loader-text-title">Dra. Silvia Lemos</div>
+        <div class="loader-text-title">Dra. Silvia Oliveira Lemos</div>
         <div class="loader-text-sub">Painel da Nutricionista</div>
       </div>
       <div class="loader-dots-bar">
@@ -1510,7 +1510,7 @@
     <div class="brand-box">
       <div class="brand-icon">🌿</div>
       <div>
-        <div class="brand-name">Dra. Silvia Lemos</div>
+        <div class="brand-name">Silvia Oliveira</div>
         <div class="brand-crn">CRN-4 25104731</div>
       </div>
     </div>
@@ -1563,7 +1563,7 @@
         <button class="btn-hamburger" id="btnHamburger" onclick="toggleMobileMenu()" title="Abrir Menu Lateral">
           🍔 Menu
         </button>
-        <div class="page-title" id="pageTitle">Dashboard Principal · Dra. Silvia Lemos</div>
+        <div class="page-title" id="pageTitle">Dashboard Principal · Dra. Silvia Oliveira Lemos</div>
       </div>
 
       <div style="display: flex; align-items: center; gap: 10px;">
@@ -1589,8 +1589,8 @@
         </div>
 
         <div class="top-user" style="display:flex; align-items:center; gap:8px; margin-left:10px;">
-          <img src="assets/silvia-hero.webp" alt="Dra. Silvia Lemos" class="top-avatar" loading="lazy" decoding="async">
-          <span style="font-size:0.85rem; font-weight:700;">Dra. Silvia Lemos</span>
+          <img src="assets/silvia-hero.webp" alt="Dra. Silvia Oliveira Lemos" class="top-avatar" loading="lazy" decoding="async">
+          <span style="font-size:0.85rem; font-weight:700;">Dra. Silvia Oliveira L.</span>
         </div>
 
         <a href="login.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; color:#f87171;"
@@ -1602,27 +1602,39 @@
 
       <!-- 1. HOME VIEW (GRÁFICOS, KPIS & AGENDA) -->
       <div id="homeView" style="display: block;">
-        <div class="kpi-grid">
+        <div class="kpi-grid" style="margin-bottom: 24px;">
           <div class="kpi-card">
-            <div class="kpi-label">Consultas Hoje</div>
+            <div class="kpi-hdr">
+              <div class="kpi-label">Consultas Hoje</div>
+              <div class="kpi-icon-badge">📅</div>
+            </div>
             <div class="kpi-val" id="kpiConsultas">
               <div class="spinner-ring"></div>
             </div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Atendimentos Online</div>
+            <div class="kpi-hdr">
+              <div class="kpi-label">Atendimentos Online</div>
+              <div class="kpi-icon-badge">💻</div>
+            </div>
             <div class="kpi-val" id="kpiOnline">
               <div class="spinner-ring"></div>
             </div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Presenciais</div>
+            <div class="kpi-hdr">
+              <div class="kpi-label">Presenciais</div>
+              <div class="kpi-icon-badge">🏥</div>
+            </div>
             <div class="kpi-val" id="kpiPresencial">
               <div class="spinner-ring"></div>
             </div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Faturamento Estimado</div>
+            <div class="kpi-hdr">
+              <div class="kpi-label">Faturamento Estimado</div>
+              <div class="kpi-icon-badge">💰</div>
+            </div>
             <div class="kpi-val" id="kpiFatura">
               <div class="spinner-ring"></div>
             </div>
@@ -2708,7 +2720,7 @@
       if (homeView) homeView.style.display = 'block';
       if (iframeView) iframeView.style.display = 'none';
       if (financeiroView) financeiroView.style.display = 'none';
-      if (pageTitle) pageTitle.innerText = 'Dashboard Principal · Dra. Silvia Lemos';
+      if (pageTitle) pageTitle.innerText = 'Dashboard Principal · Dra. Silvia Oliveira Lemos';
 
       document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
       if (el) el.classList.add('active');
@@ -2728,11 +2740,11 @@
       if (iframe) iframe.src = url;
 
       if (pageTitle) {
-        if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Lemos';
-        else if (url.includes('atendimento')) pageTitle.innerText = 'Prontuário do Atendimento · Dra. Silvia Lemos';
-        else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Lemos';
-        else if (url.includes('gerenciador')) pageTitle.innerText = 'Gerenciador de Plano Nutricional · Dra. Silvia O. Lemos';
-        else if (url.includes('bioimpedancia')) pageTitle.innerText = 'Bioimpedância & Evolução · Dra. Silvia Lemos';
+        if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Oliveira Lemos';
+        else if (url.includes('atendimento')) pageTitle.innerText = 'Prontuário do Atendimento · Dra. Silvia Oliveira Lemos';
+        else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Oliveira Lemos';
+        else if (url.includes('gerenciador')) pageTitle.innerText = 'Gerenciador de Plano Nutricional · Dra. Silvia Oliveira Lemos';
+        else if (url.includes('bioimpedancia')) pageTitle.innerText = 'Bioimpedância & Evolução · Dra. Silvia Oliveira Lemos';
       }
 
       document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
@@ -2749,7 +2761,7 @@
       if (homeView) homeView.style.display = 'none';
       if (iframeView) iframeView.style.display = 'none';
       if (financeiroView) financeiroView.style.display = 'block';
-      if (pageTitle) pageTitle.innerText = 'Gestão Financeira & Recibos · Dra. Silvia Lemos';
+      if (pageTitle) pageTitle.innerText = 'Gestão Financeira & Recibos · Dra. Silvia Oliveira Lemos';
 
       document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
       if (el) el.classList.add('active');

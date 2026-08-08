@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agendamento · Dra. Silvia Lemos</title>
+<title>Agendamento · Dra. Silvia Oliveira Lemos</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -611,7 +611,7 @@ function buildCard(ag) {
   if (status.toLowerCase().includes('cancel')) statusClass='status-cancelado';
 
   const phone = String(ag.paciente_whatsapp||ag.whatsapp||'').replace(/\D/g,'');
-  const waTxt = encodeURIComponent(`Olá ${nome}! 🌿 Lembrando da sua consulta com a Dra. Silvia Lemos hoje às ${hora}. Te esperamos!`);
+  const waTxt = encodeURIComponent(`Olá ${nome}! 🌿 Lembrando da sua consulta com a Dra. Silvia Oliveira Lemos hoje às ${hora}. Te esperamos!`);
 
   return `<div class="consult-card ${statusClass}" id="card-${id}">
     <div class="consult-time">${hora}<div class="consult-time-period">${periodo}</div></div>
@@ -929,7 +929,7 @@ async function salvarConsulta() {
       const waBtn = document.getElementById('successWaBtn');
       const phone = String(d?.paciente?.whatsapp || paciente.whatsapp || '').replace(/\D/g, '');
       if (waBtn && phone) {
-        let waMsg = `Olá ${d?.paciente?.nome || paciente.nome}! 🌿 Sua consulta com a Dra. Silvia Lemos foi agendada para ${dtFmt} às ${agendamento.hora}.`;
+        let waMsg = `Olá ${d?.paciente?.nome || paciente.nome}! 🌿 Sua consulta com a Dra. Silvia Oliveira Lemos foi agendada para ${dtFmt} às ${agendamento.hora}.`;
         if (agendamento.meet_url) waMsg += ` Link do Google Meet: ${agendamento.meet_url}`;
         waBtn.href = `https://wa.me/${phone}?text=${encodeURIComponent(waMsg)}`;
         waBtn.style.display = 'inline-flex';
