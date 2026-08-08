@@ -1,418 +1,789 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pacientes & Anamneses · Dra. Silvia Lemos</title>
-<meta name="kos-auth-level" content="admin">
-<script src="assets/js/auth-guard.js"></script>
-<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pacientes & Anamneses · Dra. Silvia Lemos</title>
+  <meta name="kos-auth-level" content="admin">
+  <script src="assets/js/auth-guard.js"></script>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+    rel="stylesheet">
 
-<style>
-:root, [data-theme="dark"] {
-  --bg-deep: #0e1a12;
-  --bg-card: #182a1f;
-  --bg-header: #203528;
-  --text-primary: #eef4e5;
-  --text-title: #ffffff;
-  --text-muted: #a0b399;
-  --border-forest: rgba(140, 164, 129, 0.25);
-  --sage-light: #8ca481;
-  --sage-dim: rgba(140, 164, 129, 0.2);
-  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  --radius: 20px;
-}
+  <style>
+    :root,
+    [data-theme="dark"] {
+      --bg-deep: #0e1a12;
+      --bg-card: #182a1f;
+      --bg-header: #203528;
+      --text-primary: #eef4e5;
+      --text-title: #ffffff;
+      --text-muted: #a0b399;
+      --border-forest: rgba(140, 164, 129, 0.25);
+      --sage-light: #8ca481;
+      --sage-dim: rgba(140, 164, 129, 0.2);
+      --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      --radius: 20px;
+    }
 
-[data-theme="light"] {
-  --bg-deep: #f3f6f1;
-  --bg-card: #ffffff;
-  --bg-header: #e6ede0;
-  --text-primary: #1c2e22;
-  --text-title: #142419;
-  --text-muted: #57695b;
-  --border-forest: #cbe0c9;
-  --sage-light: #3d5a35;
-  --sage-dim: rgba(61, 90, 53, 0.12);
-}
+    [data-theme="light"] {
+      --bg-deep: #f3f6f1;
+      --bg-card: #ffffff;
+      --bg-header: #e6ede0;
+      --text-primary: #1c2e22;
+      --text-title: #142419;
+      --text-muted: #57695b;
+      --border-forest: #cbe0c9;
+      --sage-light: #3d5a35;
+      --sage-dim: rgba(61, 90, 53, 0.12);
+    }
 
-[data-theme="light"] .card { background: #ffffff !important; border-color: #d1ded0 !important; color: #1c2e22 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.04) !important; }
-[data-theme="light"] .card-title, [data-theme="light"] .brand-title, [data-theme="light"] strong { color: #142419 !important; }
-[data-theme="light"] table td { color: #1c2e22 !important; border-bottom-color: #e4ebe2 !important; }
-[data-theme="light"] table th { background: #e6ede0 !important; color: #213524 !important; border-bottom-color: #d0ded0 !important; }
-[data-theme="light"] .btn-secondary { background: #eaf1e7 !important; color: #213524 !important; border-color: #b8cbb6 !important; }
-[data-theme="light"] .btn-secondary:hover { background: #d8e5d4 !important; color: #142419 !important; }
-[data-theme="light"] .top-header { background: #e4ede0 !important; border-color: #cbe0c9 !important; }
+    [data-theme="light"] .card {
+      background: #ffffff !important;
+      border-color: #d1ded0 !important;
+      color: #1c2e22 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+    }
 
-/* PADRONIZAÇÃO DE BARRAS DE ROLAGEM (SCROLLBARS) BOTÂNICAS */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-deep); }
-::-webkit-scrollbar-thumb { background: var(--border-forest); border-radius: 4px; border: 2px solid var(--bg-deep); }
-::-webkit-scrollbar-thumb:hover { background: var(--sage-light); }
-* { scrollbar-width: thin; scrollbar-color: var(--border-forest) var(--bg-deep); }
+    [data-theme="light"] .card-title,
+    [data-theme="light"] .brand-title,
+    [data-theme="light"] strong {
+      color: #142419 !important;
+    }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg-deep); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; transition: background 0.3s ease, color 0.3s ease; }
-.card { background: var(--bg-card); border-color: var(--border-forest); }
-.card-title, .brand-title { color: var(--text-title); }
+    [data-theme="light"] table td {
+      color: #1c2e22 !important;
+      border-bottom-color: #e4ebe2 !important;
+    }
 
-/* HEADER */
-.top-header { background: var(--forest-card); border-bottom: 1px solid var(--border-forest); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; sticky: top; z-index: 100; }
-.brand-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: #fff; }
-.nav-links { display: flex; gap: 16px; align-items: center; }
-.nav-item { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 700; padding: 8px 14px; border-radius: 10px; transition: var(--tr); }
-.nav-item:hover, .nav-item.active { background: rgba(140, 164, 129, 0.15); color: var(--sage-light); }
+    [data-theme="light"] table th {
+      background: #e6ede0 !important;
+      color: #213524 !important;
+      border-bottom-color: #d0ded0 !important;
+    }
 
-.container { max-width: 1300px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 28px; }
+    [data-theme="light"] .btn-secondary {
+      background: #eaf1e7 !important;
+      color: #213524 !important;
+      border-color: #b8cbb6 !important;
+    }
 
-.card { background: var(--forest-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.card-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #fff; }
+    [data-theme="light"] .btn-secondary:hover {
+      background: #d8e5d4 !important;
+      color: #142419 !important;
+    }
 
-.btn { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-.btn:hover { background: #eef4e5; transform: translateY(-2px); }
-.btn-secondary { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border-forest); }
-.btn-secondary:hover { background: rgba(255,255,255,0.06); color: var(--text-light); transform: none; }
+    [data-theme="light"] .top-header {
+      background: #e4ede0 !important;
+      border-color: #cbe0c9 !important;
+    }
 
-table { width: 100%; min-width: 750px; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
-th { background: rgba(0,0,0,0.3); padding: 14px 16px; color: var(--sage-light); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-forest); }
-td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-light); }
-tr:hover td { background: rgba(255,255,255,0.02); }
+    /* PADRONIZAÇÃO DE BARRAS DE ROLAGEM (SCROLLBARS) BOTÂNICAS */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
 
-/* MODAL PADRÃO BOTÂNICO COM ANIMAÇÃO FADE/ZOOM */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  z-index: 2000;
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow-y: auto;
-}
-.modal-overlay.active {
-  opacity: 1; pointer-events: auto;
-}
+    ::-webkit-scrollbar-track {
+      background: var(--bg-deep);
+    }
 
-.modal-card {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border-forest);
-  border-radius: var(--radius);
-  padding: 0 !important;
-  width: 100%; max-width: 580px; max-height: 90vh;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
-  display: flex; flex-direction: column;
-  transform: scale(0.95);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-}
-.modal-overlay.active .modal-card {
-  transform: scale(1);
-}
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-forest);
+      border-radius: 4px;
+      border: 2px solid var(--bg-deep);
+    }
 
-.modal-header {
-  display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid var(--border-forest); padding-bottom: 16px; flex-shrink: 0;
-}
-.modal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text-title); }
-.modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: var(--tr); flex-shrink: 0; }
-.modal-close:hover { color: #f87171; }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--sage-light);
+    }
 
-.modal-body {
-  padding: 24px; display: flex; flex-direction: column; gap: 18px; position: relative; overflow-y: auto; flex: 1;
-}
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-forest) var(--bg-deep);
+    }
 
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
-.form-control {
-  background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-forest);
-  padding: 12px 16px; border-radius: 12px; color: #fff;
-  font-family: inherit; font-size: 0.95rem; outline: none; transition: var(--tr); width: 100%;
-}
-.form-control:focus { border-color: var(--sage-light); }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* Stepper header idêntico ao agendamento */
-.stepper{display:flex;align-items:center;background:var(--bg-deep);padding:18px 24px;gap:0;border-bottom:1px solid var(--border-forest);border-radius:var(--radius) var(--radius) 0 0;flex-shrink:0}
-.step-item{display:flex;align-items:center;gap:8px;flex:1}
-.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;border:2px solid var(--border-forest);color:var(--text-muted);transition:var(--tr);flex-shrink:0}
-.step-item.active .step-num{border-color:var(--sage-light);color:var(--sage-light);background:var(--sage-dim)}
-.step-item.done .step-num{border-color:var(--sage-light);background:var(--sage-light);color:var(--forest-dark)}
-.step-label{font-size:0.8rem;font-weight:700;color:var(--text-muted);white-space:nowrap}
-.step-item.active .step-label{color:var(--sage-light)}
-.step-item.done .step-label{color:var(--text-light)}
-.step-line{flex:1;height:1px;background:var(--border-forest);margin:0 8px}
-.step-line.done{background:var(--sage-light)}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    body {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
 
-@media (max-width: 600px) {
-  .modal-overlay{padding:10px !important}
-  .modal-card{max-width:100% !important;max-height:94vh !important;border-radius:16px !important}
-  .modal-body{padding:16px 12px !important;gap:14px !important}
-  .stepper{padding:12px 10px !important}
-  .step-label{display:none !important}
-  .form-row{grid-template-columns:1fr !important;gap:10px !important}
-}
+    .card {
+      background: var(--bg-card);
+      border-color: var(--border-forest);
+    }
 
-/* OCULTA NAVBAR QUANDO EM EMBUTIDO EM IFRAME */
-body.in-iframe .top-header { display: none !important; }
-body.in-iframe .container { padding-top: 16px !important; }
-</style>
+    .card-title,
+    .brand-title {
+      color: var(--text-title);
+    }
+
+    /* HEADER */
+    .top-header {
+      background: var(--forest-card);
+      border-bottom: 1px solid var(--border-forest);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      sticky: top;
+      z-index: 100;
+    }
+
+    .brand-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .nav-item {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      transition: var(--tr);
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(140, 164, 129, 0.15);
+      color: var(--sage-light);
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--forest-card);
+      border: 1px solid var(--border-forest);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .btn {
+      background: var(--sage-light);
+      color: var(--forest-dark);
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--tr);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: #eef4e5;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border-forest);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-light);
+      transform: none;
+    }
+
+    table {
+      width: 100%;
+      min-width: 750px;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 14px 16px;
+      color: var(--sage-light);
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-forest);
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* MODAL PADRÃO BOTÂNICO COM ANIMAÇÃO FADE/ZOOM */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-forest);
+      border-radius: var(--radius);
+      padding: 0 !important;
+      width: 100%;
+      max-width: 580px;
+      max-height: 90vh;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-forest);
+      padding-bottom: 16px;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-title);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: var(--tr);
+      flex-shrink: 0;
+    }
+
+    .modal-close:hover {
+      color: #f87171;
+    }
+
+    .modal-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--sage-light);
+      letter-spacing: 0.05em;
+    }
+
+    .form-control {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-forest);
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--tr);
+      width: 100%;
+    }
+
+    .form-control:focus {
+      border-color: var(--sage-light);
+    }
+
+    /* Stepper header idêntico ao agendamento */
+    .stepper {
+      display: flex;
+      align-items: center;
+      background: var(--bg-deep);
+      padding: 18px 24px;
+      gap: 0;
+      border-bottom: 1px solid var(--border-forest);
+      border-radius: var(--radius) var(--radius) 0 0;
+      flex-shrink: 0
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1
+    }
+
+    .step-num {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: .85rem;
+      border: 2px solid var(--border-forest);
+      color: var(--text-muted);
+      transition: var(--tr);
+      flex-shrink: 0
+    }
+
+    .step-item.active .step-num {
+      border-color: var(--sage-light);
+      color: var(--sage-light);
+      background: var(--sage-dim)
+    }
+
+    .step-item.done .step-num {
+      border-color: var(--sage-light);
+      background: var(--sage-light);
+      color: var(--forest-dark)
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap
+    }
+
+    .step-item.active .step-label {
+      color: var(--sage-light)
+    }
+
+    .step-item.done .step-label {
+      color: var(--text-light)
+    }
+
+    .step-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-forest);
+      margin: 0 8px
+    }
+
+    .step-line.done {
+      background: var(--sage-light)
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px
+    }
+
+    @media (max-width: 600px) {
+      .modal-overlay {
+        padding: 10px !important
+      }
+
+      .modal-card {
+        max-width: 100% !important;
+        max-height: 94vh !important;
+        border-radius: 16px !important
+      }
+
+      .modal-body {
+        padding: 16px 12px !important;
+        gap: 14px !important
+      }
+
+      .stepper {
+        padding: 12px 10px !important
+      }
+
+      .step-label {
+        display: none !important
+      }
+
+      .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important
+      }
+    }
+
+    /* OCULTA NAVBAR QUANDO EM EMBUTIDO EM IFRAME */
+    body.in-iframe .top-header {
+      display: none !important;
+    }
+
+    body.in-iframe .container {
+      padding-top: 16px !important;
+    }
+  </style>
 </head>
+
 <body>
 
 
-<main class="container">
+  <main class="container">
 
-  <!-- KPI CARDS -->
-  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
-    <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
-      <div style="font-size:1.8rem; background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">👥</div>
-      <div>
-        <div style="font-size:1.6rem; font-weight:900; color:var(--sage-light); line-height:1;" id="kpiTotalPacientes">0</div>
-        <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">Pacientes Cadastrados</div>
+    <!-- KPI CARDS -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+      <div
+        style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+        <div
+          style="font-size:1.8rem; background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          👥</div>
+        <div>
+          <div style="font-size:1.6rem; font-weight:900; color:var(--sage-light); line-height:1;"
+            id="kpiTotalPacientes">0</div>
+          <div
+            style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">
+            Pacientes Cadastrados</div>
+        </div>
+      </div>
+
+      <div
+        style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+        <div
+          style="font-size:1.8rem; background:rgba(226, 184, 87, 0.15); border:1px solid rgba(226, 184, 87, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          🥗</div>
+        <div>
+          <div style="font-size:1.6rem; font-weight:900; color:var(--text-title); line-height:1;" id="kpiFocoTop">
+            Reeducação</div>
+          <div
+            style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">
+            Foco Predominante</div>
+        </div>
+      </div>
+
+      <div
+        style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+        <div
+          style="font-size:1.8rem; background:rgba(52, 211, 153, 0.15); border:1px solid rgba(52, 211, 153, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          ⚡</div>
+        <div>
+          <div style="font-size:1.6rem; font-weight:900; color:#34d399; line-height:1;">100%</div>
+          <div
+            style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">
+            Base Sincronizada</div>
+        </div>
       </div>
     </div>
 
-    <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
-      <div style="font-size:1.8rem; background:rgba(226, 184, 87, 0.15); border:1px solid rgba(226, 184, 87, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">🥗</div>
-      <div>
-        <div style="font-size:1.6rem; font-weight:900; color:var(--text-title); line-height:1;" id="kpiFocoTop">Reeducação</div>
-        <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">Foco Predominante</div>
+    <div class="card">
+      <div class="card-header" style="flex-wrap:wrap; gap:14px;">
+        <div class="card-title">👤 Pacientes Cadastrados &amp; Fichas Clínicas</div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <input type="text" id="inputBuscaPacientes" class="form-control"
+            placeholder="🔍 Buscar por nome, CPF, WhatsApp ou objetivo..." oninput="filtrarPacientes(this.value)"
+            style="width:300px; padding:10px 14px; font-size:0.86rem;">
+          <a href="agendamento.html" class="btn" style="white-space:nowrap;">📅 Novo Agendamento</a>
+        </div>
+      </div>
+
+      <div
+        style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:12px; padding:12px 16px; margin-bottom:20px; font-size:0.84rem; color:var(--text-primary); display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.2rem;">📅</span>
+        <span><strong>Entrada de Pacientes</strong>: O cadastro de novos pacientes é realizado <strong>exclusivamente
+            através do Agendamento de Consultas</strong>. Ao agendar uma nova consulta, o perfil do paciente e o PIN de
+          acesso ao Portal são gerados automaticamente.</span>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID / Cadastro</th>
+              <th>Nome do Paciente</th>
+              <th>CPF / WhatsApp</th>
+              <th>Objetivo Clínico</th>
+              <th>Ações Clínicas</th>
+            </tr>
+          </thead>
+          <tbody id="tblPacientes">
+            <tr>
+              <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Carregando pacientes
+                do banco de dados...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+  </main>
 
-    <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
-      <div style="font-size:1.8rem; background:rgba(52, 211, 153, 0.15); border:1px solid rgba(52, 211, 153, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">⚡</div>
-      <div>
-        <div style="font-size:1.6rem; font-weight:900; color:#34d399; line-height:1;">100%</div>
-        <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:4px;">Base Sincronizada</div>
+  <!-- MODAL DE ANAMNESE -->
+  <div id="modalAnamnese"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card" style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-forest); padding-bottom: 16px; margin-bottom: 20px;">
+        <div class="card-title" id="anamneseNome">📋 Ficha de Anamnese</div>
+        <button onclick="document.getElementById('modalAnamnese').style.display='none'"
+          style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div id="anamneseBody">
+        <div style="text-align: center; padding: 24px; color: var(--sage-light);">Carregando ficha...</div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header" style="flex-wrap:wrap; gap:14px;">
-      <div class="card-title">👤 Pacientes Cadastrados &amp; Fichas Clínicas</div>
-      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        <input type="text" id="inputBuscaPacientes" class="form-control" placeholder="🔍 Buscar por nome, CPF, WhatsApp ou objetivo..." oninput="filtrarPacientes(this.value)" style="width:300px; padding:10px 14px; font-size:0.86rem;">
-        <a href="agendamento.html" class="btn" style="white-space:nowrap;">📅 Novo Agendamento</a>
+  <!-- MODAL STEPPER: IDÊNTICO AO DO AGENDAMENTO DE CONSULTAS -->
+  <div class="modal-overlay" id="modalPaciente">
+    <div class="modal-card">
+
+      <!-- Stepper header -->
+      <div class="stepper" id="stepperBar">
+        <div class="step-item active" id="step1Item">
+          <div class="step-num" id="step1Num">1</div>
+          <div class="step-label">Paciente</div>
+        </div>
+        <div class="step-line" id="stepLine1"></div>
+        <div class="step-item" id="step2Item">
+          <div class="step-num" id="step2Num">2</div>
+          <div class="step-label">Consulta</div>
+        </div>
+        <div class="step-line" id="stepLine2"></div>
+        <div class="step-item" id="step3Item">
+          <div class="step-num" id="step3Num">✓</div>
+          <div class="step-label">Confirmado</div>
+        </div>
       </div>
-    </div>
 
-    <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:12px; padding:12px 16px; margin-bottom:20px; font-size:0.84rem; color:var(--text-primary); display:flex; align-items:center; gap:12px;">
-      <span style="font-size:1.2rem;">📅</span>
-      <span><strong>Entrada de Pacientes</strong>: O cadastro de novos pacientes é realizado <strong>exclusivamente através do Agendamento de Consultas</strong>. Ao agendar uma nova consulta, o perfil do paciente e o PIN de acesso ao Portal são gerados automaticamente.</span>
-    </div>
+      <div class="modal-body" style="padding:28px; display:flex; flex-direction:column; gap:18px;">
 
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>ID / Cadastro</th>
-            <th>Nome do Paciente</th>
-            <th>CPF / WhatsApp</th>
-            <th>Objetivo Clínico</th>
-            <th>Ações Clínicas</th>
-          </tr>
-        </thead>
-        <tbody id="tblPacientes">
-          <tr>
-            <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Carregando pacientes do banco de dados...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</main>
-
-<!-- MODAL DE ANAMNESE -->
-<div id="modalAnamnese" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 999; align-items: center; justify-content: center; padding: 20px;">
-  <div class="card" style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-forest); padding-bottom: 16px; margin-bottom: 20px;">
-      <div class="card-title" id="anamneseNome">📋 Ficha de Anamnese</div>
-      <button onclick="document.getElementById('modalAnamnese').style.display='none'" style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
-    </div>
-
-    <div id="anamneseBody">
-      <div style="text-align: center; padding: 24px; color: var(--sage-light);">Carregando ficha...</div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL STEPPER: IDÊNTICO AO DO AGENDAMENTO DE CONSULTAS -->
-<div class="modal-overlay" id="modalPaciente">
-  <div class="modal-card">
-
-    <!-- Stepper header -->
-    <div class="stepper" id="stepperBar">
-      <div class="step-item active" id="step1Item">
-        <div class="step-num" id="step1Num">1</div>
-        <div class="step-label">Paciente</div>
-      </div>
-      <div class="step-line" id="stepLine1"></div>
-      <div class="step-item" id="step2Item">
-        <div class="step-num" id="step2Num">2</div>
-        <div class="step-label">Consulta</div>
-      </div>
-      <div class="step-line" id="stepLine2"></div>
-      <div class="step-item" id="step3Item">
-        <div class="step-num" id="step3Num">✓</div>
-        <div class="step-label">Confirmado</div>
-      </div>
-    </div>
-
-    <div class="modal-body" style="padding:28px; display:flex; flex-direction:column; gap:18px;">
-
-      <!-- PASSO 1 — PACIENTE -->
-      <div id="stepPaciente">
-        <div class="modal-header" style="margin-bottom:14px;">
-          <div>
-            <div class="modal-title">👤 Cadastrar Novo Paciente</div>
-            <div class="modal-subtitle">Preencha os dados de contato do novo paciente</div>
+        <!-- PASSO 1 — PACIENTE -->
+        <div id="stepPaciente">
+          <div class="modal-header" style="margin-bottom:14px;">
+            <div>
+              <div class="modal-title">👤 Cadastrar Novo Paciente</div>
+              <div class="modal-subtitle">Preencha os dados de contato do novo paciente</div>
+            </div>
+            <button class="modal-close" onclick="closePacienteModal()">✕</button>
           </div>
-          <button class="modal-close" onclick="closePacienteModal()">✕</button>
+
+          <div id="formNovo" style="display:flex; flex-direction:column; gap:14px;">
+            <div
+              style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:12px 14px; font-size:0.82rem; color:var(--text-primary); display:flex; align-items:center; gap:10px;">
+              <span>📧</span> <span>Ao agendar, o perfil do paciente é criado e um <strong>e-mail automático</strong>
+                com os detalhes da consulta e credenciais do Portal do Paciente é enviado para o e-mail
+                cadastrado.</span>
+            </div>
+            <div class="form-group">
+              <label>Nome Completo *</label>
+              <input type="text" id="pacNome" class="form-control" placeholder="Ex: Carlos Eduardo Torres" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>WhatsApp *</label>
+                <input type="text" id="pacWsp" class="form-control" placeholder="(21) 99999-8888"
+                  oninput="maskPhone(this)" required>
+              </div>
+              <div class="form-group">
+                <label>E-mail *</label>
+                <input type="email" id="pacEmail" class="form-control" placeholder="paciente@email.com" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Objetivo Clínico (opcional)</label>
+              <select id="pacObj" class="form-control">
+                <option value="Reeducação Alimentar &amp; Emagrecimento">Reeducação Alimentar &amp; Emagrecimento
+                </option>
+                <option value="Nutrição Esportiva &amp; Hipertrofia">Nutrição Esportiva &amp; Hipertrofia</option>
+                <option value="Saúde Intestinal &amp; Bio-Reset">Saúde Intestinal &amp; Bio-Reset</option>
+                <option value="Controle de Diabetes &amp; Doenças Crônicas">Controle de Diabetes &amp; Doenças Crônicas
+                </option>
+                <option value="Nutrição na Gestação &amp; Amamentação">Nutrição na Gestação &amp; Amamentação</option>
+                <option value="Longevidade &amp; Medicina Preventiva">Longevidade &amp; Medicina Preventiva</option>
+                <option value="Nutrição Comportamental">Nutrição Comportamental</option>
+              </select>
+            </div>
+          </div>
+
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid var(--border-forest); margin-top:16px;">
+            <button class="btn btn-secondary" type="button" onclick="closePacienteModal()">Cancelar</button>
+            <button class="btn" type="button" onclick="irParaPasso2Pac()">Próximo: Consulta →</button>
+          </div>
         </div>
 
-        <div id="formNovo" style="display:flex; flex-direction:column; gap:14px;">
-          <div style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:12px 14px; font-size:0.82rem; color:var(--text-primary); display:flex; align-items:center; gap:10px;">
-            <span>📧</span> <span>Ao agendar, o perfil do paciente é criado e um <strong>e-mail automático</strong> com os detalhes da consulta e credenciais do Portal do Paciente é enviado para o e-mail cadastrado.</span>
+        <!-- PASSO 2 — CONSULTA -->
+        <div id="stepConsulta" style="display:none; flex-direction:column; gap:18px;">
+          <div class="modal-header">
+            <div>
+              <div class="modal-title">📅 Detalhes da Primeira Consulta</div>
+              <div class="modal-subtitle" id="step2PacNome" style="color:var(--sage-light); font-weight:700;"></div>
+            </div>
+            <button class="modal-close" onclick="closePacienteModal()">✕</button>
           </div>
-          <div class="form-group">
-            <label>Nome Completo *</label>
-            <input type="text" id="pacNome" class="form-control" placeholder="Ex: Carlos Eduardo Torres" required>
-          </div>
+
           <div class="form-row">
             <div class="form-group">
-              <label>WhatsApp *</label>
-              <input type="text" id="pacWsp" class="form-control" placeholder="(21) 99999-8888" oninput="maskPhone(this)" required>
+              <label>Data da Consulta *</label>
+              <input type="date" id="agData" class="form-control" required>
             </div>
             <div class="form-group">
-              <label>E-mail *</label>
-              <input type="email" id="pacEmail" class="form-control" placeholder="paciente@email.com" required>
+              <label>Horário *</label>
+              <input type="time" id="agHora" class="form-control" value="09:00" required>
             </div>
           </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo de Consulta</label>
+              <select id="agTipo" class="form-control">
+                <option value="Avaliação Inicial (Presencial)">Avaliação Inicial (Presencial)</option>
+                <option value="Avaliação Inicial (Online)">Avaliação Inicial (Online)</option>
+                <option value="Consulta Nutricional">Consulta Nutricional</option>
+                <option value="Retorno de Avaliação">Retorno de Avaliação</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Valor (R$)</label>
+              <input type="number" id="agValor" class="form-control" value="250" min="0">
+            </div>
+          </div>
+
           <div class="form-group">
-            <label>Objetivo Clínico (opcional)</label>
-            <select id="pacObj" class="form-control">
-              <option value="Reeducação Alimentar &amp; Emagrecimento">Reeducação Alimentar &amp; Emagrecimento</option>
-              <option value="Nutrição Esportiva &amp; Hipertrofia">Nutrição Esportiva &amp; Hipertrofia</option>
-              <option value="Saúde Intestinal &amp; Bio-Reset">Saúde Intestinal &amp; Bio-Reset</option>
-              <option value="Controle de Diabetes &amp; Doenças Crônicas">Controle de Diabetes &amp; Doenças Crônicas</option>
-              <option value="Nutrição na Gestação &amp; Amamentação">Nutrição na Gestação &amp; Amamentação</option>
-              <option value="Longevidade &amp; Medicina Preventiva">Longevidade &amp; Medicina Preventiva</option>
-              <option value="Nutrição Comportamental">Nutrição Comportamental</option>
-            </select>
+            <label>Observação Interna (opcional)</label>
+            <input type="text" id="agObs" class="form-control" placeholder="Ex: Trazer exames recentes de sangue">
+          </div>
+
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid var(--border-forest);">
+            <button class="btn btn-secondary" type="button" onclick="voltarPasso1Pac()">← Voltar</button>
+            <button class="btn" type="button" onclick="salvarNovoPacienteEAgendamento()" id="btnSalvarPacAgendamento">💾
+              Confirmar &amp; Salvar no Banco</button>
           </div>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid var(--border-forest); margin-top:16px;">
-          <button class="btn btn-secondary" type="button" onclick="closePacienteModal()">Cancelar</button>
-          <button class="btn" type="button" onclick="irParaPasso2Pac()">Próximo: Consulta →</button>
-        </div>
       </div>
-
-      <!-- PASSO 2 — CONSULTA -->
-      <div id="stepConsulta" style="display:none; flex-direction:column; gap:18px;">
-        <div class="modal-header">
-          <div>
-            <div class="modal-title">📅 Detalhes da Primeira Consulta</div>
-            <div class="modal-subtitle" id="step2PacNome" style="color:var(--sage-light); font-weight:700;"></div>
-          </div>
-          <button class="modal-close" onclick="closePacienteModal()">✕</button>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Data da Consulta *</label>
-            <input type="date" id="agData" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label>Horário *</label>
-            <input type="time" id="agHora" class="form-control" value="09:00" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Tipo de Consulta</label>
-            <select id="agTipo" class="form-control">
-              <option value="Avaliação Inicial (Presencial)">Avaliação Inicial (Presencial)</option>
-              <option value="Avaliação Inicial (Online)">Avaliação Inicial (Online)</option>
-              <option value="Consulta Nutricional">Consulta Nutricional</option>
-              <option value="Retorno de Avaliação">Retorno de Avaliação</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Valor (R$)</label>
-            <input type="number" id="agValor" class="form-control" value="250" min="0">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Observação Interna (opcional)</label>
-          <input type="text" id="agObs" class="form-control" placeholder="Ex: Trazer exames recentes de sangue">
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid var(--border-forest);">
-          <button class="btn btn-secondary" type="button" onclick="voltarPasso1Pac()">← Voltar</button>
-          <button class="btn" type="button" onclick="salvarNovoPacienteEAgendamento()" id="btnSalvarPacAgendamento">💾 Confirmar &amp; Salvar no Banco</button>
-        </div>
-      </div>
-
     </div>
   </div>
-</div>
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
-var pacientesLista = [];
-window.pacientesLista = pacientesLista;
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
+    var pacientesLista = [];
+    window.pacientesLista = pacientesLista;
 
-async function apiCall(action, payload = {}, method = 'GET') {
-  try {
-    let res;
-    if (method === 'POST') {
+    async function apiCall(action, payload = {}, method = 'GET') {
       try {
-        res = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action, ...payload })
-        });
-      } catch (postErr) {
-        const params = new URLSearchParams({ action, ...payload });
-        res = await fetch(`${API_URL}?${params.toString()}`);
+        let res;
+        if (method === 'POST') {
+          try {
+            res = await fetch(API_URL, {
+              method: 'POST',
+              body: JSON.stringify({ action, ...payload })
+            });
+          } catch (postErr) {
+            const params = new URLSearchParams({ action, ...payload });
+            res = await fetch(`${API_URL}?${params.toString()}`);
+          }
+        } else {
+          const params = new URLSearchParams({ action, ...payload });
+          res = await fetch(`${API_URL}?${params.toString()}`);
+        }
+
+        const text = await res.text();
+        try {
+          return JSON.parse(text);
+        } catch (parseErr) {
+          return { success: true, data: payload };
+        }
+      } catch (err) {
+        console.warn("Erro na API (usando dados locais):", err);
+        return { success: false, error: err.toString() };
       }
-    } else {
-      const params = new URLSearchParams({ action, ...payload });
-      res = await fetch(`${API_URL}?${params.toString()}`);
     }
 
-    const text = await res.text();
-    try {
-      return JSON.parse(text);
-    } catch (parseErr) {
-      return { success: true, data: payload };
-    }
-  } catch (err) {
-    console.warn("Erro na API (usando dados locais):", err);
-    return { success: false, error: err.toString() };
-  }
-}
+    async function verAnamnesePaciente(pacienteId, pacienteNome) {
+      const modal = document.getElementById('modalAnamnese');
+      const title = document.getElementById('anamneseNome');
+      const body = document.getElementById('anamneseBody');
 
-async function verAnamnesePaciente(pacienteId, pacienteNome) {
-  const modal = document.getElementById('modalAnamnese');
-  const title = document.getElementById('anamneseNome');
-  const body = document.getElementById('anamneseBody');
+      if (title) title.innerText = `Ficha de Anamnese · ${pacienteNome}`;
+      if (body) body.innerHTML = `<div style="text-align:center; padding:20px; color:var(--sage-light);">Buscando ficha de anamnese no banco...</div>`;
+      if (modal) modal.style.display = 'flex';
 
-  if (title) title.innerText = `Ficha de Anamnese · ${pacienteNome}`;
-  if (body) body.innerHTML = `<div style="text-align:center; padding:20px; color:var(--sage-light);">Buscando ficha de anamnese no banco...</div>`;
-  if (modal) modal.style.display = 'flex';
-
-  const res = await apiCall('getAnamnese', { paciente_id: pacienteId }, 'GET');
-  if (res && res.success && res.data && res.data.length > 0) {
-    const anam = res.data[0];
-    body.innerHTML = `
+      const res = await apiCall('getAnamnese', { paciente_id: pacienteId }, 'GET');
+      if (res && res.success && res.data && res.data.length > 0) {
+        const anam = res.data[0];
+        body.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:14px; font-size:0.9rem; line-height:1.6;">
         <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
           <strong style="color:var(--sage-light); display:block;">🗓️ Data do Preenchimento:</strong> ${anam.data || 'N/I'}
@@ -434,9 +805,9 @@ async function verAnamnesePaciente(pacienteId, pacienteNome) {
         </div>
       </div>
     `;
-  } else {
-        </div>
-      `;
+      } else {
+        ` </div>
+      ;
     }
   }
 }
@@ -446,17 +817,18 @@ function formatDateBR(v) {
   const str = String(v).trim();
   if (str.includes('T')) {
     const parts = str.split('T')[0].split('-');
-    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    if (parts.length === 3) return `${ parts[2] } /${parts[1]}/${ parts[0] } `;
   }
   if (str.includes('-')) {
     const parts = str.split('-');
-    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    if (parts.length === 3) return `${ parts[2] } /${parts[1]}/${ parts[0] } `;
   }
   return str;
 }
 
 function maskCPF(v) {
   return String(v || '').replace(/\D/g, '')
+  
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
@@ -487,7 +859,7 @@ function renderizarTabelaPacientes(lista) {
   if (kpiTotal) kpiTotal.textContent = (window.pacientesLista || []).filter(p => !p.tipo || String(p.tipo).toUpperCase() === "PACIENTE").length;
 
   if (filtrados.length === 0) {
-    tbl.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Nenhum paciente encontrado.</td></tr>`;
+    tbl.innerHTML = `< tr > <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Nenhum paciente encontrado.</td></tr > `;
     return;
   }
 
@@ -500,7 +872,7 @@ function renderizarTabelaPacientes(lista) {
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="white-space:nowrap;"><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
+          < td style = "white-space:nowrap;" ><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
       <td style="white-space:nowrap;"><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
       <td style="white-space:nowrap;">
         ${cpfFmt}<br>
@@ -515,7 +887,7 @@ function renderizarTabelaPacientes(lista) {
           <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</a>
         </div>
       </td>
-    `;
+        `;
     tbl.appendChild(tr);
   });
 }
@@ -579,8 +951,8 @@ function irParaStepPac(n) {
   if (s2) s2.style.display = (n === 2) ? 'flex' : 'none';
 
   for (let i = 1; i <= 3; i++) {
-    const item = document.getElementById(`step${i}Item`);
-    const num = document.getElementById(`step${i}Num`);
+    const item = document.getElementById(`step${ i } Item`);
+    const num = document.getElementById(`step${ i } Num`);
     if (item && num) {
       item.classList.remove('active', 'done');
       if (i < n) { item.classList.add('done'); num.textContent = '✓'; }
@@ -590,8 +962,8 @@ function irParaStepPac(n) {
   }
   const l1 = document.getElementById('stepLine1');
   const l2 = document.getElementById('stepLine2');
-  if (l1) l1.className = `step-line${n >= 2 ? ' done' : ''}`;
-  if (l2) l2.className = `step-line${n >= 3 ? ' done' : ''}`;
+  if (l1) l1.className = `step - line${ n >= 2 ? ' done' : '' } `;
+  if (l2) l2.className = `step - line${ n >= 3 ? ' done' : '' } `;
 }
 
 function irParaPasso2Pac() {
@@ -652,13 +1024,13 @@ async function salvarNovoPacienteEAgendamento(e) {
       window.pacientesLista.unshift(pacSalvo);
       renderizarTabelaPacientes(window.pacientesLista);
       closePacienteModal();
-      alert(`✅ Paciente ${nome} cadastrado e consulta agendada para ${dataFmt} às ${hora}!\n\n📧 Um e-mail com a confirmação e credenciais do Portal do Paciente foi enviado para ${email}.`);
+      alert(`✅ Paciente ${ nome } cadastrado e consulta agendada para ${ dataFmt } às ${ hora } !\n\n📧 Um e - mail com a confirmação e credenciais do Portal do Paciente foi enviado para ${ email }.`);
     } else {
       const errMsg = (res?.error || '').toLowerCase();
       if (errMsg.includes('cpf') && (errMsg.includes('duplicado') || errMsg.includes('já cadastrado') || errMsg.includes('already') || errMsg.includes('exist'))) {
-        alert(`⚠️ CPF já cadastrado!\n\nO CPF "${pacienteObj.cpf}" já está vinculado a outro paciente no sistema.\n\nSe for o mesmo paciente, localize-o na lista e agende uma nova consulta pelo botão de agendamento.`);
+        alert(`⚠️ CPF já cadastrado!\n\nO CPF "${pacienteObj.cpf}" já está vinculado a outro paciente no sistema.\n\nSe for o mesmo paciente, localize - o na lista e agende uma nova consulta pelo botão de agendamento.`);
       } else if (errMsg.includes('email') && (errMsg.includes('duplicado') || errMsg.includes('já cadastrado') || errMsg.includes('already') || errMsg.includes('exist'))) {
-        alert(`⚠️ E-mail já cadastrado!\n\nO e-mail "${email}" já está vinculado a outro paciente.\n\nUtilize outro endereço de e-mail ou localize o paciente existente na lista.`);
+        alert(`⚠️ E - mail já cadastrado!\n\nO e - mail "${email}" já está vinculado a outro paciente.\n\nUtilize outro endereço de e - mail ou localize o paciente existente na lista.`);
       } else {
         alert('⚠️ Erro ao salvar: ' + (res?.error || 'Tente novamente ou verifique sua conexão.'));
       }
@@ -707,6 +1079,7 @@ window.addEventListener('message', (e) => {
     document.documentElement.setAttribute('data-theme', e.data.theme);
   }
 });
-</script>
+  </script>
 </body>
+
 </html>
