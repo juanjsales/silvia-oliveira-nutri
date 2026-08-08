@@ -1418,6 +1418,29 @@ async function salvarNovaSenha(e) {
   }
 }
 
+function setTopProgress(percent) {
+  const bar = document.getElementById('topProgressBar');
+  if (!bar) return;
+  bar.style.opacity = '1';
+  bar.style.width = percent + '%';
+  if (percent >= 100) {
+    setTimeout(() => {
+      bar.style.opacity = '0';
+      setTimeout(() => { bar.style.width = '0%'; }, 450);
+    }, 350);
+  }
+}
+
+function hideGlobalLoader() {
+  const loader = document.getElementById('globalPageLoader');
+  if (loader) loader.classList.add('hidden');
+}
+
+function showGlobalLoader() {
+  const loader = document.getElementById('globalPageLoader');
+  if (loader) loader.classList.remove('hidden');
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   setTopProgress(25);
   initTheme();
@@ -1429,15 +1452,26 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   renderEvolChart();
   updateAdherenceScore();
-  setTopProgress(55);
+  setTopProgress(50);
 
   // Tenta carregar os dados reais do banco do paciente autenticado
   const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
   if (rawDados) {
     try {
       const u = JSON.parse(rawDados);
-      if (u.id) carregarDadosHistorico(u.id);
-    } catch(e){}
+      if (u.id) {
+        await carregarDadosHistorico(u.id);
+      } else {
+        setTopProgress(100);
+        setTimeout(() => hideGlobalLoader(), 350);
+      }
+    } catch(e){
+      setTopProgress(100);
+      setTimeout(() => hideGlobalLoader(), 350);
+    }
+  } else {
+    setTopProgress(100);
+    setTimeout(() => hideGlobalLoader(), 350);
   }
 });
 
@@ -1547,6 +1581,7 @@ async function carregarDadosHistorico(pacienteId) {
   if (!pacienteId) return;
   currentPacId = pacienteId;
   loadShopState();
+  setTopProgress(70);
 
   try {
     const res = await fetch(KOS_API_URL, {
@@ -1739,7 +1774,12 @@ async function carregarDadosHistorico(pacienteId) {
         }
       }
     }
-  } catch(err){}
+  } catch(err){
+    console.warn("Erro ao carregar histórico do paciente:", err);
+  } finally {
+    setTopProgress(100);
+    setTimeout(() => hideGlobalLoader(), 350);
+  }
 
   // Trigger onboarding se for primeira vez
   const seenKey = 'kos_onboarding_seen_' + (pacienteId || 'user');

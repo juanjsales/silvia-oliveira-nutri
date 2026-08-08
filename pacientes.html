@@ -129,6 +129,37 @@
       color: var(--text-title);
     }
 
+    /* SPINNER & SKELETON LOADING */
+    .spinner-ring {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(140, 164, 129, 0.25);
+      border-top-color: var(--sage-light);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .skeleton-row td {
+      padding: 16px 12px;
+    }
+    .skeleton-line {
+      height: 14px;
+      background: linear-gradient(90deg, rgba(140, 164, 129, 0.08) 25%, rgba(140, 164, 129, 0.22) 50%, rgba(140, 164, 129, 0.08) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     /* HEADER */
     .top-header {
       background: var(--forest-card);
@@ -778,7 +809,12 @@
       const body = document.getElementById('anamneseBody');
 
       if (title) title.innerText = `Ficha de Anamnese · ${pacienteNome}`;
-      if (body) body.innerHTML = `<div style="text-align:center; padding:20px; color:var(--sage-light);">Buscando ficha de anamnese no banco...</div>`;
+      if (body) body.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; gap:16px; color:var(--sage-light);">
+          <div class="spinner-ring" style="width:32px; height:32px; border-width:3px;"></div>
+          <span style="font-size:0.9rem; font-weight:600;">Buscando ficha de anamnese no banco...</span>
+        </div>
+      `;
       if (modal) modal.style.display = 'flex';
 
       const res = await apiCall('getAnamnese', { paciente_id: pacienteId }, 'GET');
@@ -818,18 +854,17 @@ function formatDateBR(v) {
   const str = String(v).trim();
   if (str.includes('T')) {
     const parts = str.split('T')[0].split('-');
-    if (parts.length === 3) return `${ parts[2] } /${parts[1]}/${ parts[0] } `;
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
   if (str.includes('-')) {
     const parts = str.split('-');
-    if (parts.length === 3) return `${ parts[2] } /${parts[1]}/${ parts[0] } `;
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
   return str;
 }
 
 function maskCPF(v) {
   return String(v || '').replace(/\D/g, '')
-  
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
@@ -848,6 +883,23 @@ function maskPhone(v) {
     .slice(0, 15);
 }
 
+function renderizarLoadingPacientes() {
+  const tbl = document.getElementById('tblPacientes');
+  if (!tbl) return;
+  let html = '';
+  for (let i = 0; i < 4; i++) {
+    html += `
+      <tr class="skeleton-row">
+        <td><div class="skeleton-line" style="width:60px; height:16px;"></div><div class="skeleton-line" style="width:80px; height:10px; margin-top:6px;"></div></td>
+        <td><div class="skeleton-line" style="width:140px; height:16px;"></div><div class="skeleton-line" style="width:110px; height:10px; margin-top:6px;"></div></td>
+        <td><div class="skeleton-line" style="width:120px; height:14px;"></div><div class="skeleton-line" style="width:100px; height:12px; margin-top:6px;"></div></td>
+        <td><div class="skeleton-line" style="width:130px; height:24px; border-radius:6px;"></div></td>
+        <td><div class="skeleton-line" style="width:180px; height:28px; border-radius:6px;"></div></td>
+      </tr>
+    `;
+  }
+  tbl.innerHTML = html;
+}
 
 function renderizarTabelaPacientes(lista) {
   const tbl = document.getElementById('tblPacientes');
@@ -860,7 +912,7 @@ function renderizarTabelaPacientes(lista) {
   if (kpiTotal) kpiTotal.textContent = (window.pacientesLista || []).filter(p => !p.tipo || String(p.tipo).toUpperCase() === "PACIENTE").length;
 
   if (filtrados.length === 0) {
-    tbl.innerHTML = `< tr > <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Nenhum paciente encontrado.</td></tr > `;
+    tbl.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">Nenhum paciente encontrado.</td></tr>`;
     return;
   }
 
@@ -873,7 +925,7 @@ function renderizarTabelaPacientes(lista) {
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-          < td style = "white-space:nowrap;" ><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
+      <td style="white-space:nowrap;"><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
       <td style="white-space:nowrap;"><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
       <td style="white-space:nowrap;">
         ${cpfFmt}<br>
@@ -888,7 +940,7 @@ function renderizarTabelaPacientes(lista) {
           <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</a>
         </div>
       </td>
-        `;
+    `;
     tbl.appendChild(tr);
   });
 }
@@ -913,6 +965,7 @@ function filtrarPacientes(q) {
 }
 
 async function carregarPacientes() {
+  renderizarLoadingPacientes();
   const res = await apiCall('getPacientes');
   if (res && res.success && Array.isArray(res.data)) {
     window.pacientesLista = res.data;
