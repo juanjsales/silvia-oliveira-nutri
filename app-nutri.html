@@ -1663,10 +1663,9 @@
         </div>
       </div>
 
-      <!-- 2. IFRAME CONTAINER CENTRAL -->
+      <!-- 2. IFRAME CONTAINER CENTRAL COM CACHE MULTI-TAB -->
       <div id="iframeView" style="display: none; width: 100%;">
-        <iframe id="adminIframe" src="about:blank"
-          style="width: 100%; height: calc(100vh - 110px); border: none; border-radius: 20px; background: var(--forest-card);"></iframe>
+        <div id="iframeContainer" style="width: 100%;"></div>
       </div>
 
       <!-- 3. GESTÃO FINANCEIRA & RECIBOS -->
@@ -2608,11 +2607,12 @@
 
       updateChartThemeColors(next);
 
-      const iframe = document.getElementById('adminIframe');
-      if (iframe && iframe.contentWindow) {
-        try {
-          iframe.contentWindow.postMessage({ type: 'SET_THEME', theme: next }, '*');
-        } catch (err) { }
+      const container = document.getElementById('iframeContainer') || document.getElementById('iframeView');
+      if (container) {
+        const allIframes = container.querySelectorAll('.app-iframe-tab');
+        allIframes.forEach(iframe => {
+          try { iframe.contentWindow?.postMessage({ type: 'SET_THEME', theme: next }, '*'); } catch (err) {}
+        });
       }
     }
 
@@ -2726,18 +2726,113 @@
       if (el) el.classList.add('active');
     }
 
+    // CACHE MULTI-IFRAME ULTRA-RÁPIDO (TROCA DE ABAS INSTANTÂNEA 0MS)
+    const iframeCache = {};
+
+    function getOrCreateIframe(url) {
+      const container = document.getElementById('iframeContainer') || document.getElementById('iframeView');
+      const baseKey = url.split('?')[0];
+
+      // Oculta todos os iframes ativos no container
+      const allIframes = container.querySelectorAll('.app-iframe-tab');
+      allIframes.forEach(f => f.style.display = 'none');
+
+      let iframe = iframeCache[baseKey];
+
+      if (!iframe) {
+        // Criar novo iframe em cache
+        iframe = document.createElement('iframe');
+        iframe.className = 'app-iframe-tab';
+        iframe.setAttribute('data-full-src', url);
+        iframe.style.width = '100%';
+        iframe.style.height = 'calc(100vh - 110px)';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '20px';
+        iframe.style.background = 'var(--forest-card)';
+        iframe.style.display = 'block';
+
+        setTopProgress(35);
+
+        iframe.onload = () => {
+          setTopProgress(100);
+          const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+          try { iframe.contentWindow?.postMessage({ type: 'SET_THEME', theme }, '*'); } catch (e) {}
+        };
+
+        iframe.src = url;
+        container.appendChild(iframe);
+        iframeCache[baseKey] = iframe;
+      } else {
+        // Já em cache! Exibição INSTANTÂNEA (0ms)
+        iframe.style.display = 'block';
+
+        // Atualiza src se houver parâmetros query novos (ex: atendimento.html?id=123)
+        if (iframe.getAttribute('data-full-src') !== url) {
+          setTopProgress(40);
+          iframe.src = url;
+          iframe.setAttribute('data-full-src', url);
+        } else {
+          setTopProgress(100);
+        }
+
+        // Propaga tema atual instantaneamente
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        try { iframe.contentWindow?.postMessage({ type: 'SET_THEME', theme }, '*'); } catch (e) {}
+      }
+
+      return iframe;
+    }
+
+    // Pré-carregamento silencioso em segundo plano para abertura instantânea
+    function preloadPrimaryIframes() {
+      setTimeout(() => {
+        const pages = ['pacientes.html', 'agendamento.html'];
+        const doPreload = () => {
+          pages.forEach(url => {
+            const baseKey = url.split('?')[0];
+            if (!iframeCache[baseKey]) {
+              const container = document.getElementById('iframeContainer') || document.getElementById('iframeView');
+              if (!container) return;
+              const iframe = document.createElement('iframe');
+              iframe.className = 'app-iframe-tab';
+              iframe.setAttribute('data-full-src', url);
+              iframe.style.width = '100%';
+              iframe.style.height = 'calc(100vh - 110px)';
+              iframe.style.border = 'none';
+              iframe.style.borderRadius = '20px';
+              iframe.style.background = 'var(--forest-card)';
+              iframe.style.display = 'none';
+              iframe.onload = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+                try { iframe.contentWindow?.postMessage({ type: 'SET_THEME', theme }, '*'); } catch (e) {}
+              };
+              iframe.src = url;
+              container.appendChild(iframe);
+              iframeCache[baseKey] = iframe;
+            }
+          });
+        };
+        if (typeof requestIdleCallback === 'function') {
+          requestIdleCallback(doPreload);
+        } else {
+          doPreload();
+        }
+      }, 1200);
+    }
+
     function openIframe(url, el) {
       closeMobileMenu();
       const homeView = document.getElementById('homeView');
       const iframeView = document.getElementById('iframeView');
       const financeiroView = document.getElementById('financeiroView');
-      const iframe = document.getElementById('adminIframe');
       const pageTitle = document.getElementById('pageTitle');
 
       if (homeView) homeView.style.display = 'none';
       if (financeiroView) financeiroView.style.display = 'none';
       if (iframeView) iframeView.style.display = 'block';
-      if (iframe) iframe.src = url;
+
+      // Obtém ou cria o iframe em cache (0ms)
+      getOrCreateIframe(url);
 
       if (pageTitle) {
         if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Oliveira Lemos';
@@ -2745,6 +2840,7 @@
         else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Oliveira Lemos';
         else if (url.includes('gerenciador')) pageTitle.innerText = 'Gerenciador de Plano Nutricional · Dra. Silvia Oliveira Lemos';
         else if (url.includes('bioimpedancia')) pageTitle.innerText = 'Bioimpedância & Evolução · Dra. Silvia Oliveira Lemos';
+        else if (url.includes('configuracoes')) pageTitle.innerText = 'Configurações do Sistema · Dra. Silvia Oliveira Lemos';
       }
 
       document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
@@ -2880,24 +2976,23 @@
     // MENSAGENS DOS IFRAMES FILHOS (OPEN_IFRAME)
     window.addEventListener('message', e => {
       if (e.data?.type === 'OPEN_IFRAME') {
-        const iframe = document.getElementById('adminIframe');
         const iframeView = document.getElementById('iframeView');
         const homeView = document.getElementById('homeView');
+        const financeiroView = document.getElementById('financeiroView');
         const pageTitle = document.getElementById('pageTitle');
-        if (iframe) iframe.src = e.data.url;
+        
         if (iframeView) iframeView.style.display = 'block';
         if (homeView) homeView.style.display = 'none';
+        if (financeiroView) financeiroView.style.display = 'none';
+
+        const iframe = getOrCreateIframe(e.data.url);
+
         if (pageTitle) {
           const url = e.data.url;
-          if (url.includes('atendimento')) pageTitle.innerText = 'Prontuário do Atendimento · Dra. Silvia Lemos';
-          else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Lemos';
-          else if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Lemos';
+          if (url.includes('atendimento')) pageTitle.innerText = 'Prontuário do Atendimento · Dra. Silvia Oliveira Lemos';
+          else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Oliveira Lemos';
+          else if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Oliveira Lemos';
         }
-        // Propaga tema para o novo iframe
-        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-        setTimeout(() => {
-          try { iframe?.contentWindow?.postMessage({ type: 'SET_THEME', theme }, '*'); } catch (e) { }
-        }, 600);
       }
     });
 
@@ -2938,6 +3033,9 @@
       await carregarDadosDashboard();
       setTopProgress(100);
       setTimeout(() => hideGlobalLoader(), 400);
+
+      // Inicia o pré-carregamento das abas principais em background para abertura instantânea (0ms)
+      preloadPrimaryIframes();
     });
 
     function abrirModalTrocarSenhaAdmin() {
