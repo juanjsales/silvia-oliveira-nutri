@@ -160,5 +160,26 @@ async function enviarAnamnese(e) {
   }
 }
 </script>
+<style>
+    .kos-footer-brand{display:flex;align-items:center;gap:10px;justify-content:center;padding:14px 0 8px;border-top:1px solid rgba(140,164,129,0.25);margin-top:16px;opacity:.85;transition:opacity .2s;}
+    .kos-footer-brand:hover{opacity:1;}
+    .kos-footer-brand .kos-dev-by{font-size:0.62rem;color:var(--text-muted, #a0b399);font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+    .kos-footer-brand .kos-brand-inner{display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
+    .kos-footer-brand .kos-logo-text{font-family:'Courier New',monospace;font-size:1rem;font-weight:900;color:#fff;letter-spacing:.18em;text-transform:uppercase;display:flex;align-items:center;gap:4px;}
+    .kos-footer-brand .kos-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#7c3aed,#ec4899,#f59e0b,#06b6d4);background-size:300% 300%;animation:kosFtRainbow 3s linear infinite;box-shadow:0 0 8px rgba(6,182,212,.75);}
+    .kos-footer-brand .kos-sub-text{font-family:'Courier New',monospace;font-size:0.55rem;font-weight:700;color:#22d3ee;letter-spacing:.12em;text-transform:uppercase;}
+    .kos-footer-brand .kos-bar{height:2px;width:100%;border-radius:999px;background:linear-gradient(90deg,#06b6d4,#7c3aed,#ec4899,#f59e0b,#06b6d4);background-size:300% 100%;animation:kosFtRainbow 3s linear infinite;opacity:.75;margin-top:2px;}
+    @keyframes kosFtRainbow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+  </style>
+  <footer style="width:100%;padding:0 24px 20px;">
+    <a href="https://kos-rho.vercel.app/" target="_blank" rel="noopener" class="kos-footer-brand" style="text-decoration:none;cursor:pointer;">
+      <span class="kos-dev-by">Desenvolvido por</span>
+      <div class="kos-brand-inner">
+        <span class="kos-logo-text">KOS<span class="kos-dot"></span></span>
+        <span class="kos-sub-text">Web &amp; Automação</span>
+        <div class="kos-bar"></div>
+      </div>
+    </a>
+  </footer>
 </body>
 </html>

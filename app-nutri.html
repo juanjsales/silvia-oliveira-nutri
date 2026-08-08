@@ -256,6 +256,73 @@
       color: var(--sage-light);
     }
 
+    /* KOS BRAND CREDIT */
+    .kos-brand-credit {
+      margin-top: auto;
+      padding: 14px 4px 4px;
+      border-top: 1px solid var(--border-forest);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .kos-dev-by {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .kos-brand-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+    }
+    .kos-logo-text {
+      font-family: 'Courier New', monospace;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .kos-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #06b6d4, #7c3aed, #ec4899, #f59e0b, #06b6d4);
+      background-size: 300% 300%;
+      animation: kosRainbow 3s linear infinite;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.75);
+      flex-shrink: 0;
+    }
+    .kos-sub-text {
+      font-family: 'Courier New', monospace;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #22d3ee;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .kos-bar {
+      height: 2px;
+      width: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #06b6d4, #7c3aed, #ec4899, #f59e0b, #06b6d4);
+      background-size: 300% 100%;
+      animation: kosRainbow 3s linear infinite;
+      opacity: 0.75;
+      margin-top: 3px;
+    }
+    @keyframes kosRainbow {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
     /* MAIN CONTENT */
     .main-wrapper {
       flex: 1;
@@ -1478,6 +1545,16 @@
         <span>🚪</span> Sair
       </a>
     </nav>
+
+    <!-- KOS BRAND CREDIT -->
+    <a href="https://kos-rho.vercel.app/" target="_blank" rel="noopener" class="kos-brand-credit" style="text-decoration:none; cursor:pointer;">
+      <span class="kos-dev-by">Desenvolvido por</span>
+      <div class="kos-brand-inner">
+        <span class="kos-logo-text">KOS<span class="kos-dot"></span></span>
+        <span class="kos-sub-text">Web &amp; Automação</span>
+        <div class="kos-bar"></div>
+      </div>
+    </a>
   </aside>
 
   <main class="main-wrapper">
