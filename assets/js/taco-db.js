@@ -8,6 +8,9 @@
  *  3. Busca Híbrida: TACO local + Open Food Facts com fallback/complemento
  *  4. Resiliência com AbortController (timeout 6s) na API externa
  *  5. calc() aceita objeto genérico (TACO ou Open Food Facts), não só id
+ *  6. Tokenização: "frango grelhado" encontra "Peito de Frango Grelhado"
+ *  7. AbortController com cancelamento de corrida (race condition guard)
+ *  8. calc() imutável com _rawFood para cálculos em cadeia sem drift de precisão
  */
 
 const TACO_DATABASE = [
@@ -96,21 +99,54 @@ TACO_DATABASE.forEach(item => {
 });
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * MELHORIA 1: Busca com Ranking de relevância
- *   score 3 → coincidência exata no nome
- *   score 2 → nome começa com o termo
- *   score 1 → nome ou categoria contém o termo
- * Resultados são ordenados por score (maior primeiro), depois por nome.
+ * MELHORIA 1 + 6: Busca com Ranking e Tokenização por palavras
+ *
+ * Query simples (1 token):
+ *   score 30 → coincidência exata no nome
+ *   score 20 → nome começa com o termo
+ *   score 10 → nome ou categoria contém o termo
+ *
+ * Query multi-palavra ("frango grelhado"):
+ *   Cada token é avaliado individualmente no nome/categoria.
+ *   Lógica AND: todos os tokens devem coincidir para retornar score > 0.
+ *   Score = soma das pontuações por token (exato=3, começa=2, contém=1).
  * ───────────────────────────────────────────────────────────────────────────── */
 function _scoreItem(item, term) {
   const n = item._nomeClean;
   const c = item._catClean;
-  if (n === term)               return 3;  // exato
-  if (n.startsWith(term))       return 2;  // começa com
-  if (n.includes(term) ||
-      c.includes(term))         return 1;  // contém
-  return 0;
+
+  // Tokeniza: divide por espaços, ignora tokens < 2 chars
+  const tokens = term.split(/\s+/).filter(t => t.length >= 2);
+
+  // Query de token único: mantém escala de pontuação mais alta (30/20/10)
+  if (tokens.length <= 1) {
+    if (n === term)                         return 30; // exato
+    if (n.startsWith(term))                 return 20; // começa com
+    if (n.includes(term) || c.includes(term)) return 10; // contém
+    return 0;
+  }
+
+  // Query multi-token: ALL tokens devem aparecer (AND semântico)
+  let totalScore    = 0;
+  let matchedTokens = 0;
+
+  for (const token of tokens) {
+    if (n === token)          { matchedTokens++; totalScore += 3; }
+    else if (n.startsWith(token)) { matchedTokens++; totalScore += 2; }
+    else if (n.includes(token))   { matchedTokens++; totalScore += 1; }
+    else if (c.includes(token))   { matchedTokens++; totalScore += 1; }
+    // token não encontrado → sem incremento; a condição final elimina o item
+  }
+
+  // Rejeita se nem todos os tokens foram encontrados
+  return matchedTokens === tokens.length ? totalScore : 0;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * MELHORIA 7: Rastreio do AbortController ativo em nível de módulo.
+ * Garante que apenas UMA requisição OFF esteja em voo por vez.
+ * ───────────────────────────────────────────────────────────────────────────── */
+let _activeController = null;
 
 const TacoDB = {
 
@@ -132,7 +168,18 @@ const TacoDB = {
       .map(r => r.item);
   },
 
-  /* ── MELHORIA 5: calc() aceita id (string), objeto TACO ou Open Food Facts ─ */
+  /* ── MELHORIA 5 + 8: calc() genérico + imutável com _rawFood ───────────────
+   *
+   * Problema resolvido: chamadas em cadeia como calc(calc(food, 50), 150)
+   * anteriormente operavam sobre valores já arredondados (toFixed), causando
+   * drift acumulado de precisão.
+   *
+   * Solução: o resultado carrega uma referência não-enumerável _rawFood
+   * apontando para o objeto original (TACO ou OFF). Chamadas subsequentes
+   * de calc() detectam _rawFood e usam os valores originais de ponto flutuante.
+   *
+   * _rawFood é não-enumerável → não aparece em JSON.stringify nem for..in.
+   * ───────────────────────────────────────────────────────────────────────── */
   calc(foodOrId, grams = 100) {
     let food = foodOrId;
 
@@ -143,28 +190,58 @@ const TacoDB = {
 
     if (!food || typeof food !== "object") return null;
 
-    // Suporte a campos tanto da TACO quanto da Open Food Facts normalizada
+    // MELHORIA 8: se for um resultado anterior de calc(), usa o original puro
+    // para evitar drift de precisão acumulado em chamadas em cadeia.
+    const src = food._rawFood ?? food;
+
     const ratio = Math.max(0, Number(grams) || 0) / 100;
-    return {
-      id:     food.id   ?? null,
-      nome:   food.nome ?? "Alimento",
-      cat:    food.cat  ?? "—",
-      fonte:  food.fonte ?? (food.id?.startsWith("off_") ? "Open Food Facts" : "TACO"),
+
+    const result = {
+      id:     src.id    ?? null,
+      nome:   src.nome  ?? "Alimento",
+      cat:    src.cat   ?? "—",
+      fonte:  src.fonte ?? (src.id?.startsWith("off_") ? "Open Food Facts" : "TACO"),
       gramas: grams,
-      kcal:   Math.round((food.kcal  ?? 0) * ratio),
-      carb:   parseFloat(((food.carb  ?? 0) * ratio).toFixed(1)),
-      prot:   parseFloat(((food.prot  ?? 0) * ratio).toFixed(1)),
-      gord:   parseFloat(((food.gord  ?? 0) * ratio).toFixed(1)),
-      fibra:  parseFloat(((food.fibra ?? 0) * ratio).toFixed(1)),
+      kcal:   Math.round((src.kcal  ?? 0) * ratio),
+      carb:   parseFloat(((src.carb  ?? 0) * ratio).toFixed(1)),
+      prot:   parseFloat(((src.prot  ?? 0) * ratio).toFixed(1)),
+      gord:   parseFloat(((src.gord  ?? 0) * ratio).toFixed(1)),
+      fibra:  parseFloat(((src.fibra ?? 0) * ratio).toFixed(1)),
     };
+
+    // Anexa referência ao objeto-fonte original (não-enumerável)
+    Object.defineProperty(result, "_rawFood", {
+      value: src,
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+
+    return result;
   },
 
-  /* ── MELHORIA 4: Open Food Facts com AbortController (timeout 6s) ─────── */
+  /* ── MELHORIA 4 + 7: Open Food Facts com AbortController + Race Condition Guard
+   *
+   * Problema resolvido: com o usuário digitando rapidamente, chamadas assíncronas
+   * antigas podem resolver DEPOIS de chamadas novas, sobrescrevendo resultados.
+   *
+   * Solução:
+   *  · _activeController (módulo-level) rastreia a requisição em voo.
+   *  · Nova chamada aborta explicitamente a anterior antes de criar nova.
+   *  · Timeout de 6s como segurança extra (não bloqueia a UI).
+   * ───────────────────────────────────────────────────────────────────────── */
   async searchOpenFoodFacts(query, limit = 8) {
     if (!query || query.trim().length < 3) return [];
 
-    const controller = new AbortController();
-    const timeoutId  = setTimeout(() => controller.abort(), 6000); // 6s timeout
+    // MELHORIA 7: cancela requisição anterior imediatamente
+    if (_activeController) {
+      _activeController.abort();
+      _activeController = null;
+    }
+
+    const controller  = new AbortController();
+    _activeController = controller;
+    const timeoutId   = setTimeout(() => controller.abort(), 6000);
 
     try {
       const url = `https://br.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=${limit}`;
@@ -177,11 +254,10 @@ const TacoDB = {
 
       return data.products
         .map(p => {
-          const nut  = p.nutriments || {};
-          const nome = (p.product_name_pt || p.product_name || "").trim();
+          const nut   = p.nutriments || {};
+          const nome  = (p.product_name_pt || p.product_name || "").trim();
           const marca = (p.brands || "").trim();
 
-          // Descarta produtos sem nome ou sem nenhum dado nutricional
           if (!nome) return null;
 
           const kcal  = Math.round(nut["energy-kcal_100g"] || nut["energy-kcal"] || 0);
@@ -190,7 +266,6 @@ const TacoDB = {
           const gord  = parseFloat((nut.fat_100g           || 0).toFixed(1));
           const fibra = parseFloat((nut.fiber_100g         || 0).toFixed(1));
 
-          // Descarta se não houver absolutamente nenhum dado nutricional relevante
           if (kcal === 0 && carb === 0 && prot === 0 && gord === 0) return null;
 
           return {
@@ -202,17 +277,24 @@ const TacoDB = {
             unid:  "100g",
           };
         })
-        .filter(Boolean); // remove nulos
+        .filter(Boolean);
 
     } catch (e) {
       if (e.name === "AbortError") {
-        console.warn("TacoDB: timeout ao consultar Open Food Facts (>6s)");
+        // Distingue abort por nova busca vs. timeout
+        const byTimeout = !_activeController || _activeController === controller;
+        if (byTimeout) {
+          console.warn("TacoDB: timeout na requisição Open Food Facts (>6s)");
+        }
+        // Abort por nova busca é silencioso (comportamento esperado)
       } else {
         console.warn("TacoDB: erro ao consultar Open Food Facts:", e.message);
       }
       return [];
     } finally {
       clearTimeout(timeoutId);
+      // Limpa referência global se ainda for este controller
+      if (_activeController === controller) _activeController = null;
     }
   },
 
@@ -247,6 +329,50 @@ const TacoDB = {
 
     const all = [...tacoResults, ...offFiltered];
     return { taco: tacoResults, off: offFiltered, all };
+  },
+
+  /* ── MELHORIA 7 (debounce): Factory para busca com debounce + cancelamento ──
+   *
+   * Uso recomendado no campo de busca da UI:
+   *
+   *   const buscar = TacoDB.createDebouncedSearch(300);
+   *   inputEl.addEventListener('input', async e => {
+   *     const { all } = await buscar(e.target.value);
+   *     renderResults(all);
+   *   });
+   *
+   * Comportamento:
+   *  · Cada keystroke aborta a requisição OFF anterior imediatamente.
+   *  · Aguarda `delay` ms de silêncio antes de chamar searchUnified.
+   *  · Promessas anteriores resolvem { cancelled: true } para descarte fácil.
+   * ───────────────────────────────────────────────────────────────────────── */
+  createDebouncedSearch(delay = 300) {
+    let timer           = null;
+    let pendingResolve  = null;
+
+    return (query, opts = {}) => {
+      // Aborta fetch OFF em voo imediatamente (sem esperar o debounce)
+      if (_activeController) {
+        _activeController.abort();
+        _activeController = null;
+      }
+
+      // Resolve a promessa anterior com sinalização de cancelamento
+      if (pendingResolve) {
+        pendingResolve({ taco: [], off: [], all: [], cancelled: true });
+        pendingResolve = null;
+      }
+
+      clearTimeout(timer);
+
+      return new Promise((resolve) => {
+        pendingResolve = resolve;
+        timer = setTimeout(async () => {
+          pendingResolve = null;
+          resolve(await TacoDB.searchUnified(query, opts));
+        }, delay);
+      });
+    };
   },
 };
 
