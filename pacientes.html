@@ -806,11 +806,11 @@
       </div>
     `;
       } else {
-        ` </div>
-      ;
+        if (body) {
+          body.innerHTML = `<div style="text-align:center; padding:20px; color:var(--sage-light);">Nenhuma ficha de anamnese encontrada para este paciente.</div>`;
+        }
+      }
     }
-  }
-}
 
 function formatDateBR(v) {
   if (!v) return '';
