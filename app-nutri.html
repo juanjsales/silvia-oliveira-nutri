@@ -1836,97 +1836,235 @@
       }
     }
 
+    let chartAtendInstance = null;
+    let chartObjInstance = null;
+
+    function renderDashboardCharts(agendamentos = [], pacientes = []) {
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const isLight = theme === 'light';
+      const textColor = isLight ? '#142419' : '#eef4e5';
+      const mutedColor = isLight ? '#57695b' : '#a0b399';
+      const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+
+      // 1. GRÁFICO DE ATENDIMENTOS & FATURAMENTO MENSAL
+      const ctxAtend = document.getElementById('chartAtendimentosHome');
+      if (ctxAtend) {
+        if (chartAtendInstance) chartAtendInstance.destroy();
+
+        let labels = [];
+        let consultasData = [];
+        let faturamentoData = [];
+
+        if (agendamentos && agendamentos.length > 0) {
+          const monthlyMap = {};
+          agendamentos.forEach(ag => {
+            if (!ag.data) return;
+            const dt = new Date(ag.data);
+            if (isNaN(dt.getTime())) return;
+            const key = dt.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+            if (!monthlyMap[key]) {
+              monthlyMap[key] = { count: 0, val: 0 };
+            }
+            monthlyMap[key].count += 1;
+            monthlyMap[key].val += parseFloat(ag.valor) || 0;
+          });
+
+          labels = Object.keys(monthlyMap);
+          consultasData = labels.map(k => monthlyMap[k].count);
+          faturamentoData = labels.map(k => monthlyMap[k].val);
+        }
+
+        if (labels.length === 0) {
+          const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+          labels = [mesAtual];
+          consultasData = [0];
+          faturamentoData = [0];
+        }
+
+        chartAtendInstance = new Chart(ctxAtend, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Consultas Realizadas',
+                data: consultasData,
+                backgroundColor: '#8ca481',
+                borderRadius: 6
+              },
+              {
+                label: 'Faturamento Estimado (R$)',
+                data: faturamentoData,
+                borderColor: '#eef4e5',
+                type: 'line',
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans' } } } },
+            scales: {
+              x: { ticks: { color: mutedColor }, grid: { color: gridColor } },
+              y: { ticks: { color: mutedColor }, grid: { color: gridColor }, beginAtZero: true }
+            }
+          }
+        });
+      }
+
+      // 2. GRÁFICO DE OBJETIVOS CLÍNICOS
+      const ctxObj = document.getElementById('chartObjetivosHome');
+      if (ctxObj) {
+        if (chartObjInstance) chartObjInstance.destroy();
+
+        let labelsObj = [];
+        let dataObj = [];
+        let colorsObj = ['#8ca481', '#34d399', '#63b3ed', '#fbbf24', '#a78bfa', '#f87171'];
+
+        if (pacientes && pacientes.length > 0) {
+          const objMap = {};
+          pacientes.forEach(p => {
+            const obj = (p.objetivo || 'Sem Objetivo Definido').trim();
+            objMap[obj] = (objMap[obj] || 0) + 1;
+          });
+
+          const totalPac = pacientes.length;
+          Object.keys(objMap).forEach(key => {
+            const count = objMap[key];
+            const pct = Math.round((count / totalPac) * 100);
+            labelsObj.push(`${key} (${pct}%)`);
+            dataObj.push(count);
+          });
+        }
+
+        if (labelsObj.length === 0) {
+          labelsObj = ['Sem Pacientes Cadastrados (0%)'];
+          dataObj = [1];
+          colorsObj = ['rgba(140, 164, 129, 0.2)'];
+        }
+
+        chartObjInstance = new Chart(ctxObj, {
+          type: 'doughnut',
+          data: {
+            labels: labelsObj,
+            datasets: [{
+              data: dataObj,
+              backgroundColor: colorsObj,
+              borderColor: isLight ? '#ffffff' : '#182a1f',
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Plus Jakarta Sans' } } } }
+          }
+        });
+      }
+    }
+
     // CARREGAR DADOS DINÂMICOS DA API AO INICIAR
     async function carregarDadosDashboard() {
-      const [resPacientes, resAgendamentos] = await Promise.all([
-        apiCall('getPacientes'),
-        apiCall('getAgendamentos')
-      ]);
+      let pacientesList = [];
+      let agendamentosList = [];
 
-      if (resPacientes && resPacientes.success && resPacientes.data && resPacientes.data.length > 0) {
-        const selPlano = document.getElementById('selPacientePlano');
-        const tblPacientes = document.getElementById('tblPacientes');
-        if (selPlano) selPlano.innerHTML = '';
-        if (tblPacientes) tblPacientes.innerHTML = '';
+      try {
+        const [resPacientes, resAgendamentos] = await Promise.all([
+          apiCall('getPacientes'),
+          apiCall('getAgendamentos')
+        ]);
 
-        resPacientes.data.forEach(p => {
-          if (selPlano) {
-            const opt = document.createElement('option');
-            opt.value = p.id;
-            opt.textContent = `${p.nome} (CPF: ${p.cpf || 'N/I'})`;
-            selPlano.appendChild(opt);
-          }
+        if (resPacientes && resPacientes.success && Array.isArray(resPacientes.data)) {
+          pacientesList = resPacientes.data;
+          const selPlano = document.getElementById('selPacientePlano');
+          const tblPacientes = document.getElementById('tblPacientes');
+          if (selPlano) selPlano.innerHTML = '';
+          if (tblPacientes) tblPacientes.innerHTML = '';
 
-          if (tblPacientes) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-          <td>${p.nome}</td>
-          <td>${p.cpf || '-'}</td>
-          <td>${p.whatsapp || '-'}</td>
-          <td>${p.objetivo || 'Reeducação Alimentar'}</td>
-          <td>
-            <button class="btn btn-secondary" onclick="copiarLinkAnamnese('${p.id}')" style="padding:6px 12px; font-size:0.75rem;">🔗 Copiar Link Anamnese</button>
-          </td>
-        `;
-            tblPacientes.appendChild(tr);
-          }
-        });
+          pacientesList.forEach(p => {
+            if (selPlano) {
+              const opt = document.createElement('option');
+              opt.value = p.id;
+              opt.textContent = `${p.nome} (CPF: ${p.cpf || 'N/I'})`;
+              selPlano.appendChild(opt);
+            }
+
+            if (tblPacientes) {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+            <td>${p.nome}</td>
+            <td>${p.cpf || '-'}</td>
+            <td>${p.whatsapp || '-'}</td>
+            <td>${p.objetivo || 'Reeducação Alimentar'}</td>
+            <td>
+              <button class="btn btn-secondary" onclick="copiarLinkAnamnese('${p.id}')" style="padding:6px 12px; font-size:0.75rem;">🔗 Copiar Link Anamnese</button>
+            </td>
+          `;
+              tblPacientes.appendChild(tr);
+            }
+          });
+        }
+
+        if (resAgendamentos && resAgendamentos.success && Array.isArray(resAgendamentos.data)) {
+          agendamentosList = resAgendamentos.data;
+          const tblAg = document.getElementById('tblAgendamentos');
+          if (tblAg) tblAg.innerHTML = '';
+
+          const hojeStr = new Date().toISOString().split('T')[0];
+          const consultasHoje = agendamentosList.filter(a => a.data && String(a.data).includes(hojeStr));
+          const online = agendamentosList.filter(a => a.tipo && String(a.tipo).toLowerCase().includes('online'));
+          const presencial = agendamentosList.filter(a => a.tipo && String(a.tipo).toLowerCase().includes('presencial'));
+
+          let faturamento = 0;
+          agendamentosList.forEach(ag => {
+            const val = parseFloat(ag.valor) || 0;
+            faturamento += val;
+
+            if (tblAg) {
+              const horaFmt = formatTime(ag.hora);
+              const cleanWsp = String(ag.whatsapp || '5521999998888').replace(/\D/g, '');
+              const msgWsp = encodeURIComponent(`Olá ${ag.paciente_nome}! Lembrete da sua consulta hoje às ${horaFmt}.`);
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+            <td><strong>${horaFmt}</strong></td>
+            <td>${ag.paciente_nome}</td>
+            <td>${ag.tipo || 'Consulta Nutricional'}</td>
+            <td><span style="color: #8ca481; font-weight:800;">${ag.status || 'Confirmado'}</span></td>
+            <td>
+              <a href="https://wa.me/${cleanWsp}?text=${msgWsp}" target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">💬 Lembrete 1-Clique</a>
+            </td>
+          `;
+              tblAg.appendChild(tr);
+            }
+          });
+
+          const kpiC = document.getElementById('kpiConsultas');
+          const kpiOn = document.getElementById('kpiOnline');
+          const kpiPre = document.getElementById('kpiPresencial');
+          const kpiFat = document.getElementById('kpiFatura');
+
+          if (kpiC) kpiC.innerText = consultasHoje.length > 0 ? consultasHoje.length : agendamentosList.length;
+          if (kpiOn) kpiOn.innerText = online.length;
+          if (kpiPre) kpiPre.innerText = presencial.length;
+          if (kpiFat) kpiFat.innerText = `R$ ${faturamento > 0 ? faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}`;
+        } else {
+          const kpiC = document.getElementById('kpiConsultas');
+          const kpiOn = document.getElementById('kpiOnline');
+          const kpiPre = document.getElementById('kpiPresencial');
+          const kpiFat = document.getElementById('kpiFatura');
+
+          if (kpiC) kpiC.innerText = "0";
+          if (kpiOn) kpiOn.innerText = "0";
+          if (kpiPre) kpiPre.innerText = "0";
+          if (kpiFat) kpiFat.innerText = "R$ 0,00";
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados do dashboard:", err);
       }
 
-      if (resAgendamentos && resAgendamentos.success && resAgendamentos.data && resAgendamentos.data.length > 0) {
-        const tblAg = document.getElementById('tblAgendamentos');
-        if (tblAg) tblAg.innerHTML = '';
-
-        let consultasHoje = 0, online = 0, presencial = 0, faturamento = 0;
-
-        resAgendamentos.data.forEach(ag => {
-          consultasHoje++;
-          const val = parseFloat(ag.valor) || 250;
-          faturamento += val;
-
-          const isOnline = String(ag.tipo || '').toLowerCase().includes('online');
-          if (isOnline) online++; else presencial++;
-
-          if (tblAg) {
-            const horaFmt = formatTime(ag.hora);
-            const cleanWsp = String(ag.whatsapp || '5521999998888').replace(/\D/g, '');
-            const msgWsp = encodeURIComponent(`Olá ${ag.paciente_nome}! Lembrete da sua consulta hoje às ${horaFmt}.`);
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-          <td><strong>${horaFmt}</strong></td>
-          <td>${ag.paciente_nome}</td>
-          <td>${ag.tipo || 'Consulta Nutricional'}</td>
-          <td><span style="color: #8ca481; font-weight:800;">${ag.status || 'Confirmado'}</span></td>
-          <td>
-            <a href="https://wa.me/${cleanWsp}?text=${msgWsp}" target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">💬 Lembrete 1-Clique</a>
-          </td>
-        `;
-            tblAg.appendChild(tr);
-          }
-        });
-
-        const kpiC = document.getElementById('kpiConsultas');
-        const kpiOn = document.getElementById('kpiOnline');
-        const kpiPre = document.getElementById('kpiPresencial');
-        const kpiFat = document.getElementById('kpiFatura');
-
-        if (kpiC) kpiC.innerText = consultasHoje;
-        if (kpiOn) kpiOn.innerText = online;
-        if (kpiPre) kpiPre.innerText = presencial;
-        if (kpiFat) kpiFat.innerText = `R$ ${faturamento.toLocaleString('pt-BR')}`;
-      } else {
-        // FALLBACK DE SEGURANÇA CASO O BANCO RETORNE VAZIO OU DEMORE
-        const kpiC = document.getElementById('kpiConsultas');
-        const kpiOn = document.getElementById('kpiOnline');
-        const kpiPre = document.getElementById('kpiPresencial');
-        const kpiFat = document.getElementById('kpiFatura');
-        const tblAg = document.getElementById('tblAgendamentos');
-
-        if (kpiC) kpiC.innerText = "0";
-        if (kpiOn) kpiOn.innerText = "0";
-        if (kpiPre) kpiPre.innerText = "0";
-        if (kpiFat) kpiFat.innerText = "R$ 0";
-      }
+      // Renderizar gráficos com dados reais obtidos
+      renderDashboardCharts(agendamentosList, pacientesList);
     }
 
     // MODAL DE NOVO AGENDAMENTO
@@ -2711,101 +2849,7 @@
       await carregarDadosDashboard();
       setTopProgress(100);
       setTimeout(() => hideGlobalLoader(), 400);
-      // 1. GRÁFICO DE ATENDIMENTOS & FATURAMENTO NA HOME
-      const ctxAtend = document.getElementById('chartAtendimentosHome');
-      if (ctxAtend) {
-        new Chart(ctxAtend, {
-          type: 'bar',
-          data: {
-            labels: ['Maio/26', 'Junho/26', 'Julho/26', 'Agosto/26'],
-            datasets: [
-              {
-                label: 'Consultas Realizadas',
-                data: [22, 28, 35, 42],
-                backgroundColor: '#8ca481',
-                borderRadius: 6
-              },
-              {
-                label: 'Faturamento Estimado (R$)',
-                data: [5500, 7000, 8750, 10500],
-                borderColor: '#eef4e5',
-                type: 'line',
-                tension: 0.3
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } } },
-            scales: {
-              x: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-              y: { ticks: { color: '#a0b399' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-            }
-          }
-        });
-      }
-
-      // 2. GRÁFICO DE OBJETIVOS CLÍNICOS NA HOME
-      const ctxObj = document.getElementById('chartObjetivosHome');
-      if (ctxObj) {
-        new Chart(ctxObj, {
-          type: 'doughnut',
-          data: {
-            labels: ['Emagrecimento & Reeducação (55%)', 'Hipertrofia & Esporte (30%)', 'Saúde Intestinal (15%)'],
-            datasets: [{
-              data: [55, 30, 15],
-              backgroundColor: ['#8ca481', '#a4ba9a', '#203528'],
-              borderColor: '#182a1f',
-              borderWidth: 3
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { color: '#eef4e5', font: { family: 'Plus Jakarta Sans' } } } }
-          }
-        });
-      }
     });
-
-    async function carregarDadosDashboard() {
-      const res = await apiCall('getAgendamentos');
-      if (res && res.success && Array.isArray(res.data)) {
-        const agendamentos = res.data;
-        const hojeStr = new Date().toISOString().split('T')[0];
-
-        const consultasHoje = agendamentos.filter(a => a.data && String(a.data).includes(hojeStr));
-        const online = agendamentos.filter(a => a.tipo && String(a.tipo).toLowerCase().includes('online'));
-        const presencial = agendamentos.filter(a => a.tipo && String(a.tipo).toLowerCase().includes('presencial'));
-
-        let totalFaturamento = 0;
-        agendamentos.forEach(a => {
-          const val = parseFloat(a.valor);
-          if (!isNaN(val)) totalFaturamento += val;
-        });
-
-        const kpiConsultas = document.getElementById('kpiConsultas');
-        const kpiOnline = document.getElementById('kpiOnline');
-        const kpiPresencial = document.getElementById('kpiPresencial');
-        const kpiFatura = document.getElementById('kpiFatura');
-
-        if (kpiConsultas) kpiConsultas.innerText = consultasHoje.length > 0 ? consultasHoje.length : agendamentos.length;
-        if (kpiOnline) kpiOnline.innerText = online.length;
-        if (kpiPresencial) kpiPresencial.innerText = presencial.length;
-        if (kpiFatura) kpiFatura.innerText = 'R$ ' + (totalFaturamento > 0 ? totalFaturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00');
-      } else {
-        // Sem dados reais — mostra zeros honestos
-        const kpiConsultas = document.getElementById('kpiConsultas');
-        const kpiOnline    = document.getElementById('kpiOnline');
-        const kpiPresencial= document.getElementById('kpiPresencial');
-        const kpiFatura    = document.getElementById('kpiFatura');
-        if (kpiConsultas) kpiConsultas.innerText = '0';
-        if (kpiOnline)    kpiOnline.innerText    = '0';
-        if (kpiPresencial)kpiPresencial.innerText = '0';
-        if (kpiFatura)    kpiFatura.innerText     = 'R$ 0,00';
-      }
-    }
 
     function abrirModalTrocarSenhaAdmin() {
       const m = document.getElementById('modalTrocarSenhaAdmin');
