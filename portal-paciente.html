@@ -861,103 +861,10 @@ body {
     </div>
 
     <!-- TIMELINE DE REFEIÇÕES -->
-    <div class="meals-timeline">
-      <!-- Refeição 1 -->
-      <div class="meal-card-v2" id="meal-1">
-        <div class="meal-v2-header">
-          <div class="meal-v2-name">🍳 Café da Manhã</div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span class="meal-v2-time">08:00</span>
-            <label class="meal-check-btn">
-              <input type="checkbox" onchange="toggleMeal('meal-1')">
-              <span>Concluir</span>
-            </label>
-          </div>
-        </div>
-        <div class="meal-items-text">
-• 2 ovos mexidos temperados com orégano e pitada de sal rosa.
-• 1 fatia de pão integral 100% (ou 1 tapioca de 30g).
-• 1 colher de chá de requeijão light ou creme de ricota.
-• 1 xícara de café preto sem açúcar.
-        </div>
-        <button class="btn-subst-trigger" onclick="toggleSubst('sub-1')">🔄 Opções de Substituição</button>
-        <div class="subst-box-v2" id="sub-1">
-          <strong>Substituições permitidas pela Dra. Silvia:</strong><br>
-          • Ovos ➔ 30g de queijo minas frescal grelhado.<br>
-          • Pão ➔ 100g de mandioca cozida ou batata doce.
-        </div>
-      </div>
-
-      <!-- Refeição 2 -->
-      <div class="meal-card-v2" id="meal-2">
-        <div class="meal-v2-header">
-          <div class="meal-v2-name">🥗 Almoço (Regra do Prato 50/25/25)</div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span class="meal-v2-time">12:30</span>
-            <label class="meal-check-btn">
-              <input type="checkbox" onchange="toggleMeal('meal-2')">
-              <span>Concluir</span>
-            </label>
-          </div>
-        </div>
-        <div class="meal-items-text">
-• <strong>50% Folhas/Verduras:</strong> Alface crespa, rúcula, tomate e pepino à vontade com azeite de oliva.
-• <strong>25% Proteína Magra:</strong> 120g de filé de frango grelhado ou patinho moído.
-• <strong>25% Carboidrato:</strong> 3 colheres de sopa de arroz integral + 1 concha de feijão.
-        </div>
-        <button class="btn-subst-trigger" onclick="toggleSubst('sub-2')">🔄 Opções de Substituição</button>
-        <div class="subst-box-v2" id="sub-2">
-          <strong>Substituições permitidas pela Dra. Silvia:</strong><br>
-          • Frango ➔ 130g de filé de tilápia assada ou peixe branco.<br>
-          • Arroz ➔ 120g de batata inglesa assada ou mandioca.
-        </div>
-      </div>
-
-      <!-- Refeição 3 -->
-      <div class="meal-card-v2" id="meal-3">
-        <div class="meal-v2-header">
-          <div class="meal-v2-name">🍎 Lanche da Tarde</div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span class="meal-v2-time">16:00</span>
-            <label class="meal-check-btn">
-              <input type="checkbox" onchange="toggleMeal('meal-3')">
-              <span>Concluir</span>
-            </label>
-          </div>
-        </div>
-        <div class="meal-items-text">
-• 1 maçã (ou banana) fatiada com 1 colher de sopa de farelo de aveia.
-• 10 unidades de castanha de caju ou nozes.
-• 1 copo (200ml) de iogurte natural desnatado.
-        </div>
-        <button class="btn-subst-trigger" onclick="toggleSubst('sub-3')">🔄 Opções de Substituição</button>
-        <div class="subst-box-v2" id="sub-3">
-          <strong>Substituições permitidas pela Dra. Silvia:</strong><br>
-          • Iogurte + Aveia ➔ 1 scoop de Whey Protein batido com morangos e água.
-        </div>
-      </div>
-
-      <!-- Refeição 4 -->
-      <div class="meal-card-v2" id="meal-4">
-        <div class="meal-v2-header">
-          <div class="meal-v2-name">🍲 Jantar Leve</div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span class="meal-v2-time">19:30</span>
-            <label class="meal-check-btn">
-              <input type="checkbox" onchange="toggleMeal('meal-4')">
-              <span>Concluir</span>
-            </label>
-          </div>
-        </div>
-        <div class="meal-items-text">
-• Omelete especial com 2 ovos, tomate picado, espinafre e queijo minas.
-• Salada de folhas verdes à vontade.
-        </div>
-        <button class="btn-subst-trigger" onclick="toggleSubst('sub-4')">🔄 Opções de Substituição</button>
-        <div class="subst-box-v2" id="sub-4">
-          <strong>Substituições permitidas pela Dra. Silvia:</strong><br>
-          • Omelete ➔ Sopa caseira de legumes com peito de frango desfiado.
-        </div>
+    <div class="meals-timeline" id="mealsContainer">
+      <div style="text-align:center; padding:32px 20px; color:var(--text-muted); font-size:0.9rem;" id="mealsEmptyPlaceholder">
+        <div style="font-size:2.2rem; margin-bottom:8px;">🥗</div>
+        Carregando seu plano alimentar personalizado...
       </div>
     </div>
   </section>
@@ -980,62 +887,10 @@ body {
       <button class="shop-tab" onclick="filterShopping('checked')">✅ Comprados</button>
     </div>
 
-    <div class="shopping-grid-v2">
-      <!-- Hortifrúti -->
-      <div class="shop-cat-box">
-        <div class="shop-cat-title">
-          <span>🥬 Hortifrúti &amp; Frutas</span>
-        </div>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Alface crespa &amp; Rúcula</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Tomate &amp; Pepino</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Maçãs e Bananas</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Espinafre fresco</span>
-        </label>
-      </div>
-
-      <!-- Proteínas -->
-      <div class="shop-cat-box">
-        <div class="shop-cat-title">
-          <span>🥩 Proteínas &amp; Laticínios</span>
-        </div>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Ovos Caipiras (2 Dúzias)</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Filé de Frango (1.5kg)</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Patinho moído (1kg)</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Iogurte Natural Desnatado</span>
-        </label>
-      </div>
-
-      <!-- Grãos e Secos -->
-      <div class="shop-cat-box">
-        <div class="shop-cat-title">
-          <span>🌾 Mercearia &amp; Oleaginosas</span>
-        </div>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Arroz Integral &amp; Feijão</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Farelo de Aveia</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Azeite de Oliva Extra Virgem</span>
-        </label>
-        <label class="shop-item-row" onclick="toggleShopRow(this)">
-          <input type="checkbox"> <span>Castanhas de Caju</span>
-        </label>
+    <div class="shopping-grid-v2" id="secComprasGrid">
+      <div style="text-align:center; padding:32px 20px; color:var(--text-muted); font-size:0.88rem; grid-column:1/-1;" id="shopEmptyPlaceholder">
+        <div style="font-size:2rem; margin-bottom:8px;">🛒</div>
+        Sua lista de compras será gerada automaticamente com base no seu plano alimentar.
       </div>
     </div>
   </section>
@@ -1046,7 +901,7 @@ body {
       <div class="section-title">
         <span>📈</span> Sua Evolução Corporal
       </div>
-      <span style="font-size:0.8rem; color:var(--sage-light); font-weight:800;">-5.7kg desde o início 🎉</span>
+      <span style="font-size:0.8rem; color:var(--sage-light); font-weight:800;" id="dispEvolucaoHeader">Acompanhamento Clínico 🌱</span>
     </div>
 
     <div class="chart-container-wrap">
@@ -1346,19 +1201,50 @@ function copiarLista() {
   alert("📋 Lista de compras copiada para a área de transferência!");
 }
 
-// EVOLUÇÃO GRÁFICO
-function renderEvolChart() {
+// EVOLUÇÃO GRÁFICO DINÂMICO
+function renderEvolChart(evolucaoData = []) {
   const ctx = document.getElementById('chartEvolucaoPaciente');
   if (!ctx) return;
+
+  if (chartInstance) chartInstance.destroy();
+
+  let labels = [];
+  let pesos = [];
+  let gorduras = [];
+
+  if (evolucaoData && Array.isArray(evolucaoData) && evolucaoData.length > 0) {
+    labels = evolucaoData.map(e => e.data ? formatarDataPTBR(e.data) : 'Medição');
+    pesos = evolucaoData.map(e => parseFloat(e.peso) || 0);
+    gorduras = evolucaoData.map(e => parseFloat(e.percentual_gordura) || 0);
+
+    const labelHeader = document.getElementById('dispEvolucaoHeader');
+    if (labelHeader) {
+      if (pesos.length >= 2) {
+        const diff = (pesos[pesos.length - 1] - pesos[0]).toFixed(1);
+        const sign = diff < 0 ? '' : '+';
+        labelHeader.textContent = `${sign}${diff}kg desde a 1ª medição 🎉`;
+      } else {
+        labelHeader.textContent = `${pesos[0]}kg registrados 🎉`;
+      }
+    }
+  }
+
+  if (labels.length === 0) {
+    labels = ['Sem Medições Registradas'];
+    pesos = [0];
+    gorduras = [0];
+    const labelHeader = document.getElementById('dispEvolucaoHeader');
+    if (labelHeader) labelHeader.textContent = 'Acompanhamento Clínico 🌱';
+  }
 
   chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ['Maio', 'Junho', 'Julho', 'Agosto'],
+      labels: labels,
       datasets: [
         {
           label: 'Peso Corporal (kg)',
-          data: [71.2, 69.0, 67.4, 65.5],
+          data: pesos,
           borderColor: '#8ca481',
           backgroundColor: 'rgba(140, 164, 129, 0.15)',
           fill: true,
@@ -1369,7 +1255,7 @@ function renderEvolChart() {
         },
         {
           label: '% Gordura Corporal',
-          data: [28.5, 26.8, 25.1, 23.4],
+          data: gorduras,
           borderColor: '#e2b857',
           backgroundColor: 'rgba(226, 184, 87, 0.08)',
           fill: true,
@@ -1388,7 +1274,7 @@ function renderEvolChart() {
       },
       scales: {
         x: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-        y: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        y: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
       }
     }
   });
@@ -1417,7 +1303,7 @@ function updateGreeting() {
   else if (hr >= 18 || hr < 5) text = "Boa noite";
 
   const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
-  let nome = "Juliana";
+  let nome = "Paciente";
   if (rawDados) {
     try {
       const u = JSON.parse(rawDados);
@@ -1783,57 +1669,7 @@ async function carregarDadosHistorico(pacienteId) {
       }
 
       // 3. Renderizar Gráfico de Evolução Real
-      if (evolucao && Array.isArray(evolucao) && evolucao.length > 0) {
-        const labels = evolucao.map(e => e.data ? String(e.data).slice(5) : 'Medição');
-        const pesos = evolucao.map(e => parseFloat(e.peso) || 0);
-        const gorduras = evolucao.map(e => parseFloat(e.percentual_gordura) || 0);
-        
-        if (chartInstance) chartInstance.destroy();
-        const ctx = document.getElementById('chartEvolucaoPaciente');
-        if (ctx) {
-          chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: labels,
-              datasets: [
-                {
-                  label: 'Peso Corporal (kg)',
-                  data: pesos,
-                  borderColor: '#8ca481',
-                  backgroundColor: 'rgba(140, 164, 129, 0.15)',
-                  fill: true,
-                  tension: 0.35,
-                  borderWidth: 3,
-                  pointRadius: 6,
-                  pointBackgroundColor: '#8ca481'
-                },
-                {
-                  label: '% Gordura Corporal',
-                  data: gorduras,
-                  borderColor: '#e2b857',
-                  backgroundColor: 'rgba(226, 184, 87, 0.08)',
-                  fill: true,
-                  tension: 0.35,
-                  borderWidth: 2,
-                  pointRadius: 4,
-                  pointBackgroundColor: '#e2b857'
-                }
-              ]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { labels: { color: '#f0f5eb', font: { family: 'Plus Jakarta Sans', weight: '700' } } }
-              },
-              scales: {
-                x: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                y: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-              }
-            }
-          });
-        }
-      }
+      renderEvolChart(evolucao || []);
     }
   } catch(err){
     console.warn("Erro ao carregar histórico do paciente:", err);
