@@ -1130,8 +1130,15 @@ let chartInstance = null;
 let habitsCompleted = { 'habit-1': false, 'habit-2': false, 'habit-3': false, 'habit-4': false };
 let mealsCompleted = { 'meal-1': false, 'meal-2': false, 'meal-3': false, 'meal-4': false };
 
+function getTodayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
 function updateAdherenceScore() {
-  const totalItems = 4 + 4; // 4 refeições + 4 hábitos
+  const mealCards = document.querySelectorAll('.meal-card-v2');
+  const totalMeals = mealCards.length || 4;
+  const totalHabits = 4;
+  const totalItems = totalMeals + totalHabits;
   let done = 0;
   Object.values(habitsCompleted).forEach(v => { if (v) done++; });
   Object.values(mealsCompleted).forEach(v => { if (v) done++; });
@@ -1162,6 +1169,57 @@ function addWater(amount) {
   updateWaterUI();
 }
 
+// PERSISTÊNCIA DE HÁBITOS
+function saveHabitsState() {
+  if (!currentPacId) return;
+  const key = `kos_habits_${currentPacId}_${getTodayKey()}`;
+  localStorage.setItem(key, JSON.stringify(habitsCompleted));
+}
+
+function loadHabitsState() {
+  if (!currentPacId) return;
+  const key = `kos_habits_${currentPacId}_${getTodayKey()}`;
+  const raw = localStorage.getItem(key);
+  if (raw) {
+    try {
+      habitsCompleted = JSON.parse(raw);
+      Object.keys(habitsCompleted).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('checked', !!habitsCompleted[id]);
+      });
+      let count = Object.values(habitsCompleted).filter(Boolean).length;
+      const statusEl = document.getElementById('habitsStatus');
+      if (statusEl) statusEl.innerText = `${count}/4 concluídos`;
+    } catch(e){}
+  }
+}
+
+// PERSISTÊNCIA DE REFEIÇÕES
+function saveMealsState() {
+  if (!currentPacId) return;
+  const key = `kos_meals_${currentPacId}_${getTodayKey()}`;
+  localStorage.setItem(key, JSON.stringify(mealsCompleted));
+}
+
+function loadMealsState() {
+  if (!currentPacId) return;
+  const key = `kos_meals_${currentPacId}_${getTodayKey()}`;
+  const raw = localStorage.getItem(key);
+  if (raw) {
+    try {
+      mealsCompleted = JSON.parse(raw);
+      Object.keys(mealsCompleted).forEach(id => {
+        const card = document.getElementById(id);
+        if (card) {
+          const chk = card.querySelector('input[type="checkbox"]');
+          if (chk) chk.checked = !!mealsCompleted[id];
+          card.classList.toggle('completed', !!mealsCompleted[id]);
+        }
+      });
+    } catch(e){}
+  }
+}
+
 // TOGGLE HÁBITOS
 function toggleHabit(id) {
   const el = document.getElementById(id);
@@ -1170,7 +1228,9 @@ function toggleHabit(id) {
   el.classList.toggle('checked', habitsCompleted[id]);
 
   let count = Object.values(habitsCompleted).filter(Boolean).length;
-  document.getElementById('habitsStatus').innerText = `${count}/4 concluídos`;
+  const statusEl = document.getElementById('habitsStatus');
+  if (statusEl) statusEl.innerText = `${count}/4 concluídos`;
+  saveHabitsState();
   updateAdherenceScore();
 }
 
@@ -1208,6 +1268,7 @@ function toggleMeal(id) {
   const chk = card.querySelector('input[type="checkbox"]');
   mealsCompleted[id] = chk ? chk.checked : false;
   card.classList.toggle('completed', mealsCompleted[id]);
+  saveMealsState();
   updateAdherenceScore();
   updateCalorieTrackerUI();
 }
@@ -1446,29 +1507,28 @@ window.addEventListener('DOMContentLoaded', async () => {
   initTheme();
   updateGreeting();
 
-  const savedWater = parseInt(localStorage.getItem('kos_paciente_water') || '0', 10);
-  currentWater = isNaN(savedWater) ? 0 : savedWater;
-  updateWaterUI();
-
-  renderEvolChart();
-  updateAdherenceScore();
-  setTopProgress(50);
-
-  // Tenta carregar os dados reais do banco do paciente autenticado
   const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
   if (rawDados) {
     try {
       const u = JSON.parse(rawDados);
       if (u.id) {
-        await carregarDadosHistorico(u.id);
-      } else {
-        setTopProgress(100);
-        setTimeout(() => hideGlobalLoader(), 350);
+        currentPacId = u.id;
+        window.KOS_PACIENTE_ID = u.id;
       }
-    } catch(e){
-      setTopProgress(100);
-      setTimeout(() => hideGlobalLoader(), 350);
-    }
+    } catch(e){}
+  }
+
+  const savedWater = parseInt(localStorage.getItem('kos_water_' + (currentPacId || 'default')) || '0', 10);
+  currentWater = isNaN(savedWater) ? 0 : savedWater;
+  updateWaterUI();
+
+  loadHabitsState();
+  renderEvolChart();
+  updateAdherenceScore();
+  setTopProgress(50);
+
+  if (currentPacId) {
+    await carregarDadosHistorico(currentPacId);
   } else {
     setTopProgress(100);
     setTimeout(() => hideGlobalLoader(), 350);
@@ -1691,6 +1751,7 @@ async function carregarDadosHistorico(pacienteId) {
               if (document.getElementById('pacMacroGord')) document.getElementById('pacMacroGord').textContent = `${totalPlanoGord}g`;
 
               if (totalPlanoKcal > 0) window.userTargetKcal = totalPlanoKcal;
+              loadMealsState();
               updateCalorieTrackerUI();
             }
           }
