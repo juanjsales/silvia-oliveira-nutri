@@ -1450,14 +1450,21 @@ function formatarDataPTBR(val) {
 function formatarHoraPTBR(val) {
   if (!val) return '';
   try {
-    const s = String(val).trim();
+    let s = String(val).trim();
     if (!s) return '';
-    const parts = s.split(':');
-    if (parts.length >= 2) {
-      const h = parts[0].padStart(2, '0');
-      const m = parts[1].padStart(2, '0');
+
+    // Se contiver ISO timestamp (ex: "1899-12-30T12:06:00.000Z"), extrai apenas a parte da hora após o 'T'
+    if (s.includes('T')) {
+      s = s.split('T')[1] || s;
+    }
+
+    if (s.includes(':')) {
+      const parts = s.split(':');
+      const h = parts[0].replace(/\D/g, '').padStart(2, '0').slice(-2);
+      const m = parts[1].replace(/\D/g, '').padStart(2, '0').slice(-2);
       return `${h}:${m}`;
     }
+
     return s;
   } catch(e) {
     return String(val || '');
