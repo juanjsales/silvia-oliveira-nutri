@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Base de Dados de Alimentos (Tabela TACO / IBGE + Open Food Facts API)
  * Nutricionista Dra. Silvia Oliveira Lemos
  *
