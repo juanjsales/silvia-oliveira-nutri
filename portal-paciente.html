@@ -507,6 +507,25 @@ body {
   .app-header { padding: 10px 14px; }
 }
 
+@media (max-width: 480px) {
+  .app-header { padding: 8px 12px; }
+  .container { padding: 12px 8px 100px; gap: 14px; }
+  .section-card { padding: 14px 12px; border-radius: 14px; }
+  .bottom-nav { padding: 6px 8px; gap: 0; }
+  .bnav-btn { padding: 6px 4px; gap: 2px; min-height: 50px; flex: 1; }
+  .bnav-icon-txt { font-size: 1.2rem; }
+  /* Evita zoom automático iOS em inputs */
+  input, select, textarea { font-size: 16px !important; }
+  .meal-card-v2 { padding: 14px 12px; border-radius: 12px; }
+  .kpi-grid-4, .kpi-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+@media (max-width: 380px) {
+  .container { padding: 10px 6px 96px; }
+  .bnav-btn span:not(.bnav-icon-txt) { display: none; } /* Oculta textos das tabs no mobile muito pequeno */
+  .bnav-btn { min-height: 48px; }
+}
+
 @media print {
   .app-header, .bottom-nav, .no-print, .btn-main, .btn-sec, .btn-subst-trigger { display: none !important; }
   body { background: #fff !important; color: #000 !important; }
@@ -639,6 +658,7 @@ body {
   100% { background-position: 200% 0; }
 }
 </style>
+<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
 

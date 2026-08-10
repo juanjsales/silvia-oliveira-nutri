@@ -176,7 +176,32 @@ body.in-iframe .container{padding-top:16px!important}
 
 @media(max-width:860px){.agenda-layout{grid-template-columns:1fr}}
 @media(max-width:600px){.consult-card{grid-template-columns:56px 1fr}.consult-actions{display:none}}
+
+/* ===== MOBILE-FIRST BREAKPOINTS ===== */
+@media(max-width:768px){
+  .top-header{padding:10px 14px;flex-wrap:wrap;gap:8px;height:auto}
+  .container{padding:14px 10px;gap:16px}
+  .agenda-layout{gap:16px}
+  .calendar-grid{gap:4px}
+  .calendar-day{min-height:52px;font-size:0.78rem;padding:4px}
+  .calendar-header{font-size:0.75rem}
+  .btn{padding:8px 14px;font-size:0.82rem}
+}
+
+@media(max-width:480px){
+  .top-header{padding:8px 12px}
+  .top-header .brand-title{font-size:1rem}
+  .container{padding:10px 8px;gap:12px}
+  .calendar-day{min-height:44px;font-size:0.72rem;padding:3px}
+  .calendar-header{font-size:0.7rem;padding:4px 2px}
+  input,select,textarea{font-size:16px !important}
+  .modal-overlay{padding:8px !important}
+  .consult-card{gap:10px}
+  .consult-info .consult-pac{font-size:0.85rem}
+  .consult-actions{display:none}
+}
 </style>
+<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
 

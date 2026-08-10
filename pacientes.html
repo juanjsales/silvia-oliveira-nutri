@@ -525,7 +525,27 @@
     body.in-iframe .container {
       padding-top: 16px !important;
     }
+
+    /* ===== MOBILE-FIRST BREAKPOINTS ===== */
+    @media (max-width: 768px) {
+      .container { padding: 14px 10px; gap: 16px; }
+      .top-header { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+      .kpi-grid, [style*="grid-template-columns:repeat(auto-fit"] { grid-template-columns: repeat(2, 1fr) !important; }
+      table { min-width: 600px; }
+      .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    }
+
+    @media (max-width: 480px) {
+      .container { padding: 10px 8px; gap: 12px; }
+      .top-header { padding: 8px 12px; }
+      .top-header h1, .page-title { font-size: 1rem !important; }
+      input, select, textarea { font-size: 16px !important; }
+      .modal-card { border-radius: 14px !important; }
+      .stepper { overflow-x: auto; }
+      table { min-width: 520px; }
+    }
   </style>
+<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 
 <body>

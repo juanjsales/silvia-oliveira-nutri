@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -131,7 +131,28 @@ tr:hover td { background: var(--sage-dim); }
 @media(max-width:550px) {
   .form-grid-2, .form-grid-3, .form-grid-4 { grid-template-columns: 1fr; }
 }
+
+/* ===== MOBILE-FIRST BREAKPOINTS ===== */
+@media(max-width:768px) {
+  .container { padding: 14px 10px; gap: 16px; }
+  .card { padding: 16px; }
+  .card-header { margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+  canvas { max-width: 100% !important; }
+  .chart-wrap, [class*="chart"] { overflow-x: auto; }
+}
+
+@media(max-width:480px) {
+  .container { padding: 10px 8px; gap: 12px; }
+  .card { padding: 12px; border-radius: 12px; }
+  input, select, textarea { font-size: 16px !important; }
+  .modal-card { border-radius: 14px !important; }
+  .modal-body { padding: 12px 10px !important; }
+  .modal-footer { padding: 12px !important; flex-direction: column; gap: 8px; }
+  .modal-footer button { width: 100%; }
+  canvas { height: 220px !important; }
+}
 </style>
+<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
 

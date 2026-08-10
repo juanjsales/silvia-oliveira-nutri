@@ -205,8 +205,45 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
   .pac-header{flex-direction:column;align-items:flex-start}
   .tabs-nav{overflow-x:auto;flex-wrap:nowrap}
   .tab-btn{flex-shrink:0}
+  .main-container{padding:16px}
+}
+
+@media(max-width:768px){
+  .main-container{padding:12px 10px;gap:14px}
+  .top-header{padding:10px 14px;gap:8px}
+  .pac-header-unified{padding:12px 14px}
+  .pac-name{font-size:1.1rem}
+  .pac-details{gap:6px}
+  .profile-selector-ribbon{flex-wrap:wrap}
+  .profile-option{min-width:80px;font-size:0.72rem;padding:5px 8px}
+  .tabs-nav{padding:4px;gap:3px}
+  .tab-btn{padding:7px 10px;font-size:0.75rem}
+  .card{padding:16px}
+  .card-header{margin-bottom:14px}
+  .modal-content{max-width:96vw !important;padding:18px !important}
+  #modalDocumentoOficial .modal-content{max-width:96vw !important}
+}
+
+@media(max-width:480px){
+  .top-header{padding:8px 12px;flex-wrap:wrap}
+  .brand-title{font-size:0.9rem}
+  .main-container{padding:10px 8px;gap:12px}
+  .pac-name{font-size:1rem}
+  .pac-detail{font-size:0.72rem;padding:2px 6px}
+  .pac-avatar{width:38px;height:38px;font-size:1.1rem}
+  .profile-option{min-width:calc(50% - 4px);font-size:0.7rem}
+  .tabs-nav{gap:2px;padding:3px}
+  .tab-btn{padding:6px 8px;font-size:0.72rem}
+  .card{padding:12px;border-radius:12px}
+  .card-title{font-size:0.95rem}
+  .form-control,select.form-control,textarea.form-control{font-size:16px !important} /* evita zoom iOS */
+  .btn,.btn-secondary{padding:10px 14px;font-size:0.82rem}
+  .modal-content{padding:14px !important;border-radius:14px !important}
+  .teleconsulta-frame-box{height:280px}
+  #docPreviewBox{min-height:400px}
 }
 </style>
+<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
 

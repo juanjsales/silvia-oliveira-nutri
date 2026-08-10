@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -50,7 +50,20 @@ textarea.form-control { height: 100px; resize: vertical; }
   .card { padding: 20px 14px; }
   .header-box { padding: 20px 14px; }
 }
+
+/* ===== MOBILE-FIRST BREAKPOINTS ===== */
+@media (max-width: 480px) {
+  body { padding: 12px 8px 50px; }
+  .container { max-width: 100%; padding: 0 8px; gap: 14px; }
+  .card { padding: 16px 12px; border-radius: 14px; }
+  .header-box { padding: 16px 12px; border-radius: 14px; }
+  .header-title { font-size: 1.3rem; }
+  .form-control, select.form-control, textarea.form-control { font-size: 16px !important; padding: 12px 14px; }
+  .btn { padding: 14px; font-size: 0.9rem; }
+  .section-title { font-size: 0.88rem; }
+}
 </style>
+<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
 

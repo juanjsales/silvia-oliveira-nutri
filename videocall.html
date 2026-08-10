@@ -99,7 +99,26 @@
             padding: 24px;
             color: #a0b399;
         }
+
+        /* ===== MOBILE-FIRST MEDIA QUERIES ===== */
+        @media (max-width: 600px) {
+          .call-header {
+            padding: 8px 12px;
+            height: 50px;
+          }
+          .call-title { font-size: 0.88rem; }
+          .call-timer { font-size: 0.78rem; padding: 3px 8px; }
+          .btn-hangup { padding: 5px 10px; font-size: 0.75rem; }
+          .call-status { display: none; } /* esconde no mobile — economiza espaço */
+          #jitsi-container { height: calc(100% - 50px); }
+        }
+
+        @media (max-width: 380px) {
+          .call-brand > div > .call-title { font-size: 0.8rem; }
+          .call-timer { display: none; } /* timer some em telas muito pequenas */
+        }
     </style>
+<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
     <header class="call-header">

@@ -117,7 +117,39 @@ body {
 }
 .status-msg.error { background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; }
 .status-msg.success { background: rgba(140, 164, 129, 0.15); border: 1px solid var(--sage-light); color: #eef4e5; }
+
+/* ===== MOBILE-FIRST MEDIA QUERIES ===== */
+@media (max-width: 480px) {
+  body { padding: 16px 12px; }
+
+  .login-card {
+    padding: 28px 20px;
+    border-radius: 18px;
+    gap: 18px;
+  }
+
+  .brand-title { font-size: 1.3rem; }
+
+  /* Evita zoom automático no iOS ao focar inputs */
+  .form-control {
+    font-size: 16px !important;
+    padding: 13px 14px;
+  }
+
+  .btn-submit {
+    padding: 14px;
+    font-size: 0.9rem;
+  }
+
+  .brand-logo {
+    width: 52px;
+    height: 52px;
+    font-size: 1.4rem;
+  }
+}
+
 </style>
+<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
 

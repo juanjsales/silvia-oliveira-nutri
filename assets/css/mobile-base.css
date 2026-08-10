@@ -1,0 +1,126 @@
+/* ===================================================================
+   mobile-base.css — CSS Compartilhado Mobile-First
+   Projeto: Nutricionista Silvia Oliveira Lemos
+   Breakpoints: 480px (mobile), 768px (tablet), 960px (tablet-L), 1280px (desktop)
+   =================================================================== */
+
+/* Evita quebra horizontal em qualquer tela */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Garante box-sizing global */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Imagens e mídia sempre responsivas */
+img, video, iframe, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tabelas responsivas — wrapper horizontal */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+}
+
+/* Utilitários de visibilidade responsive */
+.hide-mobile { display: block; }
+.show-mobile { display: none; }
+
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .show-mobile { display: block !important; }
+  .show-mobile-flex { display: flex !important; }
+}
+
+/* Touch targets mínimos de 44px (WCAG) */
+button, a, [role="button"],
+input[type="checkbox"], input[type="radio"] {
+  min-height: 44px;
+}
+
+input[type="checkbox"], input[type="radio"] {
+  min-height: auto;
+  width: 18px;
+  height: 18px;
+}
+
+/* Texto mínimo legível em mobile */
+@media (max-width: 480px) {
+  body { font-size: 15px; }
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.25rem !important; }
+  h3 { font-size: 1.1rem !important; }
+}
+
+/* Grid responsivo utilitário */
+.grid-responsive-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.grid-responsive-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.grid-responsive-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .grid-responsive-3,
+  .grid-responsive-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-responsive-2,
+  .grid-responsive-3,
+  .grid-responsive-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Modal responsivo */
+.modal-overlay {
+  padding: 12px;
+}
+
+@media (max-width: 480px) {
+  .modal-content,
+  .modal-content.modal-lg {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+}
+
+/* Form controls mobile-friendly */
+@media (max-width: 480px) {
+  .form-grid-2,
+  .form-grid-3,
+  .form-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-control,
+  select.form-control,
+  textarea.form-control {
+    font-size: 16px !important; /* Evita zoom automático em iOS */
+    padding: 12px 14px !important;
+  }
+}
