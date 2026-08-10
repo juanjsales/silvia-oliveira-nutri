@@ -3095,60 +3095,19 @@
       preloadPrimaryIframes();
     });
 
-    function abrirModalTrocarSenhaAdmin() {
-      const m = document.getElementById('modalTrocarSenhaAdmin');
-      if (m) m.style.display = 'flex';
-    }
-
-    function fecharModalTrocarSenhaAdmin() {
-      const m = document.getElementById('modalTrocarSenhaAdmin');
-      if (m) m.style.display = 'none';
-      const a = document.getElementById('pwdAdmAtual'); if (a) a.value = '';
-      const n = document.getElementById('pwdAdmNova'); if (n) n.value = '';
-      const c = document.getElementById('pwdAdmConf'); if (c) c.value = '';
-    }
-
-    async function salvarNovaSenhaAdmin(e) {
-      e.preventDefault();
-      const atual = document.getElementById('pwdAdmAtual').value;
-      const nova = document.getElementById('pwdAdmNova').value;
-      const conf = document.getElementById('pwdAdmConf').value;
-      const btn = document.getElementById('btnSalvarAdmPwd');
-
-      if (nova !== conf) {
-        alert("❌ A nova senha e a confirmação não coincidem.");
-        return;
-      }
-      if (nova.length < 4) {
-        alert("❌ A nova senha deve ter no mínimo 4 caracteres.");
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = "Salvando...";
-
-      const res = await apiCall('alterarSenha', {
-        usuario_id: 'silviadeoliveira24.nutri@gmail.com',
-        senha_atual: atual,
-        nova_senha: nova
-      });
-
-      btn.disabled = false;
-      btn.innerText = "💾 Salvar Nova Senha";
-
-      if (res && res.success) {
-        alert("✅ " + (res.message || "Senha da administração alterada com sucesso!"));
-        fecharModalTrocarSenhaAdmin();
-      } else {
-        alert("⚠️ Erro ao alterar senha: " + (res ? res.error || "Senha atual incorreta." : "Verifique sua conexão."));
-      }
-    }
-
     function abrirModalNovoLancamentoFin() {
       const m = document.getElementById('modalNovoLancamentoFin');
       if (m) m.style.display = 'flex';
       const d = document.getElementById('finData');
       if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+
+      const dl = document.getElementById('dlPacientesFin');
+      if (dl && Array.isArray(window.pacientesLista) && window.pacientesLista.length > 0) {
+        dl.innerHTML = window.pacientesLista
+          .filter(p => !p.tipo || String(p.tipo).toUpperCase() === 'PACIENTE')
+          .map(p => `<option value="${p.nome}"></option>`)
+          .join('');
+      }
     }
     function fecharModalNovoLancamentoFin() {
       const m = document.getElementById('modalNovoLancamentoFin');
@@ -3218,7 +3177,8 @@
         <div class="form-group">
           <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nome do
             Paciente</label>
-          <input type="text" id="finPacienteNome" class="form-control" placeholder="Ex: Juliana Mendes" required>
+          <input type="text" id="finPacienteNome" list="dlPacientesFin" class="form-control" placeholder="Ex: Juliana Mendes" required>
+          <datalist id="dlPacientesFin"></datalist>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <div class="form-group">
