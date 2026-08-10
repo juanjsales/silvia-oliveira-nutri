@@ -912,16 +912,25 @@ function autoAdjustViewMode() {
   }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   if (window.self !== window.top) {
     document.body.classList.add('in-iframe');
   }
-  carregarPacientesNoGerenciador();
+  await carregarPacientesNoGerenciador();
   carregarLocalStorage();
   renderInputs();
   atualizar();
   calcularMetaVET();
   autoAdjustViewMode();
+
+  // Auto-print se aberto pelo Portal do Paciente via ?print=1
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('print') === '1') {
+    // Aguarda renderização do plano e dados da API antes de imprimir
+    setTimeout(() => {
+      window.print();
+    }, 2500);
+  }
 });
 
 window.addEventListener('resize', () => {

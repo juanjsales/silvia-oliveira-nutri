@@ -798,7 +798,7 @@ body {
       <div class="section-title">
         <span>🥗</span> Seu Plano Alimentar Personalizado
       </div>
-      <button class="btn-sec" onclick="window.print()" style="padding:6px 14px; font-size:0.78rem;">
+      <button class="btn-sec" onclick="abrirPDFPlano()" style="padding:6px 14px; font-size:0.78rem;" id="btnPDFPlano">
         📥 PDF do Plano
       </button>
     </div>
@@ -1187,6 +1187,20 @@ function filterShopping(mode) {
       row.style.display = isChecked ? 'flex' : 'none';
     }
   });
+}
+
+// ABRIR PDF DO PLANO NUTRICIONAL NO GERENCIADOR
+function abrirPDFPlano() {
+  const pacId = currentPacId || window.KOS_PACIENTE_ID || '';
+  if (!pacId) {
+    alert('⚠️ Nenhum plano encontrado. Verifique sua sessão ou entre em contato com a Dra. Silvia.');
+    return;
+  }
+  const url = `gerenciador-plano.html?paciente_id=${encodeURIComponent(pacId)}&print=1`;
+  const janela = window.open(url, '_blank');
+  if (!janela) {
+    alert('⚠️ Seu navegador bloqueou a abertura do PDF. Por favor, permita pop-ups para este site.');
+  }
 }
 
 function scrollToSec(id) {
