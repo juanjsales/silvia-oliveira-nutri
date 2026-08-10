@@ -1708,21 +1708,23 @@ async function carregarDadosHistorico(pacienteId) {
               loadMealsState();
               updateCalorieTrackerUI();
 
-              // Renderizar Lista de Compras do Supermercado Unificada
+              // Renderizar Lista de Compras do Supermercado Unificada sem duplicidades
               const shopGrid = document.getElementById('secComprasGrid');
               if (shopGrid) {
                 const itensUnicos = new Set();
                 meallist.forEach(m => {
-                  if (m.alimentosList && Array.isArray(m.alimentosList)) {
+                  if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
                     m.alimentosList.forEach(a => {
-                      if (a.nome) itensUnicos.add(`${a.nome} (${a.qtd || 'porção'})`);
+                      if (a.nome) {
+                        const qtdFmt = a.qtd ? ` (${a.qtd})` : '';
+                        itensUnicos.add(`${a.nome.trim()}${qtdFmt}`);
+                      }
                     });
-                  }
-                  if (m.itens) {
+                  } else if (m.itens) {
                     const linhas = String(m.itens).split('\n');
                     linhas.forEach(l => {
                       const limpa = l.replace(/^[•\-\*\s]+/, '').trim();
-                      if (limpa.length > 2 && !limpa.toLowerCase().startsWith('receita:')) {
+                      if (limpa.length > 2 && !limpa.toLowerCase().startsWith('receita:') && !limpa.toLowerCase().startsWith('ingredientes:')) {
                         itensUnicos.add(limpa);
                       }
                     });
