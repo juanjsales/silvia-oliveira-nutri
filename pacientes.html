@@ -528,21 +528,28 @@
 
     /* ===== MOBILE-FIRST BREAKPOINTS ===== */
     @media (max-width: 768px) {
-      .container { padding: 14px 10px; gap: 16px; }
+      .container { padding: 12px 10px; gap: 14px; }
       .top-header { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
-      .kpi-grid, [style*="grid-template-columns:repeat(auto-fit"] { grid-template-columns: repeat(2, 1fr) !important; }
-      table { min-width: 600px; }
+      .pac-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+      .card-header { flex-direction: column !important; align-items: stretch !important; gap: 12px !important; }
+      .card-header > div { width: 100% !important; flex-wrap: wrap !important; }
+      #inputBuscaPacientes { width: 100% !important; max-width: 100% !important; }
       .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: 580px; }
     }
 
     @media (max-width: 480px) {
-      .container { padding: 10px 8px; gap: 12px; }
-      .top-header { padding: 8px 12px; }
+      .container { padding: 8px 6px; gap: 10px; }
+      .top-header { padding: 8px 10px; }
       .top-header h1, .page-title { font-size: 1rem !important; }
+      .pac-kpi-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+      .pac-kpi-grid > div { padding: 12px 10px !important; gap: 10px !important; border-radius: 12px !important; }
+      .card { padding: 12px 10px !important; border-radius: 14px !important; }
+      .card-title { font-size: 0.95rem !important; }
       input, select, textarea { font-size: 16px !important; }
       .modal-card { border-radius: 14px !important; }
       .stepper { overflow-x: auto; }
-      table { min-width: 520px; }
+      table { min-width: 560px; }
     }
   </style>
 <link rel="stylesheet" href="assets/css/mobile-base.css">
@@ -554,7 +561,7 @@
   <main class="container">
 
     <!-- KPI CARDS -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+    <div class="pac-kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
       <div
         style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
         <div
