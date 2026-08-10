@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -265,19 +265,21 @@ async function handleUnifiedLogin(e) {
     const user = res.data;
     const userTipo = (user.tipo || "PACIENTE").toUpperCase();
 
-    if (userTipo === 'ADMIN') {
+    const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+
+    if (user.tipo === 'ADMIN') {
       sessionStorage.setItem('kos_adm_auth', 'true');
       sessionStorage.setItem('kos_user_dados', JSON.stringify(user));
       showStatus(`✅ Bem-vinda, ${user.nome}! Entrando no Painel...`, "success");
       setTimeout(() => {
-        window.location.href = "app-nutri.html";
+        window.location.href = redirectUrl || "app-nutri.html";
       }, 600);
     } else {
       sessionStorage.setItem('kos_paciente_auth', 'true');
       sessionStorage.setItem('kos_paciente_dados', JSON.stringify(user));
       showStatus(`✅ Bem-vindo(a), ${user.nome}! Entrando no Portal...`, "success");
       setTimeout(() => {
-        window.location.href = "portal-paciente.html";
+        window.location.href = redirectUrl || "portal-paciente.html";
       }, 600);
     }
   } else {
@@ -286,7 +288,8 @@ async function handleUnifiedLogin(e) {
       sessionStorage.setItem('kos_adm_auth', 'true');
       showStatus("✅ Acesso Autorizado! Entrando no Painel...", "success");
       setTimeout(() => {
-        window.location.href = "app-nutri.html";
+        const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+        window.location.href = redirectUrl || "app-nutri.html";
       }, 600);
     } else {
       showStatus(res.error || "CPF/E-mail ou Senha incorreta. Tente novamente.");

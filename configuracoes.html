@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -193,7 +193,7 @@ body.in-iframe .container { padding-top: 16px !important; }
     </form>
   </div>
 
-  <!-- 3. CONSULTAS, VALORES & GOOGLE MEET -->
+  <!-- 3. CONSULTAS, VALORES & SALA VIRTUAL DE TELECONSULTA -->
   <div class="card">
     <div class="card-header">
       <div>
@@ -218,8 +218,8 @@ body.in-iframe .container { padding-top: 16px !important; }
     </div>
 
     <div class="form-group">
-      <label>Link / Sala Padrão do Google Meet</label>
-      <input type="url" id="cfgMeetUrl" class="form-control" placeholder="https://meet.google.com/silvia-nutri">
+      <label>Link / Sala Padrão de Teleconsulta Virtual</label>
+      <input type="url" id="cfgMeetUrl" class="form-control" placeholder="https://silviaoliveira.vercel.app/portal-paciente.html?room=silvia-nutri">
     </div>
   </div>
 
@@ -305,7 +305,7 @@ async function carregarConfiguracoes() {
     if (document.getElementById('cfgValorPresencial')) document.getElementById('cfgValorPresencial').value = cfg.valor_presencial || "280";
     if (document.getElementById('cfgValorOnline')) document.getElementById('cfgValorOnline').value = cfg.valor_online || "250";
     if (document.getElementById('cfgDuracaoConsulta')) document.getElementById('cfgDuracaoConsulta').value = cfg.duracao_consulta || "60";
-    if (document.getElementById('cfgMeetUrl')) document.getElementById('cfgMeetUrl').value = cfg.meet_url || "https://meet.google.com/silvia-nutri";
+    if (document.getElementById('cfgMeetUrl')) document.getElementById('cfgMeetUrl').value = cfg.meet_url || "https://silviaoliveira.vercel.app/portal-paciente.html?room=silvia-nutri";
     
     if (document.getElementById('cfgMsgLembrete')) document.getElementById('cfgMsgLembrete').value = cfg.msg_lembrete || "Olá {NOME}! Passando para lembrar da sua consulta nutricional agendada para {DATA} às {HORA}.";
     if (document.getElementById('cfgMsgPosConsulta')) document.getElementById('cfgMsgPosConsulta').value = cfg.msg_pos_consulta || "Olá {NOME}! Foi excelente nossa consulta de hoje. Seu plano alimentar já está disponível no seu Portal do Paciente!";

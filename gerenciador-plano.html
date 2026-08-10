@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -385,7 +385,7 @@ let refeicoes = [];
 let paginasExtras = [];
 
 const presetHipertrofia = {
-  nome: "ANYCELLI V.C. DOS SANTOS",
+  nome: "NOME DA PACIENTE",
   apresentacao: "Este plano alimentar foi desenvolvido pensando nas suas necessidades específicas. Alcançar as metas propostas é o caminho para conquistar os resultados desejados de forma duradoura.",
   objetivo: "Preservar e aumentar massa muscular com alto aporte proteico, distribuição equilibrada de carboidratos e gorduras saudáveis.",
   refeicoes: [
@@ -424,7 +424,18 @@ function carregarPreset(tipo) {
   const elNome = document.getElementById('inNome');
   const elApres = document.getElementById('inApresentacao');
   const elObj = document.getElementById('inObjetivo');
-  if (elNome) elNome.value = p.nome;
+
+  const sel = document.getElementById('selPacientePlano');
+  let pacienteNomeVal = elNome ? elNome.value : '';
+  if (sel && sel.value && typeof listaPacientesBanco !== 'undefined') {
+    const paciente = listaPacientesBanco.find(x => x.id === sel.value);
+    if (paciente && paciente.nome) pacienteNomeVal = paciente.nome;
+  }
+  if (!pacienteNomeVal || pacienteNomeVal === 'NOME DA PACIENTE' || pacienteNomeVal.includes('ANYCELLI')) {
+    pacienteNomeVal = p.nome;
+  }
+
+  if (elNome) elNome.value = pacienteNomeVal;
   if (elApres) elApres.value = p.apresentacao;
   if (elObj) elObj.value = p.objetivo;
   refeicoes = JSON.parse(JSON.stringify(p.refeicoes));
@@ -480,26 +491,88 @@ function carregarLocalStorage() {
   calcularTotaisPlano();
 }
 
+function garantirAlimentosListEmRefeicao(m) {
+  if (!m) return [];
+  if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
+    return m.alimentosList;
+  }
+
+  m.alimentosList = [];
+  if (m.itens && typeof m.itens === 'string') {
+    const linhas = m.itens.split('\n').map(l => l.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
+    linhas.forEach((linha, i) => {
+      let qtd = '1 porção';
+      let nome = linha;
+      const matchDe = linha.match(/^(.+?)\s+de\s+(.+)$/i);
+      if (matchDe) {
+        qtd = matchDe[1].trim();
+        nome = matchDe[2].trim();
+      }
+      m.alimentosList.push({
+        id: 'auto_' + i + '_' + Date.now(),
+        nome: nome,
+        qtd: qtd,
+        unidade: '',
+        kcal: 50,
+        prot: 2,
+        carb: 8,
+        gord: 1
+      });
+    });
+  }
+  return m.alimentosList;
+}
+
+function removerAlimentoDaRefeicao(idxRef, aIdx) {
+  if (refeicoes[idxRef] && refeicoes[idxRef].alimentosList) {
+    refeicoes[idxRef].alimentosList.splice(aIdx, 1);
+    recalculaRefeicaoPorAlimentos(idxRef);
+    renderInputs();
+    salvarELocal();
+    atualizar();
+    calcularTotaisPlano();
+  }
+}
+
 function renderInputs() {
   const mContainer = document.getElementById('mealsInputs');
   if (!mContainer) return;
   mContainer.innerHTML = '';
   
   refeicoes.forEach((m, idx) => {
+    garantirAlimentosListEmRefeicao(m);
     recalculaRefeicaoPorAlimentos(idx);
 
-    let foodBadgesHTML = '';
-    if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
-      foodBadgesHTML = `
-        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; margin-bottom:8px;">
-          ${m.alimentosList.map((al, aIdx) => `
-            <span style="background:rgba(140,164,129,0.18); border:1px solid var(--border-sage); padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; color:var(--sage-light); display:inline-flex; align-items:center; gap:6px;">
-              <input type="number" value="${al.qtd}" min="1" step="0.5" onchange="editarQtdAlimento(${idx}, ${aIdx}, this.value)" onclick="event.stopPropagation()" style="width:52px; background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); color:var(--text-title); border-radius:6px; padding:2px 4px; font-weight:800; font-size:0.75rem; text-align:center;" title="Quantidade em gramas (ex: 15g, 30g, 50g, 150g)"> g
-              <span>${al.nome}</span>
-              <span style="color:var(--text-muted); font-size:0.7rem;">(${al.kcal}k | C:${al.carb}g P:${al.prot}g)</span>
-              <span onclick="removerAlimentoDaRefeicao(${idx}, ${aIdx})" style="cursor:pointer; color:#f87171; font-weight:900; margin-left:4px;" title="Remover item">✕</span>
-            </span>
-          `).join('')}
+    const listAlim = m.alimentosList || [];
+    let mealTitle = m.titulo || m.nome;
+    if ((!mealTitle || mealTitle === 'NOVA REFEIÇÃO') && listAlim.length > 0) {
+      mealTitle = listAlim[0].nome;
+      m.titulo = mealTitle;
+      m.nome = mealTitle;
+    }
+    if (!mealTitle) mealTitle = 'NOVA REFEIÇÃO';
+
+    let foodCardsHTML = '';
+    if (listAlim.length > 0) {
+      foodCardsHTML = `
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); border-radius:10px; padding:10px; margin-top:8px; margin-bottom:10px;">
+          <div style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">
+            🍎 Alimentos Estruturados da Refeição (${listAlim.length}):
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            ${listAlim.map((al, aIdx) => `
+              <div style="background:var(--forest-card); border:1px solid var(--border-sage); padding:6px 10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <strong style="color:var(--text-title);">${al.nome}</strong>
+                  <span style="color:var(--text-muted); font-size:0.75rem;">(${al.qtd || '100g'})</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="color:var(--sage-light); font-weight:800; font-size:0.78rem;">${al.kcal} kcal</span>
+                  <button type="button" onclick="removerAlimentoDaRefeicao(${idx}, ${aIdx})" style="background:transparent; border:none; color:#f87171; font-weight:900; font-size:0.85rem; cursor:pointer;" title="Remover item">✕</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       `;
     }
@@ -507,7 +580,10 @@ function renderInputs() {
     mContainer.innerHTML += `
       <div class="card-box">
         <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remover</button>
-        <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
+        <div class="form-group">
+          <label>Nome / Prato da Refeição</label>
+          <input type="text" class="form-control" value="${mealTitle}" oninput="refeicoes[${idx}].titulo=this.value; refeicoes[${idx}].nome=this.value; salvarELocal(); atualizar();">
+        </div>
         
         <div class="form-group">
           <div style="background:rgba(0,0,0,0.25); border:1.5px solid var(--border-forest); border-radius:12px; padding:10px; margin-bottom:10px;">
@@ -541,8 +617,9 @@ function renderInputs() {
             </div>
           </div>
 
+          ${foodCardsHTML}
+
           <label style="margin-bottom:4px;">Cardápio da Refeição (Visualizado no PDF)</label>
-          ${foodBadgesHTML}
           <textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();">${m.itens}</textarea>
         </div>
         <div class="form-row">
@@ -916,8 +993,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (window.self !== window.top) {
     document.body.classList.add('in-iframe');
   }
-  await carregarPacientesNoGerenciador();
   carregarLocalStorage();
+  await carregarPacientesNoGerenciador();
   renderInputs();
   atualizar();
   calcularMetaVET();
@@ -1248,7 +1325,8 @@ function recalculaRefeicaoPorAlimentos(idxRef) {
       c += parseFloat(a.carb) || 0;
       p += parseFloat(a.prot) || 0;
       g += parseFloat(a.gord) || 0;
-      return `• ${a.qtd}${a.unidade || 'g'} de ${a.nome}`;
+      const qtdFmt = (typeof a.qtd === 'number' || (!isNaN(a.qtd) && String(a.qtd).trim() !== '')) ? `${a.qtd}${a.unidade || 'g'}` : a.qtd;
+      return `• ${qtdFmt} de ${a.nome}`;
     }).join('\n');
 
     ref.itens = itensTxt;

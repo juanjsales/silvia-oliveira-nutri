@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -361,10 +361,10 @@ body.in-iframe .container{padding-top:16px!important}
             <label>Tipo de Consulta</label>
             <select id="agTipo" class="form-control" onchange="toggleMeetField()">
               <option value="Avaliação Inicial">Avaliação Inicial</option>
-              <option value="Online (Google Meet)">Online (Google Meet)</option>
+              <option value="Online (Teleconsulta)">Online (Teleconsulta / Sala Virtual)</option>
               <option value="Presencial">Presencial no Consultório</option>
               <option value="Retorno de Avaliação">Retorno de Avaliação</option>
-              <option value="Retorno Online">Retorno Online</option>
+              <option value="Retorno Online">Retorno Online (Teleconsulta)</option>
             </select>
           </div>
           <div class="form-group">
@@ -374,10 +374,10 @@ body.in-iframe .container{padding-top:16px!important}
         </div>
 
         <div class="form-group" id="meetGroup" style="display:none">
-          <label>Link da Sala Google Meet 📹</label>
+          <label>Link da Sala de Teleconsulta 📹</label>
           <div style="display:flex;gap:8px">
-            <input type="url" id="agMeetUrl" class="form-control" placeholder="https://meet.google.com/abc-defg-hij">
-            <button type="button" class="btn btn-secondary" onclick="gerarLinkMeet()" style="font-size:0.78rem;padding:6px 12px" title="Criar ou abrir sala Google Meet">+ Nova Sala</button>
+            <input type="url" id="agMeetUrl" class="form-control" placeholder="https://silviaoliveira.vercel.app/portal-paciente.html?room=...">
+            <button type="button" class="btn btn-secondary" onclick="gerarLinkMeet()" style="font-size:0.78rem;padding:6px 12px" title="Gerar sala de teleconsulta virtual">+ Nova Sala</button>
           </div>
         </div>
 
@@ -400,10 +400,10 @@ body.in-iframe .container{padding-top:16px!important}
           <div class="success-detail" id="successMsg"></div>
 
           <div id="meetLinkSuccessBox" style="display:none; margin-top:10px; width:100%; background:rgba(99,179,237,.12); border:1px solid rgba(99,179,237,.3); border-radius:12px; padding:12px 16px; text-align:center;">
-            <div style="font-size:0.8rem; font-weight:800; color:#63b3ed; margin-bottom:6px;">📹 LINK DO GOOGLE MEET:</div>
+            <div style="font-size:0.8rem; font-weight:800; color:#63b3ed; margin-bottom:6px;">📹 LINK DA SALA DE TELECONSULTA:</div>
             <a id="successMeetLink" href="#" target="_blank" style="color:var(--text-title); font-weight:800; font-size:0.9rem; word-break:break-all; text-decoration:underline;"></a>
             <div style="margin-top:8px">
-              <button class="btn btn-secondary" style="font-size:0.75rem; padding:4px 10px;" onclick="copiarLinkMeet()">📋 Copiar Link</button>
+              <button class="btn btn-secondary" style="font-size:0.75rem; padding:4px 10px;" onclick="copiarLinkMeet()">📋 Copiar Link da Sala</button>
             </div>
           </div>
 
@@ -782,17 +782,26 @@ function maskPhone(v){ const d=String(v||'').replace(/\D/g,''); return d.length<
 
 function toggleMeetField() {
   const tipo = document.getElementById('agTipo').value;
-  const isOnline = tipo.toLowerCase().includes('online') || tipo.toLowerCase().includes('meet');
+  const isOnline = tipo.toLowerCase().includes('online') || tipo.toLowerCase().includes('teleconsulta') || tipo.toLowerCase().includes('virtual') || tipo.toLowerCase().includes('meet');
   const meetGroup = document.getElementById('meetGroup');
   if (meetGroup) meetGroup.style.display = isOnline ? 'flex' : 'none';
-  if (isOnline && meetGroup) meetGroup.style.flexDirection = 'column';
+  if (isOnline && meetGroup) {
+    meetGroup.style.flexDirection = 'column';
+    const input = document.getElementById('agMeetUrl');
+    if (input && !input.value) {
+      const pacId = pacienteSelecionado ? pacienteSelecionado.id : 'pac';
+      const roomCode = 'dra-silvia-lemos-atendimento-' + String(pacId).replace(/[^a-zA-Z0-9-_]/g, '');
+      input.value = `https://silviaoliveira.vercel.app/portal-paciente.html?room=${roomCode}`;
+    }
+  }
 }
 
 function gerarLinkMeet() {
   const input = document.getElementById('agMeetUrl');
-  if (input && !input.value) {
-    const roomCode = 'silvia-nutri-' + Math.random().toString(36).substring(2, 7);
-    input.value = `https://meet.google.com/${roomCode}`;
+  if (input) {
+    const pacId = pacienteSelecionado ? pacienteSelecionado.id : 'pac';
+    const roomCode = 'dra-silvia-lemos-atendimento-' + String(pacId).replace(/[^a-zA-Z0-9-_]/g, '');
+    input.value = `https://silviaoliveira.vercel.app/portal-paciente.html?room=${roomCode}`;
   }
   if (input && input.value) {
     window.open(input.value, '_blank');
@@ -803,9 +812,9 @@ function copiarLinkMeet() {
   const meetLink = document.getElementById('successMeetLink');
   if (meetLink && meetLink.href) {
     navigator.clipboard.writeText(meetLink.href).then(() => {
-      alert('📋 Link do Google Meet copiado!');
+      alert('📋 Link da Sala de Teleconsulta copiado!');
     }).catch(() => {
-      prompt('Copie o link do Meet:', meetLink.href);
+      prompt('Copie o link da sala de teleconsulta:', meetLink.href);
     });
   }
 }
@@ -930,7 +939,7 @@ async function salvarConsulta() {
       const phone = String(d?.paciente?.whatsapp || paciente.whatsapp || '').replace(/\D/g, '');
       if (waBtn && phone) {
         let waMsg = `Olá ${d?.paciente?.nome || paciente.nome}! 🌿 Sua consulta com a Dra. Silvia Oliveira Lemos foi agendada para ${dtFmt} às ${agendamento.hora}.`;
-        if (agendamento.meet_url) waMsg += ` Link do Google Meet: ${agendamento.meet_url}`;
+        if (agendamento.meet_url) waMsg += ` Link da Sala de Teleconsulta: ${agendamento.meet_url}`;
         waBtn.href = `https://wa.me/${phone}?text=${encodeURIComponent(waMsg)}`;
         waBtn.style.display = 'inline-flex';
       } else if (waBtn) {

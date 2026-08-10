@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -41,36 +41,44 @@ body.in-iframe .main-container{padding-top:16px!important}
 /* LAYOUT */
 .main-container{max-width:1300px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px}
 
-/* PACIENTE HEADER CARD */
-.pac-header{background:var(--forest-card);border:1px solid var(--border-forest);border-radius:var(--radius);padding:22px 28px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
-.pac-avatar{width:56px;height:56px;border-radius:50%;background:var(--sage-dim);border:2px solid var(--sage-light);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
-.pac-info{flex:1}
-.pac-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--text-title)}
-.pac-details{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
-.pac-detail{font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:4px}
-.pac-tags{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
-.ag-badge{background:var(--sage-dim);border:1px solid var(--sage-light);color:var(--sage-light);padding:6px 14px;border-radius:10px;font-size:.8rem;font-weight:700;text-align:center;white-space:nowrap}
-.ag-badge small{display:block;font-size:.7rem;color:var(--text-muted);font-weight:600;margin-top:2px}
+/* PACIENTE HEADER UNIFICADO */
+/* PACIENTE HEADER UNIFICADO */
+.pac-header-unified { background: linear-gradient(135deg, var(--forest-card) 0%, var(--bg-card) 100%); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 16px 20px; display: flex; flex-direction: column; gap: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.25); backdrop-filter: blur(10px); }
+.pac-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--sage-dim); border: 2px solid var(--sage-light); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.pac-name { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: var(--text-title); letter-spacing: -0.01em; }
+.pac-details { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 3px; }
+.pac-detail { font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
+.pac-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-/* PERFIL SELETOR */
-.profile-selector { display: flex; background: var(--bg-card); border: 1.5px solid var(--border-forest); border-radius: 14px; padding: 4px; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
-.profile-option { flex: 1; min-width: 120px; text-align: center; padding: 9px 12px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; font-weight: 800; color: var(--text-muted); transition: var(--tr); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.profile-option.active { background: var(--sage-light); color: var(--forest-dark); }
+/* FITA COMPACTA DE SELEÇÃO DE PERFIL CLÍNICO */
+.profile-selector-ribbon { display: flex; background: var(--bg-deep); border: 1px solid var(--border-forest); border-radius: 10px; padding: 3px; gap: 3px; flex-wrap: wrap; flex: 1; }
+.profile-option { flex: 1; min-width: 95px; text-align: center; padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 0.78rem; font-weight: 800; color: var(--text-muted); transition: var(--tr); display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+.profile-option:hover { color: var(--sage-light); background: rgba(140,164,129,0.12); }
+.profile-option.active { background: linear-gradient(135deg, var(--sage-light) 0%, #768d6c 100%); color: #0a1f14; font-weight: 900; box-shadow: 0 2px 8px rgba(140,164,129,0.3); }
 
 /* STATUS ATENDIMENTO */
-.status-bar{background:var(--bg-card);border:1px solid var(--border-forest);border-radius:12px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.status-bar-label{font-size:.82rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
-.status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:800;border:1.5px solid}
-.status-andamento{background:rgba(251,191,36,.12);color:#fbbf24;border-color:rgba(251,191,36,.4)}
-.status-realizado{background:rgba(52,211,153,.12);color:#34d399;border-color:rgba(52,211,153,.4)}
+.status-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid; }
+.status-andamento { background: rgba(251,191,36,.12); color: #fbbf24; border-color: rgba(251,191,36,.4); }
+.status-realizado { background: rgba(52,211,153,.12); color: #34d399; border-color: rgba(52,211,153,.4); }
 
-/* TABS */
-.tabs-nav{display:flex;gap:4px;background:var(--bg-card);border:1px solid var(--border-forest);border-radius:var(--radius);padding:6px;flex-wrap:wrap}
-.tab-btn{padding:10px 16px;border-radius:10px;border:none;background:transparent;color:var(--text-muted);font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;transition:var(--tr);white-space:nowrap;display:flex;align-items:center;gap:6px}
-.tab-btn:hover{background:var(--sage-dim);color:var(--sage-light)}
-.tab-btn.active{background:var(--sage-light);color:var(--forest-dark)}
-.tab-content{display:none;flex-direction:column;gap:20px}
-.tab-content.active{display:flex}
+/* TABS COMPACTAS EM LINHA ÚNICA */
+.tabs-nav { display: flex; gap: 5px; background: var(--bg-card); border: 1px solid var(--border-forest); border-radius: var(--radius); padding: 6px; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: thin; scrollbar-color: var(--border-forest) transparent; }
+.tabs-nav::-webkit-scrollbar { height: 4px; }
+.tabs-nav::-webkit-scrollbar-thumb { background: var(--border-forest); border-radius: 4px; }
+.tab-btn { padding: 8px 14px; border-radius: 9px; border: none; background: transparent; color: var(--text-muted); font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: var(--tr); white-space: nowrap; display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.tab-btn:hover { background: var(--sage-dim); color: var(--sage-light); }
+.tab-btn.active { background: var(--sage-light); color: var(--forest-dark); font-weight: 900; box-shadow: 0 2px 8px rgba(140,164,129,0.25); }
+
+/* ESTADO DE EXIBIÇÃO ESTRITO DAS ABAS */
+.tab-content { display: none !important; flex-direction: column; gap: 16px; }
+.tab-content.active { display: flex !important; }
+/* MODAIS OVERLAY GLASSMORPHISM */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .25s cubic-bezier(.16,1,.3,1); }
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-content { background: var(--bg-card); border: 1.5px solid var(--border-forest); border-radius: 16px; padding: 24px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); transform: scale(0.95); transition: transform .25s cubic-bezier(.16,1,.3,1); color: var(--text-primary); }
+.modal-overlay.active .modal-content { transform: scale(1); }
+.btn-close { background: transparent; border: 1px solid var(--border-forest); color: var(--text-muted); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: var(--tr); flex-shrink: 0; font-family: inherit; }
+.btn-close:hover { background: rgba(248,113,113,0.15); border-color: rgba(248,113,113,0.4); color: #f87171; }
 
 /* CARD */
 .card{background:var(--forest-card);border:1px solid var(--border-forest);border-radius:var(--radius);padding:24px}
@@ -151,6 +159,22 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
   padding: 14px !important;
 }
 
+.main-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.main-container.teleconsulta-split-active {
+  display: grid !important;
+  grid-template-columns: 480px 1fr !important;
+  align-items: start;
+}
+
 .teleconsulta-frame-box {
   display: none;
   background: var(--bg-card);
@@ -186,88 +210,98 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
 </head>
 <body>
 
-  <!-- PAINEL DE TELECONSULTA EMBUTIDA (SPLIT-SCREEN SIDE-BY-SIDE) -->
-  <div class="teleconsulta-frame-box" id="teleconsultaFrameBox">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:10px;">
-      <div style="font-size:0.95rem; font-weight:800; color:var(--sage-light); display:flex; align-items:center; gap:6px;">
-        📹 Teleconsulta ao Vivo
+  <main class="main-container">
+    <!-- PAINEL DE TELECONSULTA EMBUTIDA (SPLIT-SCREEN SIDE-BY-SIDE) -->
+    <div class="teleconsulta-frame-box" id="teleconsultaFrameBox">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:10px;">
+        <div style="font-size:0.95rem; font-weight:800; color:var(--sage-light); display:flex; align-items:center; gap:6px;">
+          📹 Teleconsulta ao Vivo
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="toggleTeleconsultaSplit()" style="padding:4px 10px; font-size:0.75rem;">✕ Fechar Vídeo</button>
       </div>
-      <button type="button" class="btn btn-secondary" onclick="toggleTeleconsultaSplit()" style="padding:4px 10px; font-size:0.75rem;">✕ Sair do Split</button>
-    </div>
 
-    <div style="display:flex; gap:6px; align-items:center;">
-      <input type="url" id="inTeleconsultaUrl" class="form-control" style="font-size:0.8rem; padding:6px 10px;" placeholder="https://meet.google.com/..." value="https://meet.jit.si/SilviaNutri-Atendimento">
-      <button type="button" class="btn" onclick="carregarVideoframeMeet()" style="padding:6px 12px; font-size:0.78rem;">Conectar</button>
-    </div>
+      <iframe id="videoConferenceFrame" 
+              src="about:blank" 
+              allow="camera *; microphone *; fullscreen *; display-capture *; autoplay *" 
+              style="width:100%; height:100%; border:none; border-radius:12px;">
+      </iframe>
 
-    <iframe id="iframeMeetCall" src="https://meet.jit.si/SilviaNutri-Atendimento" style="width:100%; height:100%; border:none; border-radius:12px; background:#000;" allow="camera; microphone; display-capture; autoplay; clipboard-write"></iframe>
-
-    <div style="font-size:0.72rem; color:var(--text-muted); text-align:center;">
-      💡 Sala de Vídeo HD em tempo real integrada com o Prontuário Eletrônico da Dra. Silvia O. Lemos.
-    </div>
-  </div>
-
-  <div style="display:flex; flex-direction:column; gap:20px; width:100%;">
-
-    <!-- CARD DO PACIENTE -->
-    <div class="pac-header" id="pacHeader">
-      <div class="pac-avatar" id="pacAvatar">🌿</div>
-      <div class="pac-info">
-        <div class="pac-name" id="pacName">Carregando paciente...</div>
-        <div class="pac-details" id="pacDetails"></div>
+      <div style="font-size:0.72rem; color:var(--text-muted); text-align:center;">
+        💡 Sala de Vídeo HD em tempo real integrada com o Prontuário Eletrônico da Dra. Silvia O. Lemos.
       </div>
-      <div class="pac-tags" id="pacTags">
-        <button type="button" class="btn btn-secondary" onclick="toggleTeleconsultaSplit()" style="font-size:.8rem; padding:8px 12px; color:#63b3ed; border-color:rgba(99,179,237,.3); background:rgba(99,179,237,.12);" title="Abrir painel de vídeo side-by-side no atendimento">
-          📹 Teleconsulta Lado a Lado
-        </button>
-        <a id="btnMeetHeader" href="#" target="_blank" class="btn btn-secondary" style="display:none; font-size:.8rem; padding:8px 12px; color:#63b3ed; border-color:rgba(99,179,237,.3); background:rgba(99,179,237,.12);">
-          📹 Abrir no Meet
-        </a>
-        <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
-        <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px" disabled>✅ Finalizar Atendimento</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:20px; width:100%; min-width:0;">
+
+    <!-- CABEÇALHO EXECUTIVO REORGANIZADO -->
+    <div class="pac-header-unified" id="pacHeader">
+      <!-- LINHA SUPERIOR: DADOS DO PACIENTE + STATUS + AÇÕES -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; width:100%;">
+        
+        <!-- PACIENTE INFO & STATUS -->
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; min-width:0;">
+          <div class="pac-avatar" id="pacAvatar">🌿</div>
+          <div style="min-width:0;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <div class="pac-name" id="pacName" style="margin:0;">Carregando paciente...</div>
+              <span class="status-pill status-andamento" id="statusPill" style="font-size:0.75rem; padding:3px 10px;">⏳ Em Andamento</span>
+            </div>
+            <div class="pac-details" id="pacDetails" style="margin-top:2px;"></div>
+            <div id="agInfo" style="font-size:.76rem; color:var(--text-muted); margin-top:2px;"></div>
+          </div>
+        </div>
+
+        <!-- CLUSTER DE BOTÕES DE AÇÃO -->
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary" onclick="toggleTeleconsultaSplit()" style="font-size:.78rem; padding:6px 11px; color:#63b3ed; border-color:rgba(99,179,237,.35); background:rgba(99,179,237,.12);" title="Abrir painel de vídeo side-by-side no atendimento">
+            📹 Teleconsulta Lado a Lado
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="abrirModalDocumentoOficial()" style="font-size:.78rem; padding:6px 11px; color:var(--accent-gold); border-color:rgba(212,175,55,0.4); background:rgba(212,175,55,0.1);" title="Gerar Atestado Nutricional ou Declaração de Comparecimento">
+            📄 Atestado / Declaração
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="openTab('historico', document.getElementById('tabBtnHistorico'))" style="font-size:.78rem; padding:6px 11px; color:var(--sage-light); border-color:var(--border-forest);" title="Visualizar todo o histórico prévio do paciente">
+            📜 Histórico
+          </button>
+          <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.78rem; padding:6px 11px">← Agenda</button>
+          <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.78rem; padding:6px 12px" disabled>✅ Finalizar</button>
+        </div>
+      </div>
+
+      <!-- LINHA INFERIOR: FITA COMPACTA DE SELEÇÃO DE PERFIL CLÍNICO -->
+      <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--border-forest); display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; flex-shrink:0;">Perfil Clínico:</span>
+        <div class="profile-selector-ribbon">
+          <div class="profile-option active" id="profAdultoM" onclick="setPerfilClinicoAtend('Adulto Masculino')">👨 Adulto M</div>
+          <div class="profile-option" id="profAdultoF" onclick="setPerfilClinicoAtend('Adulto Feminino')">👩 Adulto F</div>
+          <div class="profile-option" id="profPediatria" onclick="setPerfilClinicoAtend('Pediatria')">👶 Pediatria</div>
+          <div class="profile-option" id="profGestante" onclick="setPerfilClinicoAtend('Gestante')">🤰 Gestante</div>
+          <div class="profile-option" id="profAtleta" onclick="setPerfilClinicoAtend('Atleta / Esportista')">🏋️ Atleta</div>
+          <div class="profile-option" id="profGeriatria" onclick="setPerfilClinicoAtend('Geriatria / Idoso')">👴 Geriatria</div>
+          <div class="profile-option" id="profVegano" onclick="setPerfilClinicoAtend('Vegetariano / Vegano')">🌱 Vegano</div>
+          <div class="profile-option" id="profPatologia" onclick="setPerfilClinicoAtend('Patologia / Clínico')">🩺 Patologia</div>
+        </div>
       </div>
     </div>
 
   <!-- ALERTAS CLÍNICOS AUTOMÁTICOS DA ANAMNESE -->
-  <div id="alertaClinicoBox" style="display:none; background:rgba(248,113,113,0.12); border:1.5px solid rgba(248,113,113,0.35); border-radius:14px; padding:14px 18px;">
+  <div id="alertaClinicoBox" style="display:none; background:rgba(248,113,113,0.12); border:1.5px solid rgba(248,113,113,0.35); border-radius:14px; padding:12px 16px;">
     <div style="font-weight:900; color:#f87171; font-size:0.88rem; display:flex; align-items:center; gap:8px;">
       ⚠️ ALERTAS CLÍNICOS IMPORTANTES (ANAMNESE)
     </div>
-    <div id="alertaClinicoTexto" style="font-size:0.82rem; color:var(--text-primary); margin-top:6px; line-height:1.5;"></div>
-  </div>
-
-  <!-- SELETOR DE PERFIL CLÍNICO / CATEGORIA -->
-  <div class="profile-selector">
-    <div class="profile-option active" id="profAdultoM" onclick="setPerfilClinicoAtend('Adulto Masculino')" title="Métricas de corte masculinas. Aplica cálculo padrão de TMB (Mifflin/Harris) e faixa de RCQ masculino.">👨 Adulto Masculino</div>
-    <div class="profile-option" id="profAdultoF" onclick="setPerfilClinicoAtend('Adulto Feminino')" title="Métricas de corte femininas. Aplica gordura corporal de referência e limite de RCQ 0.85.">👩 Adulto Feminino</div>
-    <div class="profile-option" id="profPediatria" onclick="setPerfilClinicoAtend('Pediatria')" title="Ativa acompanhamento infantil de curvas de crescimento (OMS), Z-score e Perímetro Cefálico.">👶 Pediatria</div>
-    <div class="profile-option" id="profGestante" onclick="setPerfilClinicoAtend('Gestante')" title="Ativa controle de semanas gestacionais, DUM, ganho de peso recomendado e suplementação pré-natal.">🤰 Gestante</div>
-    <div class="profile-option" id="profAtleta" onclick="setPerfilClinicoAtend('Atleta / Esportista')" title="Ativa protocolo de dobras cutâneas (7 dobras), análise de Massa Magra e timing de nutrientes.">🏋️ Atleta / Esportista</div>
-    <div class="profile-option" id="profGeriatria" onclick="setPerfilClinicoAtend('Geriatria / Idoso')" title="Foco em triagem nutricional geriatria (MAN), monitoramento de sarcopenia e densidade óssea.">👴 Geriatria / Idoso</div>
-    <div class="profile-option" id="profVegano" onclick="setPerfilClinicoAtend('Vegetariano / Vegano')" title="Ativa alertas de proteínas complementares e monitoramento de B12, Zinco, Ferro e Ômega-3.">🌱 Vegano / Vegetariano</div>
-    <div class="profile-option" id="profPatologia" onclick="setPerfilClinicoAtend('Patologia / Clínico')" title="Ativa painel avançado de exames de sangue (Glicemia, Lipídico, Renal) e dietoterapia terapêutica.">🩺 Patologia / Clínico</div>
-  </div>
-
-  <!-- STATUS BAR -->
-  <div class="status-bar">
-    <div>
-      <div class="status-bar-label">Status do Atendimento</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span class="status-pill status-andamento" id="statusPill">⏳ Em Andamento</span>
-      <span id="agInfo" style="font-size:.82rem;color:var(--text-muted)"></span>
-    </div>
+    <div id="alertaClinicoTexto" style="font-size:0.82rem; color:var(--text-primary); margin-top:4px; line-height:1.5;"></div>
   </div>
 
   <!-- TABS -->
   <div class="tabs-nav" id="tabsNav">
     <button class="tab-btn active" onclick="openTab('anamnese',this)">📝 Anamnese</button>
+    <button class="tab-btn" onclick="openTab('recordatorio',this)">⏱️ Recordatório 24h</button>
     <button class="tab-btn" onclick="openTab('retorno',this)">🔄 Consulta de Retorno</button>
     <button class="tab-btn" onclick="openTab('bioimpedancia',this)">⚖️ Antropometria &amp; Bioimpedância</button>
     <button class="tab-btn" onclick="openTab('exames',this)">🔬 Exames Laboratoriais</button>
     <button class="tab-btn" onclick="openTab('plano',this)">🥗 Plano Alimentar</button>
     <button class="tab-btn" onclick="openTab('suplementos',this)">💊 Suplementos</button>
     <button class="tab-btn" onclick="openTab('notas',this)">📓 Anotações</button>
+    <button class="tab-btn" id="tabBtnHistorico" onclick="openTab('historico',this)">📜 Histórico &amp; Evolução</button>
     <button class="tab-btn" onclick="openTab('finalizar',this)">✅ Finalizar</button>
   </div>
 
@@ -372,6 +406,67 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
           <div class="form-group col-span-2">
             <label>Objetivo Detalhado do Paciente</label>
             <textarea id="anObjetivo" class="form-control" placeholder="Ex: Perder 8kg, melhorar rendimento no treino..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB RECORDATÓRIO 24H ── -->
+  <div class="tab-content" id="tab-recordatorio">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">⏱️ Recordatório Alimentar de 24 Horas (R24h)</div>
+          <div class="card-subtitle">Mapeamento da rotina alimentar habitual prévia do paciente e avaliação da Escala de Bristol</div>
+        </div>
+        <button class="btn btn-secondary" onclick="salvarRecordatorio24h()">💾 Salvar Recordatório 24h</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="section-divider">1. Registros das Refeições do Dia Habitual</div>
+        
+        <div id="recRefeicoesList" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- JS preenche as refeições do recordatório -->
+        </div>
+
+        <button type="button" class="btn btn-secondary" onclick="adicionarLinhaRecordatorio()" style="align-self:flex-start;">
+          ➕ Adicionar Refeição ao Recordatório
+        </button>
+
+        <div class="section-divider">2. Avaliação da Saúde Intestinal — Escala de Bristol</div>
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">
+          Selecione o formato/consistência habitual das fezes relatas pelo paciente:
+        </div>
+        
+        <div class="form-grid-3" id="bristolSelector" style="gap:10px;">
+          <div class="bristol-card" id="bristol-Tipo1" onclick="selectBristolType('Tipo 1')" style="border:1px solid var(--border-forest); padding:12px; border-radius:10px; cursor:pointer; background:var(--bg-card); transition:all 0.2s;">
+            <strong style="color:var(--sage-light); font-size:0.88rem;">🟤 Tipo 1</strong>
+            <div style="font-size:0.8rem; color:var(--text-primary); margin-top:4px;">Caroços duros e separados (Obstipação severa)</div>
+          </div>
+          <div class="bristol-card" id="bristol-Tipo2" onclick="selectBristolType('Tipo 2')" style="border:1px solid var(--border-forest); padding:12px; border-radius:10px; cursor:pointer; background:var(--bg-card); transition:all 0.2s;">
+            <strong style="color:var(--sage-light); font-size:0.88rem;">🟤 Tipo 2</strong>
+            <div style="font-size:0.8rem; color:var(--text-primary); margin-top:4px;">Em forma de salsicha, com gomos (Obstipação leve)</div>
+          </div>
+          <div class="bristol-card" id="bristol-Tipo3" onclick="selectBristolType('Tipo 3')" style="border:1px solid var(--border-forest); padding:12px; border-radius:10px; cursor:pointer; background:var(--bg-card); transition:all 0.2s;">
+            <strong style="color:var(--sage-light); font-size:0.88rem;">🟢 Tipo 3</strong>
+            <div style="font-size:0.8rem; color:var(--text-primary); margin-top:4px;">Salsicha com fendas na superfície (Normal)</div>
+          </div>
+          <div class="bristol-card active" id="bristol-Tipo4" onclick="selectBristolType('Tipo 4')" style="border:2px solid var(--accent-gold); padding:12px; border-radius:10px; cursor:pointer; background:rgba(212,175,55,0.08); transition:all 0.2s;">
+            <strong style="color:var(--accent-gold); font-size:0.88rem;">⭐ Tipo 4 (Ideal)</strong>
+            <div style="font-size:0.8rem; color:var(--text-primary); margin-top:4px;">Suave, macia e cilíndrica (Saudável)</div>
+          </div>
+          <div class="bristol-card" id="bristol-Tipo5" onclick="selectBristolType('Tipo 5')" style="border:1px solid var(--border-forest); padding:12px; border-radius:10px; cursor:pointer; background:var(--bg-card); transition:all 0.2s;">
+            <strong style="color:var(--sage-light); font-size:0.88rem;">🟡 Tipo 5</strong>
+            <div style="font-size:0.8rem; color:var(--text-primary); margin-top:4px;">Pedaços moles com bordas nítidas (Falta de fibra)</div>
+          </div>
+          <div class="bristol-card" id="bristol-Tipo6" onclick="selectBristolType('Tipo 6')" style="border:1px solid var(--border-forest); padding:12px; border-radius:10px; cursor:pointer; background:var(--bg-card); transition:all 0.2s;">
+            <strong style="color:var(--sage-light); font-size:0.88rem;">🟠 Tipo 6</strong>
+            <div style="font-size:0.8rem; color:var(--text-primary); margin-top:4px;">Pedaços esfarrapados e consistência pastosa</div>
+          </div>
+          <div class="bristol-card" id="bristol-Tipo7" onclick="selectBristolType('Tipo 7')" style="border:1px solid var(--border-forest); padding:12px; border-radius:10px; cursor:pointer; background:var(--bg-card); transition:all 0.2s;">
+            <strong style="color:var(--sage-light); font-size:0.88rem;">🔴 Tipo 7</strong>
+            <div style="font-size:0.8rem; color:var(--text-primary); margin-top:4px;">Totalmente líquido (Diarreia / Inflamação)</div>
           </div>
         </div>
       </div>
@@ -666,6 +761,7 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
         <div><div class="card-title">🥗 Plano Alimentar da Consulta</div><div class="card-subtitle">Adicione, edite e salve as refeições</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-secondary" onclick="abrirGerenciadorA4()" style="font-size:.8rem;padding:8px 12px">🎨 Gerenciador de Plano Nutricional (PDF)</button>
+          <button class="btn btn-secondary" onclick="abrirModalReceitasPresets()" style="font-size:.8rem;padding:8px 12px;color:var(--accent-gold);border-color:var(--accent-gold);background:rgba(212,175,55,0.12)">📖 Banco de Receitas</button>
           <button class="btn btn-secondary" onclick="addRefeicao()" style="font-size:.8rem;padding:8px 12px">+ Refeição</button>
           <button class="btn" onclick="salvarPlano()" style="font-size:.8rem;padding:8px 14px">💾 Salvar Plano</button>
         </div>
@@ -889,6 +985,26 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
     </div>
   </div>
 
+  <!-- ── TAB HISTÓRICO & EVOLUÇÃO ── -->
+  <div class="tab-content" id="tab-historico">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">📜 Histórico Clínico &amp; Evolução do Paciente</div>
+          <div class="card-subtitle">Consultas passadas, evolução antropométrica, histórico de exames e anamnese prévia</div>
+        </div>
+        <button class="btn btn-secondary" onclick="carregarHistoricoAtendimento(true)">🔄 Atualizar Histórico</button>
+      </div>
+
+      <div id="historicoContainer" style="display:flex; flex-direction:column; gap:20px;">
+        <div style="text-align:center; padding:40px; color:var(--text-muted);">
+          <div class="spinner-ring" style="width:28px;height:28px"></div>
+          <div style="margin-top:10px; font-size:0.85rem;">Carregando histórico completo do paciente...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- TOAST -->
@@ -978,9 +1094,177 @@ function toast(msg, isError=false) {
 function openTab(name, btn) {
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  btn.classList.add('active');
-  updateFinishStatus();
+  const target = document.getElementById('tab-'+name);
+  if (target) target.classList.add('active');
+  if (btn) {
+    btn.classList.add('active');
+    try { btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch(e){}
+  }
+  if (name === 'historico') carregarHistoricoAtendimento();
+  if (name === 'recordatorio') renderRecordatorioLinhas();
+  if (typeof updateFinishStatus === 'function') updateFinishStatus();
+}
+
+let historicoCompletoCache = null;
+
+async function carregarHistoricoAtendimento(forceRefresh = false) {
+  const container = document.getElementById('historicoContainer');
+  if (!container || !PAC_ID) return;
+
+  if (forceRefresh || !historicoCompletoCache) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px; color:var(--text-muted);">
+        <div class="spinner-ring" style="width:28px;height:28px"></div>
+        <div style="margin-top:10px; font-size:0.85rem;">Buscando histórico de consultas e evolução no banco...</div>
+      </div>
+    `;
+
+    const res = await apiCall('getHistoricoCompleto', { paciente_id: PAC_ID });
+    if (res && res.success && res.data) {
+      historicoCompletoCache = res.data;
+    }
+  }
+
+  if (!historicoCompletoCache) {
+    container.innerHTML = `<div style="padding:24px; color:var(--text-muted); text-align:center;">Não foi possível carregar o histórico do paciente.</div>`;
+    return;
+  }
+
+  const d = historicoCompletoCache;
+  const agendamentos = d.agendamentos || [];
+  const evolucoes = d.evolucao || [];
+  const retornos = d.retornos || [];
+  const anam = d.anamnese || null;
+
+  let html = '';
+
+  // 1. LINHA DO TEMPO DE CONSULTAS
+  html += `
+    <div style="background:var(--bg-deep); border:1.5px solid var(--border-forest); border-radius:14px; padding:20px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--text-title); margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+        🗓️ Consultas &amp; Agendamentos Anteriores (${agendamentos.length})
+      </div>
+  `;
+  if (agendamentos.length === 0) {
+    html += `<div style="font-size:0.85rem; color:var(--text-muted)">Nenhuma consulta anterior registrada para este paciente.</div>`;
+  } else {
+    html += `
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${agendamentos.map(ag => `
+          <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="font-weight:800; color:var(--text-title); font-size:0.9rem;">${ag.data || '—'} às ${ag.hora || '—'} · <span style="color:var(--sage-light);">${ag.tipo || 'Consulta'}</span></div>
+              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${ag.observacao ? 'Obs: ' + ag.observacao : 'Sem observações'}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:20px; background:var(--sage-dim); color:var(--sage-light); border:1px solid var(--border-forest);">${ag.status || 'Confirmado'}</span>
+              ${ag.valor ? `<span style="font-size:0.85rem; font-weight:800; color:var(--text-title)">R$ ${parseFloat(ag.valor).toFixed(2).replace('.',',')}</span>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  html += `</div>`;
+
+  // 2. EVOLUÇÃO ANTROPOMÉTRICA & BIOIMPEDÂNCIA (HISTÓRICO DE PESO E MEDIDAS)
+  html += `
+    <div style="background:var(--bg-deep); border:1.5px solid var(--border-forest); border-radius:14px; padding:20px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--text-title); margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+        📊 Evolução Antropométrica &amp; Bioimpedância (${evolucoes.length} avaliações)
+      </div>
+  `;
+  if (evolucoes.length === 0) {
+    html += `<div style="font-size:0.85rem; color:var(--text-muted)">Nenhuma medição de antropometria/bioimpedância cadastrada anteriormente.</div>`;
+  } else {
+    html += `
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.85rem; text-align:left;">
+          <thead>
+            <tr style="border-bottom:1.5px solid var(--border-forest); color:var(--sage-light);">
+              <th style="padding:10px;">Data</th>
+              <th style="padding:10px;">Peso (kg)</th>
+              <th style="padding:10px;">IMC</th>
+              <th style="padding:10px;">% Gordura</th>
+              <th style="padding:10px;">Massa Magra (kg)</th>
+              <th style="padding:10px;">Cintura (cm)</th>
+              <th style="padding:10px;">Abdômen (cm)</th>
+              <th style="padding:10px;">Quadril (cm)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${evolucoes.map(ev => `
+              <tr style="border-bottom:1px solid var(--border-forest);">
+                <td style="padding:10px; font-weight:800; color:var(--text-title);">${fmt(ev.data)}</td>
+                <td style="padding:10px; font-weight:800; color:var(--sage-light);">${ev.peso || ev.peso_kg || '—'} kg</td>
+                <td style="padding:10px;">${ev.imc || '—'}</td>
+                <td style="padding:10px;">${ev.percentual_gordura || ev.gordura_pct || '—'} %</td>
+                <td style="padding:10px;">${ev.massa_magra || ev.massa_magra_kg || '—'} kg</td>
+                <td style="padding:10px;">${ev.cintura || '—'} cm</td>
+                <td style="padding:10px;">${ev.abdomen || '—'} cm</td>
+                <td style="padding:10px;">${ev.quadril || '—'} cm</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+  html += `</div>`;
+
+  // 3. FICHA DA ANAMNESE INICIAL
+  if (anam) {
+    html += `
+      <div style="background:var(--bg-deep); border:1.5px solid var(--border-forest); border-radius:14px; padding:20px;">
+        <div style="font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--text-title); margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          📝 Anamnese Nutricional Registrada
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.85rem;">
+          <div style="background:var(--bg-card); padding:14px; border-radius:10px; border:1px solid var(--border-forest);">
+            <strong style="color:var(--sage-light); display:block; margin-bottom:4px;">🏥 Histórico Clínico &amp; Doenças:</strong>
+            ${anam.historico_saude || 'Sem observações'}
+          </div>
+          <div style="background:var(--bg-card); padding:14px; border-radius:10px; border:1px solid var(--border-forest);">
+            <strong style="color:var(--sage-light); display:block; margin-bottom:4px;">⚠️ Alergias &amp; Restrições:</strong>
+            ${anam.alergias || 'Nenhuma informada'}
+          </div>
+          <div style="background:var(--bg-card); padding:14px; border-radius:10px; border:1px solid var(--border-forest);">
+            <strong style="color:var(--sage-light); display:block; margin-bottom:4px;">😴 Qualidade do Sono:</strong>
+            ${anam.rotina_sono || 'N/I'}
+          </div>
+          <div style="background:var(--bg-card); padding:14px; border-radius:10px; border:1px solid var(--border-forest);">
+            <strong style="color:var(--sage-light); display:block; margin-bottom:4px;">🚽 Saúde Intestinal:</strong>
+            ${anam.intestino || 'N/I'}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 4. HISTÓRICO DE RESPOSTAS DE RETORNO
+  if (retornos && retornos.length > 0) {
+    html += `
+      <div style="background:var(--bg-deep); border:1.5px solid var(--border-forest); border-radius:14px; padding:20px;">
+        <div style="font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--text-title); margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          🔄 Histórico de Questionários de Retorno (${retornos.length})
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${retornos.map(r => `
+            <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:10px; padding:12px 16px;">
+              <div style="font-weight:800; color:var(--sage-light); font-size:0.88rem; margin-bottom:6px;">🗓️ Retorno em ${fmt(r.data)}</div>
+              <div style="font-size:0.82rem; color:var(--text-primary); line-height:1.5;">
+                • <strong>Adesão ao Plano:</strong> ${r.adesao_pct || 'N/I'}%<br>
+                • <strong>Resultados Positivos:</strong> ${r.resultados_positivos || 'N/I'}<br>
+                • <strong>Principais Dificuldades:</strong> ${r.maiores_dificuldades || 'Nenhuma'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
 }
 
 function scrollToFinish() {
@@ -1000,7 +1284,21 @@ async function carregarDados() {
 
   if (resAg?.success && resAg.data) {
     agendamento = resAg.data;
+  } else if (resHist?.success && resHist.data?.agendamentos?.length > 0) {
+    agendamento = resHist.data.agendamentos[resHist.data.agendamentos.length - 1];
+  }
+
+  if (agendamento) {
     if (document.getElementById('agInfo')) document.getElementById('agInfo').textContent = `${fmt(agendamento.data)} às ${fmtTime(agendamento.hora)} · ${agendamento.tipo||'Consulta'}`;
+    
+    // Atualiza o frame de vídeo com a sala oficial do banco se o split de teleconsulta já estiver aberto
+    const container = document.querySelector('.main-container');
+    const frame = document.getElementById('videoConferenceFrame');
+    if (container && frame && container.classList.contains('teleconsulta-split-active')) {
+      const roomName = resolveRoomName(agendamento, PAC_ID);
+      const roomUrl = `videocall.html?room=${encodeURIComponent(roomName)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`;
+      frame.src = roomUrl;
+    }
   }
 
   const resPac = await apiCall('getPacienteById',{id:PAC_ID});
@@ -1012,6 +1310,7 @@ async function carregarDados() {
     const hist = resHist.data;
     if (hist.anamnese) preencherAnamnese(hist.anamnese);
     if (hist.retornos?.length) preencherRetorno(hist.retornos[hist.retornos.length - 1]);
+    if (hist.recordatorio?.length) carregarRecordatorio24h(hist.recordatorio);
     if (hist.evolucao?.length) { evolucao = hist.evolucao; renderEvolucao(); }
     if (hist.plano) { refeicoes = hist.plano.refeicoes || []; renderRefeicoes(); }
     if (hist.suplementos?.length) { suplementos = hist.suplementos; renderSupList(); }
@@ -1137,14 +1436,35 @@ function renderPacHeader() {
     paciente.email ? `📧 ${paciente.email}` : ''
   ].filter(Boolean).map(d=>`<span class="pac-detail">${d}</span>`).join('');
 
-  const isOnline = agendamento?.tipo && (agendamento.tipo.toLowerCase().includes('online') || agendamento.tipo.toLowerCase().includes('meet'));
-  const meetUrl = agendamento?.meet_url || (isOnline ? 'https://meet.google.com' : '');
 
-  document.getElementById('pacTags').innerHTML = `
-    ${isOnline ? `<a id="btnMeetHeader" href="${meetUrl}" target="_blank" class="btn btn-secondary" style="font-size:.8rem; padding:8px 12px; color:#63b3ed; border-color:rgba(99,179,237,.3); background:rgba(99,179,237,.12);">📹 Entrar no Google Meet</a>` : ''}
-    <div class="ag-badge">${agendamento?.tipo||'Consulta'}</div>
-    <button class="btn btn-secondary" onclick="voltarAgenda()" style="font-size:.8rem;padding:8px 12px">← Agenda</button>
-    <button class="btn btn-success" id="btnFinalizarTop" onclick="scrollToFinish()" style="font-size:.8rem;padding:8px 14px">✅ Finalizar Atendimento</button>`;
+
+  const agBadge = document.querySelector('.ag-badge');
+  if (agBadge) {
+      agBadge.textContent = agendamento?.tipo||'Consulta';
+  }
+}
+
+function setPerfilClinicoAtend(perfil) {
+  perfilClinicoAtend = perfil;
+  document.querySelectorAll('.profile-option').forEach(el => {
+    el.classList.remove('active');
+  });
+  const idMap = {
+    'Adulto Masculino': 'profAdultoM',
+    'Adulto Feminino': 'profAdultoF',
+    'Pediatria': 'profPediatria',
+    'Gestante': 'profGestante',
+    'Atleta / Esportista': 'profAtleta',
+    'Geriatria / Idoso': 'profGeriatria',
+    'Vegetariano / Vegano': 'profVegano',
+    'Patologia / Clínico': 'profPatologia'
+  };
+  const targetId = idMap[perfil];
+  if (targetId && document.getElementById(targetId)) {
+    document.getElementById(targetId).classList.add('active');
+  }
+  if (typeof calcTMBAtend === 'function') calcTMBAtend();
+  toast('👤 Perfil clínico: ' + perfil);
 }
 
 function calcTMBAtend() {
@@ -1240,31 +1560,284 @@ function renderEvolucao() {
   }
 }
 
+// ── ESTRUTURA E SINCRONIZAÇÃO UNIFICADA DO PLANO NUTRICIONAL ────────
+refeicoes = [];
+
 const PRESETS = {
-  emagrecimento:{refeicoes:[{nome:'Café da Manhã',kcal:'320 kcal',itens:'2 ovos + 1 fatia pão integral + café'},{nome:'Almoço',kcal:'550 kcal',itens:'Salada verde + frango 120g + arroz integral'}]},
-  hipertrofia:{refeicoes:[{nome:'Café da Manhã',kcal:'600 kcal',itens:'4 ovos + 3 pães + 1 banana'},{nome:'Almoço',kcal:'750 kcal',itens:'200g carne + arroz + feijão'}]}
+  manutencao: {
+    refeicoes: [
+      {
+        nome: 'Café da Manhã',
+        horario: '08:00',
+        alimentosList: [
+          { nome: 'Ovo caipira mexido', qtd: '2 unidades (100g)', kcal: 143, prot: 12.6, carb: 0.7, gord: 9.5 },
+          { nome: 'Pão de forma integral', qtd: '2 fatias (50g)', kcal: 125, prot: 4.5, carb: 22.0, gord: 1.5 },
+          { nome: 'Mamão papaia', qtd: '1/2 unidade (140g)', kcal: 55, prot: 0.8, carb: 13.5, gord: 0.1 }
+        ],
+        itens: '• 2 ovos caipiras mexidos\n• 2 fatias de pão de forma integral\n• 1/2 mamão papaia',
+        observacao: 'Acompanhar com café preto ou chá verde sem açúcar.'
+      },
+      {
+        nome: 'Almoço',
+        horario: '12:30',
+        alimentosList: [
+          { nome: 'Peito de frango grelhado', qtd: '130g', kcal: 215, prot: 38.0, carb: 0.0, gord: 4.5 },
+          { nome: 'Arroz integral cozido', qtd: '100g (4 colheres de sopa)', kcal: 124, prot: 2.6, carb: 25.8, gord: 1.0 },
+          { nome: 'Feijão carioca cozido', qtd: '100g (1 concha média)', kcal: 76, prot: 4.8, carb: 13.6, gord: 0.5 },
+          { nome: 'Salada de folhas verdes & tomate', qtd: '1 prato fundo (150g)', kcal: 35, prot: 1.5, carb: 6.0, gord: 0.2 }
+        ],
+        itens: '• 130g de peito de frango grelhado\n• 4 colheres de sopa de arroz integral\n• 1 concha de feijão carioca\n• Salada verde à vontade com azeite extra virgem',
+        observacao: 'Temperar salada com 1 colher de sobremesa de azeite extra virgem e suco de limão.'
+      },
+      {
+        nome: 'Lanche da Tarde',
+        horario: '16:30',
+        alimentosList: [
+          { nome: 'Iogurte natural desnatado', qtd: '1 pote (170g)', kcal: 85, prot: 8.5, carb: 12.0, gord: 0.5 },
+          { nome: 'Aveia em flocos', qtd: '20g (2 colheres de sopa)', kcal: 78, prot: 2.8, carb: 13.4, gord: 1.4 },
+          { nome: 'Castanha-do-Pará', qtd: '2 unidades (8g)', kcal: 52, prot: 1.1, carb: 1.0, gord: 5.2 }
+        ],
+        itens: '• 1 pote de iogurte natural desnatado\n• 2 colheres de sopa de aveia em flocos\n• 2 castanhas-do-pará',
+        observacao: 'Pode polvilhar canela em pó a gosto.'
+      },
+      {
+        nome: 'Jantar',
+        horario: '20:00',
+        alimentosList: [
+          { nome: 'Filé de tilápia assado', qtd: '140g', kcal: 160, prot: 32.0, carb: 0.0, gord: 3.0 },
+          { nome: 'Purê de batata-doce', qtd: '120g', kcal: 112, prot: 1.8, carb: 26.0, gord: 0.2 },
+          { nome: 'Brócolis e cenoura no vapor', qtd: '150g', kcal: 50, prot: 3.5, carb: 9.0, gord: 0.4 }
+        ],
+        itens: '• 140g de filé de tilápia assado ou grelhado\n• 120g de purê de batata-doce\n• Brócolis e cenoura no vapor à vontade',
+        observacao: 'Jantar leve priorizando digestibilidade.'
+      }
+    ]
+  },
+  saude: {
+    refeicoes: [
+      {
+        nome: 'Café da Manhã Funcional',
+        horario: '08:00',
+        alimentosList: [
+          { nome: 'Overnight Oats com Chia', qtd: '1 pote (180g)', kcal: 280, prot: 10.0, carb: 45.0, gord: 6.0 }
+        ],
+        itens: '• Overnight Oats com chia, aveia e morangos frescos',
+        observacao: 'Foco na integridade da microbiota intestinal e saciedade.'
+      },
+      {
+        nome: 'Almoço Anti-inflamatório',
+        horario: '12:30',
+        alimentosList: [
+          { nome: 'Salada de Grão-de-Bico Funcional', qtd: '1 prato (250g)', kcal: 310, prot: 14.0, carb: 42.0, gord: 9.0 }
+        ],
+        itens: '• Salada funcional de grão-de-bico com pepino, tomate cereja e azeite',
+        observacao: 'Rico em fibras prebióticas e minerais.'
+      }
+    ]
+  }
 };
 
 function carregarPreset(tipo) {
-  if (PRESETS[tipo]) { refeicoes = PRESETS[tipo].refeicoes; renderRefeicoes(); toast('Preset carregado!'); }
+  if (PRESETS[tipo]) {
+    refeicoes = JSON.parse(JSON.stringify(PRESETS[tipo].refeicoes));
+    renderRefeicoes();
+    calcMacrosPlano();
+    toast(`⚖️ Preset de Plano "${tipo.toUpperCase()}" carregado com sucesso!`);
+  }
+}
+
+function calcMacrosPlano() {
+  let totKcal = 0, totProt = 0, totCarb = 0, totGord = 0;
+
+  refeicoes.forEach(r => {
+    if (r.alimentosList && Array.isArray(r.alimentosList)) {
+      r.alimentosList.forEach(a => {
+        totKcal += parseFloat(a.kcal) || 0;
+        totProt += parseFloat(a.prot) || 0;
+        totCarb += parseFloat(a.carb) || 0;
+        totGord += parseFloat(a.gord) || 0;
+      });
+    }
+  });
+
+  if (document.getElementById('mc_kcal')) document.getElementById('mc_kcal').textContent = Math.round(totKcal) + ' kcal';
+  if (document.getElementById('mc_prot')) document.getElementById('mc_prot').textContent = (Math.round(totProt * 10) / 10) + 'g';
+  if (document.getElementById('mc_carb')) document.getElementById('mc_carb').textContent = (Math.round(totCarb * 10) / 10) + 'g';
+  if (document.getElementById('mc_gord')) document.getElementById('mc_gord').textContent = (Math.round(totGord * 10) / 10) + 'g';
+  if (document.getElementById('mc_agua')) {
+    const aguaAnam = document.getElementById('anAgua')?.value || '';
+    document.getElementById('mc_agua').textContent = aguaAnam.includes('Adequada') ? '2.5 L' : '2.0 L';
+  }
+}
+
+function addAlimentoTACO(refIndex, alimentoObj) {
+  if (!refeicoes[refIndex]) return;
+  if (!refeicoes[refIndex].alimentosList) refeicoes[refIndex].alimentosList = [];
+  
+  refeicoes[refIndex].alimentosList.push(alimentoObj);
+  
+  const resumoLinhas = refeicoes[refIndex].alimentosList.map(a => `• ${a.qtd || '1 porção'} de ${a.nome}`).join('\n');
+  refeicoes[refIndex].itens = resumoLinhas;
+
+  renderRefeicoes();
+  calcMacrosPlano();
+  toast(`➕ Alimento "${alimentoObj.nome}" adicionado à refeição!`);
+}
+
+function removerAlimentoDoPlano(refIndex, alimIndex) {
+  if (refeicoes[refIndex] && refeicoes[refIndex].alimentosList) {
+    refeicoes[refIndex].alimentosList.splice(alimIndex, 1);
+    const resumoLinhas = refeicoes[refIndex].alimentosList.map(a => `• ${a.qtd || '1 porção'} de ${a.nome}`).join('\n');
+    refeicoes[refIndex].itens = resumoLinhas;
+    renderRefeicoes();
+    calcMacrosPlano();
+  }
 }
 
 function renderRefeicoes() {
   const wrap = document.getElementById('refeicoesWrap');
-  if (refeicoes.length===0) { wrap.innerHTML='<div class="empty-inline">Sem refeições</div>'; return; }
-  wrap.innerHTML = refeicoes.map((r,i)=>`
-    <div style="background:var(--bg-card);padding:14px;border-radius:12px;border:1px solid var(--border-forest)">
-      <input type="text" value="${r.nome||''}" class="form-control" style="font-weight:800" onchange="refeicoes[${i}].nome=this.value">
-      <textarea class="form-control" style="margin-top:8px" onchange="refeicoes[${i}].itens=this.value">${r.itens||''}</textarea>
-    </div>`).join('');
+  if (!wrap) return;
+
+  if (!refeicoes || refeicoes.length === 0) {
+    wrap.innerHTML = '<div class="empty-inline"><div class="empty-inline-icon">🥗</div>Nenhuma refeição cadastrada no plano. Clique em "+ Refeição" ou selecione um Preset.</div>';
+    calcMacrosPlano();
+    return;
+  }
+
+  wrap.innerHTML = refeicoes.map((r, i) => {
+    const listAlim = r.alimentosList || [];
+    let refKcal = 0, refProt = 0, refCarb = 0, refGord = 0;
+    listAlim.forEach(a => {
+      refKcal += parseFloat(a.kcal) || 0;
+      refProt += parseFloat(a.prot) || 0;
+      refCarb += parseFloat(a.carb) || 0;
+      refGord += parseFloat(a.gord) || 0;
+    });
+
+    return `
+      <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:240px;">
+            <input type="text" value="${r.nome || ''}" class="form-control" style="font-weight:900; font-family:'Playfair Display',serif; font-size:1.05rem;" placeholder="Nome da Refeição (ex: Café da Manhã)" onchange="refeicoes[${i}].nome=this.value">
+            <input type="time" value="${r.horario || '08:00'}" class="form-control" style="width:110px; font-weight:700;" onchange="refeicoes[${i}].horario=this.value">
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:0.78rem; background:rgba(140,164,129,0.15); color:var(--sage-light); padding:4px 10px; border-radius:8px; font-weight:800; border:1px solid var(--border-forest);">
+              🔥 ${Math.round(refKcal)} kcal · P: ${Math.round(refProt)}g · C: ${Math.round(refCarb)}g · G: ${Math.round(refGord)}g
+            </span>
+            <button type="button" class="btn btn-secondary" onclick="removerRefeicaoDoPlano(${i})" style="padding:4px 8px; color:#f87171; font-size:0.75rem;">✕ Remover</button>
+          </div>
+        </div>
+
+        <!-- LISTA DE ALIMENTOS ESTRUTURADOS NA REFEIÇÃO -->
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase; letter-spacing:0.05em;">
+            🍎 Alimentos Estruturados da Refeição (${listAlim.length}):
+          </div>
+          
+          ${listAlim.length === 0 ? '<div style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">Nenhum alimento estruturado. Adicione abaixo usando a busca TACO ou digite na descrição.</div>' : ''}
+
+          ${listAlim.map((al, aIdx) => `
+            <div style="background:var(--bg-deep); border:1px solid var(--border-forest); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:0.82rem;">
+              <div>
+                <strong style="color:var(--text-title);">${al.nome}</strong>
+                <span style="color:var(--text-muted); margin-left:6px;">(${al.qtd || '100g'})</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="color:var(--sage-light); font-weight:700;">${al.kcal} kcal</span>
+                <button type="button" class="btn-close" onclick="removerAlimentoDoPlano(${i}, ${aIdx})" style="width:22px; height:22px; font-size:0.7rem; color:#f87171;">✕</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- BUSCA RÁPIDA DE ALIMENTOS NA TABELA TACO -->
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" id="tacoSearchInput_${i}" class="form-control" placeholder="🔍 Adicionar alimento da Tabela TACO (ex: Banana, Frango, Arroz)..." style="font-size:0.82rem;" onkeypress="if(event.key==='Enter') buscarEAddAlimentoTACO(${i})">
+          <button type="button" class="btn btn-secondary" onclick="buscarEAddAlimentoTACO(${i})" style="font-size:0.78rem; padding:8px 12px; white-space:nowrap;">➕ Add TACO</button>
+        </div>
+
+        <!-- DESCRIÇÃO RESUMIDA & OBSERVAÇÕES DE PREPARO -->
+        <div class="form-group">
+          <label style="font-size:0.72rem;">Descrição Completa &amp; Guia do Paciente</label>
+          <textarea class="form-control" style="min-height:60px;" placeholder="Detalhamento das quantidades, modo de preparo e substituições..." onchange="refeicoes[${i}].itens=this.value">${r.itens || ''}</textarea>
+        </div>
+
+        ${r.observacao ? `
+          <div style="font-size:0.8rem; background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.3); color:var(--accent-gold); padding:8px 12px; border-radius:8px;">
+            📖 <strong>Instruções da Receita / Anexo:</strong> ${r.observacao}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  calcMacrosPlano();
 }
 
-function addRefeicao() { refeicoes.push({nome:'Nova Refeição',itens:''}); renderRefeicoes(); }
+function buscarEAddAlimentoTACO(refIndex) {
+  const input = document.getElementById(`tacoSearchInput_${refIndex}`);
+  if (!input || !input.value.trim()) return;
+  
+  const termo = input.value.trim().toLowerCase();
+  let encontrado = null;
+
+  if (typeof TACO_DB !== 'undefined' && Array.isArray(TACO_DB)) {
+    encontrado = TACO_DB.find(f => (f.nome || f.alimento || '').toLowerCase().includes(termo));
+  }
+
+  if (encontrado) {
+    const qtdStr = prompt(`Informe a quantidade para "${encontrado.nome || encontrado.alimento}":`, '100g');
+    if (qtdStr === null) return;
+    
+    const mult = (parseFloat(qtdStr) || 100) / 100;
+    const itemObj = {
+      nome: encontrado.nome || encontrado.alimento,
+      qtd: qtdStr,
+      kcal: Math.round((parseFloat(encontrado.kcal || encontrado.energia) || 80) * mult),
+      prot: Math.round((parseFloat(encontrado.proteina) || 2) * mult * 10) / 10,
+      carb: Math.round((parseFloat(encontrado.carboidrato) || 15) * mult * 10) / 10,
+      gord: Math.round((parseFloat(encontrado.lipideos || encontrado.gordura) || 1) * mult * 10) / 10
+    };
+    addAlimentoTACO(refIndex, itemObj);
+    input.value = '';
+  } else {
+    const qtdStr = prompt(`Quantidade para "${input.value.trim()}":`, '100g');
+    if (qtdStr === null) return;
+    const itemObj = {
+      nome: input.value.trim(),
+      qtd: qtdStr,
+      kcal: 100,
+      prot: 5,
+      carb: 15,
+      gord: 2
+    };
+    addAlimentoTACO(refIndex, itemObj);
+    input.value = '';
+  }
+}
+
+function removerRefeicaoDoPlano(i) {
+  refeicoes.splice(i, 1);
+  renderRefeicoes();
+}
+
+function addRefeicao() {
+  refeicoes.push({ nome: 'Nova Refeição', horario: '12:00', alimentosList: [], itens: '', observacao: '' });
+  renderRefeicoes();
+}
 
 async function salvarPlano() {
   if (!PAC_ID) return;
-  const res = await apiCall('savePlano',{plano:{paciente_id:PAC_ID,refeicoes}},'POST');
-  if (res?.success) { toast('✅ Plano salvo!'); saved.plano=true; updateFinishStatus(); }
+  const res = await apiCall('savePlano', { plano: { paciente_id: PAC_ID, refeicoes } }, 'POST');
+  if (res?.success) {
+    toast('✅ Plano Nutricional padronizado e salvo com sucesso!');
+    saved.plano = true;
+    updateFinishStatus();
+  } else {
+    toast('Erro ao salvar plano', true);
+  }
 }
 
 function addSuplemento() {
@@ -1332,108 +1905,345 @@ function imprimirPDFSuplementos() {
     alert('Adicione ao menos um suplemento para gerar o PDF da Prescrição.');
     return;
   }
-  const nomePaciente = paciente ? paciente.nome : 'PACIENTE';
+  const nomePaciente = (typeof paciente !== 'undefined' && paciente?.nome) ? paciente.nome : (document.getElementById('pacName')?.textContent || 'PACIENTE');
   const dataHoje = new Date().toLocaleDateString('pt-BR');
 
-  const win = window.open('', '_blank');
+  // Dividir suplementos em páginas A4 (máximo de 3 suplementos por folha A4)
+  const ITEMS_PER_PAGE = 3;
+  const pages = [];
+  for (let i = 0; i < suplementos.length; i += ITEMS_PER_PAGE) {
+    pages.push(suplementos.slice(i, i + ITEMS_PER_PAGE));
+  }
+
+  const win = window.open('', '_blank', 'width=850,height=950');
   win.document.write(`
     <!DOCTYPE html>
     <html lang="pt-BR">
     <head>
       <meta charset="UTF-8">
-      <title>Prescrição de Suplementos · ${nomePaciente}</title>
+      <title>Prescrição de Suplementação - Dra. Silvia Lemos</title>
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
       <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap');
-        
+        @page { size: A4 portrait; margin: 0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0b140e; color: #f2f5f1; padding: 30px; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #525659; color: #192b20; padding: 20px 0; }
         
-        .pdf-container { max-width: 800px; margin: 0 auto; background: #132218; border: 1.5px solid #203528; border-radius: 16px; padding: 36px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .pdf-page-sups {
+          background: #f8faf6;
+          color: #192b20;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          padding: 16mm 18mm 14mm 18mm;
+          border-radius: 12px;
+          border: 1px solid #dce4d8;
+          box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          width: 210mm;
+          min-height: 296mm;
+          margin: 0 auto 20px auto;
+        }
+
+        .cover-top-bar {
+          background: #203528;
+          color: #eef4e5;
+          padding: 10px 16px;
+          border-radius: 8px;
+          text-align: center;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 2.5px;
+          text-transform: uppercase;
+          margin-bottom: 20px;
+        }
+
+        .page-hdr {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          border-bottom: 2px solid #8ca481;
+          padding-bottom: 12px;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .page-hdr h2 {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.4rem;
+          color: #203528;
+          margin: 0;
+          font-weight: 700;
+        }
+        .page-hdr-sub {
+          font-size: 0.75rem;
+          font-weight: 800;
+          color: #8ca481;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          margin-top: 2px;
+        }
+        .doc-pill {
+          background: rgba(146,169,136,0.15);
+          color: #203528;
+          padding: 6px 14px;
+          border-radius: 100px;
+          border: 1px solid rgba(140,164,129,0.35);
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 1.2px;
+          text-transform: uppercase;
+        }
+
+        .doc-title-box {
+          text-align: center;
+          margin: 18px 0 22px;
+        }
+        .doc-title-box h1 {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.5rem;
+          color: #203528;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          margin: 0;
+          font-weight: 700;
+        }
+        .doc-title-line {
+          width: 60px;
+          height: 3px;
+          background: #8ca481;
+          margin: 8px auto 0;
+          border-radius: 2px;
+        }
+
+        .patient-meta-card {
+          background: #ffffff;
+          border: 1px solid #dce4d8;
+          border-left: 5px solid #203528;
+          border-radius: 12px;
+          padding: 14px 18px;
+          margin-bottom: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.88rem;
+        }
+
+        .sup-cards-list {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          margin-bottom: 20px;
+        }
+
+        .sup-card {
+          background: #ffffff;
+          border: 1px solid #dce4d8;
+          border-left: 5px solid #203528;
+          border-radius: 12px;
+          padding: 16px 18px;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+        }
         
-        .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #203528; padding-bottom: 20px; margin-bottom: 24px; }
-        .pdf-brand { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #8ca481; font-weight: 700; }
-        .pdf-sub { font-size: 0.78rem; color: #a3b899; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
-        
-        .pdf-meta { background: rgba(0,0,0,0.3); border: 1px solid #203528; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; display: flex; justify-content: space-between; font-size: 0.88rem; }
-        
-        .section-title { font-size: 1.1rem; font-weight: 800; color: #8ca481; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #203528; padding-bottom: 8px; }
-        
-        .sup-grid { display: flex; flex-direction: column; gap: 14px; }
-        .sup-item-card { background: rgba(0,0,0,0.35); border: 1.5px solid #203528; border-radius: 14px; padding: 18px; position: relative; }
-        .sup-item-title { font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .sup-badge { background: rgba(140,164,129,0.18); border: 1px solid #8ca481; color: #8ca481; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; }
-        
-        .sup-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; font-size: 0.85rem; }
-        .sup-detail-label { font-size: 0.72rem; color: #a3b899; font-weight: 800; text-transform: uppercase; }
-        .sup-detail-val { color: #f2f5f1; font-weight: 700; margin-top: 2px; }
-        
-        .pdf-footer { margin-top: 40px; border-top: 1px solid #203528; padding-top: 20px; text-align: center; font-size: 0.78rem; color: #a3b899; }
-        
+        .sup-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid #edf2ec;
+          padding-bottom: 10px;
+          margin-bottom: 12px;
+        }
+
+        .sup-name {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.12rem;
+          font-weight: 700;
+          color: #203528;
+        }
+
+        .sup-forma-badge {
+          background: rgba(140,164,129,0.15);
+          border: 1px solid #8ca481;
+          color: #203528;
+          padding: 4px 10px;
+          border-radius: 12px;
+          font-size: 0.74rem;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+        }
+
+        .sup-details-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          font-size: 0.85rem;
+        }
+
+        .sup-detail-box {
+          background: #f8faf6;
+          border: 1px solid #e2e9de;
+          padding: 10px 12px;
+          border-radius: 8px;
+        }
+
+        .sup-label {
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: #8ca481;
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+          margin-bottom: 2px;
+        }
+
+        .sup-value {
+          font-weight: 700;
+          color: #192b20;
+        }
+
+        .sup-obs {
+          margin-top: 10px;
+          padding-top: 8px;
+          border-top: 1px dashed #dce4d8;
+          font-size: 0.82rem;
+          color: #4a5568;
+          line-height: 1.5;
+        }
+
+        .signature-wrap {
+          margin-top: 32px;
+          text-align: center;
+        }
+        .signature-line {
+          border-top: 1.5px solid #203528;
+          display: inline-block;
+          width: 280px;
+          padding-top: 8px;
+        }
+        .signature-name {
+          color: #203528;
+          font-size: 0.95rem;
+          font-weight: 700;
+          display: block;
+        }
+        .signature-crn {
+          font-size: 0.78rem;
+          color: #8ca481;
+          font-weight: 800;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+        }
+
+        .page-ftr {
+          text-align: center;
+          font-size: 0.72rem;
+          color: #a0b399;
+          border-top: 1px solid #dce4d8;
+          padding-top: 12px;
+          margin-top: 20px;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+        }
+
         @media print {
-          body { background: #fff !important; color: #000 !important; padding: 0; }
-          .pdf-container { border: 1px solid #ccc; background: #fff !important; color: #000 !important; box-shadow: none; padding: 20px; }
-          .pdf-brand, .section-title, .sup-item-title { color: #1e3a29 !important; }
-          .sup-item-card { background: #f9fbf9 !important; border: 1px solid #ccc !important; }
-          .sup-detail-val { color: #111 !important; }
+          html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; background: #fff !important; }
+          .pdf-page-sups {
+            width: 210mm !important;
+            height: 296mm !important;
+            max-height: 296mm !important;
+            padding: 16mm 18mm 14mm 18mm !important;
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            page-break-after: always !important;
+            page-break-inside: avoid !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            background: #fff !important;
+          }
+          .pdf-page-sups:last-child { page-break-after: auto !important; }
           .no-print { display: none !important; }
         }
       </style>
     </head>
     <body>
-      <div style="text-align:center; margin-bottom:20px;" class="no-print">
-        <button onclick="window.print()" style="background:#8ca481; color:#0b140e; font-weight:900; padding:12px 28px; border:none; border-radius:10px; font-size:1rem; cursor:pointer;">🖨️ Imprimir / Salvar em PDF</button>
-      </div>
-
-      <div class="pdf-container">
-        <div class="pdf-header">
+      ${pages.map((pSups, pageIdx) => `
+        <div class="pdf-page-sups">
           <div>
-            <div class="pdf-brand">DRA. SILVIA OLIVEIRA LEMOS</div>
-            <div class="pdf-sub">Nutricionista · CRN-4 25104731</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:0.95rem; font-weight:800; color:#8ca481;">💊 Prescrição de Suplementação</div>
-            <div style="font-size:0.75rem; color:#a3b899;">Receituário Nutricional Personalizado</div>
-          </div>
-        </div>
-
-        <div class="pdf-meta">
-          <div><strong>Paciente:</strong> ${nomePaciente}</div>
-          <div><strong>Data da Prescrição:</strong> ${dataHoje}</div>
-        </div>
-
-        <div class="section-title">💊 Suplementos &amp; Manipulados Prescritos</div>
-
-        <div class="sup-grid">
-          ${suplementos.map(s => `
-            <div class="sup-item-card">
-              <div class="sup-item-title">
-                <span>${s.nome || s.suplemento_nome}</span>
-                ${(s.forma || s.forma_farmaceutica) ? `<span class="sup-badge">${s.forma || s.forma_farmaceutica}</span>` : ''}
-              </div>
-              <div class="sup-details">
-                <div>
-                  <div class="sup-detail-label">💊 Dosagem / Concentração</div>
-                  <div class="sup-detail-val">${s.dose || s.dosagem || 'Conforme orientação'}</div>
-                </div>
-                <div>
-                  <div class="sup-detail-label">⏰ Posologia &amp; Horário</div>
-                  <div class="sup-detail-val">${s.poso || s.posologia || 'Conforme prescrição'}</div>
-                </div>
-              </div>
-              ${(s.obs || s.observacao) ? `
-                <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #203528; font-size:0.82rem; color:#a3b899;">
-                  <strong>Observações / Modo de Preparo:</strong> ${s.obs || s.observacao}
-                </div>
-              ` : ''}
+            <div class="cover-top-bar">
+              DRA. SILVIA OLIVEIRA LEMOS · CONSULTÓRIO DE NUTRIÇÃO CLÍNICA &amp; ESPORTIVA
             </div>
-          `).join('')}
-        </div>
 
-        <div class="pdf-footer">
-          Dra. Silvia Oliveira Lemos · CRN-4 25104731 · Nutrição Clínica &amp; Esportiva<br>
-          Atendimento Presencial e Online · Rio de Janeiro / RJ
+            <div class="page-hdr">
+              <div>
+                <h2>DRA. SILVIA OLIVEIRA LEMOS</h2>
+                <div class="page-hdr-sub">Nutricionista · CRN-4 25104731</div>
+              </div>
+              <div class="doc-pill">
+                💊 PRESCRIÇÃO DE SUPLEMENTAÇÃO
+              </div>
+            </div>
+
+            <div class="doc-title-box">
+              <h1>PRESCRIÇÃO DE SUPLEMENTOS &amp; MANIPULADOS</h1>
+              <div class="doc-title-line"></div>
+            </div>
+
+            <div class="patient-meta-card">
+              <div><strong>Paciente:</strong> <span style="color:#203528; font-weight:800;">${nomePaciente}</span></div>
+              <div><strong>Data / Pág:</strong> <span>${dataHoje} (${pageIdx + 1}/${pages.length})</span></div>
+            </div>
+
+            <div class="sup-cards-list">
+              ${pSups.map(s => `
+                <div class="sup-card">
+                  <div class="sup-header">
+                    <div class="sup-name">${s.nome || s.suplemento_nome}</div>
+                    ${(s.forma || s.forma_farmaceutica) ? `<span class="sup-forma-badge">${s.forma || s.forma_farmaceutica}</span>` : ''}
+                  </div>
+                  <div class="sup-details-grid">
+                    <div class="sup-detail-box">
+                      <div class="sup-label">💊 Dosagem / Concentração</div>
+                      <div class="sup-value">${s.dose || s.dosagem || 'Conforme orientação'}</div>
+                    </div>
+                    <div class="sup-detail-box">
+                      <div class="sup-label">⏰ Posologia &amp; Horário</div>
+                      <div class="sup-value">${s.poso || s.posologia || 'Conforme prescrição'}</div>
+                    </div>
+                  </div>
+                  ${(s.obs || s.observacao) ? `
+                    <div class="sup-obs">
+                      <strong style="color:#203528; text-transform:uppercase; font-size:0.72rem; letter-spacing:0.8px; display:block; margin-bottom:2px;">📌 Observações / Modo de Preparo:</strong>
+                      ${s.obs || s.observacao}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div>
+            <div class="signature-wrap">
+              <div style="font-size:0.85rem; color:#57695b; font-weight:600; margin-bottom:24px;">Rio de Janeiro, ${dataHoje}</div>
+              <div class="signature-line">
+                <strong class="signature-name">Dra. Silvia de Oliveira Lemos</strong>
+                <span class="signature-crn">Nutricionista · CRN-4 25104731</span>
+              </div>
+            </div>
+
+            <div class="page-ftr">
+              Dra. Silvia Oliveira Lemos · CRN-4 25104731 · Consultório de Nutrição Especializada · Pág ${pageIdx + 1} de ${pages.length}
+            </div>
+          </div>
         </div>
-      </div>
+      `).join('')}
+
+      <script>
+        window.onload = function() {
+          window.print();
+          setTimeout(function(){ window.close(); }, 500);
+        };
+      <' + '/script>
     </body>
     </html>
   `);
@@ -1667,35 +2477,589 @@ function preencherRetorno(ret) {
   if (document.getElementById('retObservacoesAdicionais')) document.getElementById('retObservacoesAdicionais').value = ret.observacoes_adicionais || '';
 }
 
+function resolveRoomName(ag, fallbackPacId) {
+  if (ag && ag.meet_url) {
+    try {
+      const roomMatch = ag.meet_url.match(/[?&]room=([^&]+)/);
+      if (roomMatch && roomMatch[1]) return decodeURIComponent(roomMatch[1]);
+    } catch(e) {}
+  }
+  const idKey = (ag && ag.id) ? ag.id : (AG_ID ? AG_ID : (fallbackPacId ? 'pac-' + fallbackPacId : 'geral'));
+  return `dra-silvia-lemos-atendimento-${String(idKey).replace(/[^a-zA-Z0-9-_]/g, '')}`;
+}
+
 function toggleTeleconsultaSplit() {
   const container = document.querySelector('.main-container');
-  const box = document.getElementById('teleconsultaFrameBox');
-  if (!container) return;
+  const frame = document.getElementById('videoConferenceFrame');
+  if (!container || !frame) return;
 
   const isActive = container.classList.toggle('teleconsulta-split-active');
-  if (box) box.style.display = isActive ? 'flex' : 'none';
 
   if (isActive) {
-    const meetUrl = agendamento?.meet_url || ('https://meet.jit.si/SilviaNutri-' + (PAC_ID || 'Atendimento'));
-    const inUrl = document.getElementById('inTeleconsultaUrl');
-    const iframe = document.getElementById('iframeMeetCall');
-    if (inUrl) inUrl.value = meetUrl;
-    if (iframe) iframe.src = meetUrl;
+    const ag = (typeof agendamento !== 'undefined' && agendamento) ? agendamento : null;
+    const pacId = (typeof PAC_ID !== 'undefined' && PAC_ID) ? PAC_ID : null;
+    const roomName = resolveRoomName(ag, pacId);
+
+    const roomUrl = `videocall.html?room=${encodeURIComponent(roomName)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`;
+    frame.src = roomUrl;
+  } else {
+    frame.src = 'about:blank';
   }
 }
 
-function carregarVideoframeMeet() {
-  const inUrl = document.getElementById('inTeleconsultaUrl')?.value.trim();
-  const iframe = document.getElementById('iframeMeetCall');
-  if (inUrl && iframe) {
-    iframe.src = inUrl;
+// ── RECORDATÓRIO 24H & BRISTOL ──────────────────────────────────────
+let selectedBristol = 'Tipo 4';
+let recordatorioLinhas = [
+  { refeicao: 'Café da Manhã', horario: '08:00', alimentos: '' },
+  { refeicao: 'Almoço', horario: '12:30', alimentos: '' },
+  { refeicao: 'Lanche da Tarde', horario: '16:00', alimentos: '' },
+  { refeicao: 'Jantar', horario: '20:00', alimentos: '' }
+];
+
+function renderRecordatorioLinhas() {
+  const container = document.getElementById('recRefeicoesList');
+  if (!container) return;
+  container.innerHTML = recordatorioLinhas.map((item, idx) => `
+    <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:0.85rem; font-weight:800; color:var(--sage-light);">Refeição #${idx + 1}</div>
+        ${recordatorioLinhas.length > 1 ? `<button type="button" class="btn btn-secondary" onclick="removerLinhaRecordatorio(${idx})" style="font-size:0.75rem; padding:4px 8px; color:#f87171;">✕ Remover</button>` : ''}
+      </div>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label>Horário Habitual</label>
+          <input type="time" class="form-control" value="${item.horario || ''}" onchange="recordatorioLinhas[${idx}].horario=this.value">
+        </div>
+        <div class="form-group col-span-2">
+          <label>Nome / Momento da Refeição</label>
+          <input type="text" class="form-control" value="${item.refeicao || ''}" placeholder="Ex: Café da Manhã, Almoço..." onchange="recordatorioLinhas[${idx}].refeicao=this.value">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Alimentos, Quantidades e Hábito Habitual Relatado</label>
+        <textarea class="form-control" placeholder="Ex: 2 fatias de pão integral com 1 ovo mexido e 1 xícara de café com leite..." onchange="recordatorioLinhas[${idx}].alimentos=this.value">${item.alimentos || ''}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function adicionarLinhaRecordatorio() {
+  recordatorioLinhas.push({ refeicao: '', horario: '', alimentos: '' });
+  renderRecordatorioLinhas();
+}
+
+function removerLinhaRecordatorio(idx) {
+  recordatorioLinhas.splice(idx, 1);
+  renderRecordatorioLinhas();
+}
+
+function selectBristolType(tipo) {
+  selectedBristol = tipo;
+  document.querySelectorAll('.bristol-card').forEach(el => {
+    el.classList.remove('active');
+    el.style.border = '1px solid var(--border-forest)';
+    el.style.background = 'var(--bg-card)';
+  });
+  const target = document.getElementById(`bristol-${tipo.replace(/\s+/g, '')}`);
+  if (target) {
+    target.classList.add('active');
+    target.style.border = '2px solid var(--accent-gold)';
+    target.style.background = 'rgba(212,175,55,0.08)';
   }
+}
+
+async function salvarRecordatorio24h() {
+  if (!PAC_ID) { toast('Selecione um paciente para salvar', true); return; }
+  const recData = {
+    paciente_id: PAC_ID,
+    data: new Date().toISOString().split('T')[0],
+    refeicao: JSON.stringify(recordatorioLinhas),
+    escala_bristol_tipo: selectedBristol
+  };
+
+  const res = await apiCall('saveRecordatorio24h', { recordatorio: recData }, 'POST');
+  if (res && res.success) {
+    toast('✅ Recordatório 24h e Saúde Intestinal salvos com sucesso!');
+  } else {
+    toast('Erro ao salvar Recordatório 24h', true);
+  }
+}
+
+function carregarRecordatorio24h(recList) {
+  if (!recList || recList.length === 0) {
+    renderRecordatorioLinhas();
+    return;
+  }
+  const ultimo = recList[recList.length - 1];
+  if (ultimo.refeicao) {
+    try {
+      const parsed = JSON.parse(ultimo.refeicao);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        recordatorioLinhas = parsed;
+      }
+    } catch(e) {}
+  }
+  if (ultimo.escala_bristol_tipo) {
+    selectBristolType(ultimo.escala_bristol_tipo);
+  }
+  renderRecordatorioLinhas();
+}
+
+// ── BANCO DE RECEITAS PRESETS ──────────────────────────────────────
+let categoriaReceitaAtiva = 'Todas';
+let receitasPresets = [
+  { 
+    id:'rec-1', 
+    titulo:'Panqueca Proteica de Banana & Aveia', 
+    categoria:'Café da Manhã', 
+    tempo_preparo:'10 min', 
+    ingredientes:'1 banana madura, 1 ovo inteiro, 30g de aveia em flocos finos, 1 pitada de canela em pó', 
+    modo_preparo:'Amasse a banana com o garfo, misture bem com o ovo e a aveia. Despeje em frigideira antiaderente aquecida e grelhe dos dois lados até dourar.', 
+    macros:'240 kcal | 12g Prot | 36g Carb | 5g Gord',
+    alimentosList: [
+      { nome: 'Banana prata madura', qtd: '1 unidade (80g)', kcal: 71, prot: 1.0, carb: 18.3, gord: 0.1 },
+      { nome: 'Ovo de galinha caipira', qtd: '1 unidade (50g)', kcal: 72, prot: 6.3, carb: 0.3, gord: 4.8 },
+      { nome: 'Aveia em flocos finos', qtd: '30g (3 col. sopa)', kcal: 118, prot: 4.2, carb: 20.0, gord: 2.2 },
+      { nome: 'Canela em pó', qtd: '1 pitada (2g)', kcal: 5, prot: 0.1, carb: 1.6, gord: 0.0 }
+    ]
+  },
+  { 
+    id:'rec-2', 
+    titulo:'Overnight Oats com Chia & Morangos', 
+    categoria:'Café da Manhã', 
+    tempo_preparo:'5 min (geladeira overnight)', 
+    ingredientes:'40g de aveia em flocos, 120ml de leite vegetal de amêndoas ou desnatado, 10g de sementes de chia, 5 morangos frescos fatiados, 1 fio de mel', 
+    modo_preparo:'Em um copo ou pote de vidro, misture a aveia, chia e leite. Adicione os morangos no topo e deixe na geladeira por pelo menos 6 horas antes de consumir.', 
+    macros:'280 kcal | 10g Prot | 45g Carb | 6g Gord',
+    alimentosList: [
+      { nome: 'Aveia em flocos', qtd: '40g (4 col. sopa)', kcal: 157, prot: 5.6, carb: 26.6, gord: 2.9 },
+      { nome: 'Leite vegetal de amêndoas', qtd: '120ml', kcal: 30, prot: 1.0, carb: 1.5, gord: 2.2 },
+      { nome: 'Semente de chia', qtd: '10g (1 col. sobremesa)', kcal: 48, prot: 1.6, carb: 4.2, gord: 3.1 },
+      { nome: 'Morango fresco fatiado', qtd: '5 unidades (75g)', kcal: 24, prot: 0.5, carb: 5.8, gord: 0.2 },
+      { nome: 'Mel de abelha', qtd: '1 fio (10g)', kcal: 30, prot: 0.0, carb: 8.2, gord: 0.0 }
+    ]
+  },
+  { 
+    id:'rec-3', 
+    titulo:'Omelete de Ervas Finas com Queijo Cottage', 
+    categoria:'Almoço / Jantar', 
+    tempo_preparo:'8 min', 
+    ingredientes:'2 ovos caipiras, 2 colheres de sopa de queijo cottage zero lactose, salsinha picada, orégano, 1/2 tomate picado em cubos', 
+    modo_preparo:'Bata os ovos com os temperos frescos. Despeje na frigideira untada com um fio de azeite. Recheie com o queijo cottage e tomates e dobre ao meio.', 
+    macros:'210 kcal | 22g Prot | 4g Carb | 12g Gord',
+    alimentosList: [
+      { nome: 'Ovo de galinha caipira', qtd: '2 unidades (100g)', kcal: 143, prot: 12.6, carb: 0.7, gord: 9.5 },
+      { nome: 'Queijo cottage zero lactose', qtd: '30g (2 col. sopa)', kcal: 30, prot: 4.5, carb: 1.0, gord: 0.8 },
+      { nome: 'Tomate fresco picado', qtd: '1/2 unidade (50g)', kcal: 10, prot: 0.5, carb: 2.2, gord: 0.1 },
+      { nome: 'Azeite de oliva extra virgem', qtd: '1 fio (5ml)', kcal: 44, prot: 0.0, carb: 0.0, gord: 5.0 }
+    ]
+  },
+  { 
+    id:'rec-4', 
+    titulo:'Smoothie Verde Anti-inflamatório & Detox', 
+    categoria:'Sucos & Shakes', 
+    tempo_preparo:'5 min', 
+    ingredientes:'200ml de água de coco natural, 1 folha de couve manteiga sem talo, 1/2 maçã verde com casca, 1 colher de sobremesa de semente de linhaça dourada, raspas de gengibre', 
+    modo_preparo:'Bata todos os ingredientes no liquidificador até obter uma textura homogênea. Consuma imediatamente sem coar.', 
+    macros:'130 kcal | 3g Prot | 26g Carb | 2g Gord',
+    alimentosList: [
+      { nome: 'Água de coco natural', qtd: '200ml', kcal: 40, prot: 0.7, carb: 9.5, gord: 0.2 },
+      { nome: 'Couve manteiga crua', qtd: '1 folha (30g)', kcal: 8, prot: 0.9, carb: 1.7, gord: 0.1 },
+      { nome: 'Maçã verde com casca', qtd: '1/2 unidade (70g)', kcal: 36, prot: 0.2, carb: 9.6, gord: 0.1 },
+      { nome: 'Linhaça dourada moída', qtd: '10g (1 col. sobremesa)', kcal: 49, prot: 1.8, carb: 3.0, gord: 3.3 },
+      { nome: 'Gengibre fresco', qtd: 'raspas (5g)', kcal: 4, prot: 0.1, carb: 0.9, gord: 0.0 }
+    ]
+  },
+  { 
+    id:'rec-5', 
+    titulo:'Cookie Fit de Frigideira com Cacau 70%', 
+    categoria:'Doces Fit', 
+    tempo_preparo:'10 min', 
+    ingredientes:'1 ovo, 2 colheres de sopa de farinha de aveia, 1 colher de chá de cacau em pó 100%, 1 colher de chá de adoçante xilitol ou stévia, 10g de gotas de chocolate 70%', 
+    modo_preparo:'Misture todos os ingredientes secos e úmidos em uma tigela. Coloque a massa na frigideira antiaderente em fogo bem baixo, decore com as gotas de chocolate e abafe com a tampa por 6 a 8 minutos.', 
+    macros:'190 kcal | 9g Prot | 22g Carb | 7g Gord',
+    alimentosList: [
+      { nome: 'Ovo de galinha', qtd: '1 unidade (50g)', kcal: 72, prot: 6.3, carb: 0.3, gord: 4.8 },
+      { nome: 'Farinha de aveia', qtd: '30g (2 col. sopa)', kcal: 118, prot: 4.2, carb: 20.0, gord: 2.2 },
+      { nome: 'Cacau em pó 100%', qtd: '5g (1 col. chá)', kcal: 12, prot: 1.0, carb: 2.8, gord: 0.6 },
+      { nome: 'Gotas de chocolate 70%', qtd: '10g', kcal: 50, prot: 0.8, carb: 4.5, gord: 3.2 }
+    ]
+  },
+  { 
+    id:'rec-6', 
+    titulo:'Salada Funcional de Grão-de-Bico com Ervas', 
+    categoria:'Almoço / Jantar', 
+    tempo_preparo:'12 min', 
+    ingredientes:'150g de grão-de-bico cozido e escorrido, 1/2 pepino japonês picado, 5 tomates cereja cortados ao meio, 1/4 de cebola roxa em tiras, azeite extra virgem, limão e hortelã', 
+    modo_preparo:'Em uma tigela, misture o grão-de-bico com os vegetais frescos. Tempere com o suco de limão, azeite, sal rosa e folhas de hortelã picadas.', 
+    macros:'310 kcal | 14g Prot | 42g Carb | 9g Gord',
+    alimentosList: [
+      { nome: 'Grão-de-bico cozido', qtd: '150g (1 xícara)', kcal: 210, prot: 11.5, carb: 35.0, gord: 3.8 },
+      { nome: 'Pepino japonês picado', qtd: '50g', kcal: 8, prot: 0.3, carb: 1.8, gord: 0.1 },
+      { nome: 'Tomate cereja', qtd: '5 unidades (50g)', kcal: 10, prot: 0.5, carb: 2.2, gord: 0.1 },
+      { nome: 'Azeite de oliva extra virgem', qtd: '1 colher sobremesa (8ml)', kcal: 70, prot: 0.0, carb: 0.0, gord: 7.8 }
+    ]
+  }
+];
+
+async function abrirModalReceitasPresets() {
+  const modal = document.getElementById('modalReceitasPresets');
+  if (modal) modal.classList.add('active');
+  try {
+    const res = await apiCall('getReceitasPresets');
+    if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+      receitasPresets = res.data;
+    }
+  } catch(e) {}
+  renderCategoriasReceitasPills();
+  renderListaReceitasPresets();
+}
+
+function fecharModalReceitasPresets() {
+  const modal = document.getElementById('modalReceitasPresets');
+  if (modal) modal.classList.remove('active');
+}
+
+function setCategoriaReceitaFiltro(cat) {
+  categoriaReceitaAtiva = cat;
+  renderCategoriasReceitasPills();
+  renderListaReceitasPresets();
+}
+
+function renderCategoriasReceitasPills() {
+  const container = document.getElementById('categoriasReceitasPillsBox');
+  if (!container) return;
+
+  const categorias = ['Todas', 'Café da Manhã', 'Almoço / Jantar', 'Doces Fit', 'Sucos & Shakes'];
+  container.innerHTML = categorias.map(cat => {
+    const isAct = categoriaReceitaAtiva === cat;
+    return `<button type="button" class="cat-recipe-pill ${isAct ? 'active' : ''}" onclick="setCategoriaReceitaFiltro('${cat}')" style="padding:6px 14px; border-radius:20px; font-size:0.78rem; font-weight:800; border:1px solid ${isAct ? 'var(--sage-light)' : 'var(--border-forest)'}; background:${isAct ? 'var(--sage-light)' : 'var(--bg-deep)'}; color:${isAct ? 'var(--forest-dark)' : 'var(--text-muted)'}; cursor:pointer; transition:all 0.2s; white-space:nowrap;">${cat}</button>`;
+  }).join('');
+}
+
+function renderListaReceitasPresets(filtro = '') {
+  const container = document.getElementById('listaReceitasPresetsContainer');
+  if (!container) return;
+  
+  const termo = (filtro || document.getElementById('buscaReceitaInput')?.value || '').toLowerCase().trim();
+
+  const filtradas = receitasPresets.filter(r => {
+    const bateCategoria = (categoriaReceitaAtiva === 'Todas') || (r.categoria || '').toLowerCase().includes(categoriaReceitaAtiva.toLowerCase());
+    const bateTexto = !termo || 
+      (r.titulo||'').toLowerCase().includes(termo) || 
+      (r.categoria||'').toLowerCase().includes(termo) || 
+      (r.ingredientes||'').toLowerCase().includes(termo);
+    return bateCategoria && bateTexto;
+  });
+
+  if (filtradas.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:32px; color:var(--text-muted); font-size:0.9rem;">Nenhuma receita encontrada para os filtros selecionados.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtradas.map(rec => `
+    <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:10px; transition:all 0.2s;">
+      
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+        <div>
+          <strong style="color:var(--text-title); font-size:1rem; font-family:'Playfair Display',serif;">📖 ${rec.titulo}</strong>
+          <span style="font-size:0.74rem; background:rgba(140,164,129,0.15); color:var(--sage-light); padding:3px 10px; border-radius:12px; font-weight:800; margin-left:8px; border:1px solid var(--border-forest);">${rec.categoria||'Geral'}</span>
+        </div>
+        
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn btn-success" onclick="anexarReceitaComSeletor('${rec.id}')" style="font-size:0.78rem; padding:6px 12px; font-weight:800;">
+            ➕ Anexar ao Plano
+          </button>
+          ${rec.id && String(rec.id).includes('rec-') ? '' : `<button type="button" class="btn btn-secondary" onclick="deletarReceitaPreset('${rec.id}')" style="font-size:0.75rem; padding:5px 8px; color:#f87171;" title="Excluir do Banco">🗑️</button>`}
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; font-size:0.78rem; color:var(--text-muted); background:var(--bg-deep); padding:6px 12px; border-radius:8px; border:1px solid var(--border-forest);">
+        <span>⏱️ Preparo: <strong>${rec.tempo_preparo||'10-15 min'}</strong></span>
+        ${rec.macros ? `<span>· 🔥 <strong>${rec.macros}</strong></span>` : ''}
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.82rem; margin-top:4px;">
+        <div style="background:var(--bg-deep); padding:10px 12px; border-radius:8px; border:1px solid var(--border-forest);">
+          <strong style="color:var(--sage-light); display:block; margin-bottom:4px; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">🥗 Ingredientes TACO:</strong>
+          <span style="color:var(--text-primary); line-height:1.5;">${rec.ingredientes||'N/I'}</span>
+        </div>
+        <div style="background:var(--bg-deep); padding:10px 12px; border-radius:8px; border:1px solid var(--border-forest);">
+          <strong style="color:var(--sage-light); display:block; margin-bottom:4px; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">🍳 Modo de Preparo:</strong>
+          <span style="color:var(--text-primary); line-height:1.5;">${rec.modo_preparo||'N/I'}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filtrarReceitasPresets() {
+  renderListaReceitasPresets();
+}
+
+function abrirFormNovaReceita() {
+  const box = document.getElementById('formNovaReceitaBox');
+  if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+async function salvarNovaReceitaPreset() {
+  const titulo = document.getElementById('recNovoTitulo')?.value.trim();
+  if (!titulo) { alert('Informe o título da receita.'); return; }
+  const recObj = {
+    titulo,
+    categoria: document.getElementById('recNovoCategoria')?.value.trim() || 'Geral',
+    tempo_preparo: document.getElementById('recNovoTempo')?.value.trim() || '15 min',
+    macros: document.getElementById('recNovoMacros')?.value.trim() || '',
+    ingredientes: document.getElementById('recNovoIngredientes')?.value.trim() || '',
+    modo_preparo: document.getElementById('recNovoModo')?.value.trim() || ''
+  };
+
+  const res = await apiCall('saveReceitaPreset', { receita: recObj }, 'POST');
+  if (res && res.success) {
+    toast('✅ Nova receita salva no Banco com sucesso!');
+    receitasPresets.push(res.data || recObj);
+    renderListaReceitasPresets();
+    document.getElementById('formNovaReceitaBox').style.display = 'none';
+    ['recNovoTitulo','recNovoCategoria','recNovoTempo','recNovoMacros','recNovoIngredientes','recNovoModo'].forEach(id => {
+      if (document.getElementById(id)) document.getElementById(id).value = '';
+    });
+  } else {
+    toast('Erro ao salvar receita no banco', true);
+  }
+}
+
+function anexarReceitaComSeletor(recId) {
+  const rec = receitasPresets.find(r => String(r.id) === String(recId));
+  if (!rec) return;
+
+  if (typeof refeicoes === 'undefined' || !Array.isArray(refeicoes) || refeicoes.length === 0) {
+    if (typeof addRefeicao === 'function') addRefeicao();
+  }
+
+  let targetIndex = refeicoes.length - 1;
+  if (refeicoes.length > 1) {
+    const listaOpcoes = refeicoes.map((r, i) => `${i + 1}. ${r.nome || 'Refeição #' + (i+1)}`).join('\n');
+    const escolha = prompt(`Em qual refeição deseja anexar a receita "${rec.titulo}"?\n\n${listaOpcoes}\n\nDigite o número da refeição (1 a ${refeicoes.length}):`, String(refeicoes.length));
+    if (escolha === null) return;
+    const parsedIdx = parseInt(escolha) - 1;
+    if (!isNaN(parsedIdx) && parsedIdx >= 0 && parsedIdx < refeicoes.length) {
+      targetIndex = parsedIdx;
+    }
+  }
+
+  const targetRef = refeicoes[targetIndex];
+  if (targetRef) {
+    if (!targetRef.alimentosList) targetRef.alimentosList = [];
+
+    // Se a receita tiver ingredientes estruturados estilo TACO com gramatura e macros individuais
+    if (rec.alimentosList && Array.isArray(rec.alimentosList) && rec.alimentosList.length > 0) {
+      rec.alimentosList.forEach(alim => {
+        targetRef.alimentosList.push({
+          nome: alim.nome,
+          qtd: alim.qtd,
+          kcal: alim.kcal,
+          prot: alim.prot,
+          carb: alim.carb,
+          gord: alim.gord
+        });
+      });
+    } else {
+      // Fallback para receitas personalizadas: desmembra os ingredientes por vírgula em itens individuais
+      const partes = String(rec.ingredientes || '').split(',').map(s => s.trim()).filter(Boolean);
+      partes.forEach(itemStr => {
+        targetRef.alimentosList.push({
+          nome: itemStr,
+          qtd: '1 porção',
+          kcal: 50,
+          prot: 2,
+          carb: 8,
+          gord: 1
+        });
+      });
+    }
+
+    const resumoLinhas = targetRef.alimentosList.map(a => `• ${a.qtd || '1 porção'} de ${a.nome}`).join('\n');
+    targetRef.itens = resumoLinhas;
+    targetRef.observacao = (targetRef.observacao || '') + `\n\n📖 [MODO DE PREPARO - ${rec.titulo}]: ${rec.modo_preparo}`;
+
+    if (typeof renderRefeicoes === 'function') renderRefeicoes();
+    if (typeof calcMacrosPlano === 'function') calcMacrosPlano();
+
+    toast(`✅ Ingredientes de "${rec.titulo}" anexados individualmente à refeição "${targetRef.nome || 'Refeição #' + (targetIndex+1)}"!`);
+    fecharModalReceitasPresets();
+  }
+}
+
+async function deletarReceitaPreset(id) {
+  if (!confirm('Deseja excluir esta receita do banco de presets?')) return;
+  const res = await apiCall('deleteReceitaPreset', { id }, 'POST');
+  if (res && res.success) {
+    toast('Receita excluída do banco!');
+    receitasPresets = receitasPresets.filter(r => String(r.id) !== String(id));
+    renderListaReceitasPresets();
+  }
+}
+
+// ── EMISSÃO DE DOCUMENTOS OFICIAIS (ATESTADO / DECLARAÇÃO) ─────────
+function abrirModalDocumentoOficial() {
+  const modal = document.getElementById('modalDocumentoOficial');
+  if (modal) modal.classList.add('active');
+  const d = document.getElementById('docData');
+  if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+  atualizarPreviewDocumento();
+}
+
+function fecharModalDocumentoOficial() {
+  const modal = document.getElementById('modalDocumentoOficial');
+  if (modal) modal.classList.remove('active');
+}
+
+function atualizarPreviewDocumento() {
+  const box = document.getElementById('docPreviewBox');
+  if (!box) return;
+
+  const tipo = document.getElementById('docTipoSelect')?.value || 'declaracao';
+  const dataVal = document.getElementById('docData')?.value || new Date().toISOString().split('T')[0];
+  const hInicio = document.getElementById('docHoraInicio')?.value || '14:00';
+  const hFim = document.getElementById('docHoraFim')?.value || '15:00';
+  const obs = document.getElementById('docObs')?.value || '';
+
+  const pacNome = (typeof paciente !== 'undefined' && paciente?.nome) ? paciente.nome : (document.getElementById('pacName')?.textContent || 'Nome do Paciente');
+  const pacCpf = (typeof paciente !== 'undefined' && paciente?.cpf) ? paciente.cpf : '';
+
+  const dtFmt = fmt(dataVal);
+
+  const htmlDoc = `
+    <div class="pdf-page-official" style="background:#f8faf6; color:#192b20; font-family:'Plus Jakarta Sans',sans-serif; padding:24px 22px; border-radius:12px; border:1px solid #dce4d8; box-shadow:0 12px 36px rgba(0,0,0,0.2); display:flex; flex-direction:column; justify-content:space-between; width:100%; max-width:100%; min-height:540px; margin:0 auto; box-sizing:border-box;">
+      
+      <!-- TOPO DE MARCA IGUAL AO GERENCIADOR DE PLANO -->
+      <div>
+        <div style="background:#203528; color:#eef4e5; padding:10px 16px; border-radius:8px; text-align:center; font-size:0.72rem; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; margin-bottom:24px;">
+          DRA. SILVIA OLIVEIRA LEMOS · CONSULTÓRIO DE NUTRIÇÃO CLÍNICA &amp; ESPORTIVA
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #8ca481; padding-bottom:14px; margin-bottom:28px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h2 style="font-family:'Playfair Display',serif; font-size:1.45rem; color:#203528; margin:0; font-weight:700; letter-spacing:-0.01em;">DRA. SILVIA OLIVEIRA LEMOS</h2>
+            <div style="font-size:0.75rem; font-weight:800; color:#8ca481; letter-spacing:1.5px; text-transform:uppercase; margin-top:3px;">Nutricionista · CRN-4 25104731</div>
+          </div>
+          <div style="background:rgba(146,169,136,0.15); color:#203528; padding:6px 14px; border-radius:100px; border:1px solid rgba(140,164,129,0.35); font-size:0.72rem; font-weight:800; letter-spacing:1.2px; text-transform:uppercase;">
+            ${tipo === 'declaracao' ? '📄 DECLARAÇÃO DE COMPARECIMENTO' : '🩺 ATESTADO NUTRICIONAL'}
+          </div>
+        </div>
+
+        <!-- TÍTULO PRINCIPAL DO DOCUMENTO -->
+        <div style="text-align:center; margin:28px 0 24px;">
+          <h1 style="font-family:'Playfair Display',serif; font-size:1.55rem; color:#203528; letter-spacing:2px; text-transform:uppercase; margin:0; font-weight:700;">
+            ${tipo === 'declaracao' ? 'DECLARAÇÃO DE COMPARECIMENTO' : 'ATESTADO NUTRICIONAL'}
+          </h1>
+          <div style="width:60px; height:3px; background:#8ca481; margin:8px auto 0; border-radius:2px;"></div>
+        </div>
+
+        <!-- CARD DO CONTEÚDO PRINCIPAL (ESTILO MEAL-CARD GERENCIADOR) -->
+        <div style="background:#ffffff; border:1px solid #dce4d8; border-left:5px solid #203528; border-radius:14px; padding:26px 28px; box-shadow:0 4px 14px rgba(0,0,0,0.03); margin-bottom:24px;">
+          ${tipo === 'declaracao' ? `
+            <p style="font-size:0.98rem; color:#192b20; line-height:1.9; text-align:justify; text-indent:28px; margin:0;">
+              Declaro para os devidos fins de direito que o(a) paciente <strong>${pacNome}</strong>${pacCpf ? ', portador(a) do CPF nº <strong>' + pacCpf + '</strong>,' : ''} compareceu e esteve presente em consulta nutricional especializada no dia <strong>${dtFmt}</strong>, durante o período das <strong>${hInicio} às ${hFim} horas</strong>.
+            </p>
+          ` : `
+            <p style="font-size:0.98rem; color:#192b20; line-height:1.9; text-align:justify; text-indent:28px; margin:0;">
+              Atesto para os devidos fins de direito que o(a) paciente <strong>${pacNome}</strong>${pacCpf ? ', portador(a) do CPF nº <strong>' + pacCpf + '</strong>,' : ''} encontra-se sob meu acompanhamento nutricional clínico/esportivo nesta data (<strong>${dtFmt}</strong>).
+            </p>
+            <p style="font-size:0.98rem; color:#192b20; line-height:1.9; text-align:justify; text-indent:28px; margin-top:16px;">
+              Recomenda-se o cumprimento rigoroso do plano de orientação alimentar e metas hídricas propostas para a otimização da saúde e recuperação metabólica.
+            </p>
+          `}
+
+          ${obs ? `
+            <div style="margin-top:20px; padding-top:16px; border-top:1px dashed #dce4d8; font-size:0.9rem; color:#4a5568;">
+              <strong style="color:#203528; text-transform:uppercase; font-size:0.76rem; letter-spacing:1px; display:block; margin-bottom:6px;">📌 Observações / Recomendações Adicionais:</strong>
+              ${obs}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- ASSINATURA & RODAPÉ IGUAL AO GERENCIADOR DE PLANO -->
+      <div>
+        <div style="margin-top:40px; text-align:center;">
+          <div style="font-size:0.88rem; color:#57695b; font-weight:600; margin-bottom:28px;">Rio de Janeiro, ${dtFmt}</div>
+          <div style="border-top:1.5px solid #203528; display:inline-block; width:290px; padding-top:8px;">
+            <strong style="color:#203528; font-size:0.98rem; display:block;">Dra. Silvia de Oliveira Lemos</strong>
+            <span style="font-size:0.78rem; color:#8ca481; font-weight:800; letter-spacing:1px; text-transform:uppercase;">Nutricionista · CRN-4 25104731</span>
+          </div>
+        </div>
+
+        <div style="text-align:center; font-size:0.74rem; color:#a0b399; border-top:1px solid #dce4d8; padding-top:14px; margin-top:28px; font-weight:600; letter-spacing:0.5px;">
+          Dra. Silvia Oliveira Lemos · CRN-4 25104731 · Consultório de Nutrição Especializada
+        </div>
+      </div>
+    </div>
+  `;
+
+  box.innerHTML = htmlDoc;
+}
+
+function imprimirDocumentoOficial() {
+  const content = document.getElementById('docPreviewBox')?.innerHTML;
+  if (!content) return;
+
+  const printWin = window.open('', '_blank', 'width=850,height=950');
+  printWin.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Documento Oficial Nutricional - Dra. Silvia Lemos</title>
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+      <style>
+        @page { size: A4 portrait; margin: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #525659; color: #192b20; padding: 20px 0; }
+        .pdf-page-official {
+          width: 210mm !important;
+          height: 296mm !important;
+          max-height: 296mm !important;
+          min-height: 296mm !important;
+          padding: 18mm 20mm 14mm 20mm !important;
+          box-shadow: none !important;
+          border: none !important;
+          border-radius: 0 !important;
+          margin: 0 auto !important;
+          background: #f8faf6 !important;
+          box-sizing: border-box !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+        }
+        @media print {
+          html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; background: #fff !important; }
+          .pdf-page-official {
+            margin: 0 !important;
+            page-break-after: always !important;
+            background: #fff !important;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      ${content}
+      <script>
+        window.onload = function() {
+          window.print();
+          setTimeout(function(){ window.close(); }, 500);
+        };
+      <' + '/script>
+    </body>
+    </html>
+  `);
+  printWin.document.close();
 }
 
 (async()=>{
   const theme=localStorage.getItem('kos_theme')||'dark';
   document.documentElement.setAttribute('data-theme',theme);
   await carregarDados();
+  renderRecordatorioLinhas();
 })();
 </script>
 <style>
@@ -1709,6 +3073,117 @@ function carregarVideoframeMeet() {
     .kos-footer-brand .kos-bar{height:2px;width:100%;border-radius:999px;background:linear-gradient(90deg,#06b6d4,#7c3aed,#ec4899,#f59e0b,#06b6d4);background-size:300% 100%;animation:kosFtRainbow 3s linear infinite;opacity:.75;margin-top:2px;}
     @keyframes kosFtRainbow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
   </style>
+  <!-- MODAL BANCO DE RECEITAS PRESETS -->
+  <div class="modal-overlay" id="modalReceitasPresets">
+    <div class="modal-content" style="max-width:780px; max-height:88vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--border-forest); padding-bottom:12px;">
+        <div>
+          <h3 style="margin:0; font-size:1.15rem; color:var(--accent-gold); font-family:'Playfair Display',serif;">📖 Banco de Receitas Práticas &amp; Fit</h3>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">Selecione uma receita da Dra. Silvia para anexar diretamente ao plano alimentar do paciente</div>
+        </div>
+        <button class="btn-close" onclick="fecharModalReceitasPresets()">✕</button>
+      </div>
+
+      <!-- FITA DE FILTROS POR CATEGORIA -->
+      <div id="categoriasReceitasPillsBox" style="display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; padding-bottom:4px;">
+        <!-- JS renderiza as pílulas de categorias -->
+      </div>
+      
+      <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <input type="text" id="buscaReceitaInput" class="form-control" placeholder="Buscar receita por título, categoria ou ingrediente..." onkeyup="filtrarReceitasPresets()">
+        <button class="btn btn-secondary" onclick="abrirFormNovaReceita()" style="white-space:nowrap; font-size:0.82rem; padding:8px 14px;">➕ Nova Receita</button>
+      </div>
+
+      <!-- Form de Nova Receita -->
+      <div id="formNovaReceitaBox" style="display:none; background:var(--bg-card); border:1px solid var(--border-forest); padding:14px; border-radius:10px; margin-bottom:14px;">
+        <h4 style="margin:0 0 10px 0; font-size:0.95rem; color:var(--sage-light);">Criar Nova Receita no Banco de Presets</h4>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Título da Receita</label>
+            <input type="text" id="recNovoTitulo" class="form-control" placeholder="Ex: Omelete de Ervas Finas">
+          </div>
+          <div class="form-group">
+            <label>Categoria</label>
+            <input type="text" id="recNovoCategoria" class="form-control" placeholder="Ex: Café da Manhã, Lanche, Jantar">
+          </div>
+        </div>
+        <div class="form-grid-2" style="margin-top:8px;">
+          <div class="form-group">
+            <label>Tempo de Preparo</label>
+            <input type="text" id="recNovoTempo" class="form-control" placeholder="Ex: 15 min">
+          </div>
+          <div class="form-group">
+            <label>Macros Estimados</label>
+            <input type="text" id="recNovoMacros" class="form-control" placeholder="Ex: 250 kcal | 20g Prot | 15g C">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:8px;">
+          <label>Ingredientes</label>
+          <textarea id="recNovoIngredientes" class="form-control" placeholder="Ex: 2 ovos, 30g queijo cottage, orégano, 1 tomate picado..."></textarea>
+        </div>
+        <div class="form-group" style="margin-top:8px;">
+          <label>Modo de Preparo</label>
+          <textarea id="recNovoModo" class="form-control" placeholder="Ex: Bata os ovos com os temperos. Despeje na frigideira antiaderente..."></textarea>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('formNovaReceitaBox').style.display='none'">Cancelar</button>
+          <button type="button" class="btn btn-success" onclick="salvarNovaReceitaPreset()">💾 Salvar no Banco</button>
+        </div>
+      </div>
+
+      <div id="listaReceitasPresetsContainer" style="display:flex; flex-direction:column; gap:12px;">
+        <!-- JS renderiza a lista de receitas prontas -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DOCUMENTO OFICIAL (ATESTADO / DECLARAÇÃO) -->
+  <div class="modal-overlay" id="modalDocumentoOficial">
+    <div class="modal-content" style="max-width:780px; max-height:92vh; overflow-y:auto; overflow-x:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:1.1rem; color:var(--accent-gold);">📄 Emissão de Documento Oficial Nutricional</h3>
+        <button class="btn-close" onclick="fecharModalDocumentoOficial()">✕</button>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Tipo de Documento Oficial</label>
+        <select id="docTipoSelect" class="form-control" onchange="atualizarPreviewDocumento()">
+          <option value="declaracao">📄 Declaração de Comparecimento</option>
+          <option value="atestado">🩺 Atestado Nutricional / Acompanhamento</option>
+        </select>
+      </div>
+
+      <div class="form-grid-3" style="margin-bottom:14px;">
+        <div class="form-group">
+          <label>Data da Consulta</label>
+          <input type="date" id="docData" class="form-control" onchange="atualizarPreviewDocumento()">
+        </div>
+        <div class="form-group">
+          <label>Hora Início</label>
+          <input type="time" id="docHoraInicio" class="form-control" value="14:00" onchange="atualizarPreviewDocumento()">
+        </div>
+        <div class="form-group">
+          <label>Hora Fim</label>
+          <input type="time" id="docHoraFim" class="form-control" value="15:00" onchange="atualizarPreviewDocumento()">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Observações ou Recomendações Adicionais (opcional)</label>
+        <input type="text" id="docObs" class="form-control" placeholder="Ex: Paciente necessita de intervalo flexível para refeição." onkeyup="atualizarPreviewDocumento()">
+      </div>
+
+      <div style="background:#525659; padding:16px; border-radius:12px; border:1px solid #cbd5e1; font-family:'Plus Jakarta Sans',sans-serif; margin-bottom:16px; box-shadow:0 10px 30px rgba(0,0,0,0.35); overflow-x:hidden;" id="docPreviewBox">
+        <!-- Preview ao vivo -->
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="fecharModalDocumentoOficial()">Cancelar</button>
+        <button type="button" class="btn btn-success" onclick="imprimirDocumentoOficial()">🖨️ Imprimir / Salvar PDF</button>
+      </div>
+    </div>
+  </div>
+
   <footer style="width:100%;padding:0 24px;">
     <a href="https://kos-rho.vercel.app/" target="_blank" rel="noopener" class="kos-footer-brand" style="text-decoration:none;cursor:pointer;">
       <span class="kos-dev-by">Desenvolvido por</span>

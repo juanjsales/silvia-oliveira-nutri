@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -670,6 +670,7 @@
           </div>
 
           <div id="formNovo" style="display:flex; flex-direction:column; gap:14px;">
+            <input type="hidden" id="pacId" value="">
             <div
               style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:10px; padding:12px 14px; font-size:0.82rem; color:var(--text-primary); display:flex; align-items:center; gap:10px;">
               <span>📧</span> <span>Ao agendar, o perfil do paciente é criado e um <strong>e-mail automático</strong>
@@ -808,43 +809,97 @@
       const title = document.getElementById('anamneseNome');
       const body = document.getElementById('anamneseBody');
 
-      if (title) title.innerText = `Ficha de Anamnese · ${pacienteNome}`;
+      if (title) title.innerText = `📜 Histórico Clínico & Evolução · ${pacienteNome}`;
       if (body) body.innerHTML = `
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; gap:16px; color:var(--sage-light);">
           <div class="spinner-ring" style="width:32px; height:32px; border-width:3px;"></div>
-          <span style="font-size:0.9rem; font-weight:600;">Buscando ficha de anamnese no banco...</span>
+          <span style="font-size:0.9rem; font-weight:600;">Buscando histórico e evolução no banco...</span>
         </div>
       `;
       if (modal) modal.style.display = 'flex';
 
-      const res = await apiCall('getAnamnese', { paciente_id: pacienteId }, 'GET');
-      if (res && res.success && res.data && res.data.length > 0) {
-        const anam = res.data[0];
-        body.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:14px; font-size:0.9rem; line-height:1.6;">
-        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-          <strong style="color:var(--sage-light); display:block;">🗓️ Data do Preenchimento:</strong> ${anam.data || 'N/I'}
-        </div>
-        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-          <strong style="color:var(--sage-light); display:block;">⚠️ Alergias / Intolerâncias:</strong> ${anam.alergias || 'Nenhuma informada'}
-        </div>
-        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-          <strong style="color:var(--sage-light); display:block;">🏥 Histórico de Saúde &amp; Medicamentos:</strong> ${anam.historico_saude || 'Sem observações'}
-        </div>
-        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-          <strong style="color:var(--sage-light); display:block;">😴 Qualidade do Sono:</strong> ${anam.rotina_sono || '8h por noite'}
-        </div>
-        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-          <strong style="color:var(--sage-light); display:block;">🚽 Saúde Intestinal:</strong> ${anam.intestino || 'Regular'}
-        </div>
-        <div style="background:rgba(0,0,0,0.3); padding:12px 16px; border-radius:10px;">
-          <strong style="color:var(--sage-light); display:block;">🍎 Preferências &amp; Aversões Alimentares:</strong> ${anam.preferencias || 'Nenhuma restrição registrada'}
-        </div>
-      </div>
-    `;
+      const res = await apiCall('getHistoricoCompleto', { paciente_id: pacienteId }, 'GET');
+      if (res && res.success && res.data) {
+        const d = res.data;
+        const anam = d.anamnese;
+        const evs = d.evolucao || [];
+        const ags = d.agendamentos || [];
+
+        let content = `<div style="display:flex; flex-direction:column; gap:16px; font-size:0.88rem; line-height:1.6;">`;
+
+        // 1. EVOLUÇÃO
+        if (evs.length > 0) {
+          content += `
+            <div style="background:rgba(0,0,0,0.3); padding:14px 16px; border-radius:12px; border:1px solid var(--border-forest);">
+              <strong style="color:var(--sage-light); font-size:0.92rem; display:block; margin-bottom:8px;">📊 Evolução Antropométrica (${evs.length} avaliações)</strong>
+              <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+                  <thead>
+                    <tr style="color:var(--sage-light); border-bottom:1px solid var(--border-forest);">
+                      <th style="padding:6px;">Data</th>
+                      <th style="padding:6px;">Peso</th>
+                      <th style="padding:6px;">IMC</th>
+                      <th style="padding:6px;">% Gordura</th>
+                      <th style="padding:6px;">Massa Magra</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${evs.map(ev => `
+                      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:6px; font-weight:700;">${formatDateBR(ev.data)}</td>
+                        <td style="padding:6px; color:var(--sage-light); font-weight:800;">${ev.peso || ev.peso_kg || '—'} kg</td>
+                        <td style="padding:6px;">${ev.imc || '—'}</td>
+                        <td style="padding:6px;">${ev.percentual_gordura || ev.gordura_pct || '—'}%</td>
+                        <td style="padding:6px;">${ev.massa_magra || ev.massa_magra_kg || '—'} kg</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        }
+
+        // 2. CONSULTAS
+        if (ags.length > 0) {
+          content += `
+            <div style="background:rgba(0,0,0,0.3); padding:14px 16px; border-radius:12px; border:1px solid var(--border-forest);">
+              <strong style="color:var(--sage-light); font-size:0.92rem; display:block; margin-bottom:8px;">🗓️ Consultas Anteriores (${ags.length})</strong>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                ${ags.map(ag => `
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px;">
+                    <span><strong>${ag.data || '—'} às ${ag.hora || '—'}</strong> (${ag.tipo || 'Consulta'})</span>
+                    <span style="color:var(--sage-light); font-weight:700;">${ag.status || 'Confirmado'}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        // 3. ANAMNESE
+        if (anam) {
+          content += `
+            <div style="background:rgba(0,0,0,0.3); padding:14px 16px; border-radius:12px; border:1px solid var(--border-forest);">
+              <strong style="color:var(--sage-light); font-size:0.92rem; display:block; margin-bottom:8px;">📝 Ficha de Anamnese Nutricional</strong>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <div><strong style="color:var(--sage-light);">🏥 Histórico Clínico:</strong> ${anam.historico_saude || 'Sem observações'}</div>
+                <div><strong style="color:var(--sage-light);">⚠️ Alergias / Intolerâncias:</strong> ${anam.alergias || 'Nenhuma informada'}</div>
+                <div><strong style="color:var(--sage-light);">😴 Qualidade do Sono:</strong> ${anam.rotina_sono || 'N/I'}</div>
+                <div><strong style="color:var(--sage-light);">🚽 Saúde Intestinal:</strong> ${anam.intestino || 'N/I'}</div>
+                <div><strong style="color:var(--sage-light);">🍎 Preferências / Aversões:</strong> ${anam.preferencias || 'N/I'}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          content += `<div style="text-align:center; padding:12px; color:var(--text-muted);">Nenhuma ficha de anamnese cadastrada para este paciente.</div>`;
+        }
+
+        content += `</div>`;
+        body.innerHTML = content;
       } else {
         if (body) {
-          body.innerHTML = `<div style="text-align:center; padding:20px; color:var(--sage-light);">Nenhuma ficha de anamnese encontrada para este paciente.</div>`;
+          body.innerHTML = `<div style="text-align:center; padding:20px; color:var(--sage-light);">Nenhum histórico encontrado para este paciente.</div>`;
         }
       }
     }
@@ -938,11 +993,75 @@ function renderizarTabelaPacientes(lista) {
           <button class="btn btn-secondary" onclick="verAnamnesePaciente('${p.id}', '${nomeEscaped}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📋 Anamnese</button>
           <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🥗 Cardápio</a>
           <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</a>
+          <button class="btn btn-secondary" onclick="editPatient('${p.id}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">✏️ Editar</button>
+          <button class="btn btn-secondary" onclick="deletePatient('${p.id}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🗑️ Excluir</button>
         </div>
       </td>
     `;
     tbl.appendChild(tr);
   });
+}
+
+async function deletePatient(patientId) {
+  const patient = window.pacientesLista.find(p => p.id === patientId);
+  if (!patient) {
+    alert('Paciente não encontrado!');
+    return;
+  }
+
+  if (confirm(`Tem certeza que deseja excluir o paciente ${patient.nome}?`)) {
+    const res = await apiCall('deletePaciente', { id: patientId }, 'POST');
+    if (res && res.success) {
+      window.pacientesLista = window.pacientesLista.filter(p => p.id !== patientId);
+      renderizarTabelaPacientes(window.pacientesLista);
+      alert('Paciente excluído com sucesso!');
+    } else {
+      alert('Erro ao excluir o paciente. Tente novamente.');
+    }
+  }
+}
+
+function editPatient(patientId) {
+  const patient = window.pacientesLista.find(p => p.id === patientId);
+  if (!patient) {
+    alert('Paciente não encontrado!');
+    return;
+  }
+
+  openPacienteModal('edit', patient);
+}
+
+async function salvarEdicaoPaciente() {
+  const patientId = document.getElementById('pacId').value;
+  if (!patientId) return;
+
+  const btn = document.getElementById('btnSalvarPacAgendamento');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner-ring" style="width:16px;height:16px;border-width:2px"></div> Salvando...'; }
+
+  const updatedPatient = {
+    id: patientId,
+    nome: document.getElementById('pacNome').value.trim(),
+    whatsapp: (document.getElementById('pacWsp')?.value || '').replace(/\D/g, ''),
+    email: document.getElementById('pacEmail').value.trim(),
+    objetivo: document.getElementById('pacObj')?.value || 'Reeducação Alimentar & Emagrecimento',
+  };
+
+  const res = await apiCall('updatePaciente', { paciente: updatedPatient }, 'POST');
+
+  if (res && res.success) {
+    const index = window.pacientesLista.findIndex(p => p.id === patientId);
+    if (index !== -1) {
+      // Assuming the API returns the updated patient data
+      window.pacientesLista[index] = res.data.paciente ? res.data.paciente : updatedPatient;
+    }
+    renderizarTabelaPacientes(window.pacientesLista);
+    closePacienteModal();
+    alert('Paciente atualizado com sucesso!');
+  } else {
+    alert('Erro ao atualizar o paciente. Tente novamente.');
+  }
+
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Confirmar & Salvar no Banco'; }
 }
 
 function filtrarPacientes(q) {
@@ -979,11 +1098,59 @@ async function carregarPacientes() {
 
 let currentStepPac = 1;
 
-function openPacienteModal() {
+function openPacienteModal(mode = 'add', patient = null) {
   const modal = document.getElementById('modalPaciente');
   if (!modal) return;
-  const agData = document.getElementById('agData');
-  if (agData && !agData.value) agData.value = new Date().toISOString().split('T')[0];
+
+  const title = document.getElementById('modalPacienteTitle');
+  const stepper = document.getElementById('stepperBar');
+  const nextButton = document.querySelector('#stepPaciente button.btn:not(.btn-secondary)');
+  const subtitle = document.querySelector('#stepPaciente .modal-subtitle');
+  const emailBanner = document.querySelector('#stepPaciente #formNovo > div:first-of-type');
+
+
+  if (mode === 'edit' && patient) {
+    if (title) title.innerText = '✏️ Editar Paciente';
+    if(subtitle) subtitle.style.display = 'none';
+    if(emailBanner) emailBanner.style.display = 'none';
+    if (stepper) stepper.style.display = 'none';
+
+    document.getElementById('pacId').value = patient.id;
+    document.getElementById('pacNome').value = patient.nome;
+    document.getElementById('pacWsp').value = patient.whatsapp ? maskPhone(patient.whatsapp) : '';
+    document.getElementById('pacEmail').value = patient.email;
+    document.getElementById('pacObj').value = patient.objetivo;
+
+    if (nextButton) {
+      nextButton.innerText = '💾 Salvar Alterações';
+      nextButton.onclick = salvarEdicaoPaciente;
+    }
+     // Hide the second step
+     const s2 = document.getElementById('stepConsulta');
+     if (s2) s2.style.display = 'none';
+
+
+  } else { // 'add' mode
+     if (title) title.innerText = '👤 Cadastrar Novo Paciente';
+     if(subtitle) subtitle.style.display = 'block';
+     if(emailBanner) emailBanner.style.display = 'flex';
+    if (stepper) stepper.style.display = 'flex';
+    document.getElementById('pacId').value = '';
+    
+    ['pacNome', 'pacWsp', 'pacEmail', 'agObs'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    
+    const agData = document.getElementById('agData');
+    if (agData && !agData.value) agData.value = new Date().toISOString().split('T')[0];
+    
+    if (nextButton) {
+        nextButton.innerText = 'Próximo: Consulta →';
+        nextButton.onclick = irParaPasso2Pac;
+    }
+  }
+  
   irParaStepPac(1);
   modal.classList.add('active');
 }
@@ -991,10 +1158,30 @@ function openPacienteModal() {
 function closePacienteModal() {
   const modal = document.getElementById('modalPaciente');
   if (modal) modal.classList.remove('active');
+  // Reset fields and buttons to default 'add' state
+  document.getElementById('pacId').value = '';
   ['pacNome', 'pacWsp', 'pacEmail', 'agObs'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+
+  const nextButton = document.querySelector('#stepPaciente button.btn:not(.btn-secondary)');
+  if (nextButton) {
+      nextButton.innerText = 'Próximo: Consulta →';
+      nextButton.onclick = irParaPasso2Pac;
+  }
+
+  const title = document.getElementById('modalPacienteTitle');
+  if (title) title.innerText = '👤 Cadastrar Novo Paciente';
+
+  const stepper = document.getElementById('stepperBar');
+  if (stepper) stepper.style.display = 'flex';
+
+  const subtitle = document.querySelector('#stepPaciente .modal-subtitle');
+  if(subtitle) subtitle.style.display = 'block';
+  
+  const emailBanner = document.querySelector('#stepPaciente #formNovo > div:first-of-type');
+  if(emailBanner) emailBanner.style.display = 'flex';
 }
 
 function irParaStepPac(n) {

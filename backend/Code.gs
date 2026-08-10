@@ -108,6 +108,12 @@ function handleRequest(e, method) {
       case "savePaciente":
         response.data = savePaciente(params.paciente||params);
         response.success = true; break;
+      case "updatePaciente":
+        response.data = savePaciente(params.paciente||params);
+        response.success = true; break;
+      case "deletePaciente":
+        response.data = deleteByField(SHEETS.USUARIOS, "id", params.id);
+        response.success = true; break;
       case "getPacienteById":
         response.data = getByField(SHEETS.USUARIOS,"id",params.id);
         response.success = true; break;
@@ -117,13 +123,32 @@ function handleRequest(e, method) {
 
       // ── Agendamentos ──────────────────────────────────────────
       case "getAgendamentos":
-        response.data = getTableData(SHEETS.AGENDAMENTOS); response.success = true; break;
-      case "getAgendamento":
-        response.data = getByField(SHEETS.AGENDAMENTOS,"id",params.id);
+        response.data = getTableData(SHEETS.AGENDAMENTOS).map(ag => ({
+          ...ag,
+          data: formatarDataPTBR(ag.data),
+          hora: formatarHoraPTBR(ag.hora),
+        }));
         response.success = true; break;
-      case "saveAgendamento":
-        response.data = saveAgendamento(params.agendamento||params);
-        response.success = true; break;
+      case "getAgendamento": {
+        const ag = getByField(SHEETS.AGENDAMENTOS, "id", params.id);
+        if (ag) {
+          ag.data = formatarDataPTBR(ag.data);
+          ag.hora = formatarHoraPTBR(ag.hora);
+        }
+        response.data = ag;
+        response.success = true;
+        break;
+      }
+      case "saveAgendamento": {
+        let saved = saveAgendamento(params.agendamento||params);
+        if (saved) {
+          saved.data = formatarDataPTBR(saved.data);
+          saved.hora = formatarHoraPTBR(saved.hora);
+        }
+        response.data = saved;
+        response.success = true;
+        break;
+      }
       case "updateAgendamento":
         response.data = updateAgendamento(params.id, params.fields||params);
         response.success = true; break;
@@ -154,8 +179,13 @@ function handleRequest(e, method) {
           evolucao: evolucoesList,
           plano:    getPlanoVigente(params.paciente_id),
           suplementos: getAllByField(SHEETS.SUPLEMENTOS,"paciente_id",params.paciente_id),
-          agendamentos: getAllByField(SHEETS.AGENDAMENTOS,"paciente_id",params.paciente_id),
-          retornos: getAllByField(SHEETS.RETORNOS,"paciente_id",params.paciente_id)
+          agendamentos: getAllByField(SHEETS.AGENDAMENTOS,"paciente_id",params.paciente_id).map(ag => ({
+            ...ag,
+            data: formatarDataPTBR(ag.data),
+            hora: formatarHoraPTBR(ag.hora),
+          })),
+          retornos: getAllByField(SHEETS.RETORNOS,"paciente_id",params.paciente_id),
+          recordatorio: getAllByField(SHEETS.RECORDATORIO,"paciente_id",params.paciente_id)
         };
         response.success = true; break;
       }
@@ -217,6 +247,15 @@ function handleRequest(e, method) {
         response.success = true; break;
       case "deleteReceitaPreset":
         response.data = deleteByField(SHEETS.RECEITAS, "id", params.id);
+      // ── Recordatório 24h ─────────────────────────────────────
+      case "getRecordatorio24h":
+        response.data = getAllByField(SHEETS.RECORDATORIO, "paciente_id", params.paciente_id);
+        response.success = true; break;
+      case "saveRecordatorio24h":
+        response.data = saveGeneric(SHEETS.RECORDATORIO, params.recordatorio||params, SCHEMAS.Recordatorio_24h);
+        response.success = true; break;
+      case "deleteRecordatorio24h":
+        response.data = deleteByField(SHEETS.RECORDATORIO, "id", params.id);
         response.success = true; break;
 
       // ── Financeiro ───────────────────────────────────────────
@@ -394,6 +433,10 @@ function gerarPINTemporario() {
 function formatarDataPTBR(val) {
   if (!val) return "";
   try {
+    // Se for um objeto Date, usa Utilities.formatDate que é mais robusto.
+    if (val instanceof Date) {
+      return Utilities.formatDate(val, Session.getScriptTimeZone(), "dd/MM/yyyy");
+    }
     const s = String(val).trim();
     if (!s) return "";
     if (s.includes("T")) {
@@ -420,15 +463,28 @@ function formatarDataPTBR(val) {
 function formatarHoraPTBR(val) {
   if (!val) return "";
   try {
+    // Se for um objeto Date, usa Utilities.formatDate que é mais robusto e evita bugs com JSON.serialize.
+    if (val instanceof Date) {
+      return Utilities.formatDate(val, Session.getScriptTimeZone(), "HH:mm");
+    }
+
     const s = String(val).trim();
     if (!s) return "";
-    const parts = s.split(":");
-    if (parts.length >= 2) {
-      const h = parts[0].padStart(2, "0");
-      const m = parts[1].padStart(2, "0");
+
+    // Fallback para strings, tentando extrair a hora.
+    // Isso lida com casos como "14:30", "...T09:30...", e "Data: ... Hora: 08:00".
+    const match = s.match(/(\d{1,2}):(\d{2})/);
+    
+    if (match) {
+      // match[0] é a string correspondente, ex: "9:30" ou "14:30".
+      // Garante que a hora tenha um zero à esquerda, se necessário.
+      const parts = match[0].split(':');
+      const h = parts[0].padStart(2, '0');
+      const m = parts[1]; // já tem 2 dígitos pela regex
       return `${h}:${m}`;
     }
-    return s;
+
+    return s; // Retorna a string original se nenhum padrão de hora for encontrado.
   } catch(e) {
     return String(val || "");
   }
@@ -893,9 +949,22 @@ function criarEventoGoogleCalendar(agendamento, paciente) {
                   `WhatsApp: ${paciente.whatsapp || 'Não informado'}\n` +
                   `E-mail: ${paciente.email || 'Não informado'}\n` +
                   `Tipo: ${agendamento.tipo}\n` +
-                  (agendamento.meet_url ? `Meet: ${agendamento.meet_url}\n` : '') +
+                  (agendamento.meet_url ? `Link da Teleconsulta: ${agendamento.meet_url}\n` : '') +
                   `Observação: ${agendamento.observacao || 'Nenhuma'}`;
-    const options = { description: desc, sendInvites: paciente.email ? true : false };
+    const options = { 
+      description: desc, 
+      location: agendamento.meet_url || '',
+      sendInvites: false 
+    };
+
+    // If an agendamento.meet_url is present, especially if it's our portal link,
+    // we want to ensure Google Calendar does NOT automatically add a Google Meet conference.
+    // Setting conferenceDataVersion to 1 tells Calendar to respect existing conference data,
+    // or not create one if none is explicitly provided. Since we don't provide conferenceData,
+    // this prevents automatic Meet creation and uses our provided location.
+    if (agendamento.meet_url) {
+      options.conferenceDataVersion = 1; 
+    }
     if (paciente.email) options.guests = paciente.email;
     const event = cal.createEvent(title, start, end, options);
     return event ? event.getId() : null;
@@ -1006,12 +1075,24 @@ function saveConsultaCompleta(pacienteData, agendamentoData) {
   }
 
   // Salvar agendamento
-  const agendamento = saveAgendamento({
+  let agendamento = saveAgendamento({
     ...agendamentoData,
     paciente_id:       paciente.id,
     paciente_nome:     paciente.nome,
-    paciente_whatsapp: paciente.whatsapp || ""
+    paciente_whatsapp: paciente.whatsapp || "",
+    meet_url: agendamentoData.meet_url || ""
   });
+
+  // >>> Gerar e salvar link da sala de conferência virtual
+  const isOnline = !agendamento.tipo || String(agendamento.tipo).toLowerCase().includes("online") || String(agendamento.tipo).toLowerCase().includes("teleconsulta") || String(agendamento.tipo).toLowerCase().includes("virtual") || String(agendamento.tipo).toLowerCase().includes("meet");
+  if (isOnline || agendamentoData.meet_url) {
+    const portalUrl = "https://silviaoliveira.vercel.app/portal-paciente.html";
+    const roomName = `dra-silvia-lemos-atendimento-${String(agendamento.id).replace(/[^a-zA-Z0-9-_]/g, '')}`;
+    const meetUrl = agendamentoData.meet_url || `${portalUrl}?room=${roomName}`;
+
+    updateRow(SHEETS.AGENDAMENTOS, agendamento.id, { meet_url: meetUrl });
+    agendamento.meet_url = meetUrl;
+  }
 
   // Criar evento no Google Calendar da nutricionista
   try {
@@ -1020,7 +1101,7 @@ function saveConsultaCompleta(pacienteData, agendamentoData) {
     Logger.log("Calendar create fail: " + e.toString());
   }
 
-  // Enviar e-mail de boas-vindas para novo paciente
+  // Enviar e-mail de boas-vindas para novo paciente com link da sala de conferência
   let emailEnviado = false;
   if (isNew && paciente.email) {
     try {
@@ -1033,7 +1114,7 @@ function saveConsultaCompleta(pacienteData, agendamentoData) {
 
   return {
     paciente:        { id:paciente.id, nome:paciente.nome, email:paciente.email, whatsapp:paciente.whatsapp },
-    agendamento:     { id:agendamento.id, data:agendamento.data, hora:agendamento.hora },
+    agendamento:     { id:agendamento.id, data:formatarDataPTBR(agendamento.data), hora:formatarHoraPTBR(agendamento.hora), meet_url:agendamento.meet_url },
     emailEnviado,
     senhaTemporaria: isNew ? tempPin : null
   };
@@ -1045,6 +1126,7 @@ function enviarEmailBoasVindas(paciente, agendamento, tempPin) {
   const hora    = agendamento.hora || "";
   const tipo    = agendamento.tipo || "Consulta Nutricional";
   const login   = cleanCPF(paciente.cpf) ? cleanCPF(paciente.cpf) : paciente.email;
+  const meetUrl = agendamento.meet_url || "";
 
   const htmlBody = `
 <!DOCTYPE html>
@@ -1062,6 +1144,10 @@ function enviarEmailBoasVindas(paciente, agendamento, tempPin) {
   .body p{color:#3a5040;line-height:1.8;font-size:0.95rem}
   .box-ag{background:#f0f5ee;border-left:4px solid #8ca481;border-radius:8px;padding:20px 24px;margin:20px 0}
   .box-ag b{color:#0e1a12}
+  .box-meet{background:#eef6ff;border:1px solid #93c5fd;border-left:4px solid #3b82f6;border-radius:10px;padding:20px 24px;margin:20px 0;font-family:sans-serif}
+  .box-meet b{color:#1e3a8a;font-size:1rem}
+  .box-meet p{color:#334155;font-size:0.88rem;margin:8px 0 14px;line-height:1.5}
+  .btn-meet{background:#2563eb;color:#ffffff!important;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:0.92rem;display:inline-block;box-shadow:0 4px 12px rgba(37,99,235,0.25)}
   .box-pin{background:#0e1a12;border-radius:10px;padding:24px;margin:20px 0;text-align:center}
   .box-pin .label{color:#a0b399;font-size:0.8rem;font-family:sans-serif;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.05em}
   .box-pin .login{color:#eef4e5;font-size:0.9rem;margin:0 0 12px;font-family:monospace}
@@ -1092,6 +1178,17 @@ function enviarEmailBoasVindas(paciente, agendamento, tempPin) {
       <b>Horário:</b> ${hora}<br>
       <b>Tipo:</b> ${tipo}
     </div>
+
+    ${meetUrl ? `
+    <div class="box-meet">
+      <b>📹 Sala de Teleconsulta (Videoconferência Virtual)</b>
+      <p>Para acessar sua consulta no horário agendado, clique no botão abaixo para entrar na Sala de Conferência Virtual:</p>
+      <div style="text-align:center;margin:14px 0 10px;">
+        <a href="${meetUrl}" target="_blank" class="btn-meet">🎥 Entrar na Sala de Teleconsulta →</a>
+      </div>
+      <div style="font-size:0.78rem;color:#64748b;text-align:center;margin-top:8px;">Link direto: <a href="${meetUrl}" style="color:#2563eb;word-break:break-all;">${meetUrl}</a></div>
+    </div>
+    ` : ''}
 
     <div class="box-pin">
       <div class="label">🔐 Seu Acesso ao Portal do Paciente</div>

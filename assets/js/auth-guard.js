@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ====================================================================
  * KOS WEB & AUTOMAÇÃO - GUARDIÃO DE AUTENTICAÇÃO E CONTROLE DE ACESSO
  * ====================================================================
@@ -36,16 +36,20 @@
         window.location.href = 'login.html';
       }
     } else if (requiredLevel === 'paciente') {
-      if (!isPacienteLoggedIn()) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasRoom = urlParams.has('room');
+      if (!isPacienteLoggedIn() && !hasRoom) {
         console.warn('[KOS Auth Guard] Acesso restrito a Pacientes. Redirecionando para login...');
-        window.location.href = 'login.html';
+        window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
       }
     } else if (requiredLevel === 'guest-only') {
       // Página de login: se o usuário já estiver logado, encaminha para a página apropriada
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectUrl = urlParams.get('redirect');
       if (isAdminLoggedIn()) {
-        window.location.href = 'app-nutri.html';
+        window.location.href = redirectUrl || 'app-nutri.html';
       } else if (isPacienteLoggedIn()) {
-        window.location.href = 'portal-paciente.html';
+        window.location.href = redirectUrl || 'portal-paciente.html';
       }
     }
   }
