@@ -11,6 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="assets/js/taco-db.js"></script>
 <script src="assets/js/modelos-planos.js"></script>
+<script src="assets/js/receitas-db.js"></script>
 <style>
 :root,[data-theme="dark"]{
   --bg-deep:#0e1a12;--bg-card:#182a1f;--bg-header:#203528;
@@ -2719,100 +2720,7 @@ function carregarRecordatorio24h(recList) {
 
 // ── BANCO DE RECEITAS PRESETS ──────────────────────────────────────
 let categoriaReceitaAtiva = 'Todas';
-let receitasPresets = [
-  { 
-    id:'rec-1', 
-    titulo:'Panqueca Proteica de Banana & Aveia', 
-    categoria:'Café da Manhã', 
-    tempo_preparo:'10 min', 
-    ingredientes:'1 banana madura, 1 ovo inteiro, 30g de aveia em flocos finos, 1 pitada de canela em pó', 
-    modo_preparo:'Amasse a banana com o garfo, misture bem com o ovo e a aveia. Despeje em frigideira antiaderente aquecida e grelhe dos dois lados até dourar.', 
-    macros:'240 kcal | 12g Prot | 36g Carb | 5g Gord',
-    alimentosList: [
-      { nome: 'Banana prata madura', qtd: '1 unidade (80g)', kcal: 71, prot: 1.0, carb: 18.3, gord: 0.1 },
-      { nome: 'Ovo de galinha caipira', qtd: '1 unidade (50g)', kcal: 72, prot: 6.3, carb: 0.3, gord: 4.8 },
-      { nome: 'Aveia em flocos finos', qtd: '30g (3 col. sopa)', kcal: 118, prot: 4.2, carb: 20.0, gord: 2.2 },
-      { nome: 'Canela em pó', qtd: '1 pitada (2g)', kcal: 5, prot: 0.1, carb: 1.6, gord: 0.0 }
-    ]
-  },
-  { 
-    id:'rec-2', 
-    titulo:'Overnight Oats com Chia & Morangos', 
-    categoria:'Café da Manhã', 
-    tempo_preparo:'5 min (geladeira overnight)', 
-    ingredientes:'40g de aveia em flocos, 120ml de leite vegetal de amêndoas ou desnatado, 10g de sementes de chia, 5 morangos frescos fatiados, 1 fio de mel', 
-    modo_preparo:'Em um copo ou pote de vidro, misture a aveia, chia e leite. Adicione os morangos no topo e deixe na geladeira por pelo menos 6 horas antes de consumir.', 
-    macros:'280 kcal | 10g Prot | 45g Carb | 6g Gord',
-    alimentosList: [
-      { nome: 'Aveia em flocos', qtd: '40g (4 col. sopa)', kcal: 157, prot: 5.6, carb: 26.6, gord: 2.9 },
-      { nome: 'Leite vegetal de amêndoas', qtd: '120ml', kcal: 30, prot: 1.0, carb: 1.5, gord: 2.2 },
-      { nome: 'Semente de chia', qtd: '10g (1 col. sobremesa)', kcal: 48, prot: 1.6, carb: 4.2, gord: 3.1 },
-      { nome: 'Morango fresco fatiado', qtd: '5 unidades (75g)', kcal: 24, prot: 0.5, carb: 5.8, gord: 0.2 },
-      { nome: 'Mel de abelha', qtd: '1 fio (10g)', kcal: 30, prot: 0.0, carb: 8.2, gord: 0.0 }
-    ]
-  },
-  { 
-    id:'rec-3', 
-    titulo:'Omelete de Ervas Finas com Queijo Cottage', 
-    categoria:'Almoço / Jantar', 
-    tempo_preparo:'8 min', 
-    ingredientes:'2 ovos caipiras, 2 colheres de sopa de queijo cottage zero lactose, salsinha picada, orégano, 1/2 tomate picado em cubos', 
-    modo_preparo:'Bata os ovos com os temperos frescos. Despeje na frigideira untada com um fio de azeite. Recheie com o queijo cottage e tomates e dobre ao meio.', 
-    macros:'210 kcal | 22g Prot | 4g Carb | 12g Gord',
-    alimentosList: [
-      { nome: 'Ovo de galinha caipira', qtd: '2 unidades (100g)', kcal: 143, prot: 12.6, carb: 0.7, gord: 9.5 },
-      { nome: 'Queijo cottage zero lactose', qtd: '30g (2 col. sopa)', kcal: 30, prot: 4.5, carb: 1.0, gord: 0.8 },
-      { nome: 'Tomate fresco picado', qtd: '1/2 unidade (50g)', kcal: 10, prot: 0.5, carb: 2.2, gord: 0.1 },
-      { nome: 'Azeite de oliva extra virgem', qtd: '1 fio (5ml)', kcal: 44, prot: 0.0, carb: 0.0, gord: 5.0 }
-    ]
-  },
-  { 
-    id:'rec-4', 
-    titulo:'Smoothie Verde Anti-inflamatório & Detox', 
-    categoria:'Sucos & Shakes', 
-    tempo_preparo:'5 min', 
-    ingredientes:'200ml de água de coco natural, 1 folha de couve manteiga sem talo, 1/2 maçã verde com casca, 1 colher de sobremesa de semente de linhaça dourada, raspas de gengibre', 
-    modo_preparo:'Bata todos os ingredientes no liquidificador até obter uma textura homogênea. Consuma imediatamente sem coar.', 
-    macros:'130 kcal | 3g Prot | 26g Carb | 2g Gord',
-    alimentosList: [
-      { nome: 'Água de coco natural', qtd: '200ml', kcal: 40, prot: 0.7, carb: 9.5, gord: 0.2 },
-      { nome: 'Couve manteiga crua', qtd: '1 folha (30g)', kcal: 8, prot: 0.9, carb: 1.7, gord: 0.1 },
-      { nome: 'Maçã verde com casca', qtd: '1/2 unidade (70g)', kcal: 36, prot: 0.2, carb: 9.6, gord: 0.1 },
-      { nome: 'Linhaça dourada moída', qtd: '10g (1 col. sobremesa)', kcal: 49, prot: 1.8, carb: 3.0, gord: 3.3 },
-      { nome: 'Gengibre fresco', qtd: 'raspas (5g)', kcal: 4, prot: 0.1, carb: 0.9, gord: 0.0 }
-    ]
-  },
-  { 
-    id:'rec-5', 
-    titulo:'Cookie Fit de Frigideira com Cacau 70%', 
-    categoria:'Doces Fit', 
-    tempo_preparo:'10 min', 
-    ingredientes:'1 ovo, 2 colheres de sopa de farinha de aveia, 1 colher de chá de cacau em pó 100%, 1 colher de chá de adoçante xilitol ou stévia, 10g de gotas de chocolate 70%', 
-    modo_preparo:'Misture todos os ingredientes secos e úmidos em uma tigela. Coloque a massa na frigideira antiaderente em fogo bem baixo, decore com as gotas de chocolate e abafe com a tampa por 6 a 8 minutos.', 
-    macros:'190 kcal | 9g Prot | 22g Carb | 7g Gord',
-    alimentosList: [
-      { nome: 'Ovo de galinha', qtd: '1 unidade (50g)', kcal: 72, prot: 6.3, carb: 0.3, gord: 4.8 },
-      { nome: 'Farinha de aveia', qtd: '30g (2 col. sopa)', kcal: 118, prot: 4.2, carb: 20.0, gord: 2.2 },
-      { nome: 'Cacau em pó 100%', qtd: '5g (1 col. chá)', kcal: 12, prot: 1.0, carb: 2.8, gord: 0.6 },
-      { nome: 'Gotas de chocolate 70%', qtd: '10g', kcal: 50, prot: 0.8, carb: 4.5, gord: 3.2 }
-    ]
-  },
-  { 
-    id:'rec-6', 
-    titulo:'Salada Funcional de Grão-de-Bico com Ervas', 
-    categoria:'Almoço / Jantar', 
-    tempo_preparo:'12 min', 
-    ingredientes:'150g de grão-de-bico cozido e escorrido, 1/2 pepino japonês picado, 5 tomates cereja cortados ao meio, 1/4 de cebola roxa em tiras, azeite extra virgem, limão e hortelã', 
-    modo_preparo:'Em uma tigela, misture o grão-de-bico com os vegetais frescos. Tempere com o suco de limão, azeite, sal rosa e folhas de hortelã picadas.', 
-    macros:'310 kcal | 14g Prot | 42g Carb | 9g Gord',
-    alimentosList: [
-      { nome: 'Grão-de-bico cozido', qtd: '150g (1 xícara)', kcal: 210, prot: 11.5, carb: 35.0, gord: 3.8 },
-      { nome: 'Pepino japonês picado', qtd: '50g', kcal: 8, prot: 0.3, carb: 1.8, gord: 0.1 },
-      { nome: 'Tomate cereja', qtd: '5 unidades (50g)', kcal: 10, prot: 0.5, carb: 2.2, gord: 0.1 },
-      { nome: 'Azeite de oliva extra virgem', qtd: '1 colher sobremesa (8ml)', kcal: 70, prot: 0.0, carb: 0.0, gord: 7.8 }
-    ]
-  }
-];
+let receitasPresets = window.ReceitasDB ? window.ReceitasDB.getAll() : [];
 
 async function abrirModalReceitasPresets() {
   const modal = document.getElementById('modalReceitasPresets');

@@ -14,6 +14,7 @@
     rel="stylesheet">
   <script src="assets/js/taco-db.js"></script>
   <script src="assets/js/modelos-planos.js"></script>
+  <script src="assets/js/receitas-db.js"></script>
 
   <style>
     :root {
@@ -1219,7 +1220,10 @@
 
       <div class="section-divider">🍳 Refeições (Cards)</div>
       <div id="mealsInputs"></div>
-      <button type="button" class="btn-action btn-add" onclick="addMeal()">➕ Adicionar Refeição</button>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+        <button type="button" class="btn-action btn-add" style="margin-top:0;" onclick="addMeal()">➕ Adicionar Refeição</button>
+        <button type="button" class="btn-action" style="margin-top:0; background:rgba(245, 158, 11, 0.15); color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.4);" onclick="abrirModalReceitasFit()">📖 Banco de Receitas Fit</button>
+      </div>
 
       <div class="section-divider">📄 Orientação &amp; Suplementação</div>
       <div id="extrasInputs"></div>
@@ -1444,7 +1448,10 @@
           <div class="food-item-card">
             <div class="food-item-row-top">
               <input type="text" class="form-control food-item-name-input" value="${alNome}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'nome', this.value)" placeholder="Nome do alimento">
-              <button type="button" class="btn-food-remove" title="Remover item da refeição" onclick="removerAlimentoDaRefeicao(${idx}, ${itemIdx})">🗑️</button>
+              <div style="display:flex; gap:4px; flex-shrink:0;">
+                <button type="button" title="Ver ficha nutricional" onclick="abrirFichaNutricionalAlimento('${alNome.replace(/'/g, "\\'").replace(/"/g, '')}', '${String(alQtd).replace(/'/g,"\\'").replace(/"/g,'') || '100g'}')" style="background:rgba(140,164,129,0.15); border:1px solid var(--border-forest); color:var(--sage-light); width:30px; height:30px; border-radius:8px; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.background='rgba(140,164,129,0.3)'" onmouseout="this.style.background='rgba(140,164,129,0.15)'">🔍</button>
+                <button type="button" class="btn-food-remove" title="Remover item da refeição" onclick="removerAlimentoDaRefeicao(${idx}, ${itemIdx})">🗑️</button>
+              </div>
             </div>
             <div class="food-item-grid">
               <div class="food-macro-field">
@@ -1482,11 +1489,12 @@
         
         <!-- SELETOR E BUSCA TACO / MANUAL DA REFEIÇÃO -->
         <div style="background:rgba(140,164,129,0.08); border:1px solid var(--border-sage); padding:10px; border-radius:10px; margin-top:4px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:4px;">
             <span style="font-size:0.74rem; font-weight:800; color:var(--sage-light);">🔍 ADICIONAR ALIMENTO À REFEIÇÃO:</span>
-            <div style="display:flex; gap:4px;">
-              <button type="button" id="btnModoTaco_${idx}" class="btn-preset" style="padding:4px 8px; font-size:0.7rem; background:rgba(140,164,129,0.2); color:var(--sage-light);" onclick="alternarModoAddAlimento(${idx}, 'taco')">Tabela TACO</button>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+              <button type="button" id="btnModoTaco_${idx}" class="btn-preset" style="padding:4px 8px; font-size:0.7rem; background:rgba(140,164,129,0.2); color:var(--sage-light);" onclick="abrirModalTabelaTACO(${idx})">📋 Tabela TACO</button>
               <button type="button" id="btnModoManual_${idx}" class="btn-preset" style="padding:4px 8px; font-size:0.7rem; opacity:0.6;" onclick="alternarModoAddAlimento(${idx}, 'manual')">Manual</button>
+              <button type="button" class="btn-preset" style="padding:4px 8px; font-size:0.7rem; color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.4); background:rgba(245, 158, 11, 0.12);" onclick="abrirModalReceitasFit(${idx})">📖 Receita Fit</button>
             </div>
           </div>
           
@@ -1631,17 +1639,50 @@
           const chunk = refeicoes.slice(i, i + MEALS_PER_PAGE);
           let chunkHTML = '';
           chunk.forEach(m => {
+            let alimentosTableHTML = '';
+            if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
+              alimentosTableHTML = `
+                <table class="meal-food-table" style="width:100%; border-collapse:collapse; margin-top:8px; margin-bottom:10px; font-size:0.86rem;">
+                  <thead>
+                    <tr style="border-bottom:1.5px solid #dce4d8; font-size:0.7rem; color:#627867; text-transform:uppercase; letter-spacing:0.04em;">
+                      <th style="text-align:left; padding:4px 0;">Alimento / Ingrediente</th>
+                      <th style="text-align:center; padding:4px 0;">Porção</th>
+                      <th style="text-align:right; padding:4px 0;">Calorias / Macros</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${m.alimentosList.map(a => {
+                      const qtdFmt = (typeof a.qtd === 'number' || (!isNaN(a.qtd) && String(a.qtd).trim() !== '')) ? `${a.qtd}${a.unidade || 'g'}` : a.qtd;
+                      return `
+                      <tr style="border-bottom:1px dashed #eef2ec;">
+                        <td style="padding:6px 0; font-weight:700; color:#192b20;">${a.nome}</td>
+                        <td style="padding:6px 0; text-align:center; color:#526957; font-weight:600; font-size:0.8rem;">${qtdFmt}</td>
+                        <td style="padding:6px 0; text-align:right; font-weight:700; font-size:0.78rem; color:#203528;">
+                          <span>${Math.round(a.kcal || 0)} kcal</span>
+                          <span style="font-size:0.72rem; color:#5c7362; font-weight:600; margin-left:4px;">(P:${a.prot || 0}g · C:${a.carb || 0}g · G:${a.gord || 0}g)</span>
+                        </td>
+                      </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              `;
+            }
+
             chunkHTML += `
           <div class="meal-card">
             <div class="meal-header">
               <div class="meal-title">${m.titulo}</div>
               <div class="meal-stats-badges">
                 ${m.calorias ? `<span class="badge-stat">🔥 ${m.calorias}</span>` : ''}
-                ${m.proteina ? `<span class="badge-stat">💪 Prot: ${m.proteina}</span>` : ''}
+                ${m.proteina ? `<span class="badge-stat" style="background:rgba(251,191,36,0.15); color:#784900; border-color:rgba(251,191,36,0.4);">💪 Prot: ${m.proteina}</span>` : ''}
+                ${m.carbos ? `<span class="badge-stat" style="background:rgba(99,179,237,0.15); color:#1a4971; border-color:rgba(99,179,237,0.4);">🍚 Carb: ${m.carbos}</span>` : ''}
+                ${m.gorduras ? `<span class="badge-stat" style="background:rgba(248,113,113,0.15); color:#841d1d; border-color:rgba(248,113,113,0.4);">🥑 Gord: ${m.gorduras}</span>` : ''}
               </div>
             </div>
-            <div class="meal-items-list">${m.itens}</div>
-            ${m.obs ? `<div class="meal-obs-text"><strong>Obs:</strong> ${m.obs}</div>` : ''}
+            ${alimentosTableHTML}
+            ${(!alimentosTableHTML || m.itens.includes('MODO DE PREPARO')) ? `<div class="meal-items-list" style="margin-top:6px;">${m.itens}</div>` : ''}
+            ${m.obs ? `<div class="meal-obs-text"><strong>Obs / Orientações:</strong> ${m.obs}</div>` : ''}
           </div>
         `;
           });
@@ -1924,23 +1965,269 @@
       }
     });
 
-    function abrirModalReceitasFit() {
+    // ── BANCO COMPLETO DE RECEITAS FIT PRÉ-CONFIGURADAS ───────────────
+    let targetMealForRecipeImport = null;
+    let categoriaReceitaFitFiltro = 'Todas';
+
+    function abrirModalReceitasFit(targetMealIdx = null) {
+      targetMealForRecipeImport = targetMealIdx;
       const m = document.getElementById('modalReceitasFit');
-      if (m) m.style.display = 'flex';
+      if (!m) return;
+      m.style.display = 'flex';
+      renderCategoriasReceitaFitPills();
+      renderListaReceitasFitModal();
     }
 
     function fecharModalReceitasFit() {
       const m = document.getElementById('modalReceitasFit');
       if (m) m.style.display = 'none';
+      targetMealForRecipeImport = null;
     }
 
-    function importarReceitaNoPlano(nome, itens) {
-      refeicoes.push({ titulo: nome.toUpperCase(), calorias: '350 kcal', proteina: '20g', itens: itens, obs: 'Consumir conforme orientação' });
+    // ── MODAL TABELA TACO COMPLETA ─────────────────────────────────────
+    let _tacoTableTargetMeal = null;
+    let _tacoTableCatFiltro = 'Todas';
+
+    function abrirModalTabelaTACO(targetMealIdx = null) {
+      _tacoTableTargetMeal = targetMealIdx;
+      _tacoTableCatFiltro = 'Todas';
+      const m = document.getElementById('modalTabelaTACOCompleta');
+      if (!m) return;
+      m.style.display = 'flex';
+      const input = document.getElementById('tacoTableSearch');
+      if (input) input.value = '';
+      renderTacoTableCatPills();
+      renderTabelaTACO();
+      setTimeout(() => { if (input) input.focus(); }, 120);
+    }
+
+    function fecharModalTabelaTACO() {
+      const m = document.getElementById('modalTabelaTACOCompleta');
+      if (m) m.style.display = 'none';
+      _tacoTableTargetMeal = null;
+    }
+
+    function renderTacoTableCatPills() {
+      const box = document.getElementById('tacoTableCatPills');
+      if (!box) return;
+      const cats = ['Todas', ...new Set(TACO_DATABASE.map(f => f.cat))].filter(Boolean);
+      const CAT_EMOJI = {
+        'Todas':'🌿','Cereais':'🌾','Pães':'🍞','Massas':'🍝','Tubérculos':'🥔',
+        'Leguminosas':'🫘','Carnes':'🥩','Ovos':'🥚','Peixes':'🐟','Laticínios':'🥛',
+        'Frutas':'🍎','Hortaliças':'🥬','Gorduras':'🫒','Oleaginosas':'🥜',
+        'Suplementos':'💊','Bebidas':'🥤','Outros':'🍽️'
+      };
+      box.innerHTML = cats.map(cat => {
+        const isAct = _tacoTableCatFiltro === cat;
+        return `<button type="button" onclick="_tacoTableCatFiltro='${cat}'; renderTacoTableCatPills(); renderTabelaTACO();"
+          style="padding:5px 12px; border-radius:20px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap;
+          border:1.5px solid ${isAct ? 'var(--sage-light)' : 'var(--border-forest)'};
+          background:${isAct ? 'var(--sage-light)' : 'rgba(255,255,255,0.04)'};
+          color:${isAct ? 'var(--forest-dark)' : 'var(--text-muted)'};">
+          ${CAT_EMOJI[cat] || '🍽️'} ${cat}
+        </button>`;
+      }).join('');
+    }
+
+    function renderTabelaTACO() {
+      const tbody = document.getElementById('tacoTableBody');
+      const countEl = document.getElementById('tacoTableCount');
+      if (!tbody) return;
+
+      const term = (document.getElementById('tacoTableSearch')?.value || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+      const db = typeof TACO_DATABASE !== 'undefined' ? TACO_DATABASE : (window.TacoDB ? window.TacoDB.getAll?.() || [] : []);
+
+      const filtrados = db.filter(f => {
+        const matchCat = _tacoTableCatFiltro === 'Todas' || f.cat === _tacoTableCatFiltro;
+        if (!matchCat) return false;
+        if (!term) return true;
+        const nomeLower = (f.nome || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        const catLower  = (f.cat  || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        return nomeLower.includes(term) || catLower.includes(term);
+      });
+
+      if (countEl) countEl.textContent = `${filtrados.length} alimento${filtrados.length !== 1 ? 's' : ''} encontrado${filtrados.length !== 1 ? 's' : ''}`;
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:48px; color:var(--text-muted); font-size:0.85rem;">
+          <div style="font-size:2rem; margin-bottom:8px;">🔍</div>
+          Nenhum alimento encontrado para a busca.
+        </td></tr>`;
+        return;
+      }
+
+      const CAT_COLOR = {
+        'Cereais':'#fbbf24','Pães':'#fb923c','Massas':'#f59e0b','Tubérculos':'#a78bfa',
+        'Leguminosas':'#34d399','Carnes':'#f87171','Ovos':'#fde68a','Peixes':'#60a5fa',
+        'Laticínios':'#93c5fd','Frutas':'#f472b6','Hortaliças':'#4ade80',
+        'Gorduras':'#fcd34d','Oleaginosas':'#c084fc','default':'#8ca481'
+      };
+
+      tbody.innerHTML = filtrados.map(f => {
+        const cor = CAT_COLOR[f.cat] || CAT_COLOR.default;
+        const nomeEsc = (f.nome||'').replace(/'/g,"\\'").replace(/"/g,'');
+        const qtdEsc  = (f.unid||'100g').replace(/'/g,"\\'").replace(/"/g,'');
+        const addBtn = _tacoTableTargetMeal !== null
+          ? `<button type="button" title="Adicionar à refeição" onclick="adicionarAlimentoInlineDirect(${_tacoTableTargetMeal},'${f.id}','${nomeEsc}',${f.kcal},${f.carb},${f.prot},${f.gord}); fecharModalTabelaTACO();"
+              style="background:rgba(140,164,129,0.2); border:1px solid var(--border-forest); color:var(--sage-light); padding:4px 10px; border-radius:7px; cursor:pointer; font-size:0.7rem; font-weight:800; white-space:nowrap; transition:all 0.15s;"
+              onmouseover="this.style.background='var(--sage-light)'; this.style.color='var(--forest-dark)';"
+              onmouseout="this.style.background='rgba(140,164,129,0.2)'; this.style.color='var(--sage-light)';">⚡ Adicionar</button>`
+          : '';
+        return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.15s;" onmouseover="this.style.background='rgba(140,164,129,0.06)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:10px 16px;">
+            <div style="font-weight:800; color:var(--text-primary); font-size:0.82rem;">${f.nome}</div>
+            <span style="font-size:0.65rem; font-weight:800; color:${cor}; background:${cor}22; padding:1px 7px; border-radius:10px;">${f.cat}</span>
+          </td>
+          <td style="padding:10px; text-align:center; color:var(--text-muted); font-size:0.75rem; white-space:nowrap;">${f.unid || '100g'}</td>
+          <td style="padding:10px; text-align:center; font-weight:800; color:#eef4e5;">${f.kcal}</td>
+          <td style="padding:10px; text-align:center; font-weight:700; color:#63b3ed;">${f.carb}g</td>
+          <td style="padding:10px; text-align:center; font-weight:700; color:#fbbf24;">${f.prot}g</td>
+          <td style="padding:10px; text-align:center; font-weight:700; color:#f87171;">${f.gord}g</td>
+          <td style="padding:10px; text-align:center; font-weight:700; color:#c084fc;">${f.fibra}g</td>
+          <td style="padding:10px 12px; text-align:center;">
+            <div style="display:flex; gap:4px; justify-content:center; align-items:center;">
+              <button type="button" title="Ver ficha nutricional" onclick="abrirFichaNutricionalAlimento('${nomeEsc}','${qtdEsc}')"
+                style="background:rgba(140,164,129,0.12); border:1px solid var(--border-forest); color:var(--sage-light); width:28px; height:28px; border-radius:7px; cursor:pointer; font-size:0.82rem; display:flex; align-items:center; justify-content:center; transition:all 0.15s;"
+                onmouseover="this.style.background='rgba(140,164,129,0.3)'" onmouseout="this.style.background='rgba(140,164,129,0.12)'">🔍</button>
+              ${addBtn}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function setCategoriaReceitaFitFiltro(cat) {
+      categoriaReceitaFitFiltro = cat;
+      renderCategoriasReceitaFitPills();
+      renderListaReceitasFitModal();
+    }
+
+    function renderCategoriasReceitaFitPills() {
+      const box = document.getElementById('catReceitaFitPillsBox');
+      if (!box) return;
+      const cats = window.ReceitasDB ? window.ReceitasDB.getCategories() : ['Todas', 'Café da Manhã', 'Almoço / Jantar', 'Lanches Proteicos', 'Sucos & Shakes', 'Doces Fit'];
+      box.innerHTML = cats.map(cat => {
+        const isAct = categoriaReceitaFitFiltro === cat;
+        return `<button type="button" class="btn-preset ${isAct ? 'active' : ''}" onclick="setCategoriaReceitaFitFiltro('${cat}')" style="padding:6px 12px; border-radius:20px; font-size:0.75rem; font-weight:800; border:1px solid ${isAct ? 'var(--sage-light)' : 'var(--border-sage)'}; background:${isAct ? 'var(--sage-light)' : 'rgba(0,0,0,0.3)'}; color:${isAct ? 'var(--forest-dark)' : 'var(--text-muted)'}; cursor:pointer; transition:all 0.2s;">${cat}</button>`;
+      }).join('');
+    }
+
+    function renderListaReceitasFitModal(q = '') {
+      const container = document.getElementById('listReceitasFitModal');
+      if (!container) return;
+
+      const term = (q || document.getElementById('inSearchReceitaFit')?.value || '').toLowerCase().trim();
+
+      const filtradas = window.ReceitasDB ? window.ReceitasDB.search(term, categoriaReceitaFitFiltro) : [];
+
+      if (filtradas.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem;">Nenhuma receita encontrada para a busca.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtradas.map(r => {
+        const macros = window.ReceitasDB ? window.ReceitasDB.calcMacros(r) : { kcal: 0, prot: 0, carb: 0, gord: 0 };
+        const ingrBadges = (r.alimentosList || []).map(a => `<span onclick="abrirFichaNutricionalAlimento('${a.nome.replace(/'/g, "\\'")}', '${a.qtd}')" style="cursor:pointer; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); transition:all 0.2s; display:inline-block; margin:2px;" title="Clique para ver ficha nutricional detalhada">🔍 <strong>${a.qtd}</strong> ${a.nome}</span>`).join(' ');
+
+        return `
+        <div style="background:rgba(0,0,0,0.35); border:1.5px solid var(--border-forest); padding:16px; border-radius:14px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:800; color:var(--sage-light); font-size:0.95rem;">📖 ${r.titulo}</div>
+              <div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;">
+                <span style="font-size:0.68rem; background:rgba(140,164,129,0.18); color:var(--sage-light); padding:2px 8px; border-radius:12px; font-weight:700;">${r.categoria}</span>
+                <span style="font-size:0.68rem; background:rgba(255,255,255,0.08); color:var(--text-muted); padding:2px 8px; border-radius:12px;">⏱️ ${r.tempo_preparo || '10 min'}</span>
+                <span style="font-size:0.68rem; background:rgba(255,255,255,0.08); color:var(--text-muted); padding:2px 8px; border-radius:12px;">🍽️ ${r.rendimento || '1 porção'}</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="importarReceitaNoPlanoById('${r.id}')" style="font-size:0.78rem; padding:7px 14px; background:var(--sage-light); color:var(--forest-dark); border:none; font-weight:800; border-radius:10px; cursor:pointer;">
+              ⚡ Importar Receita
+            </button>
+          </div>
+
+          <div style="display:flex; gap:8px; font-size:0.75rem; font-weight:800; flex-wrap:wrap;">
+            <span style="background:rgba(255,255,255,0.08); color:#eef4e5; padding:3px 8px; border-radius:6px;">🔥 ${macros.kcal} kcal</span>
+            <span style="background:rgba(251,191,36,0.12); color:#fbbf24; padding:3px 8px; border-radius:6px;">💪 ${macros.prot}g Prot</span>
+            <span style="background:rgba(99,179,237,0.12); color:#63b3ed; padding:3px 8px; border-radius:6px;">🍚 ${macros.carb}g Carb</span>
+            <span style="background:rgba(248,113,113,0.12); color:#f87171; padding:3px 8px; border-radius:6px;">🥑 ${macros.gord}g Gord</span>
+          </div>
+
+          <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.6; background:rgba(0,0,0,0.2); padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04);">
+            <strong>Ingredientes:</strong> ${ingrBadges}
+          </div>
+        </div>
+        `;
+      }).join('');
+    }
+
+
+
+    function importarReceitaNoPlanoById(recId) {
+      const rec = window.ReceitasDB ? window.ReceitasDB.getById(recId) : null;
+      if (!rec) return;
+
+      const alimList = rec.alimentosList ? JSON.parse(JSON.stringify(rec.alimentosList)) : [];
+
+      let k = 0, c = 0, p = 0, g = 0;
+      alimList.forEach(a => {
+        k += parseFloat(a.kcal) || 0;
+        c += parseFloat(a.carb) || 0;
+        p += parseFloat(a.prot) || 0;
+        g += parseFloat(a.gord) || 0;
+      });
+
+      const itensTxt = rec.instrucoes
+        ? `• MODO DE PREPARO:\n${rec.instrucoes}`
+        : alimList.map(a => `• ${a.qtd} de ${a.nome}`).join('\n');
+
+      if (targetMealForRecipeImport !== null && targetMealForRecipeImport !== undefined && refeicoes[targetMealForRecipeImport]) {
+        const idx = targetMealForRecipeImport;
+        const ref = refeicoes[idx];
+        ref.alimentosList = [...(ref.alimentosList || []), ...alimList];
+        ref.titulo = ref.titulo || rec.titulo.toUpperCase();
+        ref.obs = ref.obs ? `${ref.obs} | Receita: ${rec.titulo}` : `Modo de Preparo: ${rec.instrucoes || ''}`;
+        recalculaRefeicaoPorAlimentos(idx);
+      } else {
+        refeicoes.push({
+          titulo: rec.titulo.toUpperCase(),
+          calorias: `${Math.round(k)} kcal`,
+          proteina: `${Math.round(p * 10) / 10}g`,
+          carbos: `${Math.round(c * 10) / 10}g`,
+          gorduras: `${Math.round(g * 10) / 10}g`,
+          itens: itensTxt,
+          obs: `Modo de Preparo: ${rec.instrucoes || ''}`,
+          alimentosList: alimList
+        });
+        recalculaRefeicaoPorAlimentos(refeicoes.length - 1);
+      }
+
       renderInputs();
       salvarELocal();
       atualizar();
+      calcularTotaisPlano();
       fecharModalReceitasFit();
-      alert('✅ Receita "' + nome + '" importada para o plano alimentar!');
+      alert(`✅ Receita "${rec.titulo}" importada com sucesso com ingredientes detalhados!`);
+    }
+
+    function importarReceitaNoPlano(nome, itens) {
+      refeicoes.push({
+        titulo: String(nome).toUpperCase(),
+        calorias: '300 kcal',
+        proteina: '20g',
+        carbos: '30g',
+        gorduras: '8g',
+        itens: itens,
+        obs: 'Consumir conforme orientação nutricional',
+        alimentosList: []
+      });
+      renderInputs();
+      salvarELocal();
+      atualizar();
+      calcularTotaisPlano();
+      fecharModalReceitasFit();
+      alert('✅ Receita "' + nome + '" importada para o plano!');
     }
 
     let alimentoTacoSelecionado = null;
@@ -1989,12 +2276,15 @@
 
       box.style.display = 'block';
       box.innerHTML = resultados.slice(0, 6).map((item, itemIdx) => `
-    <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:8px 10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; cursor:pointer;" onclick="adicionarAlimentoInlineDirectByIndex(${idxRef}, ${itemIdx})">
-      <div>
-        <div style="font-weight:800; color:var(--sage-light); font-size:0.8rem;">${item.nome}</div>
+    <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:8px 10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+      <div style="flex:1; min-width:0; cursor:pointer;" onclick="adicionarAlimentoInlineDirectByIndex(${idxRef}, ${itemIdx})">
+        <div style="font-weight:800; color:var(--sage-light); font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.nome}</div>
         <div style="font-size:0.7rem; color:var(--text-muted);">${item.kcal} kcal | C:${item.carb}g P:${item.prot}g (100g)</div>
       </div>
-      <button type="button" class="btn btn-secondary" style="font-size:0.7rem; padding:3px 8px; color:var(--sage-light);">+ Adicionar 100g</button>
+      <div style="display:flex; gap:4px; flex-shrink:0; margin-left:8px;">
+        <button type="button" title="Ver ficha nutricional" onclick="abrirFichaNutricionalAlimento('${item.nome.replace(/'/g,"\\'").replace(/"/g,'')}', '100g')" style="background:rgba(140,164,129,0.15); border:1px solid var(--border-forest); color:var(--sage-light); width:28px; height:28px; border-radius:7px; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;">🔍</button>
+        <button type="button" onclick="adicionarAlimentoInlineDirectByIndex(${idxRef}, ${itemIdx})" style="font-size:0.7rem; padding:3px 10px; background:rgba(140,164,129,0.15); border:1px solid var(--border-forest); color:var(--sage-light); border-radius:7px; cursor:pointer; font-weight:800; white-space:nowrap;">+ Adicionar</button>
+      </div>
     </div>
   `).join('');
     }
@@ -2359,55 +2649,24 @@
   <div id="modalReceitasFit"
     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
     <div
-      style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:28px; width:100%; max-width:540px; box-shadow:0 24px 60px rgba(0,0,0,0.6); display:flex; flex-direction:column; gap:16px;">
+      style="background:var(--forest-card); border:1.5px solid var(--border-forest); border-radius:18px; padding:24px; width:100%; max-width:680px; box-shadow:0 24px 60px rgba(0,0,0,0.6); display:flex; flex-direction:column; gap:16px; max-height:90vh;">
       <div
         style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:12px;">
-        <div style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:#fff;">📖 Biblioteca
-          de Receitas Fit</div>
+        <div>
+          <div style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:#fff;">📖 Biblioteca de Receitas Fit</div>
+          <div style="font-size:0.78rem; color:var(--sage-light); margin-top:2px;">Selecione uma receita com ingredientes detalhados para importar diretamente para a prescrição</div>
+        </div>
         <button onclick="fecharModalReceitasFit()"
           style="background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto;"
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <input type="text" id="inSearchReceitaFit" class="form-control" placeholder="🔍 Pesquisar receita por nome ou ingrediente (ex: Banana, Frango, Whey)..." oninput="renderListaReceitasFitModal(this.value)">
+        <div id="catReceitaFitPillsBox" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;"></div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; max-height:420px; overflow-y:auto; padding-right:4px;"
         id="listReceitasFitModal">
-        <!-- Receita Modelo 1 -->
-        <div
-          style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-weight:800; color:var(--sage-light);">🥞 Panqueca Proteica de Banana</div>
-            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">2 ovos + 1 banana + 30g aveia +
-              canela</div>
-          </div>
-          <button class="btn btn-secondary"
-            onclick="importarReceitaNoPlano('Panqueca Proteica de Banana', '2 ovos + 1 banana amassada + 30g de farelo de aveia + canela. Misturar e grelhar na frigideira antiaderente.')"
-            style="font-size:0.75rem; padding:6px 12px;">⚡ Importar</button>
-        </div>
-
-        <!-- Receita Modelo 2 -->
-        <div
-          style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-weight:800; color:var(--sage-light);">🥤 Shake Pós-Treino Anabólico</div>
-            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">30g Whey Protein + 200ml água + 100g
-              morangos</div>
-          </div>
-          <button class="btn btn-secondary"
-            onclick="importarReceitaNoPlano('Shake Pós-Treino Anabólico', '30g Whey Protein isolado + 200ml de água de coco + 100g de morangos congelados. Bater no liquidificador.')"
-            style="font-size:0.75rem; padding:6px 12px;">⚡ Importar</button>
-        </div>
-
-        <!-- Receita Modelo 3 -->
-        <div
-          style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-weight:800; color:var(--sage-light);">🥗 Crepioca Recheada de Frango</div>
-            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">1 ovo + 2 col de goma de tapioca +
-              80g frango desfiado</div>
-          </div>
-          <button class="btn btn-secondary"
-            onclick="importarReceitaNoPlano('Crepioca Recheada de Frango', '1 ovo + 2 colheres de goma de tapioca. Misturar, dourar na frigideira e rechear com 80g de frango desfiado temperado.')"
-            style="font-size:0.75rem; padding:6px 12px;">⚡ Importar</button>
-        </div>
       </div>
     </div>
   </div>
@@ -2479,9 +2738,272 @@
           style="margin-top:14px; background:var(--sage-light); color:var(--forest-dark);">
           ➕ Adicionar alimento à Refeição
         </button>
+        <button type="button" class="btn btn-secondary" onclick="abrirFichaNutricionalAlimento(alimentoTacoSelecionado ? alimentoTacoSelecionado.id : '', document.getElementById('tacoSelQtd')?.value || '100')" style="margin-top:8px; width:100%; font-size:0.8rem; font-weight:800;">
+          📊 Ver Ficha Nutricional Detalhada
+        </button>
       </div>
     </div>
   </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       MODAL TABELA TACO COMPLETA
+       ══════════════════════════════════════════════════════════ -->
+  <div id="modalTabelaTACOCompleta" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); backdrop-filter:blur(10px); z-index:9800; align-items:flex-start; justify-content:center; padding:20px; overflow-y:auto;">
+    <div style="background:var(--forest-card); border:1.5px solid var(--border-forest); border-radius:20px; width:100%; max-width:800px; box-shadow:0 32px 80px rgba(0,0,0,0.7); display:flex; flex-direction:column; margin:auto; overflow:hidden;">
+
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg, #0e1a12 0%, #152d1c 100%); padding:20px 24px; border-bottom:1.5px solid var(--border-forest); display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:#fff;">📋 Tabela TACO — Unicamp</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Tabela Brasileira de Composição de Alimentos · Clique em um alimento para adicionar à refeição</div>
+        </div>
+        <button onclick="fecharModalTabelaTACO()" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-forest); color:var(--text-muted); width:36px; height:36px; border-radius:10px; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✕</button>
+      </div>
+
+      <!-- Filtros -->
+      <div style="padding:16px 20px; border-bottom:1px solid var(--border-forest); display:flex; flex-direction:column; gap:10px; background:rgba(0,0,0,0.2);">
+        <input type="text" id="tacoTableSearch" placeholder="🔍  Buscar alimento (ex: frango, arroz, banana)..." oninput="renderTabelaTACO()" style="background:var(--bg-deep); border:1.5px solid var(--border-forest); border-radius:12px; padding:10px 14px; color:var(--text-primary); font-family:inherit; font-size:0.9rem; outline:none; width:100%; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--sage-light)'" onblur="this.style.borderColor='var(--border-forest)'">
+        <div id="tacoTableCatPills" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- Tabela -->
+      <div style="overflow-x:auto; flex:1;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+          <thead>
+            <tr style="background:rgba(0,0,0,0.3); position:sticky; top:0; z-index:1;">
+              <th style="padding:10px 16px; text-align:left; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--sage-light); border-bottom:1.5px solid var(--border-forest); white-space:nowrap;">Alimento</th>
+              <th style="padding:10px 10px; text-align:center; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); border-bottom:1.5px solid var(--border-forest); white-space:nowrap;">Porção</th>
+              <th style="padding:10px 10px; text-align:center; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#eef4e5; border-bottom:1.5px solid var(--border-forest);">Kcal</th>
+              <th style="padding:10px 10px; text-align:center; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#63b3ed; border-bottom:1.5px solid var(--border-forest);">Carb</th>
+              <th style="padding:10px 10px; text-align:center; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#fbbf24; border-bottom:1.5px solid var(--border-forest);">Prot</th>
+              <th style="padding:10px 10px; text-align:center; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#f87171; border-bottom:1.5px solid var(--border-forest);">Gord</th>
+              <th style="padding:10px 10px; text-align:center; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#c084fc; border-bottom:1.5px solid var(--border-forest);">Fibra</th>
+              <th style="padding:10px 12px; text-align:center; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); border-bottom:1.5px solid var(--border-forest);">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tacoTableBody">
+            <tr><td colspan="8" style="text-align:center; padding:40px; color:var(--text-muted);">Carregando alimentos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer com info -->
+      <div style="padding:12px 20px; border-top:1px solid var(--border-forest); background:rgba(0,0,0,0.2); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span id="tacoTableCount" style="font-size:0.72rem; color:var(--text-muted); font-weight:700;"></span>
+        <button onclick="fecharModalTabelaTACO()" style="background:var(--sage-light); border:none; color:var(--forest-dark); padding:8px 20px; border-radius:10px; font-weight:800; font-size:0.8rem; cursor:pointer;">✓ Fechar Tabela</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FICHA NUTRICIONAL DETALHADA DO ALIMENTO -->
+  <div id="modalFichaNutricionalAlimento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+    <div style="background:var(--forest-card); border:1.5px solid var(--border-forest); border-radius:18px; padding:24px; width:100%; max-width:540px; box-shadow:0 24px 60px rgba(0,0,0,0.6); display:flex; flex-direction:column; gap:16px; margin:auto;">
+      <!-- HEADER COM FOTO -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--border-forest); padding-bottom:14px; gap:14px;">
+        <!-- Foto do alimento -->
+        <div id="fichaFoodImgBox" style="width:72px; height:72px; border-radius:14px; overflow:hidden; flex-shrink:0; background:rgba(140,164,129,0.12); border:1.5px solid var(--border-forest); display:flex; align-items:center; justify-content:center; font-size:2.4rem; position:relative;">
+          <span id="fichaFoodEmoji" style="position:absolute;">🥗</span>
+          <img id="fichaFoodImg" src="" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:12px; display:none; position:relative; z-index:1;" onload="this.style.display='block'; document.getElementById('fichaFoodEmoji').style.display='none';" onerror="this.style.display='none'; document.getElementById('fichaFoodEmoji').style.display='block';">
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:4px;">
+            <span id="fichaFoodCat" style="font-size:0.7rem; background:rgba(140,164,129,0.2); color:var(--sage-light); padding:2px 8px; border-radius:12px; font-weight:800;">Cereais</span>
+            <span id="fichaFoodFonte" style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-muted); padding:2px 8px; border-radius:12px;">Tabela TACO Unicamp</span>
+          </div>
+          <div id="fichaFoodNome" style="font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:700; color:#fff; line-height:1.25;">Nome do Alimento</div>
+        </div>
+        <button onclick="fecharFichaNutricionalAlimento()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer; flex-shrink:0;">✕</button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.25); padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+        <label style="font-weight:700; color:var(--sage-light); font-size:0.85rem; white-space:nowrap;">Porção Calculada (g):</label>
+        <input type="number" id="fichaInQtd" class="form-control" value="100" min="1" step="1" style="width:100px; text-align:center; font-weight:800; font-size:0.95rem;" oninput="atualizarFichaNutricionalCalculada()">
+        <span style="font-size:0.75rem; color:var(--text-muted);">Altere para recalcular proporcionalmente</span>
+      </div>
+
+      <!-- BADGES DE MACRONUTRIENTES NA PORÇÃO -->
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; text-align:center;">
+        <div style="background:rgba(140,164,129,0.15); padding:10px 4px; border-radius:10px;">
+          <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Calorias</div>
+          <div style="font-weight:900; color:var(--sage-light); font-size:0.95rem; margin-top:2px;" id="fichaDispKcal">0 kcal</div>
+        </div>
+        <div style="background:rgba(99,179,237,0.15); padding:10px 4px; border-radius:10px;">
+          <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Carboidrato</div>
+          <div style="font-weight:900; color:#63b3ed; font-size:0.95rem; margin-top:2px;" id="fichaDispCarb">0g</div>
+        </div>
+        <div style="background:rgba(251,191,36,0.15); padding:10px 4px; border-radius:10px;">
+          <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Proteína</div>
+          <div style="font-weight:900; color:#fbbf24; font-size:0.95rem; margin-top:2px;" id="fichaDispProt">0g</div>
+        </div>
+        <div style="background:rgba(248,113,113,0.15); padding:10px 4px; border-radius:10px;">
+          <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Gordura</div>
+          <div style="font-weight:900; color:#f87171; font-size:0.95rem; margin-top:2px;" id="fichaDispGord">0g</div>
+        </div>
+        <div style="background:rgba(168,85,247,0.15); padding:10px 4px; border-radius:10px;">
+          <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Fibra</div>
+          <div style="font-weight:900; color:#c084fc; font-size:0.95rem; margin-top:2px;" id="fichaDispFibra">0g</div>
+        </div>
+      </div>
+
+      <!-- RATIO BAR VISUAL DE MACROS -->
+      <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.04);">
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:800; color:var(--text-muted); margin-bottom:6px;">
+          <span>Distribuição de Macronutrientes</span>
+          <span id="fichaRatioTxt">Carb: 0% • Prot: 0% • Gord: 0%</span>
+        </div>
+        <div style="height:10px; width:100%; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; display:flex;">
+          <div id="fichaBarCarb" style="height:100%; background:#63b3ed; width:33%; transition:width 0.3s;"></div>
+          <div id="fichaBarProt" style="height:100%; background:#fbbf24; width:33%; transition:width 0.3s;"></div>
+          <div id="fichaBarGord" style="height:100%; background:#f87171; width:34%; transition:width 0.3s;"></div>
+        </div>
+      </div>
+
+      <!-- TABELA COMPARATIVA POR 100G -->
+      <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.04);">
+        <div style="font-size:0.78rem; font-weight:800; color:var(--sage-light); margin-bottom:8px;">Valores Nutricionais de Referência (por 100g):</div>
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; font-size:0.75rem; text-align:center; color:var(--text-muted);">
+          <div>Kcal: <strong id="ficha100Kcal" style="color:#fff;">0</strong></div>
+          <div>Carb: <strong id="ficha100Carb" style="color:#63b3ed;">0g</strong></div>
+          <div>Prot: <strong id="ficha100Prot" style="color:#fbbf24;">0g</strong></div>
+          <div>Gord: <strong id="ficha100Gord" style="color:#f87171;">0g</strong></div>
+          <div>Fibra: <strong id="ficha100Fibra" style="color:#c084fc;">0g</strong></div>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="fecharFichaNutricionalAlimento()" style="width:100%; font-weight:800; padding:10px; background:var(--sage-light); color:var(--forest-dark); border:none; border-radius:10px; cursor:pointer;">
+        ✓ Fechar Ficha
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ── Mapa de emojis para grupos de alimentos ──────────────────────
+    const FOOD_EMOJI_MAP = {
+      'cereais': '🌾', 'arroz': '🍚', 'pão': '🍞', 'macarrão': '🍝', 'aveia': '🌾',
+      'carne': '🥩', 'frango': '🍗', 'peixe': '🐟', 'ovo': '🥚', 'atum': '🐟',
+      'leite': '🥛', 'queijo': '🧀', 'iogurte': '🥛', 'whey': '💪',
+      'feijão': '🫘', 'lentilha': '🫘', 'grão': '🫘', 'soja': '🫘',
+      'banana': '🍌', 'maçã': '🍎', 'laranja': '🍊', 'morango': '🍓', 'uva': '🍇',
+      'abacate': '🥑', 'manga': '🥭', 'melancia': '🍉', 'abacaxi': '🍍',
+      'batata': '🥔', 'cenoura': '🥕', 'tomate': '🍅', 'alface': '🥬',
+      'brócolis': '🥦', 'espinafre': '🥬', 'couve': '🥬', 'beterraba': '🔴',
+      'azeite': '🫒', 'óleo': '🫙', 'manteiga': '🧈',
+      'chocolate': '🍫', 'mel': '🍯', 'açúcar': '🍬',
+      'amendoim': '🥜', 'castanha': '🌰', 'nozes': '🌰',
+      'café': '☕', 'chá': '🍵', 'suco': '🥤', 'água': '💧',
+      'default': '🥗'
+    };
+
+    function getFoodEmoji(nome) {
+      const n = (nome || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      for (const [key, emoji] of Object.entries(FOOD_EMOJI_MAP)) {
+        if (n.includes(key)) return emoji;
+      }
+      return FOOD_EMOJI_MAP.default;
+    }
+
+    async function buscarFotoAlimento(nome) {
+      const img = document.getElementById('fichaFoodImg');
+      const emojiEl = document.getElementById('fichaFoodEmoji');
+      if (!img || !emojiEl) return;
+
+      // Reset
+      img.style.display = 'none';
+      emojiEl.style.display = 'block';
+      emojiEl.textContent = getFoodEmoji(nome);
+
+      try {
+        const query = encodeURIComponent(nome.split('(')[0].trim());
+        const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${query}&search_simple=1&action=process&json=true&page_size=5&fields=image_front_small_url`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+        if (!res.ok) return;
+        const data = await res.json();
+        const products = data.products || [];
+        const withImg = products.find(p => p.image_front_small_url);
+        if (withImg) {
+          img.src = withImg.image_front_small_url;
+          // onload/onerror handled in HTML
+        }
+      } catch (_) {
+        // silently fall back to emoji
+      }
+    }
+
+    function abrirFichaNutricionalAlimento(foodIdOrName, qtdVal = "100g") {
+      if (!window.TacoDB) return;
+      const details = window.TacoDB.getDetails(foodIdOrName);
+      if (!details) {
+        alert("Informações detalhadas não encontradas para este alimento.");
+        return;
+      }
+
+      let grams = 100;
+      const matchGrams = String(qtdVal).match(/(\d+(?:\.\d+)?)\s*g/i);
+      if (matchGrams) grams = parseFloat(matchGrams[1]);
+      else {
+        const matchNum = String(qtdVal).match(/^\s*(\d+(?:\.\d+)?)/)
+        if (matchNum) grams = parseFloat(matchNum[1]);
+      }
+
+      window._currentFichaFoodId = details.id;
+      
+      const modal = document.getElementById('modalFichaNutricionalAlimento');
+      if (!modal) return;
+
+      document.getElementById('fichaFoodNome').textContent = details.nome;
+      document.getElementById('fichaFoodCat').textContent = details.cat;
+      document.getElementById('fichaFoodFonte').textContent = details.fonte;
+      document.getElementById('fichaInQtd').value = grams;
+
+      atualizarFichaNutricionalCalculada();
+      modal.style.display = 'flex';
+
+      // Busca foto de forma assíncrona (não bloqueia a abertura do modal)
+      buscarFotoAlimento(details.nome);
+    }
+
+    function fecharFichaNutricionalAlimento() {
+      const modal = document.getElementById('modalFichaNutricionalAlimento');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function atualizarFichaNutricionalCalculada() {
+      const foodId = window._currentFichaFoodId;
+      if (!foodId || !window.TacoDB) return;
+      const grams = parseFloat(document.getElementById('fichaInQtd')?.value) || 100;
+      const calc = window.TacoDB.calc(foodId, grams);
+      if (!calc) return;
+
+      const details = window.TacoDB.getDetails(foodId);
+      const per100 = details.per100g;
+
+      document.getElementById('fichaDispKcal').textContent = `${calc.kcal} kcal`;
+      document.getElementById('fichaDispCarb').textContent = `${calc.carb}g`;
+      document.getElementById('fichaDispProt').textContent = `${calc.prot}g`;
+      document.getElementById('fichaDispGord').textContent = `${calc.gord}g`;
+      document.getElementById('fichaDispFibra').textContent = `${calc.fibra}g`;
+
+      document.getElementById('ficha100Kcal').textContent = `${per100.kcal} kcal`;
+      document.getElementById('ficha100Carb').textContent = `${per100.carb}g`;
+      document.getElementById('ficha100Prot').textContent = `${per100.prot}g`;
+      document.getElementById('ficha100Gord').textContent = `${per100.gord}g`;
+      document.getElementById('ficha100Fibra').textContent = `${per100.fibra}g`;
+
+      const totG = (calc.carb || 0) + (calc.prot || 0) + (calc.gord || 0);
+      const pCarb = totG > 0 ? Math.round((calc.carb / totG) * 100) : 0;
+      const pProt = totG > 0 ? Math.round((calc.prot / totG) * 100) : 0;
+      const pGord = totG > 0 ? Math.round((calc.gord / totG) * 100) : 0;
+
+      const barC = document.getElementById('fichaBarCarb');
+      const barP = document.getElementById('fichaBarProt');
+      const barG = document.getElementById('fichaBarGord');
+      if (barC) { barC.style.width = `${pCarb}%`; barC.title = `Carboidratos: ${pCarb}%`; }
+      if (barP) { barP.style.width = `${pProt}%`; barP.title = `Proteínas: ${pProt}%`; }
+      if (barG) { barG.style.width = `${pGord}%`; barG.title = `Gorduras: ${pGord}%`; }
+
+      document.getElementById('fichaRatioTxt').textContent = `Carb: ${pCarb}% • Prot: ${pProt}% • Gord: ${pGord}%`;
+    }
+  </script>
   <style>
     .kos-footer-brand {
       display: flex;

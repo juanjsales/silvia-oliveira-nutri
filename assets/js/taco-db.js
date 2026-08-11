@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Base de Dados de Alimentos (Tabela TACO / IBGE + Open Food Facts API)
  * Nutricionista Dra. Silvia Oliveira Lemos
  *
@@ -84,6 +84,24 @@ const TACO_DATABASE = [
   { id: "s3",  nome: "Creatina Monohidratada",         cat: "Suplementos", kcal: 0,   carb: 0.0,  prot: 0.0,  gord: 0.0, fibra: 0.0, unid: "100g" },
   { id: "s4",  nome: "Mel de Abelhas",                 cat: "Açúcares",    kcal: 309, carb: 84.0, prot: 0.4,  gord: 0.0, fibra: 0.2, unid: "100g" },
   { id: "s5",  nome: "Açúcar Mascavo",                 cat: "Açúcares",    kcal: 369, carb: 94.5, prot: 0.8,  gord: 0.1, fibra: 0.0, unid: "100g" },
+
+  // NOVOS ALIMENTOS ADICIONADOS (RECEITAS FIT & SUCOS)
+  { id: "c11", nome: "Polvilho Azedo / Doce",          cat: "Cereais",     kcal: 350, carb: 87.5, prot: 0.4,  gord: 0.1,  fibra: 0.5, unid: "100g" },
+  { id: "c12", nome: "Amaranto em Flocos",             cat: "Cereais",     kcal: 374, carb: 65.0, prot: 14.0, gord: 6.5,  fibra: 6.7, unid: "100g" },
+  { id: "g6",  nome: "Semente de Chia",                cat: "Oleaginosas", kcal: 486, carb: 42.1, prot: 16.5, gord: 30.7, fibra: 34.4, unid: "100g" },
+  { id: "g7",  nome: "Semente de Linhaça Dourada",     cat: "Oleaginosas", kcal: 495, carb: 33.3, prot: 14.1, gord: 32.3, fibra: 27.3, unid: "100g" },
+  { id: "g8",  nome: "Gergelim Branco / Preto",        cat: "Oleaginosas", kcal: 573, carb: 23.4, prot: 17.7, gord: 49.7, fibra: 11.8, unid: "100g" },
+  { id: "g9",  nome: "Maionese Light",                 cat: "Gorduras",    kcal: 280, carb: 10.0, prot: 1.0,  gord: 26.0, fibra: 0.0, unid: "100g" },
+  { id: "v7",  nome: "Beterraba Crua",                 cat: "Hortaliças",  kcal: 43,  carb: 9.6,  prot: 1.6,  gord: 0.2,  fibra: 2.8, unid: "100g" },
+  { id: "v8",  nome: "Aipo / Salsão (Talos)",          cat: "Hortaliças",  kcal: 16,  carb: 3.0,  prot: 0.7,  gord: 0.2,  fibra: 1.6, unid: "100g" },
+  { id: "d9",  nome: "Ricota Fresca",                  cat: "Laticínios",  kcal: 140, carb: 3.8,  prot: 12.6, gord: 8.1,  fibra: 0.0, unid: "100g" },
+  { id: "f8",  nome: "Gojiberry Desidratada",          cat: "Frutas",      kcal: 349, carb: 77.0, prot: 14.0, gord: 0.4,  fibra: 13.0, unid: "100g" },
+  { id: "f9",  nome: "Blueberry / Mirtilo Fresco",     cat: "Frutas",      kcal: 57,  carb: 14.5, prot: 0.7,  gord: 0.3,  fibra: 2.4, unid: "100g" },
+  { id: "f10", nome: "Ameixa Preta Seca",              cat: "Frutas",      kcal: 240, carb: 63.9, prot: 2.2,  gord: 0.4,  fibra: 7.1, unid: "100g" },
+  { id: "f11", nome: "Abacaxi In Natura",              cat: "Frutas",      kcal: 48,  carb: 12.3, prot: 0.5,  gord: 0.1,  fibra: 1.0, unid: "100g" },
+  { id: "f12", nome: "Manga Palmer",                   cat: "Frutas",      kcal: 60,  carb: 15.0, prot: 0.8,  gord: 0.4,  fibra: 1.6, unid: "100g" },
+  { id: "f13", nome: "Açaí em Pó Puro",                cat: "Frutas",      kcal: 247, carb: 36.0, prot: 9.8,  gord: 7.5,  fibra: 27.0, unid: "100g" },
+  { id: "b1",  nome: "Água de Coco Natural",           cat: "Bebidas",     kcal: 19,  carb: 3.7,  prot: 0.7,  gord: 0.2,  fibra: 0.0, unid: "100ml" },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -374,6 +392,83 @@ const TacoDB = {
       });
     };
   },
+
+  /* ── NOVAS FUNCIONALIDADES: Sincronização & Ficha Detalhada ──────────────── */
+  getDetails(idOrName) {
+    if (!idOrName) return null;
+    let food = null;
+    if (typeof idOrName === "string") {
+      food = TACO_DATABASE.find(item => item.id === idOrName);
+      if (!food) {
+        const norm = _normalize(idOrName);
+        food = TACO_DATABASE.find(item => item._nomeClean === norm || item._nomeClean.includes(norm) || norm.includes(item._nomeClean));
+      }
+    } else if (typeof idOrName === "object") {
+      food = idOrName;
+    }
+    if (!food) return null;
+
+    return {
+      id: food.id || "custom",
+      nome: food.nome,
+      cat: food.cat || "Geral",
+      unid: food.unid || "100g",
+      fonte: food.fonte || (food.id?.startsWith("off_") ? "Open Food Facts" : "Tabela TACO Unicamp"),
+      per100g: {
+        kcal: food.kcal,
+        carb: food.carb,
+        prot: food.prot,
+        gord: food.gord,
+        fibra: food.fibra || 0
+      }
+    };
+  },
+
+  syncIngredient(ingr) {
+    const targetName = typeof ingr === 'string' ? ingr : (ingr.nome || '');
+    const food = this.getDetails(ingr.foodId || targetName);
+
+    let grams = 100;
+    const matchGrams = (ingr.qtd || "").match(/(\d+(?:\.\d+)?)\s*g/i);
+    if (matchGrams) {
+      grams = parseFloat(matchGrams[1]);
+    } else if (typeof ingr.gramas === 'number') {
+      grams = ingr.gramas;
+    }
+
+    if (!food) {
+      return {
+        foodId: null,
+        nome: targetName,
+        qtd: ingr.qtd || `${grams}g`,
+        gramas: grams,
+        cat: 'Outros',
+        fonte: 'Manual',
+        kcal: parseFloat(ingr.kcal) || 0,
+        carb: parseFloat(ingr.carb) || 0,
+        prot: parseFloat(ingr.prot) || 0,
+        gord: parseFloat(ingr.gord) || 0,
+        fibra: parseFloat(ingr.fibra) || 0,
+        per100g: { kcal: ingr.kcal, carb: ingr.carb, prot: ingr.prot, gord: ingr.gord, fibra: ingr.fibra }
+      };
+    }
+
+    const calculated = this.calc(food.id, grams);
+    return {
+      foodId: food.id,
+      nome: food.nome,
+      qtd: ingr.qtd || `${grams}g`,
+      gramas: grams,
+      cat: food.cat,
+      fonte: food.fonte,
+      kcal: calculated.kcal,
+      carb: calculated.carb,
+      prot: calculated.prot,
+      gord: calculated.gord,
+      fibra: calculated.fibra,
+      per100g: food.per100g
+    };
+  }
 };
 
 if (typeof window !== "undefined") {
