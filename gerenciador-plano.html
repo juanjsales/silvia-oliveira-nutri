@@ -879,6 +879,155 @@
       body.in-iframe .manager-container {
         padding-top: 12px !important;
       }
+
+      /* SEÇÃO DE ALIMENTOS DETALHADOS DA REFEIÇÃO */
+      .food-det-section {
+        background: rgba(14, 26, 18, 0.55);
+        border: 1px solid var(--border-sage);
+        border-radius: 14px;
+        padding: 14px;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
+      }
+
+      .food-det-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(140, 164, 129, 0.2);
+      }
+
+      .food-det-title {
+        font-size: 0.76rem;
+        font-weight: 800;
+        color: var(--sage-light);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .food-det-badge {
+        background: rgba(140, 164, 129, 0.2);
+        color: var(--sage-light);
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        border: 1px solid rgba(140, 164, 129, 0.3);
+      }
+
+      .food-item-card {
+        background: rgba(24, 42, 31, 0.75);
+        border: 1px solid rgba(140, 164, 129, 0.28);
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition: var(--tr);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .food-item-card:hover {
+        border-color: var(--sage-light);
+        background: rgba(28, 48, 36, 0.85);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+      }
+
+      .food-item-row-top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .food-item-name-input {
+        font-weight: 800 !important;
+        font-size: 0.86rem !important;
+        padding: 8px 12px !important;
+        height: 38px !important;
+        background: rgba(0, 0, 0, 0.45) !important;
+        border: 1px solid var(--border-forest) !important;
+        border-radius: 10px !important;
+        color: #ffffff !important;
+        flex: 1;
+      }
+
+      .food-item-name-input:focus {
+        border-color: var(--sage-light) !important;
+        box-shadow: 0 0 0 2.5px rgba(140, 164, 129, 0.25) !important;
+      }
+
+      .btn-food-remove {
+        height: 38px;
+        width: 38px;
+        min-width: 38px;
+        background: rgba(248, 113, 113, 0.12);
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        color: #f87171;
+        font-weight: 800;
+        font-size: 0.85rem;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--tr);
+        font-family: inherit;
+        flex-shrink: 0;
+      }
+
+      .btn-food-remove:hover {
+        background: #f87171;
+        color: #ffffff;
+        border-color: #f87171;
+        box-shadow: 0 4px 12px rgba(248, 113, 113, 0.35);
+        transform: scale(1.04);
+      }
+
+      .food-item-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 1fr 1fr 1fr;
+        gap: 6px;
+      }
+
+      .food-macro-field {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .food-macro-label {
+        font-size: 0.64rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .food-macro-input {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        padding: 4px 6px !important;
+        height: 32px !important;
+        text-align: center !important;
+        border-radius: 8px !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        border: 1px solid var(--border-forest) !important;
+        color: #ffffff !important;
+      }
+
+      .food-macro-input:focus {
+        border-color: var(--sage-light) !important;
+        box-shadow: 0 0 0 2px rgba(140, 164, 129, 0.25) !important;
+      }
   </style>
   <link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
@@ -1136,7 +1285,51 @@
       localStorage.setItem('planoSilviaDataV3', JSON.stringify(dados));
     }
 
-    function carregarLocalStorage() {
+    function parseItensParaAlimentosList(itensTxt) {
+      if (!itensTxt || typeof itensTxt !== 'string') return [];
+      const lines = itensTxt.split('\n').map(l => l.replace(/^[•\-\*\s]+/, '').trim()).filter(Boolean);
+      return lines.map((line, idx) => {
+        const deMatch = line.match(/^(.+?)\s+de\s+(.+)$/i);
+        let qtdStr = '100g';
+        let nome = line;
+        if (deMatch && deMatch[1] && deMatch[2]) {
+          qtdStr = deMatch[1].trim();
+          nome = deMatch[2].trim();
+        } else {
+          const qMatch = line.match(/^([0-9\.,]+\s*(?:g|ml|unidade|scoop|fatia|colher|xícara|ovos?|gamas?)?)\s+(.+)$/i);
+          if (qMatch && qMatch[1] && qMatch[2]) {
+            qtdStr = qMatch[1].trim();
+            nome = qMatch[2].trim();
+          }
+        }
+
+        let kcal = 0, carb = 0, prot = 0, gord = 0;
+        const numQtd = parseFloat(qtdStr.replace(',', '.')) || 100;
+
+        if (window.TacoDB) {
+          const found = window.TacoDB.search(nome);
+          if (found && found.length > 0) {
+            const calc = window.TacoDB.calc(found[0], numQtd > 0 ? numQtd : 100);
+            kcal = calc.kcal;
+            carb = calc.carb;
+            prot = calc.prot;
+            gord = calc.gord;
+          }
+        }
+
+        return {
+          id: 'parsed_' + Date.now() + '_' + idx,
+          nome: nome,
+          qtd: qtdStr,
+          kcal: kcal,
+          carb: carb,
+          prot: prot,
+          gord: gord
+        };
+      });
+    }
+
+    function recuperarPlanoSalvo() {
       const salvo = localStorage.getItem('planoSilviaDataV3');
       if (salvo) {
         try {
@@ -1149,12 +1342,23 @@
           if (elApres && d.apresentacao) elApres.value = d.apresentacao;
           if (elObj && d.objetivo) elObj.value = d.objetivo;
           if (elAgua && d.metaAgua) elAgua.value = d.metaAgua;
-          if (Array.isArray(d.refeicoes) && d.refeicoes.length > 0) refeicoes = d.refeicoes;
+          if (Array.isArray(d.refeicoes) && d.refeicoes.length > 0) {
+            refeicoes = d.refeicoes.map(r => {
+              let alimList = r.alimentosList && Array.isArray(r.alimentosList) && r.alimentosList.length > 0
+                ? r.alimentosList
+                : parseItensParaAlimentosList(r.itens || '');
+              return {
+                ...r,
+                alimentosList: alimList
+              };
+            });
+          }
         } catch (e) { }
       } else {
         carregarModeloPronto('2000_hipertrofia_padrao');
       }
     }
+    function carregarLocalStorage() { return recuperarPlanoSalvo(); }
     function carregarModeloPronto(modeloId) {
       if (!window.MODELOS_PLANOS_NUTRI || !Array.isArray(window.MODELOS_PLANOS_NUTRI)) {
         alert('Biblioteca de modelos nutricionais não foi carregada.');
@@ -1221,36 +1425,47 @@
       refeicoes.forEach((m, idx) => {
         let alimentosHTML = '';
         if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
-          alimentosHTML = `<div style="background:rgba(0,0,0,0.25); border:1px solid var(--border-sage); padding:10px; border-radius:12px; margin-top:8px; display:flex; flex-direction:column; gap:8px;">
-        <div style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">🥗 Alimentos Detalhados da Refeição:</div>`;
+          alimentosHTML = `
+        <div class="food-det-section">
+          <div class="food-det-header">
+            <span class="food-det-title">🥗 Alimentos Detalhados da Refeição</span>
+            <span class="food-det-badge">${m.alimentosList.length} ${m.alimentosList.length === 1 ? 'item' : 'itens'}</span>
+          </div>`;
 
           m.alimentosList.forEach((al, itemIdx) => {
+            const alNome = (al.nome || '').replace(/"/g, '&quot;');
+            const alQtd = al.qtd != null ? al.qtd : '';
+            const alKcal = al.kcal != null ? al.kcal : '0';
+            const alCarb = al.carb != null ? al.carb : '0';
+            const alProt = al.prot != null ? al.prot : '0';
+            const alGord = al.gord != null ? al.gord : '0';
+
             alimentosHTML += `
-          <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:10px; border-radius:10px; display:flex; flex-direction:column; gap:6px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
-              <input type="text" class="form-control" style="font-weight:800; font-size:0.82rem; padding:4px 8px; flex:1;" value="${al.nome.replace(/"/g, '&quot;')}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'nome', this.value)" placeholder="Nome do alimento">
-              <button type="button" class="btn-remove" style="position:static; padding:4px 8px; font-size:0.7rem;" onclick="removerAlimentoDaRefeicao(${idx}, ${itemIdx})">✕</button>
+          <div class="food-item-card">
+            <div class="food-item-row-top">
+              <input type="text" class="form-control food-item-name-input" value="${alNome}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'nome', this.value)" placeholder="Nome do alimento">
+              <button type="button" class="btn-food-remove" title="Remover item da refeição" onclick="removerAlimentoDaRefeicao(${idx}, ${itemIdx})">🗑️</button>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:4px;">
-              <div>
-                <label style="font-size:0.62rem; color:var(--text-muted); display:block;">Qtd/Porção</label>
-                <input type="text" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.qtd}" oninput="editarQtdAlimento(${idx}, ${itemIdx}, this.value)">
+            <div class="food-item-grid">
+              <div class="food-macro-field">
+                <span class="food-macro-label" style="color:var(--text-muted);">PORÇÃO</span>
+                <input type="text" class="form-control food-macro-input" value="${alQtd}" oninput="editarQtdAlimento(${idx}, ${itemIdx}, this.value)" placeholder="Ex: 100g">
               </div>
-              <div>
-                <label style="font-size:0.62rem; color:#fff; display:block;">kcal</label>
-                <input type="number" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.kcal}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'kcal', this.value)">
+              <div class="food-macro-field">
+                <span class="food-macro-label" style="color:#eef4e5;">KCAL</span>
+                <input type="text" id="food_kcal_${idx}_${itemIdx}" class="form-control food-macro-input" value="${alKcal}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'kcal', this.value)" placeholder="0">
               </div>
-              <div>
-                <label style="font-size:0.62rem; color:#63b3ed; display:block;">Carb(g)</label>
-                <input type="number" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.carb}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'carb', this.value)">
+              <div class="food-macro-field">
+                <span class="food-macro-label" style="color:#63b3ed;">CARB(G)</span>
+                <input type="text" id="food_carb_${idx}_${itemIdx}" class="form-control food-macro-input" value="${alCarb}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'carb', this.value)" placeholder="0">
               </div>
-              <div>
-                <label style="font-size:0.62rem; color:#fbbf24; display:block;">Prot(g)</label>
-                <input type="number" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.prot}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'prot', this.value)">
+              <div class="food-macro-field">
+                <span class="food-macro-label" style="color:#fbbf24;">PROT(G)</span>
+                <input type="text" id="food_prot_${idx}_${itemIdx}" class="form-control food-macro-input" value="${alProt}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'prot', this.value)" placeholder="0">
               </div>
-              <div>
-                <label style="font-size:0.62rem; color:#f87171; display:block;">Gord(g)</label>
-                <input type="number" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.gord}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'gord', this.value)">
+              <div class="food-macro-field">
+                <span class="food-macro-label" style="color:#f87171;">GORD(G)</span>
+                <input type="text" id="food_gord_${idx}_${itemIdx}" class="form-control food-macro-input" value="${alGord}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'gord', this.value)" placeholder="0">
               </div>
             </div>
           </div>
@@ -1546,13 +1761,22 @@
           if (resPlano && resPlano.success && resPlano.data && resPlano.data.refeicoes) {
             let meallist = typeof resPlano.data.refeicoes === 'string' ? JSON.parse(resPlano.data.refeicoes) : resPlano.data.refeicoes;
             if (Array.isArray(meallist) && meallist.length > 0) {
-              refeicoes = meallist.map(m => ({
-                titulo: (m.titulo || m.nome || 'REFEIÇÃO').toUpperCase(),
-                calorias: m.calorias || m.kcal || '',
-                proteina: m.proteina || '',
-                itens: m.itens || m.alimentos || '',
-                obs: m.obs || (m.substituicoes ? `Substituições: ${m.substituicoes}` : '')
-              }));
+              refeicoes = meallist.map(m => {
+                let alimList = m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0
+                  ? m.alimentosList
+                  : parseItensParaAlimentosList(m.itens || m.alimentos || '');
+                return {
+                  titulo: (m.titulo || m.nome || 'REFEIÇÃO').toUpperCase(),
+                  calorias: m.calorias || m.kcal || '',
+                  proteina: m.proteina || '',
+                  carbos: m.carbos || '',
+                  gorduras: m.gorduras || '',
+                  itens: m.itens || m.alimentos || '',
+                  obs: m.obs || (m.substituicoes ? `Substituições: ${m.substituicoes}` : ''),
+                  alimentosList: alimList
+                };
+              });
+              refeicoes.forEach((_, i) => recalculaRefeicaoPorAlimentos(i));
               if (resPlano.data.extras) {
                 if (resPlano.data.extras.apresentacao && document.getElementById('inApresentacao')) {
                   document.getElementById('inApresentacao').value = resPlano.data.extras.apresentacao;
@@ -1677,7 +1901,7 @@
       if (window.self !== window.top) {
         document.body.classList.add('in-iframe');
       }
-      carregarLocalStorage();
+      recuperarPlanoSalvo();
       await carregarPacientesNoGerenciador();
       renderInputs();
       atualizar();
@@ -1801,8 +2025,6 @@
       const protEl = document.getElementById(`manualProt_${idxRef}`);
 
       const nome = nomeEl?.value.trim();
-      if (!nome) { alert('Digite o nome do alimento'); return; }
-
       const qtdStr = qtdEl?.value.trim() || '1 porção';
       const kcal = parseFloat(kcalEl?.value) || 0;
       const prot = parseFloat(protEl?.value) || 0;
@@ -2065,17 +2287,28 @@
       al.baseProt = baseP;
       al.baseGord = baseG;
 
-      al.qtd = q;
+      al.qtd = novaQtdVal;
       const ratio = q / 100;
-      al.kcal = Math.round(baseK * ratio);
-      al.carb = Math.round(baseC * ratio * 10) / 10;
-      al.prot = Math.round(baseP * ratio * 10) / 10;
-      al.gord = Math.round(baseG * ratio * 10) / 10;
+      if (q > 0) {
+        al.kcal = Math.round(baseK * ratio);
+        al.carb = Math.round(baseC * ratio * 10) / 10;
+        al.prot = Math.round(baseP * ratio * 10) / 10;
+        al.gord = Math.round(baseG * ratio * 10) / 10;
+
+        const elKcal = document.getElementById(`food_kcal_${idxRef}_${idxItem}`);
+        const elCarb = document.getElementById(`food_carb_${idxRef}_${idxItem}`);
+        const elProt = document.getElementById(`food_prot_${idxRef}_${idxItem}`);
+        const elGord = document.getElementById(`food_gord_${idxRef}_${idxItem}`);
+        if (elKcal) elKcal.value = al.kcal;
+        if (elCarb) elCarb.value = al.carb;
+        if (elProt) elProt.value = al.prot;
+        if (elGord) elGord.value = al.gord;
+      }
 
       recalculaRefeicaoPorAlimentos(idxRef);
-      renderInputs();
       salvarELocal();
       atualizar();
+      calcularTotaisPlano();
       calcularTotaisPlano();
     }
 
