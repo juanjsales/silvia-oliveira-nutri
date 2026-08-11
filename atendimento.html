@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="assets/js/taco-db.js"></script>
+<script src="assets/js/modelos-planos.js"></script>
 <style>
 :root,[data-theme="dark"]{
   --bg-deep:#0e1a12;--bg-card:#182a1f;--bg-header:#203528;
@@ -804,10 +805,44 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
         </div>
       </div>
 
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-forest)">
-        <span style="font-size:.78rem;font-weight:800;color:var(--text-muted);align-self:center">Presets:</span>
-        <button class="btn btn-secondary" onclick="carregarPreset('manutencao')" style="font-size:.78rem;padding:6px 12px">⚖️ Manutenção</button>
-        <button class="btn btn-secondary" onclick="carregarPreset('saude')" style="font-size:.78rem;padding:6px 12px">🌱 Saúde Intestinal</button>
+      <div style="background: rgba(140, 164, 129, 0.12); padding: 14px; border-radius: 12px; border: 1px solid var(--border-forest); margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+          <span style="font-size: 0.82rem; font-weight: 800; color: var(--sage-light);">📋 Carregar Modelo Pronto de Plano Nutricional (20 Opções):</span>
+          <span style="font-size: 0.7rem; background: var(--sage-light); color: var(--forest-dark); padding: 2px 8px; border-radius: 99px; font-weight: 900;">1200 kcal a 2500 kcal</span>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <select id="selModeloProntoAtend" class="form-control" style="flex: 1; min-width: 260px; font-size: 0.82rem; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid var(--border-forest); padding: 8px 12px; border-radius: 8px;">
+            <optgroup label="🔴 Emagrecimento & Déficit (1200 a 1500 kcal)">
+              <option value="1200_emagrecimento">🎯 1200 kcal - Emagrecimento Rápido / Déficit Agressivo</option>
+              <option value="1300_emagrecimento_fem">🌸 1300 kcal - Emagrecimento Feminino Equilibrado</option>
+              <option value="1350_lowcarb">🥑 1350 kcal - Low Carb Emagrecimento</option>
+              <option value="1400_reeducacao">🥗 1400 kcal - Reeducação Alimentar & Perda de Peso</option>
+              <option value="1450_semlactose_semgluten">🌿 1450 kcal - Emagrecimento Sem Lactose & Glúten</option>
+              <option value="1500_deficit_altaproteina">💪 1500 kcal - Déficit Moderado com Alta Proteína</option>
+            </optgroup>
+            <optgroup label="🟡 Manutenção & Dietas Específicas (1550 a 1800 kcal)">
+              <option value="1550_vegetariano">🌱 1550 kcal - Vegetariano (Plant-Based)</option>
+              <option value="1600_reeducacao_manutencao">⚖️ 1600 kcal - Reeducação Alimentar & Manutenção Leve</option>
+              <option value="1650_antiinflamatorio">🫐 1650 kcal - Dieta Anti-inflamatória & Saúde Gut</option>
+              <option value="1700_cetogenica">🥩 1700 kcal - Cetogênica (Ketogenic Low Carb)</option>
+              <option value="1750_controleglicemico">🩸 1750 kcal - Controle Glicêmico (Pré-diabetes)</option>
+              <option value="1800_manutencao_masculino">🏃 1800 kcal - Manutenção Ativa & Deficit Masculino</option>
+            </optgroup>
+            <optgroup label="🟢 Hipertrofia & Performance (1850 a 2500 kcal)">
+              <option value="1850_ganhoseco_fem">🌺 1850 kcal - Ganho Seco Feminino (Clean Bulk)</option>
+              <option value="1900_hipertrofia_mod">🏋️ 1900 kcal - Hipertrofia Moderada</option>
+              <option value="1950_highprotein">🥩 1950 kcal - High Protein & Ganho de Massa</option>
+              <option value="2000_hipertrofia_padrao" selected>🏆 2000 kcal - Hipertrofia Padrão (Clean Bulk)</option>
+              <option value="2100_performance">⚡ 2100 kcal - Performance Esportiva & Atleta</option>
+              <option value="2200_hipertrofia_avancada">🔥 2200 kcal - Hipertrofia Avançada / Alto Volume</option>
+              <option value="2350_bulking">💥 2350 kcal - Ganho Calórico Intenso (Bulking)</option>
+              <option value="2500_atleta_endurance">🥇 2500 kcal - Atleta de Alta Performance / Endurance</option>
+            </optgroup>
+          </select>
+          <button type="button" class="btn btn-secondary" onclick="carregarModeloProntoNutriAtend(document.getElementById('selModeloProntoAtend').value)" style="white-space: nowrap; font-size: 0.8rem; padding: 8px 16px;">
+            ⚡ Aplicar Modelo na Consulta
+          </button>
+        </div>
       </div>
 
       <div id="macroSummary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">
@@ -1682,6 +1717,46 @@ function carregarPreset(tipo) {
     toast(`⚖️ Preset de Plano "${tipo.toUpperCase()}" carregado com sucesso!`);
   }
 }
+
+function carregarModeloProntoNutriAtend(modeloId) {
+  if (!window.MODELOS_PLANOS_NUTRI || !Array.isArray(window.MODELOS_PLANOS_NUTRI)) {
+    toast('Banco de modelos nutricionais não carregado.', true);
+    return;
+  }
+  const mod = window.MODELOS_PLANOS_NUTRI.find(m => m.id === modeloId);
+  if (!mod) {
+    toast('Modelo não encontrado.', true);
+    return;
+  }
+
+  const horarPadrao = ['08:00', '10:30', '12:30', '16:00', '19:30', '21:30'];
+
+  refeicoes = mod.refeicoes.map((r, i) => {
+    const alimentos = r.alimentosList || [];
+    let itensFormatados = r.itens || '';
+    if (!itensFormatados && alimentos.length > 0) {
+      itensFormatados = alimentos.map(a => {
+        const qFmt = (a.unidade && String(a.unidade).trim() !== '') ? `${a.qtd} ${a.unidade}` : (a.qtd || '1 porção');
+        return `• ${qFmt} de ${a.nome}`;
+      }).join('\n');
+    }
+
+    const hor = r.horario || horarPadrao[i % horarPadrao.length];
+
+    return {
+      nome: (r.titulo || r.nome || `Refeição ${i+1}`).toUpperCase(),
+      horario: hor,
+      alimentosList: JSON.parse(JSON.stringify(alimentos)),
+      itens: itensFormatados,
+      observacao: r.obs || r.observacao || ''
+    };
+  });
+
+  renderRefeicoes();
+  calcMacrosPlano();
+  toast(`⚡ Modelo "${mod.titulo}" aplicado com sucesso ao plano da consulta!`);
+}
+window.carregarModeloProntoNutriAtend = carregarModeloProntoNutriAtend;
 
 function calcMacrosPlano() {
   let totKcal = 0, totProt = 0, totCarb = 0, totGord = 0;

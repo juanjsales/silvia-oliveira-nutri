@@ -10,6 +10,182 @@
 <link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="assets/js/taco-db.js"></script>
+<script src="assets/js/modelos-planos.js"></script>
+
+<style>
+:root {
+  --forest-dark: #203528;
+  --forest-card: #182a1f;
+  --forest-deep: #0e1a12;
+  --sage-light: #8ca481;
+  --sage-bg: #92a988;
+  --sage-dim: rgba(140, 164, 129, 0.2);
+  --border-sage: rgba(140, 164, 129, 0.35);
+  --paper-bg: #f8faf6;
+  --card-white: #ffffff;
+  --text-dark: #192b20;
+  --text-light: #eef4e5;
+  --text-muted: #a0b399;
+  --border-forest: rgba(140, 164, 129, 0.25);
+  --border-light: #dce4d8;
+  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* PADRONIZAÇÃO DE BARRAS DE ROLAGEM (SCROLLBARS) BOTÂNICAS */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-deep, #0e1a12); }
+::-webkit-scrollbar-thumb { background: var(--border-forest, rgba(140, 164, 129, 0.35)); border-radius: 4px; border: 2px solid var(--bg-deep, #0e1a12); }
+::-webkit-scrollbar-thumb:hover { background: var(--sage-light, #8ca481); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-forest, rgba(140, 164, 129, 0.35)) var(--bg-deep, #0e1a12); }
+
+body { background: var(--forest-deep); color: var(--text-light); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+/* HEADER TOPO PREMIUM */
+.top-header { height: 72px; background: rgba(24, 42, 31, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-forest); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.brand-box { display: flex; align-items: center; gap: 14px; }
+.brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, rgba(140, 164, 129, 0.3), rgba(32, 53, 40, 0.8)); border: 1.5px solid var(--sage-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.brand-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: #fff; letter-spacing: 0.02em; }
+.brand-crn { font-size: 0.72rem; color: var(--sage-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.btn-nav { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--tr); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 12px rgba(140, 164, 129, 0.25); }
+.btn-nav:hover { background: #9bb590; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(140, 164, 129, 0.4); }
+.btn-secondary { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid var(--border-forest); box-shadow: none; }
+.btn-secondary:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateY(-2px); }
+
+/* SELETOR DE ABAS RESPONSIVO (DESKTOP & MOBILE & IFRAME) */
+.mobile-tabs { display: flex; background: var(--forest-card); border-bottom: 1px solid var(--border-forest); padding: 10px 16px; gap: 10px; position: sticky; top: 0; z-index: 990; justify-content: center; }
+.tab-btn { flex: 1; max-width: 220px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-forest); background: rgba(0,0,0,0.3); color: var(--text-muted); font-size: 0.85rem; font-weight: 700; cursor: pointer; text-align: center; transition: var(--tr); font-family: inherit; }
+.tab-btn:hover { border-color: var(--sage-light); color: var(--sage-light); }
+.tab-btn.active { background: var(--sage-light); color: var(--forest-dark); border-color: var(--sage-light); font-weight: 900; }
+
+/* PAINEL DIVIDIDO: FORMULÁRIO vs EDITORIAL PREVIEW */
+.manager-container { padding: 24px 20px; display: grid; grid-template-columns: 420px 1fr; gap: 24px; width: 100%; max-width: 1700px; margin: 0 auto; align-items: start; box-sizing: border-box; }
+
+.form-panel { background: linear-gradient(180deg, var(--forest-card) 0%, rgba(20, 35, 26, 0.95) 100%); border: 1px solid var(--border-forest); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; box-shadow: 0 12px 32px rgba(0,0,0,0.4); width: 100%; box-sizing: border-box; }
+.form-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+.form-panel p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 4px; }
+
+.preset-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.btn-preset { background: rgba(140, 164, 129, 0.12); border: 1px solid var(--border-sage); color: #eef4e5; padding: 9px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.25s; text-align: center; font-family: inherit; }
+.btn-preset:hover { background: var(--sage-light); color: var(--forest-dark); transform: translateY(-1px); }
+.btn-preset-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08); }
+.btn-preset-danger:hover { background: #f87171; color: #fff; }
+
+.section-divider { border-top: 1px dashed var(--border-sage); margin: 16px 0 10px; padding-top: 14px; font-weight: 800; font-size: 0.78rem; color: var(--sage-light); text-transform: uppercase; letter-spacing: 1.2px; display: flex; align-items: center; gap: 8px; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-size: 0.76rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sage-light); }
+.form-control { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-forest); padding: 11px 14px; border-radius: 12px; color: #fff; font-family: inherit; font-size: 0.9rem; outline: none; transition: var(--tr); width: 100%; box-sizing: border-box; }
+.form-control:focus { border-color: var(--sage-light); box-shadow: 0 0 0 3px rgba(140, 164, 129, 0.2); background: rgba(0, 0, 0, 0.6); }
+textarea.form-control { min-height: 100px; resize: vertical; line-height: 1.6; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.card-box { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-sage); border-radius: 16px; padding: 18px; margin-bottom: 14px; position: relative; display: flex; flex-direction: column; gap: 12px; transition: var(--tr); }
+.card-box:hover { border-color: var(--sage-light); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.btn-remove { position: absolute; top: 14px; right: 14px; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.35); color: #f87171; font-weight: 700; cursor: pointer; font-size: 0.78rem; padding: 6px 14px; border-radius: 8px; transition: var(--tr); white-space: nowrap; font-family: inherit; }
+.btn-remove:hover { background: #f87171; color: #fff; }
+
+.btn-action { background: var(--sage-light); color: var(--forest-dark); border: none; padding: 13px 18px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; width: 100%; transition: all 0.25s; margin-top: 10px; box-shadow: 0 4px 14px rgba(140,164,129,0.2); font-family: inherit; }
+.btn-action:hover { background: #eef4e5; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(140,164,129,0.35); }
+.btn-add { background: rgba(140, 164, 129, 0.12); color: var(--sage-light); border: 1px dashed var(--sage-light); box-shadow: none; }
+.btn-add:hover { background: rgba(140, 164, 129, 0.25); color: #fff; transform: none; }
+
+/* PAINEL DE PRÉ-VISUALIZAÇÃO A4 RESPONSIVO */
+.preview-panel { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 100%; overflow-x: auto; box-sizing: border-box; }
+
+.preview-bar { background: rgba(24, 42, 31, 0.8); border: 1px solid var(--border-forest); border-radius: 14px; padding: 12px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 210mm; box-shadow: 0 4px 16px rgba(0,0,0,0.2); box-sizing: border-box; }
+.preview-bar-info { font-size: 0.82rem; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.pdf-page { width: 210mm; max-width: 100%; min-height: 297mm; padding: 20mm 22mm; background: var(--paper-bg); color: var(--text-dark); box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between; position: relative; border-radius: 6px; margin-bottom: 32px; transition: var(--tr); box-sizing: border-box; }
+.pdf-page:hover { box-shadow: 0 25px 60px rgba(0,0,0,0.65); }
+
+.cover-top-bar { background: var(--forest-dark); color: #eef4e5; padding: 14px; text-align: center; font-size: 0.75rem; font-weight: 700; letter-spacing: 2.5px; border-radius: 10px; text-transform: uppercase; }
+.cover-body { text-align: center; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; }
+.cover-main-title { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5vw, 3.6rem); color: var(--forest-dark); letter-spacing: 2px; line-height: 1.15; margin-bottom: 24px; font-weight: 600; }
+.cover-patient-name { font-size: 0.95rem; font-weight: 800; letter-spacing: 2.5px; color: var(--sage-bg); text-transform: uppercase; margin-bottom: 40px; background: rgba(146, 169, 136, 0.12); padding: 10px 28px; border-radius: 100px; border: 1px solid var(--border-sage); }
+.cover-plan-box { background: #ffffff; border: 1px solid var(--border-light); border-radius: 18px; padding: 28px; text-align: left; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.03); box-sizing: border-box; }
+.cover-plan-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--forest-dark); margin-bottom: 12px; border-bottom: 2px solid var(--sage-light); padding-bottom: 6px; display: inline-block; font-weight: 600; }
+.cover-plan-desc { font-size: 0.92rem; color: var(--text-dark); line-height: 1.75; }
+
+.page-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--sage-light); padding-bottom: 10px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 28px; flex-wrap: wrap; gap: 8px; }
+.meals-grid { display: flex; flex-direction: column; gap: 20px; }
+.meal-card { background: var(--card-white); border: 1px solid var(--border-light); border-left: 5px solid var(--forest-dark); border-radius: 14px; padding: 20px 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.03); }
+.meal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f4ef; padding-bottom: 12px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.meal-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--forest-dark); font-weight: 600; }
+.meal-items-list { font-size: 0.94rem; color: var(--text-dark); line-height: 1.75; white-space: pre-line; }
+.meal-stats-badges { display: flex; gap: 8px; font-weight: 700; font-size: 0.78rem; flex-wrap: wrap; }
+.badge-stat { background: rgba(146, 169, 136, 0.15); color: var(--forest-dark); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border-sage); }
+.meal-obs-text { font-size: 0.85rem; color: var(--text-muted); font-style: italic; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #e2e8e0; }
+
+.extra-card { background: #fff; border: 1px solid var(--border-light); border-radius: 16px; padding: 22px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.03); }
+.extra-card-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--forest-dark); margin-bottom: 12px; border-bottom: 1.5px solid var(--sage-light); padding-bottom: 6px; font-weight: 600; }
+.extra-card-content { font-size: 0.94rem; color: var(--text-dark); line-height: 1.75; white-space: pre-line; }
+
+.page-ftr { text-align: center; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 14px; margin-top: 32px; }
+
+/* MEDIA QUERIES PARA ADAPTAÇÃO TOTAL RESPONSIVA */
+@media screen and (max-width: 1280px) {
+  .manager-container { grid-template-columns: 1fr; padding: 16px 12px; gap: 20px; }
+  .form-panel { position: relative; top: 0; max-height: none; width: 100%; border-radius: 18px; padding: 18px; }
+  .pdf-page { width: 100% !important; max-width: 100% !important; min-height: auto !important; padding: 24px 18px !important; box-sizing: border-box !important; margin-bottom: 20px !important; }
+}
+
+@media screen and (max-width: 768px) {
+  .top-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 14px; height: auto; }
+  .header-actions { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .manager-container { padding: 12px 10px; gap: 16px; }
+  .form-panel { padding: 16px; border-radius: 14px; }
+  .card-box { padding: 16px; border-radius: 12px; }
+  .btn-action { padding: 8px 12px; font-size: 0.78rem; }
+  .preview-panel { padding: 12px; }
+}
+
+@media screen and (max-width: 600px) {
+  .top-header { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; justify-content: space-between; }
+  .preset-bar { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
+@media screen and (max-width: 480px) {
+  .top-header { padding: 8px 12px; }
+  .manager-container { padding: 8px; gap: 12px; }
+  .form-panel { padding: 12px; }
+  .card-box { padding: 12px; border-radius: 10px; }
+  input, select, textarea { font-size: 16px !important; }
+  .preset-bar button, .btn-action { padding: 7px 10px; font-size: 0.75rem; }
+  .mobile-tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .mobile-tabs button { flex-shrink: 0; font-size: 0.78rem; padding: 8px 12px; }
+}
+
+/* IMPRESSÃO A4 PROFISSIONAL SEM QUEBRA DE CARDS */
+@page {
+  size: A4 portrait;
+  margin: 0mm;
+}
+
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  .top-header, .mobile-tabs, .btn-nav, .no-print, .form-panel, .preview-bar, button {
+    display: none !important;
+  }
+  
+  .manager-container {
+<script src="assets/js/modelos-planos.js"></script>
 
 <style>
 :root {
@@ -223,10 +399,24 @@ textarea.form-control { min-height: 100px; resize: vertical; line-height: 1.6; }
 body.in-iframe .top-header { display: none !important; }
 body.in-iframe .manager-container { padding-top: 12px !important; }
 </style>
-</style>
 <link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
+
+<!-- HEADER TOPO PREMIUM -->
+<header class="top-header no-print">
+  <div class="brand-box">
+    <div class="brand-icon">🥗</div>
+    <div>
+      <div class="brand-name">Prescrição Nutricional</div>
+      <div class="brand-crn">Dra. Silvia Oliveira Lemos · CRN-4 25104731</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <a href="app-nutri.html" class="btn-nav btn-secondary">🏠 Voltar ao Painel</a>
+    <button class="btn-nav" onclick="window.print()">🖨️ Imprimir / Gerar PDF</button>
+  </div>
+</header>
 
 <!-- SELETOR DE ABAS RESPONSIVO (DESKTOP & MOBILE & IFRAME) -->
 <div class="mobile-tabs no-print">
@@ -244,7 +434,46 @@ body.in-iframe .manager-container { padding-top: 12px !important; }
     <h2>✏️ Prescrição Nutricional</h2>
     <p>Monte o plano alimentar em tempo real com pré-visualização A4 imediata.</p>
 
-
+    <!-- SELETOR DE MODELOS PRONTOS DE PLANO NUTRICIONAL (20 MODELOS) -->
+    <div class="form-group" style="background: rgba(140, 164, 129, 0.15); padding: 14px; border-radius: 14px; border: 1.5px solid var(--border-sage); margin-bottom: 14px;">
+      <label style="color: var(--sage-light); font-weight: 800; display: flex; align-items: center; justify-content: space-between;">
+        <span>📋 Carregar Modelo Pronto (20 Opções):</span>
+        <span style="font-size: 0.68rem; background: var(--sage-light); color: var(--forest-dark); padding: 2px 8px; border-radius: 99px; font-weight: 900;">1200 a 2500 kcal</span>
+      </label>
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <select id="selModeloProntoNutri" class="form-control" style="font-size: 0.82rem;">
+          <optgroup label="🔴 Emagrecimento & Déficit (1200 a 1500 kcal)">
+            <option value="1200_emagrecimento">🎯 1200 kcal - Emagrecimento Rápido / Déficit Agressivo</option>
+            <option value="1300_emagrecimento_fem">🌸 1300 kcal - Emagrecimento Feminino Equilibrado</option>
+            <option value="1350_lowcarb">🥑 1350 kcal - Low Carb Emagrecimento</option>
+            <option value="1400_reeducacao">🥗 1400 kcal - Reeducação Alimentar & Perda de Peso</option>
+            <option value="1450_semlactose_semgluten">🌿 1450 kcal - Emagrecimento Sem Lactose & Glúten</option>
+            <option value="1500_deficit_altaproteina">💪 1500 kcal - Déficit Moderado com Alta Proteína</option>
+          </optgroup>
+          <optgroup label="🟡 Manutenção & Dietas Específicas (1550 a 1800 kcal)">
+            <option value="1550_vegetariano">🌱 1550 kcal - Vegetariano (Plant-Based)</option>
+            <option value="1600_reeducacao_manutencao">⚖️ 1600 kcal - Reeducação Alimentar & Manutenção Leve</option>
+            <option value="1650_antiinflamatorio">🫐 1650 kcal - Dieta Anti-inflamatória & Saúde Gut</option>
+            <option value="1700_cetogenica">🥩 1700 kcal - Cetogênica (Ketogenic Low Carb)</option>
+            <option value="1750_controleglicemico">🩸 1750 kcal - Controle Glicêmico (Pré-diabetes)</option>
+            <option value="1800_manutencao_masculino">🏃 1800 kcal - Manutenção Ativa & Deficit Masculino</option>
+          </optgroup>
+          <optgroup label="🟢 Hipertrofia & Performance (1850 a 2500 kcal)">
+            <option value="1850_ganhoseco_fem">🌺 1850 kcal - Ganho Seco Feminino (Clean Bulk)</option>
+            <option value="1900_hipertrofia_mod">🏋️ 1900 kcal - Hipertrofia Moderada</option>
+            <option value="1950_highprotein">🥩 1950 kcal - High Protein & Ganho de Massa</option>
+            <option value="2000_hipertrofia_padrao" selected>🏆 2000 kcal - Hipertrofia Padrão (Clean Bulk)</option>
+            <option value="2100_performance">⚡ 2100 kcal - Performance Esportiva & Atleta</option>
+            <option value="2200_hipertrofia_avancada">🔥 2200 kcal - Hipertrofia Avançada / Alto Volume</option>
+            <option value="2350_bulking">💥 2350 kcal - Ganho Calórico Intenso (Bulking)</option>
+            <option value="2500_atleta_endurance">🥇 2500 kcal - Atleta de Alta Performance / Endurance</option>
+          </optgroup>
+        </select>
+        <button type="button" class="btn-nav" style="padding: 8px 14px; white-space: nowrap; font-size: 0.8rem;" onclick="carregarModeloPronto(document.getElementById('selModeloProntoNutri').value)">
+          ⚡ Aplicar
+        </button>
+      </div>
+    </div>
 
     <!-- SELETOR DE PACIENTE DO BANCO DE DADOS -->
     <div class="form-group" style="background: rgba(140, 164, 129, 0.12); padding: 12px; border-radius: 12px; border: 1px solid var(--border-sage);">
@@ -383,112 +612,20 @@ async function apiCall(action, payload = {}) {
   }
 }
 
-// ALTERNÂNCIA DE ABAS NO MOBILE
-function switchMobileTab(tab) {
-  const fBox = document.getElementById('formPanelBox');
-  const pBox = document.getElementById('previewPanelBox');
-  const btnF = document.getElementById('btnTabForm');
-  const btnP = document.getElementById('btnTabPreview');
-
-  if (tab === 'form') {
-    if (fBox) fBox.style.display = 'flex';
-    if (pBox) pBox.style.display = 'none';
-    if (btnF) btnF.classList.add('active');
-    if (btnP) btnP.classList.remove('active');
-  } else {
-    if (fBox) fBox.style.display = 'none';
-    if (pBox) pBox.style.display = 'flex';
-    if (btnP) btnP.classList.add('active');
-    if (btnF) btnF.classList.remove('active');
-  }
-}
-
+// VARIÁVEIS GLOBAIS DE ESTADO DO PLANO
 let refeicoes = [];
 let paginasExtras = [];
-
-const presetHipertrofia = {
-  nome: "NOME DA PACIENTE",
-  apresentacao: "Este plano alimentar foi desenvolvido pensando nas suas necessidades específicas. Alcançar as metas propostas é o caminho para conquistar os resultados desejados de forma duradoura.",
-  objetivo: "Preservar e aumentar massa muscular com alto aporte proteico, distribuição equilibrada de carboidratos e gorduras saudáveis.",
-  refeicoes: [
-    { titulo: 'CAFÉ DA MANHÃ', itens: '• 2 ovos inteiros mexidos\n• 2 fatias de pão integral\n• 1 colher (sopa) de chia\n• 1 banana média\n• Café sem açúcar ou com adoçante (stévia)', calorias: '330 kcal', proteina: '20g', obs: 'Pode substituir o pão integral por pão francês ou torrada integral. Pode incluir queijo ou requeijão.' },
-    { titulo: 'LANCHE DA MANHÃ', itens: '• 1 maçã média\n• 10 amêndoas\n• 1 colher (sopa) de granola sem açúcar', calorias: '180 kcal', proteina: '4g', obs: 'Pode substituir as amêndoas por nozes ou castanhas. Pode incluir iogurte natural.' },
-    { titulo: 'ALMOÇO', itens: '• 120g de peito de frango grelhado\n• 3 colheres (sopa) de arroz integral ou branco\n• 1 concha pequena de feijão\n• Salada verde à vontade + 1 col. (chá) de azeite', calorias: '400 kcal', proteina: '40g', obs: 'Pode substituir o frango por peixe, carne bovina ou suína magra.' },
-    { titulo: 'LANCHE DA TARDE', itens: '• Vitamina: 200ml de bebida vegetal (amêndoas/coco) + 1 scoop de Whey Protein isolado + 1 colher (sopa) de aveia + canela', calorias: '220 kcal', proteina: '28g', obs: 'Pode substituir por crepioca, tapioca ou cuscuz de milho com ovos.' }
-  ],
-  extras: [
-    { 
-      tituloPagina: 'RECOMENDAÇÕES & SUPLEMENTAÇÃO', 
-      blocos: [
-        { titulo: 'SUPLEMENTAÇÃO DIÁRIA', conteudo: '• Whey Protein Isolado: 1 scoop no lanche da tarde ou pós-treino.\n• Creatina: 3g por dia em horário fixo.' },
-        { titulo: 'CHÁS NOTURNOS', conteudo: 'Alternar entre: Camomila, Erva-doce, Melissa e Capim-cidreira (sem açúcar).' },
-        { titulo: 'META DE HIDRATAÇÃO', conteudo: 'Meta recomendada: 2,0 a 2,5 Litros de água por dia.' }
-      ] 
-    }
-  ]
-};
-
-const presetEmagrecimento = {
-  nome: "NOME DA PACIENTE",
-  apresentacao: "Foco em reeducação alimentar, aumento de saciedade e déficit calórico controlado.",
-  objetivo: "Emagrecimento saudável preservando massa magra.",
-  refeicoes: [
-    { titulo: 'CAFÉ DA MANHÃ', itens: '• 2 ovos mexidos com orégano\n• 1 fatia de pão integral\n• Mamão papaia (1/2 unidade)', calorias: '240 kcal', proteina: '14g', obs: '' },
-    { titulo: 'ALMOÇO', itens: '• 150g de peito de frango ou peixe\n• Salada de folhas verdes abundante (50% do prato)\n• 2 colheres de arroz integral + 1 concha de feijão', calorias: '310 kcal', proteina: '35g', obs: '' }
-  ],
-  extras: [
-    { tituloPagina: 'ORIENTAÇÕES GERAIS', blocos: [{ titulo: 'HIDRATAÇÃO', conteudo: 'Mínimo de 2.5L de água por dia.' }] }
-  ]
-};
-
-function carregarPreset(tipo) {
-  const p = tipo === 'hipertrofia' ? presetHipertrofia : presetEmagrecimento;
-  const elNome = document.getElementById('inNome');
-  const elApres = document.getElementById('inApresentacao');
-  const elObj = document.getElementById('inObjetivo');
-
-  const sel = document.getElementById('selPacientePlano');
-  let pacienteNomeVal = elNome ? elNome.value : '';
-  if (sel && sel.value && typeof listaPacientesBanco !== 'undefined') {
-    const paciente = listaPacientesBanco.find(x => x.id === sel.value);
-    if (paciente && paciente.nome) pacienteNomeVal = paciente.nome;
-  }
-  if (!pacienteNomeVal || pacienteNomeVal === 'NOME DA PACIENTE' || pacienteNomeVal.includes('ANYCELLI')) {
-    pacienteNomeVal = p.nome;
-  }
-
-  if (elNome) elNome.value = pacienteNomeVal;
-  if (elApres) elApres.value = p.apresentacao;
-  if (elObj) elObj.value = p.objetivo;
-  refeicoes = JSON.parse(JSON.stringify(p.refeicoes));
-  paginasExtras = JSON.parse(JSON.stringify(p.extras));
-  renderInputs();
-  salvarELocal();
-  atualizar();
-}
-
-function limparTudo() {
-  const elNome = document.getElementById('inNome');
-  const elApres = document.getElementById('inApresentacao');
-  const elObj = document.getElementById('inObjetivo');
-  if (elNome) elNome.value = '';
-  if (elApres) elApres.value = '';
-  if (elObj) elObj.value = '';
-  refeicoes = [];
-  paginasExtras = [];
-  renderInputs();
-  salvarELocal();
-  atualizar();
-}
 
 function salvarELocal() {
   const elNome = document.getElementById('inNome');
   const elApres = document.getElementById('inApresentacao');
   const elObj = document.getElementById('inObjetivo');
+  const elAgua = document.getElementById('inMetaAgua');
   const dados = {
     nome: elNome ? elNome.value : '',
     apresentacao: elApres ? elApres.value : '',
     objetivo: elObj ? elObj.value : '',
+    metaAgua: elAgua ? elAgua.value : '2.5',
     refeicoes: refeicoes,
     paginasExtras: paginasExtras
   };
@@ -498,162 +635,170 @@ function salvarELocal() {
 function carregarLocalStorage() {
   const salvo = localStorage.getItem('planoSilviaDataV3');
   if (salvo) {
-    const d = JSON.parse(salvo);
-    const elNome = document.getElementById('inNome');
-    const elApres = document.getElementById('inApresentacao');
-    const elObj = document.getElementById('inObjetivo');
-    if (elNome) elNome.value = d.nome || '';
-    if (elApres) elApres.value = d.apresentacao || '';
-    if (elObj) elObj.value = d.objetivo || '';
-    refeicoes = d.refeicoes || [];
-    paginasExtras = d.paginasExtras || [];
+    try {
+      const d = JSON.parse(salvo);
+      const elNome = document.getElementById('inNome');
+      const elApres = document.getElementById('inApresentacao');
+      const elObj = document.getElementById('inObjetivo');
+      const elAgua = document.getElementById('inMetaAgua');
+      if (elNome && d.nome) elNome.value = d.nome;
+      if (elApres && d.apresentacao) elApres.value = d.apresentacao;
+      if (elObj && d.objetivo) elObj.value = d.objetivo;
+      if (elAgua && d.metaAgua) elAgua.value = d.metaAgua;
+      if (Array.isArray(d.refeicoes) && d.refeicoes.length > 0) refeicoes = d.refeicoes;
+    } catch(e){}
   } else {
-    carregarPreset('hipertrofia');
+    carregarModeloPronto('2000_hipertrofia_padrao');
   }
+}
+function carregarModeloPronto(modeloId) {
+  if (!window.MODELOS_PLANOS_NUTRI || !Array.isArray(window.MODELOS_PLANOS_NUTRI)) {
+    alert('Biblioteca de modelos nutricionais não foi carregada.');
+    return;
+  }
+  const mod = window.MODELOS_PLANOS_NUTRI.find(m => m.id === modeloId);
+  if (!mod) {
+    alert('Modelo não encontrado.');
+    return;
+  }
+
+  const inApres = document.getElementById('inApresentacao');
+  const inObj = document.getElementById('inObjetivo');
+  const inAgua = document.getElementById('inMetaAgua');
+
+  if (inApres && mod.apresentacao) inApres.value = mod.apresentacao;
+  if (inObj && mod.objetivo) inObj.value = mod.objetivo;
+  if (inAgua && mod.metaAgua) inAgua.value = mod.metaAgua;
+
+  refeicoes = mod.refeicoes.map(r => {
+    const alimList = r.alimentosList ? JSON.parse(JSON.stringify(r.alimentosList)) : [];
+    
+    let k = 0, c = 0, p = 0, g = 0;
+    alimList.forEach(a => {
+      k += parseFloat(a.kcal) || 0;
+      c += parseFloat(a.carb) || 0;
+      p += parseFloat(a.prot) || 0;
+      g += parseFloat(a.gord) || 0;
+    });
+
+    let itensTxt = r.itens || '';
+    if (!itensTxt && alimList.length > 0) {
+      itensTxt = alimList.map(a => {
+        const qtdStr = (a.unidade && String(a.unidade).trim() !== '') ? `${a.qtd} ${a.unidade}` : (a.qtd || '1 porção');
+        return `• ${qtdStr} de ${a.nome}`;
+      }).join('\n');
+    }
+
+    return {
+      titulo: (r.titulo || r.nome || 'REFEIÇÃO').toUpperCase(),
+      calorias: r.calorias || `${Math.round(k)} kcal`,
+      proteina: r.proteina || `${Math.round(p * 10) / 10}g`,
+      carbos: r.carbos || `${Math.round(c * 10) / 10}g`,
+      gorduras: r.gorduras || `${Math.round(g * 10) / 10}g`,
+      itens: itensTxt,
+      obs: r.obs || r.observacao || '',
+      alimentosList: alimList
+    };
+  });
+
+  refeicoes.forEach((_, i) => recalculaRefeicaoPorAlimentos(i));
+  renderInputs();
+  salvarELocal();
+  atualizar();
   calcularTotaisPlano();
 }
-
-function garantirAlimentosListEmRefeicao(m) {
-  if (!m) return [];
-  if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
-    return m.alimentosList;
-  }
-
-  m.alimentosList = [];
-  if (m.itens && typeof m.itens === 'string') {
-    const linhas = m.itens.split('\n').map(l => l.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
-    linhas.forEach((linha, i) => {
-      let qtd = '1 porção';
-      let nome = linha;
-      const matchDe = linha.match(/^(.+?)\s+de\s+(.+)$/i);
-      if (matchDe) {
-        qtd = matchDe[1].trim();
-        nome = matchDe[2].trim();
-      }
-      m.alimentosList.push({
-        id: 'auto_' + i + '_' + Date.now(),
-        nome: nome,
-        qtd: qtd,
-        unidade: '',
-        kcal: 50,
-        prot: 2,
-        carb: 8,
-        gord: 1
-      });
-    });
-  }
-  return m.alimentosList;
-}
-
-function removerAlimentoDaRefeicao(idxRef, aIdx) {
-  if (refeicoes[idxRef] && refeicoes[idxRef].alimentosList) {
-    refeicoes[idxRef].alimentosList.splice(aIdx, 1);
-    recalculaRefeicaoPorAlimentos(idxRef);
-    renderInputs();
-    salvarELocal();
-    atualizar();
-    calcularTotaisPlano();
-  }
-}
+window.carregarModeloPronto = carregarModeloPronto;
 
 function renderInputs() {
   const mContainer = document.getElementById('mealsInputs');
   if (!mContainer) return;
   mContainer.innerHTML = '';
-  
+
   refeicoes.forEach((m, idx) => {
-    garantirAlimentosListEmRefeicao(m);
-    recalculaRefeicaoPorAlimentos(idx);
+    let alimentosHTML = '';
+    if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
+      alimentosHTML = `<div style="background:rgba(0,0,0,0.25); border:1px solid var(--border-sage); padding:10px; border-radius:12px; margin-top:8px; display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">🥗 Alimentos Detalhados da Refeição:</div>`;
 
-    const listAlim = m.alimentosList || [];
-    let mealTitle = m.titulo || m.nome;
-    if ((!mealTitle || mealTitle === 'NOVA REFEIÇÃO') && listAlim.length > 0) {
-      mealTitle = listAlim[0].nome;
-      m.titulo = mealTitle;
-      m.nome = mealTitle;
-    }
-    if (!mealTitle) mealTitle = 'NOVA REFEIÇÃO';
-
-    let foodCardsHTML = '';
-    if (listAlim.length > 0) {
-      foodCardsHTML = `
-        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); border-radius:10px; padding:10px; margin-top:8px; margin-bottom:10px;">
-          <div style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">
-            🍎 Alimentos Estruturados da Refeição (${listAlim.length}):
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            ${listAlim.map((al, aIdx) => `
-              <div style="background:var(--forest-card); border:1px solid var(--border-sage); padding:6px 10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <strong style="color:var(--text-title);">${al.nome}</strong>
-                  <span style="color:var(--text-muted); font-size:0.75rem;">(${al.qtd || '100g'})</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <span style="color:var(--sage-light); font-weight:800; font-size:0.78rem;">${al.kcal} kcal</span>
-                  <button type="button" onclick="removerAlimentoDaRefeicao(${idx}, ${aIdx})" style="background:transparent; border:none; color:#f87171; font-weight:900; font-size:0.85rem; cursor:pointer;" title="Remover item">✕</button>
-                </div>
+      m.alimentosList.forEach((al, itemIdx) => {
+        alimentosHTML += `
+          <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:10px; border-radius:10px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+              <input type="text" class="form-control" style="font-weight:800; font-size:0.82rem; padding:4px 8px; flex:1;" value="${al.nome.replace(/"/g, '&quot;')}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'nome', this.value)" placeholder="Nome do alimento">
+              <button type="button" class="btn-remove" style="position:static; padding:4px 8px; font-size:0.7rem;" onclick="removerAlimentoDaRefeicao(${idx}, ${itemIdx})">✕</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:4px;">
+              <div>
+                <label style="font-size:0.62rem; color:var(--text-muted); display:block;">Qtd/Porção</label>
+                <input type="text" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.qtd}" oninput="editarQtdAlimento(${idx}, ${itemIdx}, this.value)">
               </div>
-            `).join('')}
+              <div>
+                <label style="font-size:0.62rem; color:#fff; display:block;">kcal</label>
+                <input type="number" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.kcal}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'kcal', this.value)">
+              </div>
+              <div>
+                <label style="font-size:0.62rem; color:#63b3ed; display:block;">Carb(g)</label>
+                <input type="number" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.carb}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'carb', this.value)">
+              </div>
+              <div>
+                <label style="font-size:0.62rem; color:#fbbf24; display:block;">Prot(g)</label>
+                <input type="number" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.prot}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'prot', this.value)">
+              </div>
+              <div>
+                <label style="font-size:0.62rem; color:#f87171; display:block;">Gord(g)</label>
+                <input type="number" class="form-control" style="font-size:0.75rem; padding:4px;" value="${al.gord}" oninput="editarCampoAlimento(${idx}, ${itemIdx}, 'gord', this.value)">
+              </div>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      });
+      alimentosHTML += `</div>`;
     }
 
     mContainer.innerHTML += `
       <div class="card-box">
-        <button class="btn-remove" onclick="removeMeal(${idx})">✖ Remover</button>
-        <div class="form-group">
-          <label>Nome / Prato da Refeição</label>
-          <input type="text" class="form-control" value="${mealTitle}" oninput="refeicoes[${idx}].titulo=this.value; refeicoes[${idx}].nome=this.value; salvarELocal(); atualizar();">
-        </div>
+        <button type="button" class="btn-remove" onclick="removeMeal(${idx})">✖ Remover</button>
+        <div class="form-group"><label>Nome da Refeição</label><input type="text" class="form-control" value="${m.titulo}" oninput="refeicoes[${idx}].titulo=this.value; salvarELocal(); atualizar();"></div>
+        <div class="form-group"><label>Resumo dos Alimentos (Texto da Prévia A4)</label><textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar();">${m.itens}</textarea></div>
         
-        <div class="form-group">
-          <div style="background:rgba(0,0,0,0.25); border:1.5px solid var(--border-forest); border-radius:12px; padding:10px; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">➕ Adicionar Alimento</span>
-              <div style="display:flex; gap:6px;">
-                <button type="button" class="btn-preset" onclick="alternarModoAddAlimento(${idx}, 'taco')" id="btnModoTaco_${idx}" style="padding:3px 8px; font-size:0.7rem; background:rgba(140,164,129,0.2); color:var(--sage-light); border-color:var(--border-sage);">🔍 Tabela TACO</button>
-                <button type="button" class="btn-preset" onclick="alternarModoAddAlimento(${idx}, 'manual')" id="btnModoManual_${idx}" style="padding:3px 8px; font-size:0.7rem; opacity:0.7; border-color:var(--border-sage);">✍️ Digitar Manual</button>
-              </div>
-            </div>
-
-            <!-- OPÇÃO A: BUSCA TACO AUTOMÁTICA -->
-            <div id="boxAddTaco_${idx}" style="position:relative;">
-              <input type="text" class="form-control" style="font-size:0.8rem; padding:8px 12px; border-color:var(--border-sage); background:rgba(0,0,0,0.5);" placeholder="🔍 Digite para buscar na TACO (ex: Arroz, Frango, Ovo, Banana)..." oninput="buscarAlimentoInlineNaRefeicao(this.value, ${idx})">
-              <div id="inlineTacoResults_${idx}" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--forest-card); border:1.5px solid var(--sage-light); border-radius:10px; z-index:999; max-height:220px; overflow-y:auto; box-shadow:0 12px 30px rgba(0,0,0,0.85); padding:6px;"></div>
-            </div>
-
-            <!-- OPÇÃO B: INSERÇÃO MANUAL RÁPIDA -->
-            <div id="boxAddManual_${idx}" style="display:none; flex-direction:column; gap:6px;">
-              <div style="display:grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap:6px;">
-                <input type="text" id="manualNome_${idx}" class="form-control" style="font-size:0.78rem; padding:6px;" placeholder="Nome Alimento">
-                <input type="text" id="manualQtd_${idx}" class="form-control" style="font-size:0.78rem; padding:6px;" placeholder="Porção (ex: 1 un)">
-                <input type="number" id="manualKcal_${idx}" class="form-control" style="font-size:0.78rem; padding:6px;" placeholder="Kcal">
-                <input type="number" id="manualProt_${idx}" class="form-control" style="font-size:0.78rem; padding:6px;" placeholder="Prot (g)">
-              </div>
-              <div style="display:flex; justify-content:flex-end; margin-top:2px;">
-                <button type="button" class="btn btn-secondary" onclick="adicionarAlimentoManualNaRefeicao(${idx})" style="padding:4px 12px; font-size:0.75rem; color:var(--sage-light); border-color:var(--border-sage);">
-                  ➕ Inserir Alimento Manual
-                </button>
-              </div>
+        <!-- SELETOR E BUSCA TACO / MANUAL DA REFEIÇÃO -->
+        <div style="background:rgba(140,164,129,0.08); border:1px solid var(--border-sage); padding:10px; border-radius:10px; margin-top:4px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.74rem; font-weight:800; color:var(--sage-light);">🔍 ADICIONAR ALIMENTO À REFEIÇÃO:</span>
+            <div style="display:flex; gap:4px;">
+              <button type="button" id="btnModoTaco_${idx}" class="btn-preset" style="padding:4px 8px; font-size:0.7rem; background:rgba(140,164,129,0.2); color:var(--sage-light);" onclick="alternarModoAddAlimento(${idx}, 'taco')">Tabela TACO</button>
+              <button type="button" id="btnModoManual_${idx}" class="btn-preset" style="padding:4px 8px; font-size:0.7rem; opacity:0.6;" onclick="alternarModoAddAlimento(${idx}, 'manual')">Manual</button>
             </div>
           </div>
+          
+          <div id="boxAddTaco_${idx}">
+            <input type="text" class="form-control" style="font-size:0.8rem; padding:8px 10px;" placeholder="Digite para buscar na Tabela TACO (ex: Arroz, Frango, Ovo)..." oninput="buscarAlimentoInlineNaRefeicao(this.value, ${idx})">
+            <div id="inlineTacoResults_${idx}" style="display:none; margin-top:6px; max-height:180px; overflow-y:auto;"></div>
+          </div>
 
-          ${foodCardsHTML}
+          <div id="boxAddManual_${idx}" style="display:none; flex-direction:column; gap:6px;">
+            <div class="form-row">
+              <input type="text" id="manualNome_${idx}" class="form-control" style="font-size:0.8rem;" placeholder="Nome do Alimento">
+              <input type="text" id="manualQtd_${idx}" class="form-control" style="font-size:0.8rem;" placeholder="Ex: 100g ou 2 fatias">
+            </div>
+            <div class="form-row">
+              <input type="number" id="manualKcal_${idx}" class="form-control" style="font-size:0.8rem;" placeholder="Kcal (ex: 150)">
+              <input type="number" id="manualProt_${idx}" class="form-control" style="font-size:0.8rem;" placeholder="Proteína g (ex: 20)">
+            </div>
+            <button type="button" class="btn-nav" style="padding:6px 12px; font-size:0.75rem; align-self:flex-end;" onclick="adicionarAlimentoManualNaRefeicao(${idx})">➕ Adicionar Item</button>
+          </div>
+        </div>
 
-          <label style="margin-bottom:4px;">Cardápio da Refeição (Visualizado no PDF)</label>
-          <textarea class="form-control" oninput="refeicoes[${idx}].itens=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();">${m.itens}</textarea>
+        ${alimentosHTML}
+
+        <div class="form-row" style="margin-top:8px;">
+          <div class="form-group"><label>Calorias (Total)</label><input type="text" class="form-control" value="${m.calorias || ''}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
+          <div class="form-group"><label>Proteínas (Total)</label><input type="text" class="form-control" value="${m.proteina || ''}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label>🔥 Calorias da Refeição</label><input type="text" class="form-control" value="${m.calorias}" oninput="refeicoes[${idx}].calorias=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
-          <div class="form-group"><label>💪 Proteínas da Refeição</label><input type="text" class="form-control" value="${m.proteina}" oninput="refeicoes[${idx}].proteina=this.value; salvarELocal(); atualizar(); calcularTotaisPlano();"></div>
-        </div>
-        <div class="form-group" style="margin:0;"><label>Substituições / Obs</label><input type="text" class="form-control" value="${m.obs}" oninput="refeicoes[${idx}].obs=this.value; salvarELocal(); atualizar();"></div>
+        <div class="form-group" style="margin:0;"><label>Substituições / Observações</label><input type="text" class="form-control" value="${m.obs || ''}" oninput="refeicoes[${idx}].obs=this.value; salvarELocal(); atualizar();"></div>
       </div>
     `;
   });
-
-  calcularTotaisPlano();
 
   const eContainer = document.getElementById('extrasInputs');
   if (!eContainer) return;
@@ -662,7 +807,7 @@ function renderInputs() {
     let blocosHTML = '';
     p.blocos.forEach((b, bIdx) => {
       blocosHTML += `
-        <div style="border-top:1px dashed rgba(140,164,129,0.3); padding-top:10px; margin-top:10px;">
+        <div style="border-top:1px dashed rgba(140,164,129,0.3); padding-top:8px; margin-top:8px;">
           <div class="form-group"><label>Título do Tópico</label><input type="text" class="form-control" value="${b.titulo}" oninput="paginasExtras[${pIdx}].blocos[${bIdx}].titulo=this.value; salvarELocal(); atualizar();"></div>
           <div class="form-group"><label>Conteúdo</label><textarea class="form-control" oninput="paginasExtras[${pIdx}].blocos[${bIdx}].conteudo=this.value; salvarELocal(); atualizar();">${b.conteudo}</textarea></div>
         </div>
@@ -671,20 +816,35 @@ function renderInputs() {
 
     eContainer.innerHTML += `
       <div class="card-box">
-        <button class="btn-remove" onclick="removeExtraPage(${pIdx})">✖ Página</button>
+        <button type="button" class="btn-remove" onclick="removeExtraPage(${pIdx})">✖ Página</button>
         <div class="form-group"><label>Título da Página Extra</label><input type="text" class="form-control" value="${p.tituloPagina}" oninput="paginasExtras[${pIdx}].tituloPagina=this.value; salvarELocal(); atualizar();"></div>
         ${blocosHTML}
-        <button type="button" class="btn-action btn-add" style="margin-top:10px; font-size:0.78rem;" onclick="addBlockToPage(${pIdx})">➕ Adicionar Tópico</button>
+        <button type="button" class="btn-action btn-add" style="margin-top:8px; font-size:0.75rem;" onclick="addBlockToPage(${pIdx})">➕ Adicionar Tópico</button>
       </div>
     `;
   });
 }
 
-function addMeal() {
-  refeicoes.push({ titulo: 'NOVA REFEIÇÃO', itens: '• Alimento 1\n• Alimento 2', calorias: '250 kcal', proteina: '15g', obs: '' });
-  renderInputs(); salvarELocal(); atualizar();
+function editarCampoAlimento(idxRef, idxItem, campo, valor) {
+  const ref = refeicoes[idxRef];
+  if (!ref || !ref.alimentosList || !ref.alimentosList[idxItem]) return;
+  const al = ref.alimentosList[idxItem];
+  if (campo === 'nome') {
+    al.nome = valor;
+  } else {
+    al[campo] = parseFloat(valor) || 0;
+  }
+  recalculaRefeicaoPorAlimentos(idxRef);
+  salvarELocal();
+  atualizar();
+  calcularTotaisPlano();
 }
-function removeMeal(idx) { refeicoes.splice(idx, 1); renderInputs(); salvarELocal(); atualizar(); }
+
+function addMeal() {
+  refeicoes.push({ titulo: 'NOVA REFEIÇÃO', itens: '• Alimento 1\n• Alimento 2', calorias: '250 kcal', proteina: '15g', obs: '', alimentosList: [] });
+  renderInputs(); salvarELocal(); atualizar(); calcularTotaisPlano();
+}
+function removeMeal(idx) { refeicoes.splice(idx, 1); renderInputs(); salvarELocal(); atualizar(); calcularTotaisPlano(); }
 
 function addExtraPage() {
   paginasExtras.push({
@@ -713,8 +873,6 @@ function atualizar() {
   if (!preview) return;
   preview.innerHTML = '';
 
-  let totalPages = 1;
-
   // 1. CAPA PRINCIPAL
   preview.innerHTML += `
     <div class="pdf-page">
@@ -734,9 +892,9 @@ function atualizar() {
           <div class="cover-plan-title">Plano de Ação</div>
           <p class="cover-plan-desc">${apresentacao}</p>
           
-          <div style="margin-top:18px; padding-top:14px; border-top:1px dashed var(--border-light);">
-            <strong style="font-size:0.82rem; color:var(--forest-dark); text-transform:uppercase; letter-spacing:0.05em;">Estratégia Nutricional:</strong>
-            <p style="font-size:0.9rem; color:var(--text-muted); margin-top:6px; line-height:1.6;">${objetivo}</p>
+          <div style="margin-top:16px; padding-top:12px; border-top:1px dashed var(--border-light);">
+            <strong style="font-size:0.8rem; color:var(--forest-dark); text-transform:uppercase;">Estratégia Nutricional:</strong>
+            <p style="font-size:0.88rem; color:var(--text-muted); margin-top:4px;">${objetivo}</p>
           </div>
         </div>
       </div>
@@ -747,11 +905,10 @@ function atualizar() {
     </div>
   `;
 
-  // 2. PÁGINAS DE REFEIÇÕES (2 REFEIÇÕES POR PÁGINA A4 PARA GARANTIR CABER PERFEITAMENTE)
+  // 2. PÁGINAS DE REFEIÇÕES (2 POR PÁGINA A4)
   if (refeicoes.length > 0) {
     const MEALS_PER_PAGE = 2;
     for (let i = 0; i < refeicoes.length; i += MEALS_PER_PAGE) {
-      totalPages++;
       const chunk = refeicoes.slice(i, i + MEALS_PER_PAGE);
       let chunkHTML = '';
       chunk.forEach(m => {
@@ -784,7 +941,7 @@ function atualizar() {
           </div>
 
           <div class="page-ftr">
-            Dra. Silvia Oliveira Lemos · Nutricionista · CRN-4 25104731
+            Dra. Silvia de Oliveira Lemos · Nutricionista · CRN-4 25104731
           </div>
         </div>
       `;
@@ -793,7 +950,6 @@ function atualizar() {
 
   // 3. PÁGINAS EXTRAS INFORMATIVAS
   paginasExtras.forEach(p => {
-    totalPages++;
     let blocosHTML = '';
     p.blocos.forEach(b => {
       blocosHTML += `
@@ -812,20 +968,23 @@ function atualizar() {
             <span>DRA. SILVIA OLIVEIRA</span>
           </div>
 
-          <div style="margin-top:12px;">
+          <div style="margin-top:10px;">
             ${blocosHTML}
           </div>
         </div>
 
         <div class="page-ftr">
-          Dra. Silvia Oliveira Lemos · Nutricionista · CRN-4 25104731
+          Dra. Silvia de Oliveira Lemos · Nutricionista · CRN-4 25104731
         </div>
       </div>
     `;
   });
 
-  const counterBadge = document.getElementById('pageCounterBadge');
-  if (counterBadge) counterBadge.innerText = `${totalPages} Páginas Geradas`;
+  const badge = document.getElementById('pageCounterBadge');
+  if (badge) {
+    const totalPages = 1 + Math.ceil(refeicoes.length / 2) + paginasExtras.length;
+    badge.textContent = `${totalPages} Páginas Geradas`;
+  }
 }
 
 // INTEGRAÇÃO COM BANCO DE PACIENTES
@@ -878,7 +1037,6 @@ async function selecionarPacienteDoBanco() {
     if (inNome) inNome.value = paciente.nome;
     if (inObj && paciente.objetivo) inObj.value = paciente.objetivo;
 
-    // Tenta carregar o plano ativo do paciente vindo do banco de dados
     try {
       const resPlano = await apiCall('getPlanoVigente', { paciente_id: pacienteId });
       if (resPlano && resPlano.success && resPlano.data && resPlano.data.refeicoes) {
@@ -913,9 +1071,9 @@ async function selecionarPacienteDoBanco() {
 async function salvarPlanoNoBancoSheets() {
   const sel = document.getElementById('selPacientePlano');
   const pacienteId = sel ? sel.value : "PAC-01";
-  const nome = document.getElementById('inNome').value || 'PACIENTE';
-  const apresentacao = document.getElementById('inApresentacao').value;
-  const objetivo = document.getElementById('inObjetivo').value;
+  const nome = document.getElementById('inNome')?.value || 'PACIENTE';
+  const apresentacao = document.getElementById('inApresentacao')?.value || '';
+  const objetivo = document.getElementById('inObjetivo')?.value || '';
   const metaAguaLitros = parseFloat(document.getElementById('inMetaAgua')?.value || 2.5) || 2.5;
   const metaAguaMl = Math.round(metaAguaLitros * 1000);
 
