@@ -6,6 +6,7 @@
 <title>Avaliação Física &amp; Bioimpedância · Dra. Silvia Oliveira Lemos</title>
 <meta name="kos-auth-level" content="admin">
 <script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/security.js"></script>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -515,10 +516,11 @@ let perfilSelecionado = 'Adulto Feminino';
 
 async function apiCall(action, payload = {}) {
   try {
+    const user = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action, ...payload })
+      body: JSON.stringify({ action, ...payload, session_token: user?.session_token || '' })
     });
     return await res.json();
   } catch (err) {
@@ -877,14 +879,18 @@ function irParaAtendimento() {
   const sel = document.getElementById('selPacienteEvolucao');
   const pacienteId = sel ? sel.value : '';
   if (!pacienteId) { alert('Selecione um paciente'); return; }
-  window.location.href = `atendimento.html?pac_id=${encodeURIComponent(pacienteId)}`;
+  const url = `atendimento.html?pac_id=${encodeURIComponent(pacienteId)}`;
+  if (window.self !== window.top) window.parent.postMessage({type:'OPEN_IFRAME', url}, window.location.origin);
+  else window.location.href = url;
 }
 
 function irParaCardapioA4() {
   const sel = document.getElementById('selPacienteEvolucao');
   const pacienteId = sel ? sel.value : '';
   if (!pacienteId) { alert('Selecione um paciente'); return; }
-  window.location.href = `gerenciador-plano.html?paciente_id=${encodeURIComponent(pacienteId)}`;
+  const url = `gerenciador-plano.html?paciente_id=${encodeURIComponent(pacienteId)}`;
+  if (window.self !== window.top) window.parent.postMessage({type:'OPEN_IFRAME', url}, window.location.origin);
+  else window.location.href = url;
 }
 
 function enviarEvolucaoWhatsApp() {
@@ -906,9 +912,12 @@ function enviarEvolucaoWhatsApp() {
 window.addEventListener('DOMContentLoaded', () => {
   if (window.self !== window.top) {
     document.body.classList.add('in-iframe');
-  } else if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
+  } else {
+    const authUser = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
+    if (!['localhost', '127.0.0.1'].includes(window.location.hostname) && (!authUser?.session_token || authUser.tipo !== 'ADMIN')) {
     window.location.href = "login.html";
     return;
+    }
   }
 
   const savedTheme = localStorage.getItem('kos_theme') || 'dark';

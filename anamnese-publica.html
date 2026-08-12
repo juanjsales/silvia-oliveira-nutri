@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Anamnese Pré-Consulta · Dra. Silvia Oliveira Lemos Nutricionista</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="kos-auth-level" content="paciente">
+<script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/security.js"></script>
+<title>Anamnese do Paciente · Dra. Silvia Oliveira Lemos Nutricionista</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -70,7 +74,7 @@ textarea.form-control { height: 100px; resize: vertical; }
 <main class="container">
   <div class="header-box">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <a href="index.html" style="font-size:0.8rem; color:var(--sage-light); text-decoration:none; font-weight:700;">🌐 Voltar ao Site</a>
+      <a href="portal-paciente.html" style="font-size:0.8rem; color:var(--sage-light); text-decoration:none; font-weight:700;">← Voltar ao Portal</a>
       <span style="font-size:0.75rem; color:var(--text-muted);">CRN-4 25104731</span>
     </div>
     <div class="brand-logo">📋</div>
@@ -130,7 +134,8 @@ textarea.form-control { height: 100px; resize: vertical; }
 const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
 
 async function apiCall(action, payload = {}) {
-  const bodyData = { action, ...payload };
+  const user = JSON.parse(sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados') || 'null');
+  const bodyData = { action, ...payload, session_token: user?.session_token || '' };
   try {
     const res = await fetch(KOS_API_URL, {
       method: "POST",
@@ -144,10 +149,24 @@ async function apiCall(action, payload = {}) {
   }
 }
 
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const user = JSON.parse(sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados') || 'null');
+    if (user?.nome) document.getElementById('anamNome').value = user.nome;
+  } catch (e) {}
+});
+
 async function enviarAnamnese(e) {
   e.preventDefault();
   const urlParams = new URLSearchParams(window.location.search);
-  const pacienteId = urlParams.get('paciente') || urlParams.get('paciente_id') || '';
+  const user = JSON.parse(sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados') || 'null');
+  const pacienteId = user?.id || urlParams.get('paciente') || urlParams.get('paciente_id') || '';
+
+  if (!pacienteId || !user?.session_token) {
+    alert('Sua sessão expirou. Entre novamente para preencher a anamnese.');
+    window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+    return;
+  }
 
   const btn = document.querySelector('button[type="submit"]');
   if (btn) btn.innerText = "🟡 Enviando para a Planilha...";
@@ -168,7 +187,7 @@ async function enviarAnamnese(e) {
     alert("✅ Anamnese enviada e salva com sucesso na planilha da Dra. Silvia!\n\nMuito obrigada por preencher. Suas respostas serão utilizadas na sua consulta!");
     if (btn) btn.innerText = "✅ Anamnese Salva com Sucesso!";
   } else {
-    alert("Atenção: Houve uma oscilação na rede, mas suas respostas foram registradas.");
+    alert("Não foi possível salvar a anamnese. Confira sua conexão e tente novamente.");
     if (btn) btn.innerText = "✅ Anamnese Concluída";
   }
 }

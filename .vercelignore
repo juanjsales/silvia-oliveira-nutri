@@ -1,0 +1,10 @@
+.git
+scratch
+**/.env
+**/node_modules
+**/dist
+**/test-results
+**/playwright-report
+backend
+*.html
+assets

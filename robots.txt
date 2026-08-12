@@ -1,7 +1,15 @@
 User-agent: *
 Allow: /
 Disallow: /app-nutri.html
+Disallow: /agendamento.html
+Disallow: /anamnese-publica.html
+Disallow: /atendimento.html
+Disallow: /bioimpedancia.html
+Disallow: /configuracoes.html
 Disallow: /gerenciador-plano.html
+Disallow: /pacientes.html
+Disallow: /portal-paciente.html
+Disallow: /videocall.html
 Disallow: /backend/
 
 Sitemap: https://silviaoliveira.vercel.app/sitemap.xml

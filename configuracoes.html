@@ -6,6 +6,7 @@
 <title>Configurações do Sistema · Dra. Silvia Oliveira Lemos</title>
 <meta name="kos-auth-level" content="admin">
 <script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/security.js"></script>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
@@ -280,10 +281,11 @@ function mascaraTelefone(el) {
 
 async function apiCall(action, payload = {}) {
   try {
+    const user = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action, ...payload })
+      body: JSON.stringify({ action, ...payload, session_token: user?.session_token || '' })
     });
     return await res.json();
   } catch (err) {

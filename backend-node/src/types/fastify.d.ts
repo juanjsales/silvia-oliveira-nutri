@@ -1,0 +1,16 @@
+import type { Database } from '../database/pool.js';
+import type { AppEnv } from '../config/env.js';
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    db: Database;
+    env: AppEnv;
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    requireAdmin: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+  }
+  interface FastifyRequest {
+    auth: { userId: string; role: 'ADMIN' | 'PATIENT'; patientId: string | null } | null;
+  }
+}
+
+export {};

@@ -2,3 +2,13 @@
 Thumbs.db
 node_modules/
 *.log
+.env
+backend-node/dist/
+backend-node/coverage/
+frontend-react/dist/
+frontend-react/test-results/
+frontend-react/playwright-report/
+.vercel/
+*.tsbuildinfo
+frontend-react/vite.config.js
+frontend-react/vite.config.d.ts

@@ -1,0 +1,54 @@
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { AppShell } from '../components/AppShell';
+import { DashboardPage } from '../pages/DashboardPage';
+import { LoginPage } from '../pages/LoginPage';
+import { PatientsPage } from '../pages/PatientsPage';
+import { AgendaPage } from '../pages/AgendaPage';
+import { EncounterPage } from '../pages/EncounterPage';
+import { NutritionLibraryPage } from '../pages/NutritionLibraryPage';
+import { MealPlanEditorPage } from '../pages/MealPlanEditorPage';
+import { PlaceholderPage } from '../pages/PlaceholderPage';
+import { SettingsPage } from '../pages/SettingsPage';
+import { PlanDocumentPage } from '../pages/PlanDocumentPage';
+import { DocumentsPage } from '../pages/DocumentsPage';
+import { RoleRoute } from '../components/RoleRoute';
+import { PatientPortalPage } from '../pages/PatientPortalPage';
+import { PatientPlanPage } from '../pages/PatientPlanPage';
+import { FinancePage } from '../pages/FinancePage';
+import { DocumentIssuesPage } from '../pages/DocumentIssuesPage';
+import { IssuedDocumentPage } from '../pages/IssuedDocumentPage';
+import { PatientDocumentPage } from '../pages/PatientDocumentPage';
+import { PasswordRecoveryPage } from '../pages/PasswordRecoveryPage';
+import { PasswordResetPage } from '../pages/PasswordResetPage';
+import { PasswordChangePage } from '../pages/PasswordChangePage';
+import { PatientVideoPage } from '../pages/PatientVideoPage';
+
+export function App() {
+  return <Routes>
+    <Route path="/login" element={<LoginPage />} />
+    <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
+    <Route path="/redefinir-senha" element={<PasswordResetPage />} />
+    <Route element={<ProtectedRoute />}>
+      <Route element={<RoleRoute role="PATIENT"/>}><Route path="portal" element={<PatientPortalPage/>}/><Route path="portal/alterar-senha" element={<PasswordChangePage/>}/><Route path="portal/video/:id" element={<PatientVideoPage/>}/><Route path="portal/plano/:id" element={<PatientPlanPage/>}/><Route path="portal/documento/:id" element={<PatientDocumentPage/>}/></Route>
+      <Route element={<RoleRoute role="ADMIN"/>}>
+      <Route path="embed/planos/:id" element={<div className="embedded-route"><MealPlanEditorPage /></div>} />
+      <Route path="documentos/plano/:id" element={<PlanDocumentPage />} />
+      <Route path="documentos/emitidos/:id" element={<IssuedDocumentPage />} />
+      <Route element={<AppShell />}>
+      <Route index element={<DashboardPage />} />
+      <Route path="pacientes" element={<PatientsPage />} />
+      <Route path="agenda" element={<AgendaPage />} />
+      <Route path="atendimentos" element={<EncounterPage />} />
+      <Route path="planos" element={<NutritionLibraryPage />} />
+      <Route path="planos/:id" element={<MealPlanEditorPage />} />
+      <Route path="documentos" element={<DocumentsPage />} />
+      <Route path="documentos/emissoes" element={<DocumentIssuesPage />} />
+      <Route path="financeiro" element={<FinancePage />} />
+      <Route path="configuracoes" element={<SettingsPage />} />
+      </Route>
+      </Route>
+    </Route>
+    <Route path="*" element={<Navigate to="/" replace />} />
+  </Routes>;
+}

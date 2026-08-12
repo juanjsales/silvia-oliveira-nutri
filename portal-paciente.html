@@ -6,6 +6,7 @@
 <title>Portal do Paciente · Dra. Silvia Oliveira Lemos Nutricionista</title>
 <meta name="kos-auth-level" content="paciente">
 <script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/security.js"></script>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
@@ -108,6 +109,7 @@ body {
   display: flex; align-items: center; gap: 6px;
 }
 .btn-hdr-action:hover { background: var(--sage-light); color: var(--bg-deep); }
+.btn-hdr-label { display: inline; }
 
 .user-profile-badge {
   text-align: right;
@@ -505,6 +507,15 @@ body {
   .container { padding: 16px 12px 105px; gap: 18px; }
   .section-card { padding: 18px 14px; }
   .app-header { padding: 10px 14px; }
+  .app-brand { gap: 8px; min-width: 0; }
+  .brand-avatar { width: 38px; height: 38px; flex: 0 0 38px; }
+  .brand-title-hdr { font-size: 0.86rem; }
+  .brand-sub-hdr { font-size: 0.66rem; }
+  .header-right { gap: 6px; }
+  .btn-hdr-action { width: 38px; height: 38px; padding: 0; justify-content: center; }
+  .btn-hdr-label { display: none; }
+  .user-profile-badge { padding-left: 6px; }
+  .patient-name-txt { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
 @media (max-width: 480px) {
@@ -693,13 +704,13 @@ body {
 
   <div class="header-right">
     <button onclick="abrirOnboardingModal()" class="btn-hdr-action" title="Abrir Guia e Instruções de Navegação">
-      ❓ <span style="display:none; @media(min-width:500px){display:inline}">Guia</span>
+      ❓ <span class="btn-hdr-label">Guia</span>
     </button>
     <button onclick="abrirModalTrocarSenha()" class="btn-hdr-action" title="Alterar Senha de Acesso">
-      🔑 <span style="display:none; @media(min-width:500px){display:inline}">Senha</span>
+      🔑 <span class="btn-hdr-label">Senha</span>
     </button>
     <button onclick="toggleTheme()" id="btnThemeToggle" class="btn-hdr-action">
-      🌙 <span style="display:none; @media(min-width:500px){display:inline}">Tema</span>
+      🌙 <span class="btn-hdr-label">Tema</span>
     </button>
     <div class="user-profile-badge">
       <div class="patient-name-txt" id="dispNome">Paciente</div>
@@ -753,6 +764,9 @@ body {
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:6px;">
           <a id="apWaBtn" href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20confirmar%20minha%20consulta." target="_blank" style="font-size:0.78rem; color:var(--sage-light); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
             💬 Confirmar via WhatsApp →
+          </a>
+          <a href="anamnese-publica.html" style="font-size:0.78rem; color:var(--sage-light); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            📝 Preencher minha anamnese →
           </a>
                     <button id="apMeetBtn" type="button"
             style="display:none; font-size:0.82rem; color:#fff; font-weight:800; text-decoration:none;
@@ -1321,7 +1335,7 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('kos_theme', next);
   const btn = document.getElementById('btnThemeToggle');
-  if (btn) btn.innerHTML = next === 'light' ? '☀️ <span style="display:none; @media(min-width:500px){display:inline}">Claro</span>' : '🌙 <span style="display:none; @media(min-width:500px){display:inline}">Escuro</span>';
+  if (btn) btn.innerHTML = next === 'light' ? '☀️ <span class="btn-hdr-label">Claro</span>' : '🌙 <span class="btn-hdr-label">Escuro</span>';
 }
 
 function initTheme() {
@@ -1368,7 +1382,7 @@ async function salvarNovaSenha(e) {
   const btn   = document.getElementById('btnSalvarPwd');
 
   if (nova !== conf) { alert("❌ A nova senha e a confirmação não coincidem."); return; }
-  if (nova.length < 4) { alert("❌ A nova senha deve ter no mínimo 4 caracteres."); return; }
+  if (nova.length < 8) { alert("❌ A nova senha deve ter no mínimo 8 caracteres."); return; }
 
   btn.disabled = true;
   btn.innerText = "Salvando...";
@@ -1384,7 +1398,8 @@ async function salvarNovaSenha(e) {
       action: 'alterarSenha',
       usuario_id: pacienteObj ? pacienteObj.id : '',
       senha_atual: atual,
-      nova_senha: nova
+      nova_senha: nova,
+      session_token: pacienteObj ? pacienteObj.session_token : ''
     })
   }).then(r => r.json()).catch(() => null);
 
@@ -1458,6 +1473,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 function formatarDataPTBR(val) {
   if (!val) return '';
   try {
+    const user = JSON.parse(sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados') || 'null');
     const s = String(val).trim();
     if (!s) return '';
     if (s.includes('T')) {
@@ -1621,7 +1637,7 @@ async function carregarDadosHistorico(pacienteId) {
     const res = await fetch(KOS_API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: 'getHistoricoCompleto', paciente_id: pacienteId })
+      body: JSON.stringify({ action: 'getHistoricoCompleto', paciente_id: pacienteId, session_token: user?.session_token || '' })
     }).then(r => r.json()).catch(() => null);
 
     if (res && res.success && res.data) {
@@ -1694,16 +1710,16 @@ async function carregarDadosHistorico(pacienteId) {
                 return `
                 <div class="meal-card-v2" id="meal-${idx+1}" data-kcal="${kcalVal}">
                   <div class="meal-v2-header">
-                    <div class="meal-v2-name">${m.icone || '🥗'} ${m.nome || m.titulo || ('Refeição ' + (idx+1))} ${kcalStr ? `<span style="font-size:0.75rem; color:var(--sage-light); font-weight:800;">(${kcalStr})</span>` : ''}</div>
+                    <div class="meal-v2-name">${escapeHTML(m.icone || '🥗')} ${escapeHTML(m.nome || m.titulo || ('Refeição ' + (idx+1)))} ${kcalStr ? `<span style="font-size:0.75rem; color:var(--sage-light); font-weight:800;">(${escapeHTML(kcalStr)})</span>` : ''}</div>
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span class="meal-v2-time">${m.horario || 'Flexível'}</span>
+                      <span class="meal-v2-time">${escapeHTML(m.horario || 'Flexível')}</span>
                       <label class="meal-check-btn">
                         <input type="checkbox" onchange="toggleMeal('meal-${idx+1}')">
                         <span>Concluir</span>
                       </label>
                     </div>
                   </div>
-                  <div class="meal-items-text">${m.alimentos || m.itens || 'Consulte sua prescrição.'}</div>
+                  <div class="meal-items-text">${escapeHTML(m.alimentos || m.itens || 'Consulte sua prescrição.')}</div>
                   ${m.substituicoes || m.obs ? `
                     <button class="btn-subst-trigger" onclick="toggleSubst('sub-${idx+1}')">🔄 Opções de Substituição / Obs</button>
                     <div class="subst-box-v2" id="sub-${idx+1}">
@@ -1757,7 +1773,7 @@ async function carregarDadosHistorico(pacienteId) {
                     <div class="shop-item-row" id="shop-item-${idx}" style="background:var(--card-inner); border:1px solid var(--border-forest); padding:12px 14px; border-radius:10px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
                       <div style="display:flex; align-items:center; gap:10px;">
                         <input type="checkbox" style="width:18px; height:18px; accent-color:var(--sage-light);">
-                        <span style="font-size:0.88rem; font-weight:700; color:var(--text-title);">${itemStr}</span>
+                        <span style="font-size:0.88rem; font-weight:700; color:var(--text-title);">${escapeHTML(itemStr)}</span>
                       </div>
                       <span style="font-size:0.75rem; color:var(--sage-light); font-weight:800; background:rgba(140,164,129,0.12); padding:3px 8px; border-radius:6px;">🛒 Item Prescrito</span>
                     </div>
@@ -1778,11 +1794,11 @@ async function carregarDadosHistorico(pacienteId) {
             <div style="display:flex; flex-direction:column; gap:10px;">
               ${suplementos.map(s => `
                 <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:12px; border-radius:10px;">
-                  <div style="font-weight:800; color:var(--text-title); font-size:0.9rem;">${s.suplemento_nome} (${s.dosagem || ''})</div>
+                  <div style="font-weight:800; color:var(--text-title); font-size:0.9rem;">${escapeHTML(s.suplemento_nome)} (${escapeHTML(s.dosagem || '')})</div>
                   <div style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">
-                    📌 <strong>Posologia:</strong> ${s.posologia || 'Conforme orientação'} | <strong>Forma:</strong> ${s.forma_farmaceutica || 'Cápsula'}
+                    📌 <strong>Posologia:</strong> ${escapeHTML(s.posologia || 'Conforme orientação')} | <strong>Forma:</strong> ${escapeHTML(s.forma_farmaceutica || 'Cápsula')}
                   </div>
-                  ${s.observacao ? `<div style="font-size:0.75rem; color:var(--sage-light); margin-top:3px; font-style:italic;">Obs: ${s.observacao}</div>` : ''}
+                  ${s.observacao ? `<div style="font-size:0.75rem; color:var(--sage-light); margin-top:3px; font-style:italic;">Obs: ${escapeHTML(s.observacao)}</div>` : ''}
                 </div>
               `).join('')}
             </div>

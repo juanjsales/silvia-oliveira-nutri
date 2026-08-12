@@ -69,14 +69,18 @@ function doPost(e) { return handleRequest(e,"POST"); }
 
 function handleRequest(e, method) {
   const response = { success: false, data: null, error: null };
+  let params = {};
+  let action = "";
   try {
-    let params = {};
     if (method === "GET") {
       params = e.parameter || {};
     } else if (method === "POST" && e.postData && e.postData.contents) {
       params = JSON.parse(e.postData.contents);
     }
-    const action = params.action;
+    action = params.action;
+    enforceRateLimit(action, params);
+    validateRequestPayload(params);
+    const session = authorizeRequest(action, params);
     switch (action) {
 
       // ── Seed & Limpeza ─────────────────────────────────────────
@@ -87,13 +91,16 @@ function handleRequest(e, method) {
 
       // ── Auth ───────────────────────────────────────────────────
       case "loginPaciente":
-        response.data = loginPaciente(params.identifierInput||params.cpf, params.pinInput||params.senha);
+        response.data = createLoginSession(loginPaciente(params.identifierInput||params.cpf, params.pinInput||params.senha));
+        clearLoginFailures(params);
         response.success = true; break;
       case "loginAdmin":
-        response.data = loginAdmin(params.emailInput||params.email, params.passInput||params.senha);
+        response.data = createLoginSession(loginAdmin(params.emailInput||params.email, params.passInput||params.senha));
+        clearLoginFailures(params);
         response.success = true; break;
       case "loginUsuario":
-        response.data = loginUsuario(params.identifierInput||params.email||params.cpf, params.passwordInput||params.senha_pin||params.senha||params.pinInput);
+        response.data = createLoginSession(loginUsuario(params.identifierInput||params.email||params.cpf, params.passwordInput||params.senha_pin||params.senha||params.pinInput));
+        clearLoginFailures(params);
         response.success = true; break;
       case "alterarSenha":
         response.data = alterarSenha(params);
@@ -127,6 +134,13 @@ function handleRequest(e, method) {
           ...ag,
           data: formatarDataPTBR(ag.data),
           hora: formatarHoraPTBR(ag.hora),
+        }));
+        response.success = true; break;
+      case "getDisponibilidadePublica":
+        response.data = getTableData(SHEETS.AGENDAMENTOS).map(ag => ({
+          data: formatarDataPTBR(ag.data),
+          hora: formatarHoraPTBR(ag.hora),
+          status: ag.status
         }));
         response.success = true; break;
       case "getAgendamento": {
@@ -282,10 +296,159 @@ function handleRequest(e, method) {
     }
   } catch(err) {
     response.success = false;
-    response.error   = err.toString();
+    if (["loginPaciente", "loginAdmin", "loginUsuario"].includes(action)) {
+      recordLoginFailure(params);
+      response.error = String(err).includes("Muitas tentativas")
+        ? err.toString()
+        : "Credenciais invalidas ou acesso temporariamente indisponivel.";
+    } else {
+      response.error = err.toString();
+    }
   }
+  if (response.success) response.data = neutralizeLegacyMarkup(response.data);
   return ContentService.createTextOutput(JSON.stringify(response))
                        .setMimeType(ContentService.MimeType.JSON);
+}
+
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_WINDOW_SECONDS = 900;
+const RECOVERY_MAX_ATTEMPTS = 3;
+const RECOVERY_WINDOW_SECONDS = 3600;
+
+function rateLimitIdentifier(params) {
+  return String(params.identifierInput || params.emailInput || params.identifier ||
+    params.email || params.cpf || "anonimo").trim().toLowerCase();
+}
+
+function rateLimitKey(prefix, params) {
+  return prefix + ":" + hashPassword(rateLimitIdentifier(params)).slice(0, 32);
+}
+
+function cacheCounterGet(key) {
+  return Number(CacheService.getScriptCache().get(key) || 0);
+}
+
+function enforceRateLimit(action, params) {
+  const isLogin = ["loginPaciente", "loginAdmin", "loginUsuario"].includes(action);
+  if (isLogin && cacheCounterGet(rateLimitKey("login", params)) >= LOGIN_MAX_ATTEMPTS) {
+    throw new Error("Muitas tentativas. Aguarde 15 minutos antes de tentar novamente.");
+  }
+  if (action === "recuperarSenha") {
+    const key = rateLimitKey("recovery", params);
+    const count = cacheCounterGet(key);
+    if (count >= RECOVERY_MAX_ATTEMPTS) {
+      throw new Error("Limite de recuperacoes atingido. Tente novamente mais tarde.");
+    }
+    CacheService.getScriptCache().put(key, String(count + 1), RECOVERY_WINDOW_SECONDS);
+  }
+}
+
+function recordLoginFailure(params) {
+  const key = rateLimitKey("login", params);
+  CacheService.getScriptCache().put(key, String(cacheCounterGet(key) + 1), LOGIN_WINDOW_SECONDS);
+}
+
+function clearLoginFailures(params) {
+  CacheService.getScriptCache().remove(rateLimitKey("login", params));
+}
+
+function validateRequestPayload(value, path) {
+  path = path || "payload";
+  if (value === null || value === undefined) return;
+  if (typeof value === "string") {
+    const markup = /<\s*\/?\s*[a-z][^>]*>|javascript\s*:|on[a-z]+\s*=/i;
+    if (markup.test(value)) throw new Error("Conteudo potencialmente inseguro em " + path + ".");
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => validateRequestPayload(item, path + "[" + index + "]"));
+    return;
+  }
+  if (typeof value === "object") {
+    Object.keys(value).forEach(key => validateRequestPayload(value[key], path + "." + key));
+  }
+}
+
+// Neutraliza registros antigos antes que cheguem a templates baseados em innerHTML.
+// Strings JSON sao parseadas e reconstruidas para preservar planos e listas.
+function neutralizeLegacyMarkup(value) {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map(neutralizeLegacyMarkup);
+  if (typeof value === "object") {
+    const safe = {};
+    Object.keys(value).forEach(key => { safe[key] = neutralizeLegacyMarkup(value[key]); });
+    return safe;
+  }
+  if (typeof value !== "string") return value;
+
+  const trimmed = value.trim();
+  if ((trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+      (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+    try { return JSON.stringify(neutralizeLegacyMarkup(JSON.parse(value))); }
+    catch (e) {}
+  }
+  if (/<|>|javascript\s*:|on[a-z]+\s*=/i.test(value)) {
+    return value
+      .replace(/</g, "＜")
+      .replace(/>/g, "＞")
+      .replace(/"/g, "＂")
+      .replace(/'/g, "＇");
+  }
+  return value;
+}
+
+// Autenticacao server-side. CacheService limita a sessao a 6 horas e evita
+// confiar em flags controladas pelo navegador.
+const PUBLIC_ACTIONS = ["loginPaciente", "loginAdmin", "loginUsuario", "recuperarSenha", "getDisponibilidadePublica"];
+const PATIENT_ACTIONS = ["getHistoricoCompleto", "getPlanoVigente", "getRetornos", "saveRetorno", "saveAnamnese", "alterarSenha"];
+const SESSION_TTL_SECONDS = 21600;
+
+function createLoginSession(usuario) {
+  const safeUser = sanitizeUsuario(usuario);
+  const token = Utilities.getUuid() + Utilities.getUuid().replace(/-/g, "");
+  const session = {
+    userId: safeUser.id,
+    role: String(safeUser.tipo || "PACIENTE").toUpperCase(),
+    createdAt: Date.now()
+  };
+  CacheService.getScriptCache().put("session:" + token, JSON.stringify(session), SESSION_TTL_SECONDS);
+  return { ...safeUser, session_token: token, expires_in: SESSION_TTL_SECONDS };
+}
+
+function getRequestSession(token) {
+  if (!token) return null;
+  const raw = CacheService.getScriptCache().get("session:" + String(token));
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (e) { return null; }
+}
+
+function authorizeRequest(action, params) {
+  if (!action) throw new Error("Acao nao informada.");
+  if (PUBLIC_ACTIONS.includes(action)) return null;
+
+  const session = getRequestSession(params.session_token);
+  if (!session) throw new Error("Sessao invalida ou expirada. Faca login novamente.");
+  if (session.role === "ADMIN") return session;
+  if (session.role !== "PACIENTE" || !PATIENT_ACTIONS.includes(action)) {
+    throw new Error("Acesso nao autorizado.");
+  }
+
+  const requestedPatientId = String(params.paciente_id || params.usuario_id ||
+    (params.retorno && params.retorno.paciente_id) ||
+    (params.anamnese && params.anamnese.paciente_id) || "").trim();
+  if (!requestedPatientId || requestedPatientId !== String(session.userId)) {
+    throw new Error("Acesso negado aos dados solicitados.");
+  }
+  return session;
+}
+
+function sanitizeUsuario(usuario) {
+  if (!usuario) return usuario;
+  const safe = { ...usuario };
+  delete safe.senha_pin;
+  delete safe.password;
+  delete safe.senha;
+  return safe;
 }
 
 // ── Utilidades de BD ───────────────────────────────────────────────
@@ -391,6 +554,10 @@ function hashPassword(p) {
   return raw.map(b => (b<0?b+256:b).toString(16).padStart(2,"0")).join("");
 }
 
+function isPasswordHash(value) {
+  return /^[a-f0-9]{64}$/i.test(String(value || ""));
+}
+
 function updateConfigValue(chave, valor) {
   const sheet = getSheet(SHEETS.CONFIG);
   const data  = sheet.getDataRange().getValues();
@@ -407,7 +574,7 @@ function getConfiguracoes() {
   const data = getTableData(SHEETS.CONFIG);
   const configMap = {};
   data.forEach(item => {
-    if (item.chave) configMap[item.chave] = item.valor;
+    if (item.chave && item.chave !== "admin_senha") configMap[item.chave] = item.valor;
   });
   return configMap;
 }
@@ -536,13 +703,13 @@ function getPacientes() {
     const pesoAtual = (ultimaEv && (ultimaEv.peso || ultimaEv.peso_kg)) ? (ultimaEv.peso || ultimaEv.peso_kg) : (u.peso || "");
     const alturaAtual = (ultimaEv && (ultimaEv.altura || ultimaEv.altura_cm)) ? (ultimaEv.altura || ultimaEv.altura_cm) : (u.altura || "");
 
-    return {
+    return sanitizeUsuario({
       ...u,
       idade: idadeCalculada || u.idade || "",
       peso: pesoAtual,
       altura: alturaAtual,
       ultima_evolucao_data: ultimaEv ? (ultimaEv.data || ultimaEv.data_medicao) : ""
-    };
+    });
   });
 }
 
@@ -570,29 +737,29 @@ function loginPaciente(id, pin) {
   });
 
   if (!usuario) throw new Error("Paciente não encontrado.");
-  if (usuario.senha_pin && usuario.senha_pin !== hash && usuario.senha_pin !== pin)
+  if (!usuario.senha_pin) throw new Error("Credencial do paciente ainda nao configurada.");
+  if (!isPasswordHash(usuario.senha_pin) || usuario.senha_pin !== hash)
     throw new Error("Senha / PIN incorreto.");
-  return usuario;
+  return sanitizeUsuario(usuario);
 }
 
 function loginAdmin(emailInput, passInput) {
   const rawEmail = String(emailInput||"").trim().toLowerCase();
   const inputHash = hashPassword(passInput);
   const configs = getTableData(SHEETS.CONFIG);
-  const targetHashConfig = (configs.find(c => c.chave === "admin_senha") || {}).valor || hashPassword("silvia2026");
+  const targetHashConfig = (configs.find(c => c.chave === "admin_senha") || {}).valor;
+  if (!targetHashConfig) throw new Error("Credencial administrativa ainda nao configurada.");
 
   const usuarios = getTableData(SHEETS.USUARIOS);
   let admin = usuarios.find(u => {
     const isAdm = String(u.tipo||"").toUpperCase() === "ADMIN";
     const matchEmail = rawEmail !== "" && String(u.email||"").trim().toLowerCase() === rawEmail;
-    return isAdm || matchEmail || rawEmail === "admin";
+    return isAdm && (matchEmail || rawEmail === "admin");
   });
 
   if (admin) {
-    const isMatch = (admin.senha_pin && (admin.senha_pin === inputHash || admin.senha_pin === passInput)) ||
-                    (inputHash === targetHashConfig) ||
-                    (passInput === targetHashConfig) ||
-                    (passInput === "silvia2026");
+    const isMatch = (isPasswordHash(admin.senha_pin) && admin.senha_pin === inputHash) ||
+                    (inputHash === targetHashConfig);
     if (!isMatch) throw new Error("Senha incorreta.");
     return { authenticated: true, id: admin.id || "ADM-01", tipo: "ADMIN", nome: admin.nome || "Dra. Silvia Oliveira Lemos", email: admin.email || rawEmail };
   }
@@ -600,7 +767,7 @@ function loginAdmin(emailInput, passInput) {
   // Fallback se não encontrar registro na tabela Usuarios
   const targetEmail = (configs.find(c => c.chave === "admin_email") || {}).valor || "silviadeoliveira24.nutri@gmail.com";
   if (rawEmail !== targetEmail.toLowerCase() && rawEmail !== "admin") throw new Error("E-mail incorreto.");
-  if (inputHash !== targetHashConfig && passInput !== targetHashConfig && passInput !== "silvia2026") throw new Error("Senha incorreta.");
+  if (inputHash !== targetHashConfig) throw new Error("Senha incorreta.");
   return { authenticated: true, id: "ADM-01", tipo: "ADMIN", nome: "Dra. Silvia Oliveira Lemos", email: targetEmail };
 }
 
@@ -620,11 +787,10 @@ function loginUsuario(id, pass) {
   // Caso ADMIN especial (Dra. Silvia)
   if (raw === "admin" || raw === "silviadeoliveira24.nutri@gmail.com" || (usuario && String(usuario.tipo).toUpperCase() === "ADMIN")) {
     const configs = getTableData(SHEETS.CONFIG);
-    const targetHashConfig = (configs.find(c => c.chave === "admin_senha") || {}).valor || hashPassword("silvia2026");
-    const valid = (usuario && usuario.senha_pin && (usuario.senha_pin === hash || usuario.senha_pin === pass)) ||
-                  (hash === targetHashConfig) ||
-                  (pass === targetHashConfig) ||
-                  (pass === "silvia2026");
+    const targetHashConfig = (configs.find(c => c.chave === "admin_senha") || {}).valor;
+    if (!targetHashConfig) throw new Error("Credencial administrativa ainda nao configurada.");
+    const valid = (usuario && isPasswordHash(usuario.senha_pin) && usuario.senha_pin === hash) ||
+                  (hash === targetHashConfig);
     if (valid) {
       return {
         authenticated: true,
@@ -639,7 +805,8 @@ function loginUsuario(id, pass) {
   }
 
   if (!usuario) throw new Error("Usuário não encontrado.");
-  if (usuario.senha_pin && usuario.senha_pin !== hash && usuario.senha_pin !== pass)
+  if (!usuario.senha_pin) throw new Error("Credencial do usuario ainda nao configurada.");
+  if (!isPasswordHash(usuario.senha_pin) || usuario.senha_pin !== hash)
     throw new Error("Senha ou PIN incorreto.");
 
   return {
@@ -659,7 +826,7 @@ function alterarSenha(params) {
 
   if (!identifier) throw new Error("Identificador do usuário não informado.");
   if (!senhaAtual) throw new Error("Informe sua senha atual.");
-  if (!novaSenha || novaSenha.length < 4) throw new Error("A nova senha deve ter no mínimo 4 caracteres.");
+  if (!novaSenha || novaSenha.length < 8) throw new Error("A nova senha deve ter no mínimo 8 caracteres.");
 
   const hashAtual = hashPassword(senhaAtual);
   const hashNovo  = hashPassword(novaSenha);
@@ -669,8 +836,8 @@ function alterarSenha(params) {
   // 1. Caso ADMIN (Dra. Silvia)
   if (lowerId === "admin" || lowerId === "silviadeoliveira24.nutri@gmail.com") {
     const configs = getTableData(SHEETS.CONFIG);
-    const targetHash = (configs.find(c => c.chave === "admin_senha") || {}).valor || hashPassword("silvia2026");
-    if (hashAtual !== targetHash && senhaAtual !== "silvia2026") {
+    const targetHash = (configs.find(c => c.chave === "admin_senha") || {}).valor;
+    if (!targetHash || hashAtual !== targetHash) {
       throw new Error("Senha atual incorreta.");
     }
     updateConfigValue("admin_senha", hashNovo);
@@ -719,7 +886,7 @@ function alterarSenha(params) {
     if (matchId || matchCpf || matchEmail) {
       rowIndex = i + 1; // 1-based row index
       const currentPin = String(data[i][pinIdx] || "");
-      if (currentPin && currentPin !== hashAtual && currentPin !== senhaAtual) {
+      if (!isPasswordHash(currentPin) || currentPin !== hashAtual) {
         throw new Error("Senha atual incorreta.");
       }
       break;
@@ -749,19 +916,19 @@ function recuperarSenha(params) {
     const tempPin = Math.random().toString(36).substring(2, 8).toUpperCase();
     const newHash = hashPassword(tempPin);
 
-    // Atualiza tabela Configuracoes
-    updateConfigValue("admin_senha", newHash);
-
-    // Atualiza tabela Usuarios se a linha do Admin existir
+    // Localiza a linha, mas so persiste depois que o e-mail for aceito.
     const sheet = getSheet(SHEETS.USUARIOS);
     const data  = sheet.getDataRange().getValues();
+    let adminRowIndex = -1;
+    let adminPinIndex = -1;
     if (data.length > 1) {
       const headers = data[0].map(h => String(h).toLowerCase().trim());
       const emailIdx = headers.indexOf("email");
       const pinIdx = headers.indexOf("senha_pin");
       for (let i = 1; i < data.length; i++) {
         if (String(data[i][emailIdx]||"").trim().toLowerCase() === adminEmail) {
-          sheet.getRange(i + 1, pinIdx + 1).setValue(newHash);
+          adminRowIndex = i + 1;
+          adminPinIndex = pinIdx + 1;
           break;
         }
       }
@@ -778,15 +945,15 @@ function recuperarSenha(params) {
       <p style="font-size: 0.85rem; color: #a0b399;">Por segurança, recomendamos que altere essa senha assim que realizar o login.</p>
     </div>`;
 
-    try {
-      MailApp.sendEmail({
+    MailApp.sendEmail({
         to: adminEmail,
         subject: "🔑 Código de Recuperação de Senha - Painel Nutricional",
         htmlBody: htmlBody,
         name: "Dra. Silvia de Oliveira Lemos Nutrição"
-      });
-    } catch(e) {
-      Logger.log("Erro ao enviar e-mail admin: " + e.toString());
+    });
+    updateConfigValue("admin_senha", newHash);
+    if (adminRowIndex > 0 && adminPinIndex > 0) {
+      sheet.getRange(adminRowIndex, adminPinIndex).setValue(newHash);
     }
 
     return {
@@ -832,12 +999,7 @@ function recuperarSenha(params) {
     const tempPin = Math.random().toString(36).substring(2, 8).toUpperCase();
     const newHash = hashPassword(tempPin);
 
-    // Grava novo PIN temporário no banco Sheets
-    if (pinIdx >= 0) {
-      sheet.getRange(rowIndex, pinIdx + 1).setValue(newHash);
-    }
-
-    // Envia e-mail com PIN seguro
+    // Envia o PIN antes de substituir a credencial atual.
     const htmlBody = `
     <div style="font-family: Arial, sans-serif; background-color: #0e1a12; color: #eef4e5; padding: 30px; border-radius: 12px;">
       <h2 style="color: #8ca481;">🔑 Recuperação de Senha - Portal do Paciente</h2>
@@ -850,15 +1012,14 @@ function recuperarSenha(params) {
       <p style="font-size: 0.85rem; color: #a0b399;">Se você não solicitou este e-mail, nenhuma ação é necessária.</p>
     </div>`;
 
-    try {
-      MailApp.sendEmail({
+    MailApp.sendEmail({
         to: pacienteEncontrado.email,
         subject: "🔑 Seu Novo PIN de Acesso - Dra. Silvia Oliveira Nutrição",
         htmlBody: htmlBody,
         name: "Dra. Silvia de Oliveira Lemos · Nutricionista"
-      });
-    } catch(e) {
-      Logger.log("Erro ao enviar e-mail paciente: " + e.toString());
+    });
+    if (pinIdx >= 0) {
+      sheet.getRange(rowIndex, pinIdx + 1).setValue(newHash);
     }
   }
 
@@ -894,7 +1055,10 @@ function savePaciente(p) {
   }
 
   const dt  = p.data_cadastro || new Date().toISOString().split("T")[0];
-  const pin = hashPassword(p.senha_pin || "123456");
+  const existente = isNew ? null : todosUsuarios.find(u => String(u.id).trim() === realId);
+  const pin = p.senha_pin
+    ? hashPassword(p.senha_pin)
+    : (existente && existente.senha_pin ? existente.senha_pin : hashPassword(gerarPINTemporario()));
 
   const pacienteObj = {
     ...p,
@@ -910,7 +1074,38 @@ function savePaciente(p) {
     senha_pin: pin
   };
 
-  return saveGeneric(SHEETS.USUARIOS, pacienteObj, SCHEMAS.Usuarios);
+  return sanitizeUsuario(saveGeneric(SHEETS.USUARIOS, pacienteObj, SCHEMAS.Usuarios));
+}
+
+// Execute manualmente uma unica vez no editor do Apps Script antes do deploy.
+// Nao esta exposta pelo roteador HTTP.
+function configurarAdminInicial(email, senha) {
+  if (!email || !senha || String(senha).length < 12) {
+    throw new Error("Informe e-mail e uma senha com pelo menos 12 caracteres.");
+  }
+  updateConfigValue("admin_email", String(email).trim().toLowerCase());
+  updateConfigValue("admin_senha", hashPassword(senha));
+  return { configured: true };
+}
+
+// Execute manualmente uma vez antes do deployment para converter credenciais
+// legadas em texto simples. A funcao nao esta exposta pela API HTTP.
+function migrarCredenciaisLegadas() {
+  const sheet = getSheet(SHEETS.USUARIOS);
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { migrated: 0 };
+  const headers = data[0].map(h => String(h).toLowerCase().trim());
+  const pinIdx = headers.indexOf("senha_pin");
+  if (pinIdx < 0) throw new Error("Coluna senha_pin nao encontrada.");
+  let migrated = 0;
+  for (let i = 1; i < data.length; i++) {
+    const credential = String(data[i][pinIdx] || "");
+    if (credential && !isPasswordHash(credential)) {
+      sheet.getRange(i + 1, pinIdx + 1).setValue(hashPassword(credential));
+      migrated++;
+    }
+  }
+  return { migrated };
 }
 
 function saveAgendamento(ag) {
@@ -1372,19 +1567,17 @@ function gerarPDFRecomendacoes(paciente, agendamento) {
 // ── Seed ───────────────────────────────────────────────────────────
 function populateInitialData() {
   setupDatabase();
-  const admPass = hashPassword("silvia2026");
 
   const uSheet = getSheet(SHEETS.USUARIOS);
   if (uSheet.getLastRow() <= 1) {
     uSheet.appendRow(["ADM-01", "00000000000", "Dra. Silvia de Oliveira Lemos",
       "silviadeoliveira24.nutri@gmail.com", "5521987385146", "1985-01-01",
-      "Nutrição Clínica & Esportiva", "ADMIN", "2026-01-01", admPass]);
+      "Nutrição Clínica & Esportiva", "ADMIN", "2026-01-01", ""]);
   }
 
   const cfgSheet = getSheet(SHEETS.CONFIG);
   if (cfgSheet.getLastRow() <= 1) {
     cfgSheet.appendRow(["admin_email", "silviadeoliveira24.nutri@gmail.com"]);
-    cfgSheet.appendRow(["admin_senha", admPass]);
     cfgSheet.appendRow(["clinica_nome", "Dra. Silvia de Oliveira Lemos"]);
     cfgSheet.appendRow(["clinica_crn", "CRN-4 25104731"]);
   }

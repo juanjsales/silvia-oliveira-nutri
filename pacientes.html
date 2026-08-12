@@ -7,6 +7,7 @@
   <title>Pacientes &amp; Anamneses · Dra. Silvia Oliveira Lemos</title>
   <meta name="kos-auth-level" content="admin">
   <script src="assets/js/auth-guard.js"></script>
+  <script src="assets/js/security.js"></script>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
@@ -611,7 +612,7 @@
           <input type="text" id="inputBuscaPacientes" class="form-control"
             placeholder="🔍 Buscar por nome, CPF, WhatsApp ou objetivo..." oninput="filtrarPacientes(this.value)"
             style="width:300px; padding:10px 14px; font-size:0.86rem;">
-          <a href="agendamento.html" class="btn" style="white-space:nowrap;">📅 Novo Agendamento</a>
+          <button type="button" class="btn" style="white-space:nowrap;" onclick="openInAdmin('agendamento.html')">📅 Novo Agendamento</button>
         </div>
       </div>
 
@@ -801,8 +802,18 @@
     var pacientesLista = [];
     window.pacientesLista = pacientesLista;
 
+    function openInAdmin(url) {
+      if (window.self !== window.top) {
+        window.parent.postMessage({ type: 'OPEN_IFRAME', url }, window.location.origin);
+      } else {
+        window.location.href = url;
+      }
+    }
+
     async function apiCall(action, payload = {}, method = 'GET') {
       try {
+        const user = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
+        payload = { ...payload, session_token: user?.session_token || '' };
         let res;
         if (method === 'POST') {
           try {
@@ -1007,19 +1018,19 @@ function renderizarTabelaPacientes(lista) {
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="white-space:nowrap;"><strong>${p.id}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${dtFmt}</span></td>
-      <td style="white-space:nowrap;"><strong>${p.nome}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${p.email || ''}</span></td>
+      <td style="white-space:nowrap;"><strong>${escapeHTML(p.id)}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${escapeHTML(dtFmt)}</span></td>
+      <td style="white-space:nowrap;"><strong>${escapeHTML(p.nome)}</strong><br><span style="font-size:0.78rem; color:var(--sage-light);">${escapeHTML(p.email || '')}</span></td>
       <td style="white-space:nowrap;">
         ${cpfFmt}<br>
         ${rawWsp ? `<a href="https://wa.me/${rawWsp}" target="_blank" style="font-size:0.78rem; color:#25d366; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">💬 ${wspFmt}</a>` : `<span style="font-size:0.78rem; color:var(--text-muted);">${wspFmt}</span>`}
       </td>
-      <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700; display:inline-block; white-space:nowrap;">${p.objetivo || 'Reeducação Alimentar'}</span></td>
+      <td><span style="background:rgba(140,164,129,0.15); padding:4px 10px; border-radius:6px; border:1px solid var(--border-forest); font-weight:700; display:inline-block; white-space:nowrap;">${escapeHTML(p.objetivo || 'Reeducação Alimentar')}</span></td>
       <td style="white-space:nowrap;">
         <div style="display:flex; gap:6px; flex-wrap:nowrap; align-items:center;">
-          <a href="atendimento.html?pac_id=${encodeURIComponent(p.id)}" class="btn" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap; background:rgba(140,164,129,.18); color:var(--sage-light); border:1.5px solid var(--sage-light);">▶ Atender</a>
+          <button type="button" onclick="openInAdmin('atendimento.html?pac_id=${encodeURIComponent(p.id)}')" class="btn" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap; background:rgba(140,164,129,.18); color:var(--sage-light); border:1.5px solid var(--sage-light);">▶ Atender</button>
           <button class="btn btn-secondary" onclick="verAnamnesePaciente('${p.id}', '${nomeEscaped}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📋 Anamnese</button>
-          <a href="gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🥗 Cardápio</a>
-          <a href="bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</a>
+          <button type="button" onclick="openInAdmin('gerenciador-plano.html?paciente_id=${encodeURIComponent(p.id)}')" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🥗 Cardápio</button>
+          <button type="button" onclick="openInAdmin('bioimpedancia.html?paciente_id=${encodeURIComponent(p.id)}')" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">📈 Bioimpedância</button>
           <button class="btn btn-secondary" onclick="editPatient('${p.id}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">✏️ Editar</button>
           <button class="btn btn-secondary" onclick="deletePatient('${p.id}')" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap;">🗑️ Excluir</button>
         </div>
@@ -1328,9 +1339,12 @@ function salvarNovoPaciente(e) {
 window.addEventListener('DOMContentLoaded', () => {
   if (window.self !== window.top) {
     document.body.classList.add('in-iframe');
-  } else if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
+  } else {
+    const authUser = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
+    if (!['localhost', '127.0.0.1'].includes(window.location.hostname) && (!authUser?.session_token || authUser.tipo !== 'ADMIN')) {
     window.location.href = "login.html";
     return;
+    }
   }
 
   const inpWsp = document.getElementById('pacWsp');

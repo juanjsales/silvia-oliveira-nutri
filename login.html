@@ -315,17 +315,7 @@ async function handleUnifiedLogin(e) {
       }, 600);
     }
   } else {
-    // Fallback de segurança local para Dra. Silvia
-    if (identifierInput.toLowerCase() === "silviadeoliveira24.nutri@gmail.com" && passwordInput === "silvia2026") {
-      sessionStorage.setItem('kos_adm_auth', 'true');
-      showStatus("✅ Acesso Autorizado! Entrando no Painel...", "success");
-      setTimeout(() => {
-        const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
-        window.location.href = redirectUrl || "app-nutri.html";
-      }, 600);
-    } else {
-      showStatus(res.error || "CPF/E-mail ou Senha incorreta. Tente novamente.");
-    }
+    showStatus(res.error || "CPF/E-mail ou Senha incorreta. Tente novamente.");
   }
 }
 

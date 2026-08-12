@@ -7,6 +7,7 @@
   <title>Nutricionista Silvia Oliveira · Painel da Nutricionista</title>
   <meta name="kos-auth-level" content="admin">
   <script src="assets/js/auth-guard.js"></script>
+  <script src="assets/js/security.js"></script>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="apple-touch-icon" href="assets/favicon.svg">
   <link
@@ -1576,25 +1577,25 @@
     </div>
 
     <nav class="nav-menu">
-      <div class="nav-item active" onclick="openHome(this)">
+      <div class="nav-item active" role="button" tabindex="0" onclick="openHome(this)">
         <span>🏠</span> Home (Gráficos &amp; KPIs)
       </div>
-      <div class="nav-item" onclick="openIframe('pacientes.html', this)">
+      <div class="nav-item" role="button" tabindex="0" onclick="openIframe('pacientes.html', this)">
         <span>👤</span> Pacientes &amp; Anamneses
       </div>
-      <div class="nav-item" onclick="openIframe('agendamento.html', this)">
+      <div class="nav-item" role="button" tabindex="0" onclick="openIframe('agendamento.html', this)">
         <span>📅</span> Agendamento de Consultas
       </div>
-      <div class="nav-item" onclick="openIframe('gerenciador-plano.html', this)">
+      <div class="nav-item" role="button" tabindex="0" onclick="openIframe('gerenciador-plano.html', this)">
         <span>🥗</span> Gerenciador de Plano Nutricional
       </div>
-      <div class="nav-item" onclick="openIframe('bioimpedancia.html', this)">
+      <div class="nav-item" role="button" tabindex="0" onclick="openIframe('bioimpedancia.html', this)">
         <span>📈</span> Bioimpedância &amp; Evolução
       </div>
-      <div class="nav-item" id="navFinItem" onclick="openFinanceiroView(this)">
+      <div class="nav-item" id="navFinItem" role="button" tabindex="0" onclick="openFinanceiroView(this)">
         <span>💰</span> Financeiro &amp; Recibos
       </div>
-      <div class="nav-item" onclick="openIframe('configuracoes.html', this)">
+      <div class="nav-item" role="button" tabindex="0" onclick="openIframe('configuracoes.html', this)">
         <span>⚙️</span> Configurações
       </div>
       <a href="index.html" target="_blank" class="nav-item" style="color: var(--text-muted); text-decoration: none;">
@@ -1658,6 +1659,19 @@
 
       <!-- 1. HOME VIEW (GRÁFICOS, KPIS & AGENDA) -->
       <div id="homeView" style="display: block;">
+        <div class="card" style="margin-bottom:20px; padding:16px 18px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
+            <div>
+              <div class="card-title">Ações rápidas</div>
+              <div style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">Comece as tarefas mais frequentes sem procurar no menu.</div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn" type="button" onclick="openIframe('agendamento.html')">📅 Novo agendamento</button>
+              <button class="btn btn-secondary" type="button" onclick="openIframe('pacientes.html')">👤 Localizar paciente</button>
+              <button class="btn btn-secondary" type="button" onclick="openIframe('gerenciador-plano.html')">🥗 Criar plano</button>
+            </div>
+          </div>
+        </div>
         <div class="kpi-grid" style="margin-bottom: 24px;">
           <div class="kpi-card">
             <div class="kpi-hdr">
@@ -1927,7 +1941,8 @@
 
     // COMUNICAÇÃO DE DADOS EM TEMPO REAL COM GOOGLE SHEETS
     async function apiCall(action, payload = {}) {
-      const bodyData = { action, ...payload };
+      const user = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
+      const bodyData = { action, ...payload, session_token: user?.session_token || '' };
       try {
         const res = await fetch(KOS_API_URL, {
           method: "POST",
@@ -1963,16 +1978,10 @@
       const btn = document.querySelector('#adminLockscreen button');
       if (btn) btn.innerText = "🟡 Validando na Planilha...";
 
-      // Fallback rápido local ou consulta remota
-      if (pass === 'silvia2026') {
-        sessionStorage.setItem('kos_adm_auth', 'true');
-        document.getElementById('adminLockscreen').style.display = 'none';
-        return;
-      }
-
       const res = await apiCall('loginAdmin', { emailInput: email, passInput: pass });
       if (res && res.success) {
         sessionStorage.setItem('kos_adm_auth', 'true');
+        sessionStorage.setItem('kos_user_dados', JSON.stringify(res.data));
         document.getElementById('adminLockscreen').style.display = 'none';
       } else {
         alert("Erro de Autenticação: " + (res.error || "E-mail ou senha incorretos!"));
@@ -2137,12 +2146,12 @@
             if (tblPacientes) {
               const tr = document.createElement('tr');
               tr.innerHTML = `
-            <td>${p.nome}</td>
-            <td>${p.cpf || '-'}</td>
-            <td>${p.whatsapp || '-'}</td>
-            <td>${p.objetivo || 'Reeducação Alimentar'}</td>
+            <td>${escapeHTML(p.nome)}</td>
+            <td>${escapeHTML(p.cpf || '-')}</td>
+            <td>${escapeHTML(p.whatsapp || '-')}</td>
+            <td>${escapeHTML(p.objetivo || 'Reeducação Alimentar')}</td>
             <td>
-              <button class="btn btn-secondary" onclick="copiarLinkAnamnese('${p.id}')" style="padding:6px 12px; font-size:0.75rem;">🔗 Copiar Link Anamnese</button>
+              <span style="font-size:0.75rem; color:var(--sage-light);">Disponível no portal autenticado</span>
             </td>
           `;
               tblPacientes.appendChild(tr);
@@ -2172,9 +2181,9 @@
               const tr = document.createElement('tr');
               tr.innerHTML = `
             <td><strong>${horaFmt}</strong></td>
-            <td>${ag.paciente_nome}</td>
-            <td>${ag.tipo || 'Consulta Nutricional'}</td>
-            <td><span style="color: #8ca481; font-weight:800;">${ag.status || 'Confirmado'}</span></td>
+            <td>${escapeHTML(ag.paciente_nome)}</td>
+            <td>${escapeHTML(ag.tipo || 'Consulta Nutricional')}</td>
+            <td><span style="color: #8ca481; font-weight:800;">${escapeHTML(ag.status || 'Confirmado')}</span></td>
             <td>
               <a href="https://wa.me/${cleanWsp}?text=${msgWsp}" target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">💬 Lembrete 1-Clique</a>
             </td>
@@ -2782,6 +2791,16 @@
       if (el) el.classList.add('active');
     }
 
+    function activateNavForUrl(url) {
+      const items = document.querySelectorAll('.sidebar .nav-item');
+      const index = url.includes('pacientes') || url.includes('atendimento') ? 1
+        : url.includes('agendamento') ? 2
+        : url.includes('gerenciador') ? 3
+        : url.includes('bioimpedancia') ? 4
+        : url.includes('configuracoes') ? 6 : -1;
+      if (index >= 0 && items[index]) items[index].classList.add('active');
+    }
+
     // CACHE MULTI-IFRAME ULTRA-RÁPIDO (TROCA DE ABAS INSTANTÂNEA 0MS)
     const iframeCache = {};
 
@@ -2903,6 +2922,7 @@
 
       document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
       if (el) el.classList.add('active');
+      else activateNavForUrl(url);
     }
 
     function openFinanceiroView(el) {
@@ -2953,13 +2973,13 @@
           return `
         <tr style="border-bottom:1px solid var(--border-forest);">
           <td style="padding:12px; font-weight:700;">${fmtDate(l.data)}</td>
-          <td style="padding:12px; font-weight:800; color:var(--text-title);">${l.paciente_nome || '—'}</td>
-          <td style="padding:12px; color:var(--cream);">${l.descricao || 'Consulta Nutricional'}</td>
+          <td style="padding:12px; font-weight:800; color:var(--text-title);">${escapeHTML(l.paciente_nome || '—')}</td>
+          <td style="padding:12px; color:var(--cream);">${escapeHTML(l.descricao || 'Consulta Nutricional')}</td>
           <td style="padding:12px; font-weight:900; color:var(--sage-light);">R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-          <td style="padding:12px; font-size:0.85rem;">${l.forma_pagamento || 'Pix'}</td>
+          <td style="padding:12px; font-size:0.85rem;">${escapeHTML(l.forma_pagamento || 'Pix')}</td>
           <td style="padding:12px;">
             <span style="font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:8px; background:${String(l.status).toLowerCase().includes('pago') ? 'rgba(140,164,129,0.2)' : 'rgba(251,191,36,0.2)'}; color:${String(l.status).toLowerCase().includes('pago') ? '#8ca481' : '#fbbf24'}; border:1px solid ${String(l.status).toLowerCase().includes('pago') ? '#8ca481' : '#fbbf24'};">
-              ${l.status || 'Confirmado'}
+              ${escapeHTML(l.status || 'Confirmado')}
             </span>
           </td>
           <td style="padding:12px; text-align:right;">
@@ -3033,6 +3053,7 @@
 
     // MENSAGENS DOS IFRAMES FILHOS (OPEN_IFRAME)
     window.addEventListener('message', e => {
+      if (e.origin !== window.location.origin) return;
       if (e.data?.type === 'OPEN_IFRAME') {
         const iframeView = document.getElementById('iframeView');
         const homeView = document.getElementById('homeView');
@@ -3050,8 +3071,22 @@
           if (url.includes('atendimento')) pageTitle.innerText = 'Prontuário do Atendimento · Dra. Silvia Oliveira Lemos';
           else if (url.includes('agendamento')) pageTitle.innerText = 'Agendamento de Consultas · Dra. Silvia Oliveira Lemos';
           else if (url.includes('pacientes')) pageTitle.innerText = 'Gestão de Pacientes · Dra. Silvia Oliveira Lemos';
+          else if (url.includes('gerenciador')) pageTitle.innerText = 'Gerenciador de Plano Nutricional · Dra. Silvia Oliveira Lemos';
+          else if (url.includes('bioimpedancia')) pageTitle.innerText = 'Bioimpedância & Evolução · Dra. Silvia Oliveira Lemos';
+          else if (url.includes('configuracoes')) pageTitle.innerText = 'Configurações do Sistema · Dra. Silvia Oliveira Lemos';
         }
+        document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
+        activateNavForUrl(e.data.url);
       }
+    });
+
+    document.querySelectorAll('.sidebar .nav-item[role="button"]').forEach(item => {
+      item.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          item.click();
+        }
+      });
     });
 
     // CONTROLE DA BARRA DE PROGRESSO E PRELOADER GLOBAL
@@ -3082,7 +3117,8 @@
     window.addEventListener('DOMContentLoaded', async () => {
       setTopProgress(30);
       initTheme();
-      if (sessionStorage.getItem('kos_adm_auth') !== 'true') {
+      const authUser = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
+      if (!['localhost', '127.0.0.1'].includes(window.location.hostname) && (!authUser?.session_token || authUser.tipo !== 'ADMIN')) {
         window.location.href = "login.html";
         return;
       }
@@ -3106,7 +3142,7 @@
       if (dl && Array.isArray(window.pacientesLista) && window.pacientesLista.length > 0) {
         dl.innerHTML = window.pacientesLista
           .filter(p => !p.tipo || String(p.tipo).toUpperCase() === 'PACIENTE')
-          .map(p => `<option value="${p.nome}"></option>`)
+          .map(p => `<option value="${escapeHTML(p.nome)}"></option>`)
           .join('');
       }
     }

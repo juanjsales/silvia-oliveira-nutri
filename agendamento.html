@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agendamento · Dra. Silvia Oliveira Lemos</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<script src="assets/js/security.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root,[data-theme="dark"]{
@@ -469,6 +470,8 @@ window.addEventListener('message', e => {
 // ── API ────────────────────────────────────────────────────────────
 async function apiCall(action, payload = {}, method = 'GET') {
   try {
+    const user = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
+    payload = { ...payload, session_token: user?.session_token || '' };
     if (method === 'POST') {
       const res = await fetch(API_URL, {
         method: 'POST',
@@ -617,9 +620,9 @@ function renderDayList() {
 function buildCard(ag) {
   const hora   = formatTime(ag.hora)||ag.hora||'--:--';
   const periodo = Number(hora.split(':')[0])<12?'AM':'PM';
-  const nome   = ag.paciente_nome||ag.nome||'Paciente';
-  const tipo   = sanitizaTipo(ag.tipo);
-  const status = ag.status||'Confirmado';
+  const nome   = escapeHTML(ag.paciente_nome||ag.nome||'Paciente');
+  const tipo   = escapeHTML(sanitizaTipo(ag.tipo));
+  const status = escapeHTML(ag.status||'Confirmado');
   const valor  = ag.valor ? `R$ ${parseFloat(ag.valor).toFixed(2).replace('.',',')}` : '';
   const obs    = sanitizaTipo(ag.observacao);
   const id     = ag.id||'';
@@ -665,7 +668,7 @@ function iniciarAtendimento(agId, pacId) {
   // Abre o prontuário no iframe pai ou navega direto
   const url = `atendimento.html?ag_id=${agId}&pac_id=${pacId}`;
   if (window.self !== window.top) {
-    window.parent.postMessage({ type:'OPEN_IFRAME', url }, '*');
+    window.parent.postMessage({ type:'OPEN_IFRAME', url }, window.location.origin);
   } else {
     window.location.href = url;
   }
@@ -759,7 +762,7 @@ async function buscarPaciente(q) {
       if (res?.success && res.data?.length) {
         exibirResultados(res.data);
       } else {
-        results.innerHTML=`<div style="padding:16px;color:var(--text-muted);text-align:center;font-size:.85rem">Nenhum paciente encontrado com "${q}"</div>`;
+        results.innerHTML=`<div style="padding:16px;color:var(--text-muted);text-align:center;font-size:.85rem">Nenhum paciente encontrado com "${escapeHTML(q)}"</div>`;
         results.style.display='block';
       }
     }
@@ -774,10 +777,13 @@ function exibirResultados(pacientes) {
   pacientes.forEach(p => { tempPacientesMap[p.id] = p; });
 
   results.innerHTML = pacientes.map(p => `
-    <div class="pac-result-item" onclick="selecionarPacientePorId('${p.id}')">
-      <div class="pac-result-name">${p.nome || '—'}</div>
-      <div class="pac-result-detail">${p.cpf ? 'CPF: ' + maskCPF(p.cpf) + ' · ' : ''}${p.whatsapp ? maskPhone(p.whatsapp) : (p.email || '')}</div>
+    <div class="pac-result-item" data-paciente-id="${escapeHTML(p.id)}">
+      <div class="pac-result-name">${escapeHTML(p.nome || '—')}</div>
+      <div class="pac-result-detail">${escapeHTML(p.cpf ? 'CPF: ' + maskCPF(p.cpf) + ' · ' : '')}${escapeHTML(p.whatsapp ? maskPhone(p.whatsapp) : (p.email || ''))}</div>
     </div>`).join('');
+  results.querySelectorAll('[data-paciente-id]').forEach(el => {
+    el.addEventListener('click', () => selecionarPacientePorId(el.dataset.pacienteId));
+  });
   results.style.display = 'block';
 }
 
@@ -1004,7 +1010,8 @@ async function carregarPacientesBD() {
 }
 
 async function carregarAgendamentos() {
-  const res = await apiCall('getAgendamentos');
+  const user = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
+  const res = await apiCall(user?.session_token ? 'getAgendamentos' : 'getDisponibilidadePublica');
   if (res && res.success && Array.isArray(res.data)) {
     allAgendamentos = res.data;
   } else {

@@ -7,6 +7,7 @@
   <title>Gerenciador de Plano Alimentar · Dra. Silvia Oliveira Lemos Nutricionista</title>
   <meta name="kos-auth-level" content="admin">
   <script src="assets/js/auth-guard.js"></script>
+  <script src="assets/js/security.js"></script>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="apple-touch-icon" href="assets/favicon.svg">
   <link
@@ -1255,7 +1256,8 @@
     const KOS_API_URL = "https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec";
 
     async function apiCall(action, payload = {}) {
-      const bodyData = { action, ...payload };
+      const user = JSON.parse(sessionStorage.getItem('kos_user_dados') || localStorage.getItem('kos_user_dados') || 'null');
+      const bodyData = { action, ...payload, session_token: user?.session_token || '' };
       try {
         const res = await fetch(KOS_API_URL, {
           method: "POST",

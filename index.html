@@ -946,7 +946,7 @@ function fecharModalAgendamentoLP() {
 async function carregarAgendamentosLP() {
   if (agendamentosCarregadosLP) return;
   try {
-    const res = await fetch('https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec?action=getAgendamentos');
+    const res = await fetch('https://script.google.com/macros/s/AKfycbxs015dDanZXqKFpwehVTKPrzEBBMSJ_IZIgfuUlTKbVACd-a7-ffF0S9izs3XUK6Gh/exec?action=getDisponibilidadePublica');
     const json = await res.json();
     if (json && json.success && Array.isArray(json.data)) {
       lpHorariosOcupados = json.data;
