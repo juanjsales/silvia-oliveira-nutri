@@ -1,3 +1,18 @@
-import { ArrowLeft, Printer } from 'lucide-react';import { useEffect,useState } from 'react';import { Link,useParams } from 'react-router-dom';import { api } from '../lib/api';
-type Item={name?:string;nome?:string;amountText?:string;qtd?:string|number;unit?:string;unidade?:string};type Meal={title?:string;titulo?:string;time?:string;horario?:string;notes?:string;obs?:string;items?:Item[];alimentosList?:Item[]};type Plan={title:string;objective?:string;updatedAt:string;content:{meals?:Meal[];refeicoes?:Meal[]}};
-export function PatientPlanPage(){const{id}=useParams();const[plan,setPlan]=useState<Plan|null>(null);const[error,setError]=useState('');useEffect(()=>{if(id)api<{data:Plan}>(`/api/portal/plans/${id}`).then(r=>setPlan(r.data)).catch(c=>setError(c instanceof Error?c.message:'Erro ao abrir plano.'))},[id]);if(error)return <div className="document-loading">{error}</div>;if(!plan)return <div className="document-loading">Carregando plano...</div>;const meals=plan.content.meals||plan.content.refeicoes||[];return <main className="patient-plan"><header><Link to="/portal"><ArrowLeft/> Voltar ao portal</Link><button onClick={()=>window.print()}><Printer/> Imprimir</button></header><article><span>Plano alimentar personalizado</span><h1>{plan.title}</h1><p>{plan.objective}</p><small>Atualizado em {new Date(plan.updatedAt).toLocaleDateString('pt-BR')}</small>{meals.map((meal,index)=><section key={index}><header><span>{meal.time||meal.horario||'Horário flexível'}</span><h2>{meal.title||meal.titulo||'Refeição'}</h2></header>{(meal.items||meal.alimentosList||[]).map((item,i)=><div key={i}><strong>{item.name||item.nome}</strong><span>{item.amountText||`${item.qtd||''} ${item.unit||item.unidade||''}`}</span></div>)}{(meal.notes||meal.obs)&&<p>{meal.notes||meal.obs}</p>}</section>)}</article></main>}
+import { AlertTriangle, ArrowLeft, Printer } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { api } from '../lib/api';
+
+type Plan={id:string;title:string;objective?:string;status:'PUBLISHED'|'ARCHIVED';publishedAt?:string;updatedAt:string;content:{meals?:any[];refeicoes?:any[]}};
+
+export function PatientPlanPage(){
+ const{id}=useParams();const[plan,setPlan]=useState<Plan|null>(null);const[error,setError]=useState('');
+ useEffect(()=>{if(id)api<{data:Plan}>(`/api/portal/plans/${id}`).then(r=>setPlan(r.data)).catch(c=>setError(c instanceof Error?c.message:'Erro ao abrir plano.'))},[id]);
+ if(error)return <div className="document-loading">{error}</div>;if(!plan)return <div className="document-loading">Carregando plano...</div>;
+ const meals=plan.content.meals||plan.content.refeicoes||[];
+ return <main className="patient-plan"><header><Link to="/portal"><ArrowLeft/> Voltar ao portal</Link><button onClick={()=>window.print()}><Printer/> Imprimir</button></header><article>
+  {plan.status==='ARCHIVED'&&<div className="archived-plan-warning"><AlertTriangle/><div><strong>Este é um plano anterior</strong><span>Consulte o plano vigente no portal antes de seguir estas orientações.</span></div></div>}
+  <span>{plan.status==='PUBLISHED'?'Plano alimentar vigente':'Histórico de plano alimentar'}</span><h1>{plan.title}</h1><p>{plan.objective}</p><small>{plan.publishedAt?`Publicado em ${new Date(plan.publishedAt).toLocaleDateString('pt-BR')} · `:''}Atualizado em {new Date(plan.updatedAt).toLocaleDateString('pt-BR')}</small>
+  {meals.map((meal,index)=><section key={index}><header><span>{meal.time||meal.horario||'Horário flexível'}</span><h2>{meal.title||meal.titulo||'Refeição'}</h2></header>{(meal.items||meal.alimentosList||[]).map((item:any,i:number)=><div key={i}><strong>{item.name||item.nome}</strong><span>{item.amountText||`${item.qtd||''} ${item.unit||item.unidade||''}`}</span></div>)}{meal.substitutions?.length?<div className="patient-substitutions"><strong>Substituições</strong><ul>{meal.substitutions.map((item:string,i:number)=><li key={i}>{item}</li>)}</ul></div>:null}{(meal.notes||meal.obs)&&<p>{meal.notes||meal.obs}</p>}</section>)}
+ </article></main>
+}

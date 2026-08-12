@@ -13,5 +13,6 @@ import './branding.css';
 import './home.css';
 import './portal-v2.css';
 import './portal-polish.css';
+import './nutrition-enhancements.css';
 
 createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><ClinicProvider><AuthProvider><App /></AuthProvider></ClinicProvider></BrowserRouter></StrictMode>);
