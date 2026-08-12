@@ -7,3 +7,5 @@
 .welcome-card{background:linear-gradient(120deg,var(--brand-primary),color-mix(in srgb,var(--brand-primary) 72%,var(--brand-secondary)))}
 .brand-mark{background:color-mix(in srgb,var(--brand-secondary) 38%,#fff);color:var(--brand-primary)}
 .sidebar nav a:hover,.sidebar nav a.active{background:color-mix(in srgb,var(--brand-secondary) 30%,transparent)}
+.form-grid select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa;padding:11px 12px;outline:none;color:var(--ink)}
+.form-grid select:focus{border-color:#75937f;box-shadow:0 0 0 3px #dce8df}
