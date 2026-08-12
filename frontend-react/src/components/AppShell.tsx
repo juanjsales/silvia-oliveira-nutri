@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ClinicMark, useClinic } from '../contexts/ClinicContext';
 
 const navigation = [
-  { to: '/', label: 'Visão geral', icon: LayoutDashboard }, { to: '/pacientes', label: 'Pacientes', icon: Users },
+  { to: '/painel', label: 'Visão geral', icon: LayoutDashboard }, { to: '/pacientes', label: 'Pacientes', icon: Users },
   { to: '/agenda', label: 'Agenda', icon: CalendarDays }, { to: '/atendimentos', label: 'Atendimentos', icon: Stethoscope },
   { to: '/planos', label: 'Planos e receitas', icon: Salad },
   { to: '/documentos', label: 'Documentos', icon: FileText },

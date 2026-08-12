@@ -10,5 +10,6 @@ import './settings.css';
 import './documents.css';
 import './document-center.css';
 import './branding.css';
+import './home.css';
 
 createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><ClinicProvider><AuthProvider><App /></AuthProvider></ClinicProvider></BrowserRouter></StrictMode>);

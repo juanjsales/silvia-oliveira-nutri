@@ -23,9 +23,11 @@ import { PasswordRecoveryPage } from '../pages/PasswordRecoveryPage';
 import { PasswordResetPage } from '../pages/PasswordResetPage';
 import { PasswordChangePage } from '../pages/PasswordChangePage';
 import { PatientVideoPage } from '../pages/PatientVideoPage';
+import { HomePage } from '../pages/HomePage';
 
 export function App() {
   return <Routes>
+    <Route path="/" element={<HomePage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
     <Route path="/redefinir-senha" element={<PasswordResetPage />} />
@@ -36,7 +38,7 @@ export function App() {
       <Route path="documentos/plano/:id" element={<PlanDocumentPage />} />
       <Route path="documentos/emitidos/:id" element={<IssuedDocumentPage />} />
       <Route element={<AppShell />}>
-      <Route index element={<DashboardPage />} />
+      <Route path="painel" element={<DashboardPage />} />
       <Route path="pacientes" element={<PatientsPage />} />
       <Route path="agenda" element={<AgendaPage />} />
       <Route path="atendimentos" element={<EncounterPage />} />
