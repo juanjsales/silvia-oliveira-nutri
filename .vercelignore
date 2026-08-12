@@ -6,4 +6,16 @@ scratch
 **/test-results
 **/playwright-report
 backend
-*.html
+/index.html
+/agendamento.html
+/anamnese-publica.html
+/app-nutri.html
+/atendimento.html
+/bioimpedancia.html
+/configuracoes.html
+/gerenciador-plano.html
+/googleda745c910a07b3f4.html
+/login.html
+/pacientes.html
+/portal-paciente.html
+/videocall.html
