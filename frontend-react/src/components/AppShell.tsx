@@ -2,6 +2,7 @@ import { CalendarDays, ChevronLeft, CircleDollarSign, FileText, LayoutDashboard,
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ClinicMark, useClinic } from '../contexts/ClinicContext';
 
 const navigation = [
   { to: '/', label: 'Visão geral', icon: LayoutDashboard }, { to: '/pacientes', label: 'Pacientes', icon: Users },
@@ -14,14 +15,14 @@ const navigation = [
 ];
 
 export function AppShell() {
-  const [open, setOpen] = useState(false); const { user, logout } = useAuth(); const navigate = useNavigate(); const location = useLocation();
+  const [open, setOpen] = useState(false); const { user, logout } = useAuth(); const clinic = useClinic(); const navigate = useNavigate(); const location = useLocation();
   const title = navigation.find(item => item.to === location.pathname)?.label ?? 'Portal Nutricional';
   async function handleLogout() { await logout(); navigate('/login'); }
   return <div className="app-shell">
     <aside className={`sidebar ${open ? 'is-open' : ''}`}>
-      <div className="brand"><div className="brand-mark">N</div><div><strong>Núcleo</strong><span>Nutrição clínica</span></div><button className="icon-button mobile-only" onClick={() => setOpen(false)} aria-label="Fechar menu"><X size={20}/></button></div>
+      <div className="brand"><ClinicMark/><div><strong>{clinic.clinicName}</strong><span>{clinic.specialty}</span></div><button className="icon-button mobile-only" onClick={() => setOpen(false)} aria-label="Fechar menu"><X size={20}/></button></div>
       <nav>{navigation.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === '/'} onClick={() => setOpen(false)}><Icon size={19}/><span>{label}</span></NavLink>)}</nav>
-      <div className="sidebar-profile"><div className="avatar">{(user?.name || user?.email || 'N').charAt(0).toUpperCase()}</div><div><strong>{user?.name || 'Nutricionista'}</strong><span>{user?.email || 'Área profissional'}</span></div><button className="icon-button" onClick={handleLogout} aria-label="Sair"><LogOut size={18}/></button></div>
+      <div className="sidebar-profile"><div className="avatar">{(user?.name || user?.email || clinic.professionalName).charAt(0).toUpperCase()}</div><div><strong>{user?.name || clinic.professionalName}</strong><span>{user?.email || clinic.specialty}</span></div><button className="icon-button" onClick={handleLogout} aria-label="Sair"><LogOut size={18}/></button></div>
     </aside>
     {open && <button className="sidebar-backdrop" onClick={() => setOpen(false)} aria-label="Fechar menu" />}
     <main className="main-area"><header className="topbar"><button className="icon-button menu-button" onClick={() => setOpen(true)} aria-label="Abrir menu"><Menu size={21}/></button><div><span className="eyebrow">Espaço profissional</span><h1>{title}</h1></div><button className="ghost-button" onClick={() => history.back()}><ChevronLeft size={17}/> Voltar</button></header><div className="content"><Outlet /></div></main>

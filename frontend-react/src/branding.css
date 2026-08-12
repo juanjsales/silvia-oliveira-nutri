@@ -1,0 +1,9 @@
+:root{--brand-primary:#203528;--brand-secondary:#8ca481}
+.brand-mark.has-logo,.auth-brand-mark.has-logo{overflow:hidden;background:#fff;padding:3px}
+.brand-mark.has-logo img,.auth-brand-mark.has-logo img{display:block;width:100%;height:100%;object-fit:contain;border-radius:9px}
+.auth-brand-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:var(--brand-secondary);color:#fff;font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700}
+.primary-button,.clinical-steps>span.done{background:var(--brand-primary)}
+.sidebar{background:var(--brand-primary)}
+.welcome-card{background:linear-gradient(120deg,var(--brand-primary),color-mix(in srgb,var(--brand-primary) 72%,var(--brand-secondary)))}
+.brand-mark{background:color-mix(in srgb,var(--brand-secondary) 38%,#fff);color:var(--brand-primary)}
+.sidebar nav a:hover,.sidebar nav a.active{background:color-mix(in srgb,var(--brand-secondary) 30%,transparent)}
