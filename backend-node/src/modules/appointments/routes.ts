@@ -35,7 +35,7 @@ export async function appointmentRoutes(app: FastifyInstance) {
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
       [body.patientId, body.date, body.time, body.durationMinutes, body.type, body.price ?? null, body.status, body.notes || null, body.meetingUrl || null]);
     const id = result.rows[0]!.id;
-    let emailSent=false;const recipient=patient.rows[0]!.email;if(recipient)try{emailSent=await sendAppointmentEmail(app.env,{to:recipient,name:patient.rows[0]!.name,date:body.date,time:body.time,type:body.type,durationMinutes:body.durationMinutes})}catch(error){app.log.error({err:error,appointmentId:id},'Falha ao enviar confirmação de consulta')}
+    let emailSent=false;const recipient=patient.rows[0]!.email;if(recipient)try{emailSent=await sendAppointmentEmail(app.env,app.db,{to:recipient,name:patient.rows[0]!.name,date:body.date,time:body.time,type:body.type,durationMinutes:body.durationMinutes})}catch(error){app.log.error({err:error,appointmentId:id},'Falha ao enviar confirmação de consulta')}
     await audit(app.db, 'APPOINTMENT_CREATED', 'appointment', { actorUserId: request.auth!.userId, entityId: id, metadata: { patientId: body.patientId,emailSent } });
     return reply.code(201).send({ data: { id,emailSent,warning:emailSent?null:recipient?'Consulta criada, mas o e-mail não foi enviado. Verifique o SMTP.':'Consulta criada, mas o paciente não possui e-mail cadastrado.' } });
   });

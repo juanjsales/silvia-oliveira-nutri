@@ -1,4 +1,379 @@
-import{CheckCircle2,LockKeyhole,MessageCircle,Palette,Save,ShieldCheck,Stethoscope}from'lucide-react';import{useEffect,useState,type FormEvent}from'react';import{api}from'../lib/api';
-type Settings={clinicName:string;professionalName:string;crn:string;specialty:string;phone:string;email:string;address:string;city:string;logoUrl:string;primaryColor:string;secondaryColor:string;inPersonPrice:number;onlinePrice:number;defaultDurationMinutes:number;reminderMessage:string;followupMessage:string;documentFooter:string};
-const defaults:Settings={clinicName:'',professionalName:'',crn:'',specialty:'',phone:'',email:'',address:'',city:'',logoUrl:'',primaryColor:'#203528',secondaryColor:'#8ca481',inPersonPrice:280,onlinePrice:250,defaultDurationMinutes:60,reminderMessage:'',followupMessage:'',documentFooter:''};
-export function SettingsPage(){const[form,setForm]=useState(defaults);const[loading,setLoading]=useState(true);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[currentPassword,setCurrentPassword]=useState('');const[newPassword,setNewPassword]=useState('');const[confirm,setConfirm]=useState('');const set=<K extends keyof Settings>(key:K,value:Settings[K])=>setForm(current=>({...current,[key]:value}));useEffect(()=>{api<{data:Settings}>('/api/settings').then(r=>setForm({...defaults,...r.data})).catch(c=>setError(c instanceof Error?c.message:'Erro ao carregar configurações.')).finally(()=>setLoading(false))},[]);async function save(event:FormEvent){event.preventDefault();setSaving(true);setError('');try{const result=await api<{data:Settings}>('/api/settings',{method:'PUT',body:JSON.stringify({...form,phone:form.phone||undefined,email:form.email||undefined,address:form.address||undefined,city:form.city||undefined,logoUrl:form.logoUrl||undefined})});setForm({...defaults,...result.data});setNotice('Configurações salvas e prontas para uso nos documentos.')}catch(cause){setError(cause instanceof Error?cause.message:'Não foi possível salvar.')}finally{setSaving(false)}}async function changePassword(event:FormEvent){event.preventDefault();setError('');if(newPassword!==confirm){setError('A confirmação da nova senha não confere.');return}setSaving(true);try{await api('/api/settings/password',{method:'POST',body:JSON.stringify({currentPassword,newPassword})});setCurrentPassword('');setNewPassword('');setConfirm('');setNotice('Senha alterada com sucesso.')}catch(cause){setError(cause instanceof Error?cause.message:'Não foi possível alterar a senha.')}finally{setSaving(false)}}if(loading)return <section className="panel empty-state"><span className="spinner"/><strong>Carregando configurações...</strong></section>;return <div className="settings-page">{error&&<div className="form-error">{error}</div>}{notice&&<div className="form-success"><CheckCircle2 size={17}/>{notice}</div>}<form onSubmit={save}><section className="panel settings-section"><header><Stethoscope/><div><h2>Identidade profissional</h2><p>Dados usados no portal, e-mails e documentos oficiais.</p></div></header><div className="settings-grid"><label>Nome do consultório<input value={form.clinicName} onChange={e=>set('clinicName',e.target.value)} required/></label><label>Nome profissional<input value={form.professionalName} onChange={e=>set('professionalName',e.target.value)} required/></label><label>CRN<input value={form.crn} onChange={e=>set('crn',e.target.value)} required/></label><label>Especialidade<input value={form.specialty} onChange={e=>set('specialty',e.target.value)}/></label><label>WhatsApp<input value={form.phone} onChange={e=>set('phone',e.target.value)}/></label><label>E-mail do consultório<input type="email" value={form.email} onChange={e=>set('email',e.target.value)}/></label><label className="wide">Endereço<input value={form.address} onChange={e=>set('address',e.target.value)}/></label><label>Cidade<input value={form.city} onChange={e=>set('city',e.target.value)}/></label><label>URL do logotipo<input type="url" value={form.logoUrl} onChange={e=>set('logoUrl',e.target.value)}/></label></div></section><section className="panel settings-section"><header><Palette/><div><h2>Consultas e documentos</h2><p>Padrões aplicados à agenda e à identidade A4.</p></div></header><div className="settings-grid"><label>Consulta presencial (R$)<input type="number" min="0" value={form.inPersonPrice} onChange={e=>set('inPersonPrice',Number(e.target.value))}/></label><label>Consulta online (R$)<input type="number" min="0" value={form.onlinePrice} onChange={e=>set('onlinePrice',Number(e.target.value))}/></label><label>Duração padrão (min)<input type="number" min="15" value={form.defaultDurationMinutes} onChange={e=>set('defaultDurationMinutes',Number(e.target.value))}/></label><label>Cor principal<div className="color-input"><input type="color" value={form.primaryColor} onChange={e=>set('primaryColor',e.target.value)}/><input value={form.primaryColor} onChange={e=>set('primaryColor',e.target.value)}/></div></label><label>Cor secundária<div className="color-input"><input type="color" value={form.secondaryColor} onChange={e=>set('secondaryColor',e.target.value)}/><input value={form.secondaryColor} onChange={e=>set('secondaryColor',e.target.value)}/></div></label><label className="wide">Rodapé dos documentos<input value={form.documentFooter} onChange={e=>set('documentFooter',e.target.value)}/></label></div></section><section className="panel settings-section"><header><MessageCircle/><div><h2>Mensagens</h2><p>Use as variáveis {'{NOME}'}, {'{DATA}'} e {'{HORA}'}.</p></div></header><div className="settings-grid"><label className="wide">Lembrete da consulta<textarea rows={4} value={form.reminderMessage} onChange={e=>set('reminderMessage',e.target.value)}/></label><label className="wide">Mensagem pós-consulta<textarea rows={4} value={form.followupMessage} onChange={e=>set('followupMessage',e.target.value)}/></label></div></section><button className="primary-button settings-save" disabled={saving}><Save size={18}/>{saving?'Salvando...':'Salvar configurações'}</button></form><form className="panel settings-section security-form" onSubmit={changePassword}><header><ShieldCheck/><div><h2>Acesso e segurança</h2><p>A nova senha deve ter pelo menos 12 caracteres.</p></div></header><div className="settings-grid"><label>Senha atual<input type="password" value={currentPassword} onChange={e=>setCurrentPassword(e.target.value)} required/></label><label>Nova senha<input type="password" minLength={12} value={newPassword} onChange={e=>setNewPassword(e.target.value)} required/></label><label>Confirmar nova senha<input type="password" minLength={12} value={confirm} onChange={e=>setConfirm(e.target.value)} required/></label></div><button className="secondary-button"><LockKeyhole size={17}/> Alterar senha</button></form></div>}
+import {
+  CheckCircle2,
+  LockKeyhole,
+  MessageCircle,
+  Palette,
+  Save,
+  ShieldCheck,
+  Stethoscope,
+} from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { api } from "../lib/api";
+import { SmtpSettings } from "../components/SmtpSettings";
+type Settings = {
+  clinicName: string;
+  professionalName: string;
+  crn: string;
+  specialty: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  inPersonPrice: number;
+  onlinePrice: number;
+  defaultDurationMinutes: number;
+  reminderMessage: string;
+  followupMessage: string;
+  documentFooter: string;
+};
+const defaults: Settings = {
+  clinicName: "",
+  professionalName: "",
+  crn: "",
+  specialty: "",
+  phone: "",
+  email: "",
+  address: "",
+  city: "",
+  logoUrl: "",
+  primaryColor: "#203528",
+  secondaryColor: "#8ca481",
+  inPersonPrice: 280,
+  onlinePrice: 250,
+  defaultDurationMinutes: 60,
+  reminderMessage: "",
+  followupMessage: "",
+  documentFooter: "",
+};
+export function SettingsPage() {
+  const [form, setForm] = useState(defaults);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const set = <K extends keyof Settings>(key: K, value: Settings[K]) =>
+    setForm((current) => ({ ...current, [key]: value }));
+  useEffect(() => {
+    api<{ data: Settings }>("/api/settings")
+      .then((r) => setForm({ ...defaults, ...r.data }))
+      .catch((c) =>
+        setError(
+          c instanceof Error ? c.message : "Erro ao carregar configurações.",
+        ),
+      )
+      .finally(() => setLoading(false));
+  }, []);
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      const result = await api<{ data: Settings }>("/api/settings", {
+        method: "PUT",
+        body: JSON.stringify({
+          ...form,
+          phone: form.phone || undefined,
+          email: form.email || undefined,
+          address: form.address || undefined,
+          city: form.city || undefined,
+          logoUrl: form.logoUrl || undefined,
+        }),
+      });
+      setForm({ ...defaults, ...result.data });
+      setNotice("Configurações salvas e prontas para uso nos documentos.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Não foi possível salvar.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function changePassword(event: FormEvent) {
+    event.preventDefault();
+    setError("");
+    if (newPassword !== confirm) {
+      setError("A confirmação da nova senha não confere.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await api("/api/settings/password", {
+        method: "POST",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirm("");
+      setNotice("Senha alterada com sucesso.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Não foi possível alterar a senha.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+  if (loading)
+    return (
+      <section className="panel empty-state">
+        <span className="spinner" />
+        <strong>Carregando configurações...</strong>
+      </section>
+    );
+  return (
+    <div className="settings-page">
+      {error && <div className="form-error">{error}</div>}
+      {notice && (
+        <div className="form-success">
+          <CheckCircle2 size={17} />
+          {notice}
+        </div>
+      )}
+      <form onSubmit={save}>
+        <section className="panel settings-section">
+          <header>
+            <Stethoscope />
+            <div>
+              <h2>Identidade profissional</h2>
+              <p>Dados usados no portal, e-mails e documentos oficiais.</p>
+            </div>
+          </header>
+          <div className="settings-grid">
+            <label>
+              Nome do consultório
+              <input
+                value={form.clinicName}
+                onChange={(e) => set("clinicName", e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Nome profissional
+              <input
+                value={form.professionalName}
+                onChange={(e) => set("professionalName", e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              CRN
+              <input
+                value={form.crn}
+                onChange={(e) => set("crn", e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Especialidade
+              <input
+                value={form.specialty}
+                onChange={(e) => set("specialty", e.target.value)}
+              />
+            </label>
+            <label>
+              WhatsApp
+              <input
+                value={form.phone}
+                onChange={(e) => set("phone", e.target.value)}
+              />
+            </label>
+            <label>
+              E-mail do consultório
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => set("email", e.target.value)}
+              />
+            </label>
+            <label className="wide">
+              Endereço
+              <input
+                value={form.address}
+                onChange={(e) => set("address", e.target.value)}
+              />
+            </label>
+            <label>
+              Cidade
+              <input
+                value={form.city}
+                onChange={(e) => set("city", e.target.value)}
+              />
+            </label>
+            <label>
+              URL do logotipo
+              <input
+                type="url"
+                value={form.logoUrl}
+                onChange={(e) => set("logoUrl", e.target.value)}
+              />
+            </label>
+          </div>
+        </section>
+        <section className="panel settings-section">
+          <header>
+            <Palette />
+            <div>
+              <h2>Consultas e documentos</h2>
+              <p>Padrões aplicados à agenda e à identidade A4.</p>
+            </div>
+          </header>
+          <div className="settings-grid">
+            <label>
+              Consulta presencial (R$)
+              <input
+                type="number"
+                min="0"
+                value={form.inPersonPrice}
+                onChange={(e) => set("inPersonPrice", Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Consulta online (R$)
+              <input
+                type="number"
+                min="0"
+                value={form.onlinePrice}
+                onChange={(e) => set("onlinePrice", Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Duração padrão (min)
+              <input
+                type="number"
+                min="15"
+                value={form.defaultDurationMinutes}
+                onChange={(e) =>
+                  set("defaultDurationMinutes", Number(e.target.value))
+                }
+              />
+            </label>
+            <label>
+              Cor principal
+              <div className="color-input">
+                <input
+                  type="color"
+                  value={form.primaryColor}
+                  onChange={(e) => set("primaryColor", e.target.value)}
+                />
+                <input
+                  value={form.primaryColor}
+                  onChange={(e) => set("primaryColor", e.target.value)}
+                />
+              </div>
+            </label>
+            <label>
+              Cor secundária
+              <div className="color-input">
+                <input
+                  type="color"
+                  value={form.secondaryColor}
+                  onChange={(e) => set("secondaryColor", e.target.value)}
+                />
+                <input
+                  value={form.secondaryColor}
+                  onChange={(e) => set("secondaryColor", e.target.value)}
+                />
+              </div>
+            </label>
+            <label className="wide">
+              Rodapé dos documentos
+              <input
+                value={form.documentFooter}
+                onChange={(e) => set("documentFooter", e.target.value)}
+              />
+            </label>
+          </div>
+        </section>
+        <section className="panel settings-section">
+          <header>
+            <MessageCircle />
+            <div>
+              <h2>Mensagens</h2>
+              <p>
+                Use as variáveis {"{NOME}"}, {"{DATA}"} e {"{HORA}"}.
+              </p>
+            </div>
+          </header>
+          <div className="settings-grid">
+            <label className="wide">
+              Lembrete da consulta
+              <textarea
+                rows={4}
+                value={form.reminderMessage}
+                onChange={(e) => set("reminderMessage", e.target.value)}
+              />
+            </label>
+            <label className="wide">
+              Mensagem pós-consulta
+              <textarea
+                rows={4}
+                value={form.followupMessage}
+                onChange={(e) => set("followupMessage", e.target.value)}
+              />
+            </label>
+          </div>
+        </section>
+        <button className="primary-button settings-save" disabled={saving}>
+          <Save size={18} />
+          {saving ? "Salvando..." : "Salvar configurações"}
+        </button>
+      </form>
+      <SmtpSettings />
+      <form
+        className="panel settings-section security-form"
+        onSubmit={changePassword}
+      >
+        <header>
+          <ShieldCheck />
+          <div>
+            <h2>Acesso e segurança</h2>
+            <p>A nova senha deve ter pelo menos 12 caracteres.</p>
+          </div>
+        </header>
+        <div className="settings-grid">
+          <label>
+            Senha atual
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Nova senha
+            <input
+              type="password"
+              minLength={12}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Confirmar nova senha
+            <input
+              type="password"
+              minLength={12}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+            />
+          </label>
+        </div>
+        <button className="secondary-button">
+          <LockKeyhole size={17} /> Alterar senha
+        </button>
+      </form>
+    </div>
+  );
+}

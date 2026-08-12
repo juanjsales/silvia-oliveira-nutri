@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from '../../shared/crypto.js';
-import { createMailer } from '../../integrations/email.js';
+import { loadSmtpConfig, smtpTransport } from '../../integrations/configured-email.js';
 
 const loginSchema = z.object({ identifier: z.string().trim().min(3), password: z.string().min(1) });
 const recoverySchema = z.object({ identifier: z.string().trim().min(3) });
@@ -58,12 +58,13 @@ export async function authRoutes(app: FastifyInstance) {
     );
     const user = result.rows[0];
     if (user) {
-      const mailer = createMailer(app.env);
-      if (!mailer) throw new Error('Serviço de e-mail não configurado.');
+      const smtp = await loadSmtpConfig(app.db, app.env);
+      if (!smtp) throw new Error('Serviço de e-mail não configurado.');
+      const mailer = smtpTransport(smtp);
       const rawToken = createOpaqueToken();
       const expiresAt = new Date(Date.now() + app.env.PASSWORD_RESET_TTL_MINUTES * 60_000);
       await mailer.sendMail({
-        from: app.env.SMTP_FROM,
+        from: smtp.from,
         to: user.email,
         subject: 'Redefinição de senha — Portal Nutricional',
         text: `Defina uma nova senha: ${app.env.APP_URL}/redefinir-senha?token=${encodeURIComponent(rawToken)}`

@@ -12,3 +12,6 @@ frontend-react/playwright-report/
 *.tsbuildinfo
 frontend-react/vite.config.js
 frontend-react/vite.config.d.ts
+
+.vercel
+.env*

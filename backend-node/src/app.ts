@@ -17,6 +17,7 @@ import { portalRoutes } from './modules/portal/routes.js';
 import { financeRoutes } from './modules/finance/routes.js';
 import { documentRoutes } from './modules/documents/routes.js';
 import { videoRoutes } from './modules/video/routes.js';
+import { smtpSettingsRoutes } from './modules/settings/smtp-routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
@@ -55,6 +56,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(encounterRoutes, { prefix: '/api/encounters' });
   await app.register(nutritionRoutes, { prefix: '/api/nutrition' });
   await app.register(settingsRoutes, { prefix: '/api/settings' });
+  await app.register(smtpSettingsRoutes, { prefix: '/api/settings/smtp' });
   await app.register(portalRoutes, { prefix: '/api/portal' });
   await app.register(financeRoutes, { prefix: '/api/finance' });
   await app.register(documentRoutes, { prefix: '/api/documents' });

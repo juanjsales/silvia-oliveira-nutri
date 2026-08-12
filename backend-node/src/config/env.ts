@@ -17,7 +17,8 @@ const envSchema = z.object({
   SMTP_SECURE: z.preprocess(v => v === true || v === 'true', z.boolean()).default(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  SMTP_FROM: z.string().min(1)
+  SMTP_FROM: z.string().min(1),
+  APP_ENCRYPTION_KEY: z.string().min(32).optional()
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
