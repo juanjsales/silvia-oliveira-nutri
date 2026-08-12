@@ -1,6 +1,7 @@
 {
   "name": "silvia-oliveira-nutri",
   "private": true,
+  "type": "module",
   "workspaces": ["frontend-react", "backend-node"],
   "scripts": {
     "build": "npm --workspace frontend-react run build",
