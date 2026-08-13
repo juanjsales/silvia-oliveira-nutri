@@ -8,7 +8,7 @@ const appointmentSchema = z.object({
   patientId: z.uuid(), date: z.iso.date(), time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
   durationMinutes: z.number().int().min(15).max(480).default(60), type: z.string().trim().min(2).max(100),
   price: z.number().nonnegative().max(99999999).optional(), status: statusSchema.default('CONFIRMED'),
-  notes: z.string().trim().max(1000).optional(), meetingUrl: z.url().max(1000).optional()
+  notes: z.string().trim().max(1000).optional(), meetingUrl: z.url().max(1000).optional(), requestId:z.uuid().optional()
 });
 
 const appointmentSelect = `SELECT a.id, a.patient_id AS "patientId", p.name AS "patientName", p.whatsapp,
@@ -26,19 +26,24 @@ export async function appointmentRoutes(app: FastifyInstance) {
     return { data: result.rows };
   });
 
+  app.get('/requests',async()=>{const result=await app.db.query(`SELECT r.id,r.patient_id AS "patientId",p.name AS "patientName",to_char(r.preferred_date,'YYYY-MM-DD') AS "preferredDate",r.preferred_period AS "preferredPeriod",r.appointment_type AS "appointmentType",r.notes,r.status,r.created_at AS "createdAt" FROM appointment_requests r JOIN patients p ON p.id=r.patient_id WHERE r.status='PENDING' ORDER BY r.preferred_date,r.created_at`);return{data:result.rows}});
+
   app.post('/', async (request, reply) => {
     const body = appointmentSchema.parse(request.body);
     const patient = await app.db.query<{id:string;name:string;email:string|null}>('SELECT id,name,email FROM patients WHERE id=$1 AND active=true', [body.patientId]);
     if (!patient.rows[0]) return reply.code(404).send({ error: 'Paciente não encontrado ou inativo.' });
-    const result = await app.db.query<{ id: string }>(`INSERT INTO appointments
+    const client=await app.db.connect();let id:string;try{await client.query('BEGIN');if(body.requestId){const requestResult=await client.query<{patient_id:string}>(`SELECT patient_id FROM appointment_requests WHERE id=$1 AND status='PENDING' FOR UPDATE`,[body.requestId]);if(!requestResult.rows[0]||requestResult.rows[0].patient_id!==body.patientId){await client.query('ROLLBACK');return reply.code(409).send({error:'Solicitação não encontrada, já processada ou vinculada a outro paciente.'})}}
+    const result = await client.query<{ id: string }>(`INSERT INTO appointments
       (patient_id, appointment_date, appointment_time, duration_minutes, appointment_type, price, status, notes, meeting_url)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
       [body.patientId, body.date, body.time, body.durationMinutes, body.type, body.price ?? null, body.status, body.notes || null, body.meetingUrl || null]);
-    const id = result.rows[0]!.id;
+    id = result.rows[0]!.id;if(body.requestId)await client.query(`UPDATE appointment_requests SET status='APPROVED' WHERE id=$1`,[body.requestId]);await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind)VALUES($1,'Consulta agendada',$2,'APPOINTMENT')`,[body.patientId,`Sua consulta foi confirmada para ${body.date.split('-').reverse().join('/')} às ${body.time}.`]);await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
     let emailSent=false;const recipient=patient.rows[0]!.email;if(recipient)try{emailSent=await sendAppointmentEmail(app.env,app.db,{to:recipient,name:patient.rows[0]!.name,date:body.date,time:body.time,type:body.type,durationMinutes:body.durationMinutes})}catch(error){app.log.error({err:error,appointmentId:id},'Falha ao enviar confirmação de consulta')}
     await audit(app.db, 'APPOINTMENT_CREATED', 'appointment', { actorUserId: request.auth!.userId, entityId: id, metadata: { patientId: body.patientId,emailSent } });
     return reply.code(201).send({ data: { id,emailSent,warning:emailSent?null:recipient?'Consulta criada, mas o e-mail não foi enviado. Verifique o SMTP.':'Consulta criada, mas o paciente não possui e-mail cadastrado.' } });
   });
+
+  app.patch('/requests/:id',async(request,reply)=>{const{id}=z.object({id:z.uuid()}).parse(request.params);const{status}=z.object({status:z.literal('DECLINED')}).parse(request.body);const result=await app.db.query<{patient_id:string}>(`UPDATE appointment_requests SET status=$1 WHERE id=$2 AND status='PENDING' RETURNING patient_id`,[status,id]);if(!result.rows[0])return reply.code(404).send({error:'Solicitação pendente não encontrada.'});await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind)VALUES($1,'Solicitação de consulta atualizada','Entre em contato com o consultório para escolhermos uma nova data.','APPOINTMENT')`,[result.rows[0].patient_id]);return{data:{id}}});
 
   app.patch('/:id', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
