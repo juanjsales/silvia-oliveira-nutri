@@ -14,5 +14,13 @@ import './home.css';
 import './portal-v2.css';
 import './portal-polish.css';
 import './nutrition-enhancements.css';
+import './document-professional.css';
+
+function syncA4ScreenScale(){
+  const scale=Math.min(1,Math.max(.32,(window.innerWidth-24)/794));
+  document.documentElement.style.setProperty('--a4-screen-scale',String(scale));
+}
+syncA4ScreenScale();
+window.addEventListener('resize',syncA4ScreenScale,{passive:true});
 
 createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><ClinicProvider><AuthProvider><App /></AuthProvider></ClinicProvider></BrowserRouter></StrictMode>);
