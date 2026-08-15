@@ -20,6 +20,8 @@ import { videoRoutes } from './modules/video/routes.js';
 import { smtpSettingsRoutes } from './modules/settings/smtp-routes.js';
 import { schemaStatus } from './database/schema-version.js';
 import { cronRoutes } from './modules/cron/routes.js';
+import { monitoringRoutes } from './modules/monitoring/routes.js';
+import { recordIncident } from './shared/incidents.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
@@ -34,14 +36,17 @@ export async function buildApp(env: AppEnv, db: Database) {
   // would encapsulate the decorators inside its own scope.
   await authPlugin(app);
 
-  app.setErrorHandler((error, _request, reply) => {
+  app.setErrorHandler(async (error, request, reply) => {
     if (error instanceof ZodError || (typeof error === 'object' && error !== null && 'issues' in error && Array.isArray(error.issues))) {
       const details = typeof error === 'object' && error !== null && 'issues' in error ? error.issues : undefined;
       return reply.code(400).send({ error: 'Dados inválidos.', details });
     }
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23505') return reply.code(409).send({ error: 'Registro duplicado.' });
     if(typeof error==='object'&&error!==null&&'statusCode'in error&&error.statusCode===429){const retryAfter='retryAfter'in error?Number(error.retryAfter):900;reply.header('Retry-After',String(retryAfter));return reply.code(429).send({error:error instanceof Error?error.message:'Muitas tentativas. Tente novamente mais tarde.'})}
-    app.log.error(error);return reply.code(500).send({ error: 'Erro interno do servidor.' });
+    const errorCode=typeof error==='object'&&error!==null&&'code'in error?String(error.code).slice(0,80):undefined;
+    app.log.error({requestId:request.id,method:request.method,route:request.routeOptions.url,errorName:error instanceof Error?error.name:'UnknownError',errorCode},'Falha interna não tratada');
+    try { await recordIncident(db,request,error); } catch { app.log.error({requestId:request.id},'Falha ao registrar incidente'); }
+    return reply.code(500).send({ error: 'Erro interno do servidor.', requestId:request.id });
   });
 
   app.get('/health', async (_request, reply) => {
@@ -69,6 +74,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(documentRoutes, { prefix: '/api/documents' });
   await app.register(videoRoutes, { prefix: '/api/video' });
   await app.register(cronRoutes, { prefix: '/api/cron' });
+  await app.register(monitoringRoutes, { prefix: '/api/monitoring' });
 
   return app;
 }

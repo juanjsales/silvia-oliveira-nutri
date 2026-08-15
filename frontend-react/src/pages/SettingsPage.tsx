@@ -11,6 +11,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../lib/api";
 import { SmtpSettings } from "../components/SmtpSettings";
 import { ReadinessPanel } from "../components/ReadinessPanel";
+import { IncidentPanel } from "../components/IncidentPanel";
 type Settings = {
   clinicName: string;
   professionalName: string;
@@ -140,6 +141,7 @@ export function SettingsPage() {
         </div>
       )}
       <ReadinessPanel />
+      <IncidentPanel />
       <form onSubmit={save}>
         <section className="panel settings-section">
           <header>
