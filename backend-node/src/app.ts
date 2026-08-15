@@ -20,7 +20,7 @@ import { videoRoutes } from './modules/video/routes.js';
 import { smtpSettingsRoutes } from './modules/settings/smtp-routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
-  const app = Fastify({ logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
+  const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
   app.decorate('env', env);
   app.decorate('db', db);
   await app.register(helmet);
@@ -38,6 +38,7 @@ export async function buildApp(env: AppEnv, db: Database) {
       return reply.code(400).send({ error: 'Dados inválidos.', details });
     }
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23505') return reply.code(409).send({ error: 'Registro duplicado.' });
+    if(typeof error==='object'&&error!==null&&'statusCode'in error&&error.statusCode===429){const retryAfter='retryAfter'in error?Number(error.retryAfter):900;reply.header('Retry-After',String(retryAfter));return reply.code(429).send({error:error instanceof Error?error.message:'Muitas tentativas. Tente novamente mais tarde.'})}
     app.log.error(error);return reply.code(500).send({ error: 'Erro interno do servidor.' });
   });
 

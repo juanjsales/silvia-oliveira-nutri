@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from '../../shared/crypto.js';
 import { loadSmtpConfig, smtpTransport } from '../../integrations/configured-email.js';
+import { assertLoginAllowed, clearLoginFailures, recordLoginFailure } from '../../shared/login-rate-limit.js';
 
 const loginSchema = z.object({ identifier: z.string().trim().min(3), password: z.string().min(1) });
 const recoverySchema = z.object({ identifier: z.string().trim().min(3) });
@@ -12,6 +13,7 @@ export async function authRoutes(app: FastifyInstance) {
   app.post('/login', { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } }, async (request, reply) => {
     const body = loginSchema.parse(request.body);
     const identifier = body.identifier.toLowerCase();
+    await assertLoginAllowed(app.db,identifier,request.ip);
     const cpf = identifier.replace(/\D/g, '');
     const result = await app.db.query<{ id: string; email: string; password_hash: string; role: 'ADMIN' | 'PATIENT'; name: string | null }>(
       `SELECT u.id, u.email, u.password_hash, u.role, p.name
@@ -21,9 +23,11 @@ export async function authRoutes(app: FastifyInstance) {
     );
     const user = result.rows[0];
     if (!user || !(await verifyPassword(user.password_hash, body.password))) {
+      await recordLoginFailure(app.db,identifier,request.ip);
       await audit(app.db, 'AUTH_LOGIN_FAILED', 'user', { metadata: { identifierHash: hashToken(identifier) } });
       return reply.code(401).send({ error: 'Credenciais inválidas.' });
     }
+    await clearLoginFailures(app.db,identifier,request.ip);
 
     const token = createOpaqueToken();
     const expiresAt = new Date(Date.now() + app.env.SESSION_TTL_HOURS * 3_600_000);
