@@ -27,5 +27,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Install browser for navigation tests
+        run: npx playwright install --with-deps chromium
+      - name: Validate critical navigation
+        run: npm --workspace frontend-react run test:e2e:ci
       - name: Validate Vercel configuration
         run: node -e "JSON.parse(require('node:fs').readFileSync('vercel.json','utf8'))"
