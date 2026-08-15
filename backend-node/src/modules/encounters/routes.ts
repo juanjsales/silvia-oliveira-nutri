@@ -66,8 +66,11 @@ export async function encounterRoutes(app: FastifyInstance) {
       FROM clinical_sections WHERE encounter_id=$1`, [id]);
     const labs=await app.db.query(`SELECT id,exam_date AS "examDate",marker,value,unit,reference_value AS "referenceValue",status,observation FROM laboratory_results WHERE encounter_id=$1 ORDER BY exam_date DESC NULLS LAST,created_at`,[id]);
     const supplements=await app.db.query(`SELECT id,name,dosage,posology,pharmaceutical_form AS "pharmaceuticalForm",observation FROM supplement_prescriptions WHERE encounter_id=$1 ORDER BY position,created_at`,[id]);
-    return { data: { ...result.rows[0], sections: Object.fromEntries(sections.rows.map(row => [row.sectionKey, { data: row.data, savedAt: row.savedAt }])), labs:labs.rows, supplements:supplements.rows } };
+    const checkins=await app.db.query(`SELECT id,answers,status,submitted_at AS "submittedAt",reviewed_at AS "reviewedAt" FROM preconsult_checkins WHERE patient_id=$1 AND ($2::uuid IS NULL OR appointment_id=$2) ORDER BY submitted_at DESC LIMIT 5`,[result.rows[0].patientId,result.rows[0].appointmentId||null]);
+    return { data: { ...result.rows[0], sections: Object.fromEntries(sections.rows.map(row => [row.sectionKey, { data: row.data, savedAt: row.savedAt }])), labs:labs.rows, supplements:supplements.rows,checkins:checkins.rows } };
   });
+
+  app.patch('/:id/checkins/:checkinId/review',async(request,reply)=>{const{id,checkinId}=z.object({id:z.uuid(),checkinId:z.uuid()}).parse(request.params);const result=await app.db.query<{id:string}>(`UPDATE preconsult_checkins c SET status='REVIEWED',reviewed_at=now(),reviewed_by=$3 FROM clinical_encounters e WHERE c.id=$2 AND e.id=$1 AND c.patient_id=e.patient_id RETURNING c.id`,[id,checkinId,request.auth!.userId]);if(!result.rows[0])return reply.code(404).send({error:'Check-in não encontrado para este atendimento.'});await audit(app.db,'PRECONSULT_CHECKIN_REVIEWED','preconsult_checkin',{actorUserId:request.auth!.userId,entityId:checkinId,metadata:{encounterId:id}});return{data:{id:checkinId,status:'REVIEWED'}}});
 
   app.put('/:id/sections/:section', async (request, reply) => {
     const { id, section } = z.object({ id: z.uuid(), section: sectionKey }).parse(request.params);

@@ -1,5 +1,6 @@
-import { KeyRound, Pencil, Plus, Search, UserRound, X } from "lucide-react";
+import { HeartPulse, KeyRound, Pencil, Plus, Search, UserRound, X } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 type Patient = {
   id: string;
@@ -202,6 +203,9 @@ export function PatientsPage() {
                 <span className={`status ${p.hasPortalAccess ? "active" : ""}`}>
                   {p.hasPortalAccess ? "Portal ativo" : "Sem acesso"}
                 </span>
+                <Link className="icon-button" to={`/pacientes/${p.id}/clinico`} title="Resumo clínico" aria-label={`Resumo clínico de ${p.name}`}>
+                  <HeartPulse size={17} />
+                </Link>
                 <button
                   className="icon-button"
                   onClick={() => openAccess(p)}

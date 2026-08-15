@@ -11,6 +11,8 @@ npm run check
 
 Esse comando valida a sequência das migrações, a versão esperada do schema, os rewrites da Vercel, a proteção dos workflows, tipos, testes e builds de produção. O workflow `Quality gate` também executa os testes de navegação do Playwright.
 
+O build da Vercel executa `npm run release:env` antes de compilar. A validação reprova URLs inseguras, segredos curtos e integrações parcialmente configuradas; ela informa apenas os nomes das variáveis, nunca seus valores.
+
 Após aplicar as migrações e publicar, execute manualmente o workflow `Production smoke test`. Ele exige autenticação administrativa, confirma o schema, a readiness operacional, os módulos essenciais e a revogação da sessão no logout.
 
 ## Variáveis obrigatórias na Vercel

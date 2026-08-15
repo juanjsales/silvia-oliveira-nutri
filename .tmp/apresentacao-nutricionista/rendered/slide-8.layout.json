@@ -1,0 +1,540 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/uejfui",
+    "id": "uejfui",
+    "slide": 8,
+    "layoutId": "e4fb3e77-5f78-4815-978e-23f1f57cab4c",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "Arial"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "e4fb3e77-5f78-4815-978e-23f1f57cab4c",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/r2lkz6t4",
+      "id": "1",
+      "bbox": [
+        780,
+        0,
+        500,
+        720
+      ],
+      "geometry": "rect",
+      "alt": "Nutricionista",
+      "contentType": "image/webp",
+      "imageFit": "cover",
+      "imageMask": {
+        "geometry": "rect"
+      },
+      "asset": {
+        "assetId": "5b40b5e4-b4ac-49b0-98c8-c4d65bbaf051",
+        "contentType": "image/webp",
+        "byteLength": 16268
+      }
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/98f69gju",
+      "id": "2",
+      "name": "pilot-kicker",
+      "bbox": [
+        58,
+        54,
+        300,
+        28
+      ],
+      "geometry": "rect",
+      "text": "PRÓXIMO PASSO",
+      "textPreview": "PRÓXIMO PASSO",
+      "resolvedFontSize": 16,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 16,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "PRÓXIMO PASSO"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "PRÓXIMO PASSO",
+          "resolvedTextStyle": {
+            "fontSize": 16,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "PRÓXIMO PASSO",
+              "fontSize": 16,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/87m5gbi9",
+      "id": "3",
+      "name": "pilot-title",
+      "bbox": [
+        58,
+        155,
+        650,
+        150
+      ],
+      "geometry": "rect",
+      "text": "Começar pequeno,\naprender rápido.",
+      "textPreview": "Começar pequeno, | aprender rápido.",
+      "resolvedFontSize": 54,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 54,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Começar pequeno,"
+          },
+          {
+            "index": 2,
+            "text": "aprender rápido."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Começar pequeno,",
+          "resolvedTextStyle": {
+            "fontSize": 54,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Começar pequeno,",
+              "fontSize": 54,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "aprender rápido.",
+          "resolvedTextStyle": {
+            "fontSize": 54,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "aprender rápido.",
+              "fontSize": 54,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/vaxobq10",
+      "id": "4",
+      "name": "pilot-copy",
+      "bbox": [
+        58,
+        345,
+        620,
+        110
+      ],
+      "geometry": "rect",
+      "text": "Proposta: configurar o sistema com a nutricionista, simular uma jornada completa e iniciar um piloto acompanhado.",
+      "textPreview": "Proposta: configurar o sistema com a nutricionista, simular uma jornada completa e iniciar um piloto acompanhado.",
+      "resolvedFontSize": 26,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 26,
+        "typeface": "Arial",
+        "color": "#637168",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Proposta: configurar o sistema com a nutricionista,"
+          },
+          {
+            "index": 2,
+            "text": "simular uma jornada completa e iniciar um piloto"
+          },
+          {
+            "index": 3,
+            "text": "acompanhado."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Proposta: configurar o sistema com a nutricionista, simular uma jornada completa e iniciar um piloto acompanhado.",
+          "resolvedTextStyle": {
+            "fontSize": 26,
+            "typeface": "Arial",
+            "color": "#637168",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Proposta: configurar o sistema com a nutricionista, simular uma jornada completa e iniciar um piloto acompanhado.",
+              "fontSize": 26,
+              "typeface": "Arial",
+              "color": "#637168",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u9onil0f",
+      "id": "5",
+      "name": "pilot-steps",
+      "bbox": [
+        58,
+        505,
+        530,
+        145
+      ],
+      "geometry": "rect",
+      "text": "1. Configuração assistida\n2. Treinamento curto\n3. Uso piloto\n4. Ajustes com feedback real",
+      "textPreview": "1. Configuração assistida | 2. Treinamento curto | 3. Uso piloto | 4. Ajustes com feedback real",
+      "resolvedFontSize": 23,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 23,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "1. Configuração assistida"
+          },
+          {
+            "index": 2,
+            "text": "2. Treinamento curto"
+          },
+          {
+            "index": 3,
+            "text": "3. Uso piloto"
+          },
+          {
+            "index": 4,
+            "text": "4. Ajustes com feedback real"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "1. Configuração assistida",
+          "resolvedTextStyle": {
+            "fontSize": 23,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "1. Configuração assistida",
+              "fontSize": 23,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "2. Treinamento curto",
+          "resolvedTextStyle": {
+            "fontSize": 23,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "2. Treinamento curto",
+              "fontSize": 23,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "3. Uso piloto",
+          "resolvedTextStyle": {
+            "fontSize": 23,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "3. Uso piloto",
+              "fontSize": 23,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "4. Ajustes com feedback real",
+          "resolvedTextStyle": {
+            "fontSize": 23,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "4. Ajustes com feedback real",
+              "fontSize": 23,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hcf6d0jq",
+      "id": "6",
+      "name": "footer-8",
+      "bbox": [
+        1190,
+        668,
+        42,
+        22
+      ],
+      "geometry": "rect",
+      "text": "08",
+      "textPreview": "08",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 14,
+        "typeface": "Arial",
+        "color": "#637168",
+        "alignment": "right",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "08"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "08",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "typeface": "Arial",
+            "color": "#637168",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "08",
+              "fontSize": 14,
+              "typeface": "Arial",
+              "color": "#637168",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

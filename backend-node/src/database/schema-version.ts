@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '023_clinical_versions_email_outbox.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '025_preconsult_checkins.sql';
 
 export async function schemaStatus(db: Database) {
   try {

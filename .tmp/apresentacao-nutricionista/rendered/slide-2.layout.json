@@ -1,0 +1,731 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/2aig22",
+    "id": "2aig22",
+    "slide": 2,
+    "layoutId": "e4fb3e77-5f78-4815-978e-23f1f57cab4c",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "Arial"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "e4fb3e77-5f78-4815-978e-23f1f57cab4c",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/lg7y90n6",
+      "id": "1",
+      "name": "eyebrow-2",
+      "bbox": [
+        54,
+        36,
+        420,
+        26
+      ],
+      "geometry": "rect",
+      "text": "SISTEMA NUTRICIONAL",
+      "textPreview": "SISTEMA NUTRICIONAL",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 15,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "SISTEMA NUTRICIONAL"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "SISTEMA NUTRICIONAL",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "SISTEMA NUTRICIONAL",
+              "fontSize": 15,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ytwfe5ov",
+      "id": "2",
+      "name": "title-2",
+      "bbox": [
+        54,
+        78,
+        1160,
+        92
+      ],
+      "geometry": "rect",
+      "text": "O cuidado perde fluidez quando a informação fica espalhada",
+      "textPreview": "O cuidado perde fluidez quando a informação fica espalhada",
+      "resolvedFontSize": 40,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 40,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "O cuidado perde fluidez quando a informação fica"
+          },
+          {
+            "index": 2,
+            "text": "espalhada"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "O cuidado perde fluidez quando a informação fica espalhada",
+          "resolvedTextStyle": {
+            "fontSize": 40,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "O cuidado perde fluidez quando a informação fica espalhada",
+              "fontSize": 40,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zu5g7a5g",
+      "id": "3",
+      "name": "footer-2",
+      "bbox": [
+        1190,
+        668,
+        42,
+        22
+      ],
+      "geometry": "rect",
+      "text": "02",
+      "textPreview": "02",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 14,
+        "typeface": "Arial",
+        "color": "#637168",
+        "alignment": "right",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "02"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "02",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "typeface": "Arial",
+            "color": "#637168",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "02",
+              "fontSize": 14,
+              "typeface": "Arial",
+              "color": "#637168",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/crexcv6p",
+      "id": "4",
+      "name": "left-head",
+      "bbox": [
+        70,
+        215,
+        430,
+        38
+      ],
+      "geometry": "rect",
+      "text": "Na rotina",
+      "textPreview": "Na rotina",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 27,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Na rotina"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Na rotina",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Na rotina",
+              "fontSize": 27,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dsne50na",
+      "id": "5",
+      "name": "left-list",
+      "bbox": [
+        70,
+        270,
+        470,
+        330
+      ],
+      "geometry": "rect",
+      "text": "•  Agenda em um lugar\n\n•  Anotações em formatos diferentes\n\n•  Planos e exames difíceis de localizar\n\n•  Mensagens sem contexto clínico",
+      "textPreview": "•  Agenda em um lugar |  | •  Anotações em formatos diferentes |  | •  Planos e exames difíceis de localizar |  | •  Mensagens sem contex...",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 25,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 7,
+        "lines": [
+          {
+            "index": 1,
+            "text": "•  Agenda em um lugar"
+          },
+          {
+            "index": 2,
+            "text": ""
+          },
+          {
+            "index": 3,
+            "text": "•  Anotações em formatos diferentes"
+          },
+          {
+            "index": 4,
+            "text": ""
+          },
+          {
+            "index": 5,
+            "text": "•  Planos e exames difíceis de localizar"
+          },
+          {
+            "index": 6,
+            "text": ""
+          },
+          {
+            "index": 7,
+            "text": "•  Mensagens sem contexto clínico"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "•  Agenda em um lugar",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Agenda em um lugar",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "•  Anotações em formatos diferentes",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Anotações em formatos diferentes",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "•  Planos e exames difíceis de localizar",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Planos e exames difíceis de localizar",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 7,
+          "text": "•  Mensagens sem contexto clínico",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Mensagens sem contexto clínico",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qpwfaloj",
+      "id": "6",
+      "name": "divider",
+      "bbox": [
+        628,
+        205,
+        2,
+        395
+      ],
+      "geometry": "rect",
+      "fillColor": "#C9D1CA",
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/bq5w3q54",
+      "id": "7",
+      "name": "right-head",
+      "bbox": [
+        690,
+        215,
+        430,
+        38
+      ],
+      "geometry": "rect",
+      "text": "Com o sistema",
+      "textPreview": "Com o sistema",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 27,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Com o sistema"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Com o sistema",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Com o sistema",
+              "fontSize": 27,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wnixof6t",
+      "id": "8",
+      "name": "right-list",
+      "bbox": [
+        690,
+        270,
+        500,
+        330
+      ],
+      "geometry": "rect",
+      "text": "•  Jornada organizada por paciente\n\n•  Histórico disponível no atendimento\n\n•  Plano publicado diretamente no portal\n\n•  Comunicação vinculada ao acompanhamento",
+      "textPreview": "•  Jornada organizada por paciente |  | •  Histórico disponível no atendimento |  | •  Plano publicado diretamente no portal |  | •  Comu...",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 25,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 8,
+        "lines": [
+          {
+            "index": 1,
+            "text": "•  Jornada organizada por paciente"
+          },
+          {
+            "index": 2,
+            "text": ""
+          },
+          {
+            "index": 3,
+            "text": "•  Histórico disponível no atendimento"
+          },
+          {
+            "index": 4,
+            "text": ""
+          },
+          {
+            "index": 5,
+            "text": "•  Plano publicado diretamente no portal"
+          },
+          {
+            "index": 6,
+            "text": ""
+          },
+          {
+            "index": 7,
+            "text": "•  Comunicação vinculada ao"
+          },
+          {
+            "index": 8,
+            "text": "acompanhamento"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "•  Jornada organizada por paciente",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Jornada organizada por paciente",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "•  Histórico disponível no atendimento",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Histórico disponível no atendimento",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "•  Plano publicado diretamente no portal",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Plano publicado diretamente no portal",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 7,
+          "text": "•  Comunicação vinculada ao acompanhamento",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Comunicação vinculada ao acompanhamento",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

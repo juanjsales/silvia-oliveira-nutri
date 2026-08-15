@@ -1,0 +1,619 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/8kil9c",
+    "id": "8kil9c",
+    "slide": 5,
+    "layoutId": "e4fb3e77-5f78-4815-978e-23f1f57cab4c",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#F7F3E8",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "Arial"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "e4fb3e77-5f78-4815-978e-23f1f57cab4c",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/a14fqdcb",
+      "id": "1",
+      "name": "eyebrow-5",
+      "bbox": [
+        54,
+        36,
+        420,
+        26
+      ],
+      "geometry": "rect",
+      "text": "SISTEMA NUTRICIONAL",
+      "textPreview": "SISTEMA NUTRICIONAL",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 15,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "SISTEMA NUTRICIONAL"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "SISTEMA NUTRICIONAL",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "SISTEMA NUTRICIONAL",
+              "fontSize": 15,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/x4fe1sv2",
+      "id": "2",
+      "name": "title-5",
+      "bbox": [
+        54,
+        78,
+        1160,
+        92
+      ],
+      "geometry": "rect",
+      "text": "O plano sai do atendimento e chega ao paciente",
+      "textPreview": "O plano sai do atendimento e chega ao paciente",
+      "resolvedFontSize": 40,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 40,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "O plano sai do atendimento e chega ao paciente"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "O plano sai do atendimento e chega ao paciente",
+          "resolvedTextStyle": {
+            "fontSize": 40,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "O plano sai do atendimento e chega ao paciente",
+              "fontSize": 40,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/c36xsnuh",
+      "id": "3",
+      "name": "footer-5",
+      "bbox": [
+        1190,
+        668,
+        42,
+        22
+      ],
+      "geometry": "rect",
+      "text": "05",
+      "textPreview": "05",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 14,
+        "typeface": "Arial",
+        "color": "#637168",
+        "alignment": "right",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "05"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "05",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "typeface": "Arial",
+            "color": "#637168",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "05",
+              "fontSize": 14,
+              "typeface": "Arial",
+              "color": "#637168",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/6xkj2943",
+      "id": "4",
+      "bbox": [
+        62,
+        205,
+        500,
+        390
+      ],
+      "geometry": "rect",
+      "alt": "Alimentação saudável",
+      "contentType": "image/webp",
+      "imageFit": "cover",
+      "imageMask": {
+        "geometry": "rect"
+      },
+      "asset": {
+        "assetId": "6f223138-0ea6-47fa-b025-703b238dfab8",
+        "contentType": "image/webp",
+        "byteLength": 179258
+      }
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2d4fmdcf",
+      "id": "5",
+      "name": "plan-head",
+      "bbox": [
+        630,
+        215,
+        500,
+        36
+      ],
+      "geometry": "rect",
+      "text": "Para a nutricionista",
+      "textPreview": "Para a nutricionista",
+      "resolvedFontSize": 26,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 26,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Para a nutricionista"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Para a nutricionista",
+          "resolvedTextStyle": {
+            "fontSize": 26,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Para a nutricionista",
+              "fontSize": 26,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/p0vex8v6",
+      "id": "6",
+      "name": "plan-pro",
+      "bbox": [
+        630,
+        270,
+        520,
+        150
+      ],
+      "geometry": "rect",
+      "text": "•  Criar e revisar planos\n\n•  Controlar versões\n\n•  Registrar o motivo das alterações",
+      "textPreview": "•  Criar e revisar planos |  | •  Controlar versões |  | •  Registrar o motivo das alterações",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 25,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 5,
+        "lines": [
+          {
+            "index": 1,
+            "text": "•  Criar e revisar planos"
+          },
+          {
+            "index": 2,
+            "text": ""
+          },
+          {
+            "index": 3,
+            "text": "•  Controlar versões"
+          },
+          {
+            "index": 4,
+            "text": ""
+          },
+          {
+            "index": 5,
+            "text": "•  Registrar o motivo das alterações"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "•  Criar e revisar planos",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Criar e revisar planos",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "•  Controlar versões",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Controlar versões",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "•  Registrar o motivo das alterações",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Registrar o motivo das alterações",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ofmxo3ul",
+      "id": "7",
+      "name": "patient-head",
+      "bbox": [
+        630,
+        445,
+        500,
+        36
+      ],
+      "geometry": "rect",
+      "text": "Para o paciente",
+      "textPreview": "Para o paciente",
+      "resolvedFontSize": 26,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 26,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Para o paciente"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Para o paciente",
+          "resolvedTextStyle": {
+            "fontSize": 26,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Para o paciente",
+              "fontSize": 26,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7ahg72d4",
+      "id": "8",
+      "name": "patient-copy",
+      "bbox": [
+        630,
+        492,
+        520,
+        100
+      ],
+      "geometry": "rect",
+      "text": "Consultar o plano, acompanhar orientações e acessar documentos em um portal próprio.",
+      "textPreview": "Consultar o plano, acompanhar orientações e acessar documentos em um portal próprio.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Consultar o plano, acompanhar orientações e"
+          },
+          {
+            "index": 2,
+            "text": "acessar documentos em um portal próprio."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Consultar o plano, acompanhar orientações e acessar documentos em um portal próprio.",
+          "resolvedTextStyle": {
+            "fontSize": 24,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Consultar o plano, acompanhar orientações e acessar documentos em um portal próprio.",
+              "fontSize": 24,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

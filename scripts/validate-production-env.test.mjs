@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { redactedEnvironmentSummary, validateProductionEnv } from './validate-production-env.mjs';
+
+const valid = {
+  DATABASE_URL: 'postgresql://user:password@db.example.com/app',
+  FRONTEND_ORIGIN: 'https://app.example.com',
+  APP_URL: 'https://app.example.com',
+  SMTP_FROM: 'clinic@example.com',
+  APP_ENCRYPTION_KEY: 'a'.repeat(32),
+  CRON_SECRET: 'b'.repeat(32)
+};
+
+test('accepts the minimum production environment', () => {
+  assert.deepEqual(validateProductionEnv(valid), []);
+});
+
+test('rejects insecure public URLs and short secrets', () => {
+  const failures = validateProductionEnv({ ...valid, APP_URL: 'http://app.example.com', CRON_SECRET: 'short' });
+  assert.ok(failures.some((failure) => failure.includes('APP_URL')));
+  assert.ok(failures.some((failure) => failure.includes('CRON_SECRET')));
+});
+
+test('rejects partial optional integrations', () => {
+  const failures = validateProductionEnv({ ...valid, SMTP_HOST: 'smtp.example.com', SUPABASE_URL: 'https://project.supabase.co' });
+  assert.ok(failures.some((failure) => failure.includes('SMTP_HOST')));
+  assert.ok(failures.some((failure) => failure.includes('SUPABASE_URL')));
+});
+
+test('diagnostics never contain secret values', () => {
+  const summary = redactedEnvironmentSummary({ CRON_SECRET: 'do-not-print-this', DATABASE_URL: valid.DATABASE_URL });
+  assert.equal(summary.join(' ').includes('do-not-print-this'), false);
+  assert.equal(summary.join(' ').includes(valid.DATABASE_URL), false);
+});

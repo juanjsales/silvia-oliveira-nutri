@@ -1,0 +1,611 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/go0zko",
+    "id": "go0zko",
+    "slide": 4,
+    "layoutId": "e4fb3e77-5f78-4815-978e-23f1f57cab4c",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "Arial"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "e4fb3e77-5f78-4815-978e-23f1f57cab4c",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "8b805eda-fea8-4b0c-9f6c-7f49a2c47223",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8j2p0n69",
+      "id": "1",
+      "name": "eyebrow-4",
+      "bbox": [
+        54,
+        36,
+        420,
+        26
+      ],
+      "geometry": "rect",
+      "text": "SISTEMA NUTRICIONAL",
+      "textPreview": "SISTEMA NUTRICIONAL",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 15,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "SISTEMA NUTRICIONAL"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "SISTEMA NUTRICIONAL",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "SISTEMA NUTRICIONAL",
+              "fontSize": 15,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7itori5o",
+      "id": "2",
+      "name": "title-4",
+      "bbox": [
+        54,
+        78,
+        1160,
+        92
+      ],
+      "geometry": "rect",
+      "text": "Cada atendimento começa com o contexto essencial",
+      "textPreview": "Cada atendimento começa com o contexto essencial",
+      "resolvedFontSize": 40,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 40,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Cada atendimento começa com o contexto essencial"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Cada atendimento começa com o contexto essencial",
+          "resolvedTextStyle": {
+            "fontSize": 40,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Cada atendimento começa com o contexto essencial",
+              "fontSize": 40,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6hk7ydo3",
+      "id": "3",
+      "name": "footer-4",
+      "bbox": [
+        1190,
+        668,
+        42,
+        22
+      ],
+      "geometry": "rect",
+      "text": "04",
+      "textPreview": "04",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 14,
+        "typeface": "Arial",
+        "color": "#637168",
+        "alignment": "right",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "04"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "04",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "typeface": "Arial",
+            "color": "#637168",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "04",
+              "fontSize": 14,
+              "typeface": "Arial",
+              "color": "#637168",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/lgb6p8ni",
+      "id": "4",
+      "name": "clinical-field",
+      "bbox": [
+        56,
+        205,
+        520,
+        390
+      ],
+      "geometry": "rect",
+      "fillColor": "#EAF1EA",
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kf2pwn6x",
+      "id": "5",
+      "name": "clinical-big",
+      "bbox": [
+        92,
+        252,
+        440,
+        145
+      ],
+      "geometry": "rect",
+      "text": "Antes de perguntar “o que aconteceu?”,\no sistema já mostra o que importa.",
+      "textPreview": "Antes de perguntar “o que aconteceu?”, | o sistema já mostra o que importa.",
+      "resolvedFontSize": 34,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 34,
+        "typeface": "Arial",
+        "color": "#244735",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Antes de perguntar “o"
+          },
+          {
+            "index": 2,
+            "text": "que aconteceu?”,"
+          },
+          {
+            "index": 3,
+            "text": "o sistema já mostra o que"
+          },
+          {
+            "index": 4,
+            "text": "importa."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Antes de perguntar “o que aconteceu?”,",
+          "resolvedTextStyle": {
+            "fontSize": 34,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Antes de perguntar “o que aconteceu?”,",
+              "fontSize": 34,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "o sistema já mostra o que importa.",
+          "resolvedTextStyle": {
+            "fontSize": 34,
+            "typeface": "Arial",
+            "color": "#244735",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "o sistema já mostra o que importa.",
+              "fontSize": 34,
+              "typeface": "Arial",
+              "color": "#244735",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/jetoni5c",
+      "id": "6",
+      "name": "clinical-note",
+      "bbox": [
+        92,
+        440,
+        430,
+        110
+      ],
+      "geometry": "rect",
+      "text": "O pré-check-in apoia a conversa, mas a nutricionista decide o que deve ser registrado formalmente no prontuário.",
+      "textPreview": "O pré-check-in apoia a conversa, mas a nutricionista decide o que deve ser registrado formalmente no prontuário.",
+      "resolvedFontSize": 22,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 22,
+        "typeface": "Arial",
+        "color": "#637168",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "O pré-check-in apoia a conversa, mas a"
+          },
+          {
+            "index": 2,
+            "text": "nutricionista decide o que deve ser"
+          },
+          {
+            "index": 3,
+            "text": "registrado formalmente no prontuário."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "O pré-check-in apoia a conversa, mas a nutricionista decide o que deve ser registrado formalmente no prontuário.",
+          "resolvedTextStyle": {
+            "fontSize": 22,
+            "typeface": "Arial",
+            "color": "#637168",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "O pré-check-in apoia a conversa, mas a nutricionista decide o que deve ser registrado formalmente no prontuário.",
+              "fontSize": 22,
+              "typeface": "Arial",
+              "color": "#637168",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ytk7udo7",
+      "id": "7",
+      "name": "clinical-list",
+      "bbox": [
+        670,
+        228,
+        470,
+        330
+      ],
+      "geometry": "rect",
+      "text": "•  Resumo clínico vivo\n\n•  Histórico de consultas\n\n•  Exames e medidas\n\n•  Pendências para revisão",
+      "textPreview": "•  Resumo clínico vivo |  | •  Histórico de consultas |  | •  Exames e medidas |  | •  Pendências para revisão",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 25,
+        "typeface": "Arial",
+        "color": "#15231B",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 7,
+        "lines": [
+          {
+            "index": 1,
+            "text": "•  Resumo clínico vivo"
+          },
+          {
+            "index": 2,
+            "text": ""
+          },
+          {
+            "index": 3,
+            "text": "•  Histórico de consultas"
+          },
+          {
+            "index": 4,
+            "text": ""
+          },
+          {
+            "index": 5,
+            "text": "•  Exames e medidas"
+          },
+          {
+            "index": 6,
+            "text": ""
+          },
+          {
+            "index": 7,
+            "text": "•  Pendências para revisão"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "•  Resumo clínico vivo",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Resumo clínico vivo",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "•  Histórico de consultas",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Histórico de consultas",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "•  Exames e medidas",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Exames e medidas",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 7,
+          "text": "•  Pendências para revisão",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Arial",
+            "color": "#15231B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "•  Pendências para revisão",
+              "fontSize": 25,
+              "typeface": "Arial",
+              "color": "#15231B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

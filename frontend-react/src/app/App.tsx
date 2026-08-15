@@ -26,6 +26,7 @@ import { PatientVideoPage } from '../pages/PatientVideoPage';
 import { HomePage } from '../pages/HomePage';
 import { PrivacyPage } from '../pages/PrivacyPage';
 import { PatientAppointmentsPage } from '../pages/PatientAppointmentsPage';
+import { ClinicalOverviewPage } from '../pages/ClinicalOverviewPage';
 
 export function App() {
   return <Routes>
@@ -42,6 +43,7 @@ export function App() {
       <Route element={<AppShell />}>
       <Route path="painel" element={<DashboardPage />} />
       <Route path="pacientes" element={<PatientsPage />} />
+      <Route path="pacientes/:patientId/clinico" element={<ClinicalOverviewPage />} />
       <Route path="agenda" element={<AgendaPage />} />
       <Route path="atendimentos" element={<EncounterPage />} />
       <Route path="planos" element={<NutritionLibraryPage />} />

@@ -1,0 +1,100 @@
+{"kind":"deck","id":"pr/2tzcih","name":"Deck"}
+{"kind":"layout","layoutId":"8b805eda-fea8-4b0c-9f6c-7f49a2c47223","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"e4fb3e77-5f78-4815-978e-23f1f57cab4c","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/03xw4s","slide":1,"title":"UMA ROTINA CLÍNICA MAIS ORGANIZADA","textShapes":5}
+{"kind":"shape","id":"sh/xczidkzu","slide":1,"name":"cover-field","bbox":[720,0,560,720]}
+{"kind":"textbox","id":"sh/bah0baho","slide":1,"name":"cover-kicker","text":"UMA ROTINA CLÍNICA MAIS ORGANIZADA","textPreview":"UMA ROTINA CLÍNICA MAIS ORGANIZADA","textChars":34,"textLines":1,"bbox":[58,58,560,30]}
+{"kind":"textbox","id":"sh/o7q10vyd","slide":1,"name":"cover-title","text":"Mais presença no atendimento.\nMenos ruído na rotina.","textPreview":"Mais presença no atendimento. | Menos ruído na rotina.","textChars":52,"textLines":2,"bbox":[58,160,600,210]}
+{"kind":"textbox","id":"sh/p8zi90zy","slide":1,"name":"cover-sub","text":"Um sistema para acompanhar cada paciente com contexto, continuidade e segurança.","textPreview":"Um sistema para acompanhar cada paciente com contexto, continuidade e segurança.","textChars":80,"textLines":1,"bbox":[58,475,570,90]}
+{"kind":"textbox","id":"sh/2lojylg7","slide":1,"name":"cover-close","text":"Apresentação para uso piloto","textPreview":"Apresentação para uso piloto","textChars":28,"textLines":1,"bbox":[58,625,380,30]}
+{"kind":"textbox","id":"sh/n6x07qhs","slide":1,"name":"footer-1","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[1190,668,42,22]}
+{"kind":"image","id":"im/bedkji98","slide":1,"name":"","geometry":"rect","alt":"Nutricionista em atendimento","bbox":[720,0,560,720]}
+{"kind":"notes","id":"nt/03xw4s","slide":1,"text":""}
+{"kind":"slide","id":"sl/2aig22","slide":2,"title":"SISTEMA NUTRICIONAL","textShapes":7}
+{"kind":"textbox","id":"sh/lg7y90n6","slide":2,"name":"eyebrow-2","text":"SISTEMA NUTRICIONAL","textPreview":"SISTEMA NUTRICIONAL","textChars":19,"textLines":1,"bbox":[54,36,420,26]}
+{"kind":"textbox","id":"sh/ytwfe5ov","slide":2,"name":"title-2","text":"O cuidado perde fluidez quando a informação fica espalhada","textPreview":"O cuidado perde fluidez quando a informação fica espalhada","textChars":58,"textLines":1,"bbox":[54,78,1160,92]}
+{"kind":"textbox","id":"sh/zu5g7a5g","slide":2,"name":"footer-2","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1190,668,42,22]}
+{"kind":"textbox","id":"sh/crexcv6p","slide":2,"name":"left-head","text":"Na rotina","textPreview":"Na rotina","textChars":9,"textLines":1,"bbox":[70,215,430,38]}
+{"kind":"textbox","id":"sh/dsne50na","slide":2,"name":"left-list","text":"•  Agenda em um lugar\n\n•  Anotações em formatos diferentes\n\n•  Planos e exames difíceis de localizar\n\n•  Mensagens sem contexto clínico","textPreview":"•  Agenda em um lugar |  | •  Anotações em formatos diferentes |  | •  Planos e exames difíceis de localizar |  | •  Mensagens sem contex...","textChars":135,"textLines":7,"bbox":[70,270,470,330]}
+{"kind":"shape","id":"sh/qpwfaloj","slide":2,"name":"divider","bbox":[628,205,2,395]}
+{"kind":"textbox","id":"sh/bq5w3q54","slide":2,"name":"right-head","text":"Com o sistema","textPreview":"Com o sistema","textChars":13,"textLines":1,"bbox":[690,215,430,38]}
+{"kind":"textbox","id":"sh/wnixof6t","slide":2,"name":"right-list","text":"•  Jornada organizada por paciente\n\n•  Histórico disponível no atendimento\n\n•  Plano publicado diretamente no portal\n\n•  Comunicação vinculada ao acompanhamento","textPreview":"•  Jornada organizada por paciente |  | •  Histórico disponível no atendimento |  | •  Plano publicado diretamente no portal |  | •  Comu...","textChars":160,"textLines":7,"bbox":[690,270,500,330]}
+{"kind":"notes","id":"nt/2aig22","slide":2,"text":""}
+{"kind":"slide","id":"sl/cxmcp7","slide":3,"title":"SISTEMA NUTRICIONAL","textShapes":18}
+{"kind":"textbox","id":"sh/c7q543a1","slide":3,"name":"eyebrow-3","text":"SISTEMA NUTRICIONAL","textPreview":"SISTEMA NUTRICIONAL","textChars":19,"textLines":1,"bbox":[54,36,420,26]}
+{"kind":"textbox","id":"sh/r6h4vy9g","slide":3,"name":"title-3","text":"A jornada clínica acontece em uma sequência simples","textPreview":"A jornada clínica acontece em uma sequência simples","textChars":51,"textLines":1,"bbox":[54,78,1160,92]}
+{"kind":"textbox","id":"sh/ql8n2tsv","slide":3,"name":"footer-3","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1190,668,42,22]}
+{"kind":"shape","id":"sh/pkzmtora","slide":3,"name":"timeline","bbox":[90,350,1090,3]}
+{"kind":"shape","id":"sh/4jq50jap","slide":3,"name":"dot-0","bbox":[86,329,40,40]}
+{"kind":"textbox","id":"sh/3ix4re94","slide":3,"name":"num-0","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[86,336,40,25]}
+{"kind":"textbox","id":"sh/2honytsz","slide":3,"name":"step-0","text":"Agenda","textPreview":"Agenda","textChars":6,"textLines":1,"bbox":[76,405,185,35]}
+{"kind":"textbox","id":"sh/hgfmpore","slide":3,"name":"desc-0","text":"Consulta organizada","textPreview":"Consulta organizada","textChars":19,"textLines":1,"bbox":[76,448,185,90]}
+{"kind":"shape","id":"sh/gf6lwjat","slide":3,"name":"dot-1","bbox":[311,329,40,40]}
+{"kind":"textbox","id":"sh/ehsf218z","slide":3,"name":"num-1","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[311,336,40,25]}
+{"kind":"textbox","id":"sh/zi1wb69k","slide":3,"name":"step-1","text":"Pré-check-in","textPreview":"Pré-check-in","textChars":12,"textLines":1,"bbox":[301,405,185,35]}
+{"kind":"textbox","id":"sh/0jax4bq5","slide":3,"name":"desc-1","text":"Paciente atualiza o contexto","textPreview":"Paciente atualiza o contexto","textChars":28,"textLines":1,"bbox":[301,448,185,90]}
+{"kind":"shape","id":"sh/1kjydgrq","slide":3,"name":"dot-2","bbox":[536,329,40,40]}
+{"kind":"textbox","id":"sh/qt8fy183","slide":3,"name":"num-2","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[536,336,40,25]}
+{"kind":"textbox","id":"sh/rehw7698","slide":3,"name":"step-2","text":"Atendimento","textPreview":"Atendimento","textChars":11,"textLines":1,"bbox":[526,405,185,35]}
+{"kind":"textbox","id":"sh/cfqx0rqt","slide":3,"name":"desc-2","text":"Decisão com histórico","textPreview":"Decisão com histórico","textChars":21,"textLines":1,"bbox":[526,448,185,90]}
+{"kind":"shape","id":"sh/dgje9wre","slide":3,"name":"dot-3","bbox":[761,329,40,40]}
+{"kind":"textbox","id":"sh/2p8fuh8r","slide":3,"name":"num-3","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[761,336,40,25]}
+{"kind":"textbox","id":"sh/3qhw3m9c","slide":3,"name":"step-3","text":"Plano","textPreview":"Plano","textChars":5,"textLines":1,"bbox":[751,405,185,35]}
+{"kind":"textbox","id":"sh/7itkfyls","slide":3,"name":"desc-3","text":"Orientação publicada","textPreview":"Orientação publicada","textChars":20,"textLines":1,"bbox":[751,448,185,90]}
+{"kind":"shape","id":"sh/6hk3mtk7","slide":3,"name":"dot-4","bbox":[986,329,40,40]}
+{"kind":"textbox","id":"sh/tkvmho3y","slide":3,"name":"num-4","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[986,336,40,25]}
+{"kind":"textbox","id":"sh/8j2loj2d","slide":3,"name":"step-4","text":"Acompanhar","textPreview":"Acompanhar","textChars":10,"textLines":1,"bbox":[976,405,185,35]}
+{"kind":"textbox","id":"sh/vmd4jyl4","slide":3,"name":"desc-4","text":"Evolução contínua","textPreview":"Evolução contínua","textChars":17,"textLines":1,"bbox":[976,448,185,90]}
+{"kind":"notes","id":"nt/cxmcp7","slide":3,"text":""}
+{"kind":"slide","id":"sl/go0zko","slide":4,"title":"SISTEMA NUTRICIONAL","textShapes":6}
+{"kind":"textbox","id":"sh/8j2p0n69","slide":4,"name":"eyebrow-4","text":"SISTEMA NUTRICIONAL","textPreview":"SISTEMA NUTRICIONAL","textChars":19,"textLines":1,"bbox":[54,36,420,26]}
+{"kind":"textbox","id":"sh/7itori5o","slide":4,"name":"title-4","text":"Cada atendimento começa com o contexto essencial","textPreview":"Cada atendimento começa com o contexto essencial","textChars":48,"textLines":1,"bbox":[54,78,1160,92]}
+{"kind":"textbox","id":"sh/6hk7ydo3","slide":4,"name":"footer-4","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1190,668,42,22]}
+{"kind":"shape","id":"sh/lgb6p8ni","slide":4,"name":"clinical-field","bbox":[56,205,520,390]}
+{"kind":"textbox","id":"sh/kf2pwn6x","slide":4,"name":"clinical-big","text":"Antes de perguntar “o que aconteceu?”,\no sistema já mostra o que importa.","textPreview":"Antes de perguntar “o que aconteceu?”, | o sistema já mostra o que importa.","textChars":73,"textLines":2,"bbox":[92,252,440,145]}
+{"kind":"textbox","id":"sh/jetoni5c","slide":4,"name":"clinical-note","text":"O pré-check-in apoia a conversa, mas a nutricionista decide o que deve ser registrado formalmente no prontuário.","textPreview":"O pré-check-in apoia a conversa, mas a nutricionista decide o que deve ser registrado formalmente no prontuário.","textChars":112,"textLines":1,"bbox":[92,440,430,110]}
+{"kind":"textbox","id":"sh/ytk7udo7","slide":4,"name":"clinical-list","text":"•  Resumo clínico vivo\n\n•  Histórico de consultas\n\n•  Exames e medidas\n\n•  Pendências para revisão","textPreview":"•  Resumo clínico vivo |  | •  Histórico de consultas |  | •  Exames e medidas |  | •  Pendências para revisão","textChars":98,"textLines":7,"bbox":[670,228,470,330]}
+{"kind":"notes","id":"nt/go0zko","slide":4,"text":""}
+{"kind":"slide","id":"sl/8kil9c","slide":5,"title":"SISTEMA NUTRICIONAL","textShapes":7}
+{"kind":"textbox","id":"sh/a14fqdcb","slide":5,"name":"eyebrow-5","text":"SISTEMA NUTRICIONAL","textPreview":"SISTEMA NUTRICIONAL","textChars":19,"textLines":1,"bbox":[54,36,420,26]}
+{"kind":"textbox","id":"sh/x4fe1sv2","slide":5,"name":"title-5","text":"O plano sai do atendimento e chega ao paciente","textPreview":"O plano sai do atendimento e chega ao paciente","textChars":46,"textLines":1,"bbox":[54,78,1160,92]}
+{"kind":"textbox","id":"sh/c36xsnuh","slide":5,"name":"footer-5","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1190,668,42,22]}
+{"kind":"textbox","id":"sh/2d4fmdcf","slide":5,"name":"plan-head","text":"Para a nutricionista","textPreview":"Para a nutricionista","textChars":20,"textLines":1,"bbox":[630,215,500,36]}
+{"kind":"textbox","id":"sh/p0vex8v6","slide":5,"name":"plan-pro","text":"•  Criar e revisar planos\n\n•  Controlar versões\n\n•  Registrar o motivo das alterações","textPreview":"•  Criar e revisar planos |  | •  Controlar versões |  | •  Registrar o motivo das alterações","textChars":85,"textLines":5,"bbox":[630,270,520,150]}
+{"kind":"textbox","id":"sh/ofmxo3ul","slide":5,"name":"patient-head","text":"Para o paciente","textPreview":"Para o paciente","textChars":15,"textLines":1,"bbox":[630,445,500,36]}
+{"kind":"textbox","id":"sh/7ahg72d4","slide":5,"name":"patient-copy","text":"Consultar o plano, acompanhar orientações e acessar documentos em um portal próprio.","textPreview":"Consultar o plano, acompanhar orientações e acessar documentos em um portal próprio.","textChars":84,"textLines":1,"bbox":[630,492,520,100]}
+{"kind":"image","id":"im/6xkj2943","slide":5,"name":"","geometry":"rect","alt":"Alimentação saudável","bbox":[62,205,500,390]}
+{"kind":"notes","id":"nt/8kil9c","slide":5,"text":""}
+{"kind":"slide","id":"sl/1h3nsv","slide":6,"title":"SISTEMA NUTRICIONAL","textShapes":11}
+{"kind":"textbox","id":"sh/d8bupcvy","slide":6,"name":"eyebrow-6","text":"SISTEMA NUTRICIONAL","textPreview":"SISTEMA NUTRICIONAL","textChars":19,"textLines":1,"bbox":[54,36,420,26]}
+{"kind":"textbox","id":"sh/qlkvuxwn","slide":6,"name":"title-6","text":"O paciente participa sem invadir o espaço profissional","textPreview":"O paciente participa sem invadir o espaço profissional","textChars":54,"textLines":1,"bbox":[54,78,1160,92]}
+{"kind":"textbox","id":"sh/rmtcn2ds","slide":6,"name":"footer-6","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1190,668,42,22]}
+{"kind":"shape","id":"sh/0b2d07ep","slide":6,"name":"portal-0","bbox":[70,225,520,145]}
+{"kind":"textbox","id":"sh/1cvutcva","slide":6,"name":"portal-h-0","text":"Preparar a consulta","textPreview":"Preparar a consulta","textChars":19,"textLines":1,"bbox":[98,250,450,35]}
+{"kind":"textbox","id":"sh/e9kvyhwj","slide":6,"name":"portal-b-0","text":"Responder ao pré-check-in","textPreview":"Responder ao pré-check-in","textChars":25,"textLines":1,"bbox":[98,301,450,40]}
+{"kind":"shape","id":"sh/fatcr2d4","slide":6,"name":"portal-1","bbox":[660,225,520,145]}
+{"kind":"textbox","id":"sh/ofmd4rel","slide":6,"name":"portal-h-1","text":"Acompanhar","textPreview":"Acompanhar","textChars":10,"textLines":1,"bbox":[688,250,450,35]}
+{"kind":"textbox","id":"sh/pgvuxwv6","slide":6,"name":"portal-b-1","text":"Plano, metas e evolução","textPreview":"Plano, metas e evolução","textChars":23,"textLines":1,"bbox":[688,301,450,40]}
+{"kind":"shape","id":"sh/lwjilwji","slide":6,"name":"portal-2","bbox":[70,410,520,145]}
+{"kind":"textbox","id":"sh/0vahsrix","slide":6,"name":"portal-h-2","text":"Compartilhar","textPreview":"Compartilhar","textChars":12,"textLines":1,"bbox":[98,435,450,35]}
+{"kind":"textbox","id":"sh/zu10jm1s","slide":6,"name":"portal-b-2","text":"Exames e diário alimentar","textPreview":"Exames e diário alimentar","textChars":25,"textLines":1,"bbox":[98,486,450,40]}
+{"kind":"shape","id":"sh/y98zqh07","slide":6,"name":"portal-3","bbox":[660,410,520,145]}
+{"kind":"textbox","id":"sh/90jipgju","slide":6,"name":"portal-h-3","text":"Conversar","textPreview":"Conversar","textChars":9,"textLines":1,"bbox":[688,435,450,35]}
+{"kind":"textbox","id":"sh/8za1wbi9","slide":6,"name":"portal-b-3","text":"Mensagens em canal seguro","textPreview":"Mensagens em canal seguro","textChars":25,"textLines":1,"bbox":[688,486,450,40]}
+{"kind":"notes","id":"nt/1h3nsv","slide":6,"text":""}
+{"kind":"slide","id":"sl/j4a9mt","slide":7,"title":"SISTEMA NUTRICIONAL","textShapes":6}
+{"kind":"textbox","id":"sh/hcfed832","slide":7,"name":"eyebrow-7","text":"SISTEMA NUTRICIONAL","textPreview":"SISTEMA NUTRICIONAL","textChars":19,"textLines":1,"bbox":[54,36,420,26]}
+{"kind":"textbox","id":"sh/u9ofit4b","slide":7,"name":"title-7","text":"Privacidade faz parte do fluxo, não é um detalhe posterior","textPreview":"Privacidade faz parte do fluxo, não é um detalhe posterior","textChars":58,"textLines":1,"bbox":[54,78,1160,92]}
+{"kind":"textbox","id":"sh/vaxwbylw","slide":7,"name":"footer-7","text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1190,668,42,22]}
+{"kind":"textbox","id":"sh/4fqxonmt","slide":7,"name":"security-thesis","text":"Cada pessoa acessa somente o que pertence ao seu papel.","textPreview":"Cada pessoa acessa somente o que pertence ao seu papel.","textChars":55,"textLines":1,"bbox":[70,215,570,120]}
+{"kind":"textbox","id":"sh/5gzehs3y","slide":7,"name":"security-list","text":"•  Sessões protegidas\n\n•  Separação entre acesso profissional e paciente\n\n•  Auditoria de ações clínicas\n\n•  Backups e migrações controladas\n\n•  Respostas do paciente revisadas pela profissional","textPreview":"•  Sessões protegidas |  | •  Separação entre acesso profissional e paciente |  | •  Auditoria de ações clínicas |  | •  Backups e migraç...","textChars":194,"textLines":9,"bbox":[690,205,500,390]}
+{"kind":"textbox","id":"sh/idofmd4n","slide":7,"name":"security-foot","text":"A ativação real acontece somente após validação do ambiente, migrações e teste final autenticado.","textPreview":"A ativação real acontece somente após validação do ambiente, migrações e teste final autenticado.","textChars":97,"textLines":1,"bbox":[70,490,530,100]}
+{"kind":"notes","id":"nt/j4a9mt","slide":7,"text":""}
+{"kind":"slide","id":"sl/uejfui","slide":8,"title":"PRÓXIMO PASSO","textShapes":5}
+{"kind":"textbox","id":"sh/98f69gju","slide":8,"name":"pilot-kicker","text":"PRÓXIMO PASSO","textPreview":"PRÓXIMO PASSO","textChars":13,"textLines":1,"bbox":[58,54,300,28]}
+{"kind":"textbox","id":"sh/87m5gbi9","slide":8,"name":"pilot-title","text":"Começar pequeno,\naprender rápido.","textPreview":"Começar pequeno, | aprender rápido.","textChars":33,"textLines":2,"bbox":[58,155,650,150]}
+{"kind":"textbox","id":"sh/vaxobq10","slide":8,"name":"pilot-copy","text":"Proposta: configurar o sistema com a nutricionista, simular uma jornada completa e iniciar um piloto acompanhado.","textPreview":"Proposta: configurar o sistema com a nutricionista, simular uma jornada completa e iniciar um piloto acompanhado.","textChars":113,"textLines":1,"bbox":[58,345,620,110]}
+{"kind":"textbox","id":"sh/u9onil0f","slide":8,"name":"pilot-steps","text":"1. Configuração assistida\n2. Treinamento curto\n3. Uso piloto\n4. Ajustes com feedback real","textPreview":"1. Configuração assistida | 2. Treinamento curto | 3. Uso piloto | 4. Ajustes com feedback real","textChars":89,"textLines":4,"bbox":[58,505,530,145]}
+{"kind":"textbox","id":"sh/hcf6d0jq","slide":8,"name":"footer-8","text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1190,668,42,22]}
+{"kind":"image","id":"im/r2lkz6t4","slide":8,"name":"","geometry":"rect","alt":"Nutricionista","bbox":[780,0,500,720]}
+{"kind":"notes","id":"nt/uejfui","slide":8,"text":""}

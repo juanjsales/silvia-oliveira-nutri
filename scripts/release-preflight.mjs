@@ -45,6 +45,13 @@ if (vercel) {
   else pass('Diretório de saída da Vercel');
   if (!String(vercel.buildCommand ?? '').includes('backend-node run build')) fail('Build da Vercel não valida o backend.');
   else pass('Build da Vercel inclui frontend e backend');
+  if (!String(vercel.buildCommand ?? '').includes('release:env')) fail('Build da Vercel não valida as variáveis de produção.');
+  else pass('Build da Vercel valida o ambiente de produção');
+  const headers = vercel.headers?.flatMap((rule) => rule.headers ?? []) ?? [];
+  const requiredHeaders = ['Strict-Transport-Security', 'X-Content-Type-Options', 'Referrer-Policy', 'Permissions-Policy'];
+  const missingHeaders = requiredHeaders.filter((key) => !headers.some((header) => header.key === key));
+  if (missingHeaders.length) fail(`Headers de segurança ausentes: ${missingHeaders.join(', ')}.`);
+  else pass('Headers de segurança do deploy');
   const rewrites = vercel.rewrites ?? [];
   const requiredRewrites = [
     ['/api/:path*', '/api/[...path]'],

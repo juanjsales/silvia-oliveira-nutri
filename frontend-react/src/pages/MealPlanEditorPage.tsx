@@ -7,8 +7,10 @@ type Macro = { kcal:number; protein:number; carbohydrate:number; fat:number };
 type Food = { id:string; name:string; category:string; referenceUnit:string; kcal:number; protein:number; carbohydrate:number; fat:number };
 type Recipe = { id:string; title:string; category:string; ingredients:{ name:string; amount:string; kcal:number; protein:number; carbohydrate:number; fat:number }[] };
 type PlanItem = { id:string; foodId?:string; name:string; amount:number; unit:string; amountText?:string; per100?:Macro; macros:Macro };
-type Meal = { id:string; title:string; time:string; notes:string; substitutions:string[]; items:PlanItem[] };
-type Plan = { id:string; patientName:string; title:string; objective?:string; status:'DRAFT'|'PUBLISHED'|'ARCHIVED'; content:Record<string,unknown> };
+type Substitution = { option:string; equivalence:string };
+type Meal = { id:string; title:string; time:string; notes:string; substitutions:Substitution[]; items:PlanItem[] };
+type Targets = { mode:'EXACT'|'RANGE'; kcalMin:string; kcalMax:string; proteinMin:string; proteinMax:string };
+type Plan = { id:string; patientName:string; title:string; objective?:string; status:'DRAFT'|'PUBLISHED'|'ARCHIVED'; content:Record<string,unknown>; sourcePlan?:{id:string;title:string;content:Record<string,unknown>}|null };
 
 const num = (value:unknown) => Number(value) || 0;
 const uid = () => crypto.randomUUID();
@@ -31,7 +33,7 @@ function normalizeContent(content:Record<string,unknown>):Meal[] {
     title:String(meal.title || meal.titulo || 'Refeição'),
     time:String(meal.time || meal.horario || ''),
     notes:String(meal.notes || meal.obs || ''),
-    substitutions:Array.isArray(meal.substitutions) ? meal.substitutions.map(String).filter(Boolean) : [],
+    substitutions:Array.isArray(meal.substitutions) ? meal.substitutions.map(item => typeof item==='string'?{option:item,equivalence:''}:{option:String((item as Record<string,unknown>).option||''),equivalence:String((item as Record<string,unknown>).equivalence||'')}).filter(item=>item.option||item.equivalence) : [],
     items:((Array.isArray(meal.items) ? meal.items : Array.isArray(meal.alimentosList) ? meal.alimentosList : []) as Record<string,unknown>[]).map(item => {
       const per100 = item.per100 && typeof item.per100 === 'object' ? macroFrom(item.per100, {}) : undefined;
       return {
@@ -54,6 +56,8 @@ const mealTotals = (meal:Meal) => meal.items.reduce<Macro>((total, item) => ({
   carbohydrate:total.carbohydrate + item.macros.carbohydrate,
   fat:total.fat + item.macros.fat,
 }), emptyMacro());
+const resultTotals=(content:Record<string,unknown>|undefined)=>normalizeContent(content||{}).reduce<Macro>((all,meal)=>{const current=mealTotals(meal);return{kcal:all.kcal+current.kcal,protein:all.protein+current.protein,carbohydrate:all.carbohydrate+current.carbohydrate,fat:all.fat+current.fat}},emptyMacro());
+const signed=(value:number)=>`${value>0?'+':''}${value.toFixed(value%1?1:0)}`;
 
 export function MealPlanEditorPage() {
   const { id } = useParams();
@@ -71,6 +75,9 @@ export function MealPlanEditorPage() {
   const [query,setQuery] = useState('');
   const [foods,setFoods] = useState<Food[]>([]);
   const [recipes,setRecipes] = useState<Recipe[]>([]);
+  const [patientVisibility,setPatientVisibility]=useState<'FULL'|'SUMMARY'|'HIDDEN'>('SUMMARY');
+  const [revisionReason,setRevisionReason]=useState('');
+  const [targets,setTargets]=useState<Targets>({mode:'RANGE',kcalMin:'',kcalMax:'',proteinMin:'',proteinMax:''});
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -81,6 +88,10 @@ export function MealPlanEditorPage() {
       setTitle(result.data.title);
       setObjective(result.data.objective || '');
       setMeals(normalizeContent(result.data.content || {}));
+      setPatientVisibility((result.data.content.patientVisibility as 'FULL'|'SUMMARY'|'HIDDEN')||'SUMMARY');
+      setRevisionReason(String(result.data.content.revisionReason||''));
+      const savedTargets=(result.data.content.targets&&typeof result.data.content.targets==='object'?result.data.content.targets:{}) as Record<string,unknown>;
+      setTargets({mode:savedTargets.mode==='EXACT'?'EXACT':'RANGE',kcalMin:String(savedTargets.kcalMin||''),kcalMax:String(savedTargets.kcalMax||''),proteinMin:String(savedTargets.proteinMin||''),proteinMax:String(savedTargets.proteinMax||'')});
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível abrir o plano.');
     } finally { setLoading(false); }
@@ -100,6 +111,7 @@ export function MealPlanEditorPage() {
     const current = mealTotals(meal);
     return { kcal:all.kcal+current.kcal, protein:all.protein+current.protein, carbohydrate:all.carbohydrate+current.carbohydrate, fat:all.fat+current.fat };
   }, emptyMacro()), [meals]);
+  const sourceTotals=useMemo(()=>resultTotals(plan?.sourcePlan?.content),[plan]);
 
   function updateMeal(mealId:string, patch:Partial<Meal>) { setMeals(current => current.map(meal => meal.id === mealId ? {...meal,...patch} : meal)); setNotice(''); }
   function addFood(food:Food) {
@@ -122,15 +134,16 @@ export function MealPlanEditorPage() {
       return {...item,amount,amountText:undefined,macros:item.per100 ? { kcal:item.per100.kcal*factor, protein:item.per100.protein*factor, carbohydrate:item.per100.carbohydrate*factor, fat:item.per100.fat*factor } : item.macros};
     })}));
   }
-  function addSubstitution(mealId:string) { setMeals(current => current.map(meal => meal.id === mealId ? {...meal,substitutions:[...meal.substitutions,'']} : meal)); }
-  function updateSubstitution(mealId:string,index:number,value:string) { setMeals(current => current.map(meal => meal.id === mealId ? {...meal,substitutions:meal.substitutions.map((item,i) => i === index ? value : item)} : meal)); }
+  function addSubstitution(mealId:string) { setMeals(current => current.map(meal => meal.id === mealId ? {...meal,substitutions:[...meal.substitutions,{option:'',equivalence:''}]} : meal)); }
+  function updateSubstitution(mealId:string,index:number,patch:Partial<Substitution>) { setMeals(current => current.map(meal => meal.id === mealId ? {...meal,substitutions:meal.substitutions.map((item,i) => i === index ? {...item,...patch} : item)} : meal)); }
   function removeSubstitution(mealId:string,index:number) { setMeals(current => current.map(meal => meal.id === mealId ? {...meal,substitutions:meal.substitutions.filter((_,i) => i !== index)} : meal)); }
   async function save(status=plan?.status || 'DRAFT') {
     if (!id) return;
     if (status === 'PUBLISHED' && !window.confirm('Publicar este plano como vigente? Se o paciente já tiver outro plano publicado, ele será movido para o histórico.')) return;
     setSaving(true); setError('');
     try {
-      await api(`/api/nutrition/plans/${id}`, { method:'PATCH', body:JSON.stringify({ title,objective,content:{meals},status }) });
+      if(status==='PUBLISHED'&&plan?.sourcePlan&&!revisionReason.trim()){setError('Registre o motivo da alteração antes de publicar uma nova versão.');setSaving(false);return}
+      await api(`/api/nutrition/plans/${id}`, { method:'PATCH', body:JSON.stringify({ title,objective,content:{meals,patientVisibility,revisionReason:revisionReason.trim(),targets,sourcePlanId:plan?.sourcePlan?.id||plan?.content.sourcePlanId||null},status }) });
       await load();
       setNotice(status === 'PUBLISHED' ? 'Plano publicado com sucesso.' : 'Rascunho salvo com segurança.');
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o plano.'); }
@@ -150,7 +163,8 @@ export function MealPlanEditorPage() {
     {error && <div className="form-error">{error}</div>}{notice && <div className="form-success"><CheckCircle2 size={17}/>{notice}</div>}
     <div className="plan-editor-layout">
       <main>
-        <section className="panel plan-objective"><label>Objetivo e apresentação<textarea value={objective} onChange={e=>setObjective(e.target.value)} rows={3}/></label></section>
+        <section className="panel plan-objective"><label>Objetivo e apresentação<textarea value={objective} onChange={e=>setObjective(e.target.value)} rows={3}/></label>{plan.sourcePlan&&<label>Motivo clínico da alteração<textarea value={revisionReason} onChange={e=>setRevisionReason(e.target.value)} rows={2} placeholder="Ex.: ajuste de proteína após evolução e mudança na rotina de treino"/></label>}<div className="plan-control-grid"><label>Informação nutricional no portal<select value={patientVisibility} onChange={e=>setPatientVisibility(e.target.value as typeof patientVisibility)}><option value="FULL">Completa: kcal e macronutrientes</option><option value="SUMMARY">Resumida: apenas orientações</option><option value="HIDDEN">Oculta: sem números</option></select></label><label>Tipo de meta<select value={targets.mode} onChange={e=>setTargets({...targets,mode:e.target.value as Targets['mode']})}><option value="RANGE">Faixa terapêutica</option><option value="EXACT">Meta de referência</option></select></label><label>Energia mínima<input type="number" min="0" value={targets.kcalMin} onChange={e=>setTargets({...targets,kcalMin:e.target.value})} placeholder="kcal"/></label><label>Energia máxima<input type="number" min="0" value={targets.kcalMax} onChange={e=>setTargets({...targets,kcalMax:e.target.value})} placeholder="kcal"/></label><label>Proteína mínima<input type="number" min="0" value={targets.proteinMin} onChange={e=>setTargets({...targets,proteinMin:e.target.value})} placeholder="g"/></label><label>Proteína máxima<input type="number" min="0" value={targets.proteinMax} onChange={e=>setTargets({...targets,proteinMax:e.target.value})} placeholder="g"/></label></div></section>
+        {plan.sourcePlan&&<section className="panel plan-comparison"><div><span className="eyebrow">Comparação com o plano vigente</span><h3>{plan.sourcePlan.title}</h3></div><div className="comparison-macros"><span>Energia<strong>{signed(totals.kcal-sourceTotals.kcal)} kcal</strong><small>{sourceTotals.kcal.toFixed(0)} → {totals.kcal.toFixed(0)}</small></span><span>Proteína<strong>{signed(totals.protein-sourceTotals.protein)} g</strong><small>{sourceTotals.protein.toFixed(1)} → {totals.protein.toFixed(1)}</small></span><span>Carboidrato<strong>{signed(totals.carbohydrate-sourceTotals.carbohydrate)} g</strong><small>{sourceTotals.carbohydrate.toFixed(1)} → {totals.carbohydrate.toFixed(1)}</small></span><span>Gordura<strong>{signed(totals.fat-sourceTotals.fat)} g</strong><small>{sourceTotals.fat.toFixed(1)} → {totals.fat.toFixed(1)}</small></span></div></section>}
         {meals.map((meal,index) => { const total=mealTotals(meal); return <section className="panel meal-editor" key={meal.id}>
           <header><span>{index+1}</span><input value={meal.title} onChange={e=>updateMeal(meal.id,{title:e.target.value})}/><input type="time" value={meal.time} onChange={e=>updateMeal(meal.id,{time:e.target.value})}/><button className="icon-button" onClick={()=>setMeals(current=>current.filter(item=>item.id!==meal.id))}><Trash2 size={17}/></button></header>
           <div className="meal-items">{meal.items.map(item => <article key={item.id}>
@@ -160,7 +174,7 @@ export function MealPlanEditorPage() {
             <button className="icon-button" onClick={()=>updateMeal(meal.id,{items:meal.items.filter(current=>current.id!==item.id)})}><X size={16}/></button>
           </article>)}</div>
           <button className="add-food-button" onClick={()=>{setTargetMeal(meal.id);setCatalogTab('foods')}}><Plus size={16}/> Adicionar alimento ou receita</button>
-          <div className="meal-substitutions"><header><strong>Substituições</strong><button type="button" onClick={()=>addSubstitution(meal.id)}><Plus size={14}/> Adicionar opção</button></header>{meal.substitutions.map((item,i)=><label key={i}><span>{i+1}</span><input value={item} onChange={e=>updateSubstitution(meal.id,i,e.target.value)} placeholder="Ex.: trocar arroz por batata na quantidade orientada"/><button className="icon-button" onClick={()=>removeSubstitution(meal.id,i)}><X size={15}/></button></label>)}</div>
+          <div className="meal-substitutions"><header><strong>Substituições equivalentes</strong><button type="button" onClick={()=>addSubstitution(meal.id)}><Plus size={14}/> Adicionar opção</button></header>{meal.substitutions.map((item,i)=><label key={i}><span>{i+1}</span><input value={item.option} onChange={e=>updateSubstitution(meal.id,i,{option:e.target.value})} placeholder="Alternativa: batata inglesa cozida"/><input value={item.equivalence} onChange={e=>updateSubstitution(meal.id,i,{equivalence:e.target.value})} placeholder="Equivalência: 130 g, mantém carboidrato"/><button className="icon-button" onClick={()=>removeSubstitution(meal.id,i)}><X size={15}/></button></label>)}</div>
           <footer><input value={meal.notes} onChange={e=>updateMeal(meal.id,{notes:e.target.value})} placeholder="Observações da refeição"/><div><strong>{total.kcal.toFixed(0)} kcal</strong><span>P {total.protein.toFixed(1)}g · C {total.carbohydrate.toFixed(1)}g · G {total.fat.toFixed(1)}g</span></div></footer>
         </section>})}
         <button className="new-meal-button" onClick={()=>setMeals(current=>[...current,{id:uid(),title:'Nova refeição',time:'',notes:'',substitutions:[],items:[]}])}><Plus size={18}/> Adicionar refeição</button>
