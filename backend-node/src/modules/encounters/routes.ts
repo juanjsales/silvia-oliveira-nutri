@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { ensureAppointmentCharge } from '../../shared/finance.js';
+import { missingClinicalCore } from '../../shared/clinical-completeness.js';
 
 const sectionKey = z.enum(['context','anamnesis','recall24h','followup','assessment','exams','conduct','plan','supplements','notes']);
 const clinicalValue:z.ZodType<unknown>=z.lazy(()=>z.union([z.string().max(10000),z.number(),z.boolean(),z.null(),z.array(clinicalValue).max(100),z.record(z.string().max(80),clinicalValue)]));
@@ -89,10 +90,9 @@ export async function encounterRoutes(app: FastifyInstance) {
 
   app.post('/:id/finalize', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const saved = await app.db.query<{ count: string }>('SELECT count(*)::text AS count FROM clinical_sections WHERE encounter_id=$1', [id]);
-    if (Number(saved.rows[0]?.count ?? 0) < 2) {
-      return reply.code(400).send({ error: 'Salve ao menos duas etapas antes de finalizar o atendimento.' });
-    }
+    const saved = await app.db.query<{section_key:string}>('SELECT section_key FROM clinical_sections WHERE encounter_id=$1', [id]);
+    const missing=missingClinicalCore(saved.rows.map(row=>row.section_key));
+    if(missing.length)return reply.code(400).send({error:`Complete o registro clínico antes de finalizar: ${missing.join(', ')}.`});
     let financeCreated = false;
     const client=await app.db.connect();try{await client.query('BEGIN');const result=await client.query<{appointment_id:string|null}>(`UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id`,[id]);if(!result.rows[0]){await client.query('ROLLBACK');return reply.code(409).send({error:'Atendimento não encontrado ou já finalizado.'})}if(result.rows[0].appointment_id){await client.query("UPDATE appointments SET status='COMPLETED',updated_at=now() WHERE id=$1",[result.rows[0].appointment_id]);const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);financeCreated=finance.created}await audit(client,'ENCOUNTER_COMPLETED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{financeCreated}});await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
     return { data: { id, status: 'COMPLETED', financeCreated } };
