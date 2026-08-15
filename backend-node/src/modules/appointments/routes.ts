@@ -14,7 +14,8 @@ const appointmentSchema = z.object({
 
 const appointmentSelect = `SELECT a.id, a.patient_id AS "patientId", p.name AS "patientName", p.whatsapp,
   a.appointment_date AS date, to_char(a.appointment_time, 'HH24:MI') AS time,
-  a.duration_minutes AS "durationMinutes", a.appointment_type || CASE a.patient_response WHEN 'CONFIRMED' THEN ' · Paciente confirmou' WHEN 'RESCHEDULE_REQUESTED' THEN ' · Reagendamento solicitado' ELSE ' · Aguardando confirmação do paciente' END AS type, a.price::float8 AS price,
+  a.duration_minutes AS "durationMinutes", a.appointment_type AS type, a.price::float8 AS price,
+  a.patient_response AS "patientResponse", a.patient_response_note AS "patientResponseNote",
   a.status, a.notes, a.meeting_url AS "meetingUrl", a.created_at AS "createdAt"
   FROM appointments a JOIN patients p ON p.id = a.patient_id`;
 
@@ -53,11 +54,15 @@ export async function appointmentRoutes(app: FastifyInstance) {
     if (!current.rows[0]) return reply.code(404).send({ error: 'Agendamento não encontrado.' });
     const a = current.rows[0];
     let financeCreated = false;
+    const scheduleChanged=body.date!==undefined||body.time!==undefined||body.durationMinutes!==undefined;
     const client=await app.db.connect();try{await client.query('BEGIN');await client.query(`UPDATE appointments SET patient_id=$1, appointment_date=$2, appointment_time=$3,
-      duration_minutes=$4, appointment_type=$5, price=$6, status=$7, notes=$8, meeting_url=$9, updated_at=now() WHERE id=$10`,
+      duration_minutes=$4, appointment_type=$5, price=$6, status=$7, notes=$8, meeting_url=$9,
+      patient_response=CASE WHEN $11 THEN 'PENDING' ELSE patient_response END,
+      patient_response_at=CASE WHEN $11 THEN NULL ELSE patient_response_at END,
+      patient_response_note=CASE WHEN $11 THEN NULL ELSE patient_response_note END, updated_at=now() WHERE id=$10`,
       [body.patientId ?? a.patient_id, body.date ?? a.appointment_date, body.time ?? a.appointment_time,
        body.durationMinutes ?? a.duration_minutes, body.type ?? a.appointment_type, body.price ?? a.price,
-       body.status ?? a.status, body.notes ?? a.notes, body.meetingUrl ?? a.meeting_url, id]);if(body.status==='COMPLETED'){const finance=await ensureAppointmentCharge(client,id,request.auth!.userId);financeCreated=finance.created}await audit(client,'APPOINTMENT_UPDATED','appointment',{actorUserId:request.auth!.userId,entityId:id,metadata:{fields:Object.keys(body),financeCreated}});await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
+       body.status ?? a.status, body.notes ?? a.notes, body.meetingUrl ?? a.meeting_url, id,scheduleChanged]);if(scheduleChanged||body.status==='CANCELLED'){await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind) SELECT patient_id,CASE WHEN status='CANCELLED' THEN 'Consulta cancelada' ELSE 'Novo horário da consulta' END,CASE WHEN status='CANCELLED' THEN 'Sua consulta foi cancelada pelo consultório.' ELSE 'Sua consulta foi atualizada para '||to_char(appointment_date,'DD/MM/YYYY')||' às '||to_char(appointment_time,'HH24:MI')||'. Confirme o novo horário no portal.' END,'APPOINTMENT' FROM appointments WHERE id=$1`,[id])}if(body.status==='COMPLETED'){const finance=await ensureAppointmentCharge(client,id,request.auth!.userId);financeCreated=finance.created}await audit(client,'APPOINTMENT_UPDATED','appointment',{actorUserId:request.auth!.userId,entityId:id,metadata:{fields:Object.keys(body),financeCreated,scheduleChanged}});await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
     return { data: { id, financeCreated } };
   });
 }
