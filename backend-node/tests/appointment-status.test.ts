@@ -1,0 +1,4 @@
+import test from'node:test';import assert from'node:assert/strict';import{canTransitionAppointment}from'../src/shared/appointment-status.js';
+test('completed appointments are terminal',()=>{assert.equal(canTransitionAppointment('COMPLETED','CONFIRMED'),false);assert.equal(canTransitionAppointment('COMPLETED','CANCELLED'),false)});
+test('an in-progress appointment can only be completed',()=>{assert.equal(canTransitionAppointment('IN_PROGRESS','COMPLETED'),true);assert.equal(canTransitionAppointment('IN_PROGRESS','CANCELLED'),false);assert.equal(canTransitionAppointment('IN_PROGRESS','WAITING'),false)});
+test('cancelled or missed appointments require a new schedule to reopen',()=>{assert.equal(canTransitionAppointment('CANCELLED','CONFIRMED'),false);assert.equal(canTransitionAppointment('CANCELLED','CONFIRMED',true),true);assert.equal(canTransitionAppointment('NO_SHOW','WAITING',true),true)});

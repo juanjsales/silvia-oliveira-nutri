@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { sendAppointmentEmail, sendAppointmentUpdateEmail } from '../../integrations/email.js';
 import { ensureAppointmentCharge } from '../../shared/finance.js';
+import { canTransitionAppointment, type AppointmentStatus } from '../../shared/appointment-status.js';
 
 const statusSchema = z.enum(['CONFIRMED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW']);
 const appointmentSchema = z.object({
@@ -32,6 +33,7 @@ export async function appointmentRoutes(app: FastifyInstance) {
 
   app.post('/', async (request, reply) => {
     const body = appointmentSchema.parse(request.body);
+    if(!['CONFIRMED','WAITING'].includes(body.status))return reply.code(400).send({error:'Uma nova consulta deve iniciar como confirmada ou aguardando.'});
     const patient = await app.db.query<{id:string;name:string;email:string|null}>('SELECT id,name,email FROM patients WHERE id=$1 AND active=true', [body.patientId]);
     if (!patient.rows[0]) return reply.code(404).send({ error: 'Paciente não encontrado ou inativo.' });
     const client=await app.db.connect();let id:string;try{await client.query('BEGIN');if(body.requestId){const requestResult=await client.query<{patient_id:string}>(`SELECT patient_id FROM appointment_requests WHERE id=$1 AND status='PENDING' FOR UPDATE`,[body.requestId]);if(!requestResult.rows[0]||requestResult.rows[0].patient_id!==body.patientId){await client.query('ROLLBACK');return reply.code(409).send({error:'Solicitação não encontrada, já processada ou vinculada a outro paciente.'})}}
@@ -55,6 +57,9 @@ export async function appointmentRoutes(app: FastifyInstance) {
     const a = current.rows[0];
     let financeCreated = false;
     const scheduleChanged=body.date!==undefined||body.time!==undefined||body.durationMinutes!==undefined;
+    const currentStatus=a.status as AppointmentStatus;const nextStatus=(body.status??currentStatus) as AppointmentStatus;
+    if(!canTransitionAppointment(currentStatus,nextStatus,scheduleChanged))return reply.code(409).send({error:'Alteração de status incompatível com o estado atual da consulta.'});
+    if((nextStatus==='COMPLETED'||nextStatus==='CANCELLED')&&nextStatus!==currentStatus){const encounter=await app.db.query<{status:string}>('SELECT status FROM clinical_encounters WHERE appointment_id=$1',[id]);if(encounter.rows[0]?.status==='IN_PROGRESS')return reply.code(409).send({error:'Existe um atendimento em andamento. Finalize-o pela sala de atendimento antes de alterar a consulta.'})}
     const client=await app.db.connect();try{await client.query('BEGIN');await client.query(`UPDATE appointments SET patient_id=$1, appointment_date=$2, appointment_time=$3,
       duration_minutes=$4, appointment_type=$5, price=$6, status=$7, notes=$8, meeting_url=$9,
       patient_response=CASE WHEN $11 THEN 'PENDING' ELSE patient_response END,
