@@ -14,7 +14,7 @@ const appointmentSchema = z.object({
 
 const appointmentSelect = `SELECT a.id, a.patient_id AS "patientId", p.name AS "patientName", p.whatsapp,
   a.appointment_date AS date, to_char(a.appointment_time, 'HH24:MI') AS time,
-  a.duration_minutes AS "durationMinutes", a.appointment_type AS type, a.price::float8 AS price,
+  a.duration_minutes AS "durationMinutes", a.appointment_type || CASE a.patient_response WHEN 'CONFIRMED' THEN ' · Paciente confirmou' WHEN 'RESCHEDULE_REQUESTED' THEN ' · Reagendamento solicitado' ELSE ' · Aguardando confirmação do paciente' END AS type, a.price::float8 AS price,
   a.status, a.notes, a.meeting_url AS "meetingUrl", a.created_at AS "createdAt"
   FROM appointments a JOIN patients p ON p.id = a.patient_id`;
 

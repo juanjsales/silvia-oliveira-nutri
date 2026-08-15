@@ -23,6 +23,7 @@ import { cronRoutes } from './modules/cron/routes.js';
 import { monitoringRoutes } from './modules/monitoring/routes.js';
 import { recordIncident } from './shared/incidents.js';
 import { privacyRoutes } from './modules/privacy/routes.js';
+import { patientAppointmentRoutes } from './modules/patient-appointments/routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
@@ -77,6 +78,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(cronRoutes, { prefix: '/api/cron' });
   await app.register(monitoringRoutes, { prefix: '/api/monitoring' });
   await app.register(privacyRoutes, { prefix: '/api/privacy' });
+  await app.register(patientAppointmentRoutes, { prefix: '/api/portal/appointments' });
 
   return app;
 }

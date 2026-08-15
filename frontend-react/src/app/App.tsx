@@ -25,6 +25,7 @@ import { PasswordChangePage } from '../pages/PasswordChangePage';
 import { PatientVideoPage } from '../pages/PatientVideoPage';
 import { HomePage } from '../pages/HomePage';
 import { PrivacyPage } from '../pages/PrivacyPage';
+import { PatientAppointmentsPage } from '../pages/PatientAppointmentsPage';
 
 export function App() {
   return <Routes>
@@ -33,7 +34,7 @@ export function App() {
     <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
     <Route path="/redefinir-senha" element={<PasswordResetPage />} />
     <Route element={<ProtectedRoute />}>
-      <Route element={<RoleRoute role="PATIENT"/>}><Route path="portal" element={<><PatientPortalPage/><Link className="portal-privacy-shortcut" to="/portal/privacidade">Privacidade e meus dados</Link></>}/><Route path="portal/privacidade" element={<PrivacyPage/>}/><Route path="portal/alterar-senha" element={<PasswordChangePage/>}/><Route path="portal/video/:id" element={<PatientVideoPage/>}/><Route path="portal/plano/:id" element={<PatientPlanPage/>}/><Route path="portal/documento/:id" element={<PatientDocumentPage/>}/></Route>
+      <Route element={<RoleRoute role="PATIENT"/>}><Route path="portal" element={<><PatientPortalPage/><div className="portal-floating-actions"><Link to="/portal/consultas">Confirmar consultas</Link><Link to="/portal/privacidade">Privacidade e meus dados</Link></div></>}/><Route path="portal/consultas" element={<PatientAppointmentsPage/>}/><Route path="portal/privacidade" element={<PrivacyPage/>}/><Route path="portal/alterar-senha" element={<PasswordChangePage/>}/><Route path="portal/video/:id" element={<PatientVideoPage/>}/><Route path="portal/plano/:id" element={<PatientPlanPage/>}/><Route path="portal/documento/:id" element={<PatientDocumentPage/>}/></Route>
       <Route element={<RoleRoute role="ADMIN"/>}>
       <Route path="embed/planos/:id" element={<div className="embedded-route"><MealPlanEditorPage /></div>} />
       <Route path="documentos/plano/:id" element={<PlanDocumentPage />} />
