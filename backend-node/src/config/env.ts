@@ -15,6 +15,8 @@ const envSchema = z.object({
   SESSION_TTL_HOURS: z.coerce.number().int().positive().max(168).default(6),
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().max(120).default(30),
   APP_URL: z.string().url(),
+  VIDEO_PROVIDER: z.enum(['jitsi','daily']).optional(),
+  DAILY_API_KEY: z.string().min(20).optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().positive().default(587),
   SMTP_SECURE: z.preprocess(v => v === true || v === 'true', z.boolean()).default(false),
