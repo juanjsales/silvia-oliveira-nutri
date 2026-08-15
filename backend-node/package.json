@@ -13,6 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test tests/**/*.test.ts",
     "db:migrate": "tsx src/database/migrate.ts",
+    "db:status": "tsx src/database/status.ts",
     "admin:create": "tsx src/scripts/create-admin.ts",
     "catalogs:import": "tsx src/scripts/import-legacy-catalogs.ts"
   },

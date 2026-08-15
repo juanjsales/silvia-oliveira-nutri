@@ -18,6 +18,7 @@ import { financeRoutes } from './modules/finance/routes.js';
 import { documentRoutes } from './modules/documents/routes.js';
 import { videoRoutes } from './modules/video/routes.js';
 import { smtpSettingsRoutes } from './modules/settings/smtp-routes.js';
+import { schemaStatus } from './database/schema-version.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
@@ -42,9 +43,13 @@ export async function buildApp(env: AppEnv, db: Database) {
     app.log.error(error);return reply.code(500).send({ error: 'Erro interno do servidor.' });
   });
 
-  app.get('/health', async () => {
+  app.get('/health', async (_request, reply) => {
     await db.query('SELECT 1');
-    return { status: 'ok' };
+    const schema = await schemaStatus(db);
+    if (!schema.ready) {
+      return reply.code(503).send({ status: 'degraded', database: 'connected', schema });
+    }
+    return { status: 'ok', database: 'connected', schema };
   });
   app.get('/api/settings/public', async () => ({
     data: (await db.query(`SELECT clinic_name AS "clinicName", professional_name AS "professionalName",

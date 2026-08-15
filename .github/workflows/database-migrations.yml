@@ -1,0 +1,38 @@
+name: Database migrations
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-database-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check current schema
+        continue-on-error: true
+        run: npm --workspace backend-node run db:status
+      - name: Apply pending migrations
+        run: npm --workspace backend-node run db:migrate
+      - name: Verify schema
+        run: npm --workspace backend-node run db:status
+    env:
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+      FRONTEND_ORIGIN: https://silvia-oliveira-nutri-v2.vercel.app
+      APP_URL: https://silvia-oliveira-nutri-v2.vercel.app
+      SMTP_FROM: migration@localhost.invalid
