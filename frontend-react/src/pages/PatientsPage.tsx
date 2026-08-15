@@ -54,7 +54,6 @@ export function PatientsPage() {
   const [objectiveChoice, setObjectiveChoice] = useState("");
   const [saving, setSaving] = useState(false);
   const [accessPatient, setAccessPatient] = useState<Patient | null>(null);
-  const [password, setPassword] = useState("");
   const [accessMessage, setAccessMessage] = useState("");
   const load = useCallback(async (term = "") => {
     setLoading(true);
@@ -121,7 +120,6 @@ export function PatientsPage() {
   }
   function openAccess(p: Patient) {
     setAccessPatient(p);
-    setPassword("");
     setAccessMessage("");
   }
   async function provision(e: FormEvent) {
@@ -134,14 +132,13 @@ export function PatientsPage() {
         data: { emailSent: boolean; warning?: string | null };
       }>(`/api/patients/${accessPatient.id}/access`, {
         method: "POST",
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({}),
       });
       setAccessMessage(
         result.data.emailSent
-          ? `Acesso criado e enviado para ${accessPatient.email}.`
-          : result.data.warning || "Acesso criado sem envio de e-mail.",
+          ? `Convite seguro enviado para ${accessPatient.email}.`
+          : result.data.warning || "Não foi possível enviar o convite.",
       );
-      setPassword("");
       await load(query);
     } catch (c) {
       setAccessMessage(
@@ -244,18 +241,7 @@ export function PatientsPage() {
                   {accessPatient.email || "e-mail não cadastrado"}
                 </strong>
               </p>
-              <label>
-                Senha temporária
-                <input
-                  type="password"
-                  minLength={12}
-                  maxLength={128}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo de 12 caracteres"
-                  required
-                />
-              </label>
+              <div className="inline-guidance"><KeyRound size={18}/><span>O paciente receberá um link temporário para escolher a própria senha. A senha atual não será alterada se o e-mail falhar.</span></div>
               {accessMessage && (
                 <div
                   className={
@@ -282,8 +268,8 @@ export function PatientsPage() {
                   {saving
                     ? "Salvando..."
                     : accessPatient.hasPortalAccess
-                      ? "Redefinir senha"
-                      : "Criar acesso"}
+                      ? "Enviar redefinição"
+                      : "Enviar convite"}
                 </button>
               </div>
             </form>

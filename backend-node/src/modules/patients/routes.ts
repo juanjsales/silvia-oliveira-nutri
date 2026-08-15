@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
-import { hashPassword } from '../../shared/crypto.js';
-import { sendPatientAccessEmail } from '../../integrations/email.js';
+import { createOpaqueToken, hashPassword, hashToken } from '../../shared/crypto.js';
+import { sendPatientInvitationEmail } from '../../integrations/email.js';
 
 const patientSchema = z.object({
   name: z.string().trim().min(2).max(160),
@@ -21,7 +21,7 @@ export async function patientRoutes(app: FastifyInstance) {
     const term = query.q ? `%${query.q.toLowerCase()}%` : null;
     const result = await app.db.query(
       `SELECT p.id, p.cpf, p.name, COALESCE(u.email, p.email) AS email, p.whatsapp, p.birth_date AS "birthDate",
-              p.objective, p.active, p.created_at AS "createdAt", (p.user_id IS NOT NULL) AS "hasPortalAccess"
+              p.objective, p.active, p.created_at AS "createdAt", (p.user_id IS NOT NULL AND u.active) AS "hasPortalAccess"
        FROM patients p LEFT JOIN users u ON u.id = p.user_id
        WHERE ($1::text IS NULL OR lower(p.name) LIKE $1 OR p.cpf LIKE $1)
        ORDER BY p.name LIMIT 100`,
@@ -69,12 +69,12 @@ export async function patientRoutes(app: FastifyInstance) {
 
   app.post('/:id/access', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const { password } = z.object({ password: z.string().min(12).max(128) }).parse(request.body);
     const patient = await app.db.query<{email:string|null;user_id:string|null;name:string}>('SELECT email,user_id,name FROM patients WHERE id=$1 AND active=true',[id]);
     const row=patient.rows[0];if(!row)return reply.code(404).send({error:'Paciente não encontrado.'});if(!row.email)return reply.code(400).send({error:'Cadastre o e-mail do paciente antes de criar o acesso.'});
-    const passwordHash=await hashPassword(password);const client=await app.db.connect();try{await client.query('BEGIN');let userId=row.user_id;if(userId)await client.query(`UPDATE users SET email=$1,password_hash=$2,active=true,updated_at=now() WHERE id=$3`,[row.email.toLowerCase(),passwordHash,userId]);else{const created=await client.query<{id:string}>(`INSERT INTO users(email,password_hash,role) VALUES($1,$2,'PATIENT') RETURNING id`,[row.email.toLowerCase(),passwordHash]);userId=created.rows[0]!.id;await client.query('UPDATE patients SET user_id=$1,updated_at=now() WHERE id=$2',[userId,id])}await client.query('UPDATE sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL',[userId]);await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
-    let emailSent=false;try{emailSent=await sendPatientAccessEmail(app.env,app.db,{to:row.email,name:row.name,temporaryPassword:password})}catch(error){app.log.error({err:error,patientId:id},'Falha ao enviar acesso do paciente')}
-    await audit(app.db,'PATIENT_ACCESS_PROVISIONED','patient',{actorUserId:request.auth!.userId,entityId:id,metadata:{emailSent}});return{data:{id,email:row.email,emailSent,warning:emailSent?null:'Acesso criado, mas o e-mail não foi enviado. Verifique a configuração SMTP.'}};
+    const rawToken=createOpaqueToken();const expiresAt=new Date(Date.now()+app.env.PASSWORD_RESET_TTL_MINUTES*60_000);const client=await app.db.connect();let userId=row.user_id;let createdUser=false;
+    try{await client.query('BEGIN');if(userId){await client.query('UPDATE users SET email=$1,updated_at=now() WHERE id=$2',[row.email.toLowerCase(),userId])}else{const placeholderHash=await hashPassword(createOpaqueToken());const created=await client.query<{id:string}>(`INSERT INTO users(email,password_hash,role,active) VALUES($1,$2,'PATIENT',false) RETURNING id`,[row.email.toLowerCase(),placeholderHash]);userId=created.rows[0]!.id;createdUser=true;await client.query('UPDATE patients SET user_id=$1,updated_at=now() WHERE id=$2',[userId,id])}await client.query('DELETE FROM password_reset_tokens WHERE user_id=$1 AND used_at IS NULL',[userId]);await client.query('INSERT INTO password_reset_tokens(user_id,token_hash,expires_at) VALUES($1,$2,$3)',[userId,hashToken(rawToken),expiresAt]);await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
+    try{const emailSent=await sendPatientInvitationEmail(app.env,app.db,{to:row.email,name:row.name,token:rawToken});if(!emailSent)throw new Error('SMTP não configurado ou desativado.')}catch(error){app.log.error({err:error,patientId:id},'Falha ao enviar convite do paciente');const cleanup=await app.db.connect();try{await cleanup.query('BEGIN');await cleanup.query('DELETE FROM password_reset_tokens WHERE user_id=$1 AND token_hash=$2',[userId,hashToken(rawToken)]);if(createdUser){await cleanup.query('UPDATE patients SET user_id=NULL,updated_at=now() WHERE id=$1 AND user_id=$2',[id,userId]);await cleanup.query('DELETE FROM users WHERE id=$1 AND active=false',[userId])}await cleanup.query('COMMIT')}catch(cleanupError){await cleanup.query('ROLLBACK');app.log.error({err:cleanupError,patientId:id},'Falha ao desfazer convite não enviado')}finally{cleanup.release()}return reply.code(502).send({error:'O convite não foi enviado. Nenhuma senha foi alterada; verifique o SMTP e tente novamente.'})}
+    await audit(app.db,'PATIENT_ACCESS_INVITED','patient',{actorUserId:request.auth!.userId,entityId:id,metadata:{emailSent:true}});return{data:{id,email:row.email,emailSent:true}};
   });
 
   app.delete('/:id', async (request, reply) => {

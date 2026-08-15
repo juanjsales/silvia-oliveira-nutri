@@ -94,7 +94,7 @@ export async function authRoutes(app: FastifyInstance) {
         await client.query('ROLLBACK');
         return reply.code(400).send({ error: 'Link inválido ou expirado.' });
       }
-      await client.query('UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2', [await hashPassword(body.password), reset.user_id]);
+      await client.query('UPDATE users SET password_hash = $1, active=true, updated_at = now() WHERE id = $2', [await hashPassword(body.password), reset.user_id]);
       await client.query('UPDATE password_reset_tokens SET used_at = now() WHERE id = $1', [reset.id]);
       await client.query('UPDATE sessions SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL', [reset.user_id]);
       await client.query('COMMIT');

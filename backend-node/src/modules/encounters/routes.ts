@@ -92,16 +92,8 @@ export async function encounterRoutes(app: FastifyInstance) {
     if (Number(saved.rows[0]?.count ?? 0) < 2) {
       return reply.code(400).send({ error: 'Salve ao menos duas etapas antes de finalizar o atendimento.' });
     }
-    const result = await app.db.query<{appointment_id:string|null}>(`UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now()
-      WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id`, [id]);
-    if (!result.rows[0]) return reply.code(409).send({ error: 'Atendimento não encontrado ou já finalizado.' });
     let financeCreated = false;
-    if (result.rows[0].appointment_id) {
-      await app.db.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [result.rows[0].appointment_id]);
-      const finance = await ensureAppointmentCharge(app.db, result.rows[0].appointment_id, request.auth!.userId);
-      financeCreated = finance.created;
-    }
-    await audit(app.db, 'ENCOUNTER_COMPLETED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id });
+    const client=await app.db.connect();try{await client.query('BEGIN');const result=await client.query<{appointment_id:string|null}>(`UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id`,[id]);if(!result.rows[0]){await client.query('ROLLBACK');return reply.code(409).send({error:'Atendimento não encontrado ou já finalizado.'})}if(result.rows[0].appointment_id){await client.query("UPDATE appointments SET status='COMPLETED',updated_at=now() WHERE id=$1",[result.rows[0].appointment_id]);const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);financeCreated=finance.created}await audit(client,'ENCOUNTER_COMPLETED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{financeCreated}});await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
     return { data: { id, status: 'COMPLETED', financeCreated } };
   });
 }

@@ -1,7 +1,7 @@
-import type { Database } from '../database/pool.js';
+import type { Pool, PoolClient } from 'pg';
 
 export async function audit(
-  db: Database,
+  db: Pick<Pool | PoolClient, 'query'>,
   action: string,
   entityType: string,
   options: { actorUserId?: string; entityId?: string; metadata?: Record<string, unknown> } = {}

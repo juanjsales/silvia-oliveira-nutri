@@ -52,17 +52,12 @@ export async function appointmentRoutes(app: FastifyInstance) {
     const current = await app.db.query<Record<string, unknown>>('SELECT * FROM appointments WHERE id=$1', [id]);
     if (!current.rows[0]) return reply.code(404).send({ error: 'Agendamento não encontrado.' });
     const a = current.rows[0];
-    await app.db.query(`UPDATE appointments SET patient_id=$1, appointment_date=$2, appointment_time=$3,
+    let financeCreated = false;
+    const client=await app.db.connect();try{await client.query('BEGIN');await client.query(`UPDATE appointments SET patient_id=$1, appointment_date=$2, appointment_time=$3,
       duration_minutes=$4, appointment_type=$5, price=$6, status=$7, notes=$8, meeting_url=$9, updated_at=now() WHERE id=$10`,
       [body.patientId ?? a.patient_id, body.date ?? a.appointment_date, body.time ?? a.appointment_time,
        body.durationMinutes ?? a.duration_minutes, body.type ?? a.appointment_type, body.price ?? a.price,
-       body.status ?? a.status, body.notes ?? a.notes, body.meetingUrl ?? a.meeting_url, id]);
-    let financeCreated = false;
-    if (body.status === 'COMPLETED') {
-      const finance = await ensureAppointmentCharge(app.db, id, request.auth!.userId);
-      financeCreated = finance.created;
-    }
-    await audit(app.db, 'APPOINTMENT_UPDATED', 'appointment', { actorUserId: request.auth!.userId, entityId: id, metadata: { fields: Object.keys(body) } });
+       body.status ?? a.status, body.notes ?? a.notes, body.meetingUrl ?? a.meeting_url, id]);if(body.status==='COMPLETED'){const finance=await ensureAppointmentCharge(client,id,request.auth!.userId);financeCreated=finance.created}await audit(client,'APPOINTMENT_UPDATED','appointment',{actorUserId:request.auth!.userId,entityId:id,metadata:{fields:Object.keys(body),financeCreated}});await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
     return { data: { id, financeCreated } };
   });
 }
