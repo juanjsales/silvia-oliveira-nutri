@@ -19,6 +19,7 @@ import { documentRoutes } from './modules/documents/routes.js';
 import { videoRoutes } from './modules/video/routes.js';
 import { smtpSettingsRoutes } from './modules/settings/smtp-routes.js';
 import { schemaStatus } from './database/schema-version.js';
+import { cronRoutes } from './modules/cron/routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
@@ -67,6 +68,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(financeRoutes, { prefix: '/api/finance' });
   await app.register(documentRoutes, { prefix: '/api/documents' });
   await app.register(videoRoutes, { prefix: '/api/video' });
+  await app.register(cronRoutes, { prefix: '/api/cron' });
 
   return app;
 }

@@ -26,7 +26,8 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().min(1),
-  APP_ENCRYPTION_KEY: z.string().min(32).optional()
+  APP_ENCRYPTION_KEY: z.string().min(32).optional(),
+  CRON_SECRET: z.string().min(32).optional()
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
