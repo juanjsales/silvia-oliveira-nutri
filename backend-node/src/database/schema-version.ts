@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '022_prevent_appointment_overlap.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '023_clinical_versions_email_outbox.sql';
 
 export async function schemaStatus(db: Database) {
   try {

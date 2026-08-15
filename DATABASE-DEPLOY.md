@@ -18,4 +18,20 @@ Proteja o environment com aprovação manual para impedir alterações acidentai
 3. Faça ou promova o deploy na Vercel.
 4. Confirme que `/health` responde com `status: ok`.
 
+## Gate final de produção
+
+No environment `production` do GitHub, configure também:
+
+- `SMOKE_ADMIN_IDENTIFIER`: e-mail de uma conta profissional exclusiva para homologação.
+- `SMOKE_ADMIN_PASSWORD`: senha dessa conta de homologação.
+
+Antes de enviar uma versão, execute localmente:
+
+```powershell
+npm run release:preflight
+npm run check
+```
+
+Depois do deploy, execute **Actions → Production smoke test** com a URL promovida. O smoke é estrito: credenciais ausentes reprovam a homologação, em vez de ignorar login, agenda, pacientes e financeiro.
+
 O workflow é manual deliberadamente: migrations clínicas não devem executar em paralelo durante builds ou cold starts da Vercel.

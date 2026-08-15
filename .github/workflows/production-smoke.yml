@@ -8,6 +8,11 @@ on:
         default: https://silvia-oliveira-nutri-v2.vercel.app
 permissions:
   contents: read
+
+concurrency:
+  group: production-smoke
+  cancel-in-progress: false
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -18,8 +23,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Validate production inputs
+        run: node scripts/release-preflight.mjs
+        env:
+          RELEASE_REQUIRE_ENV: "true"
+          SMOKE_BASE_URL: ${{ inputs.base_url }}
+          SMOKE_ADMIN_IDENTIFIER: ${{ secrets.SMOKE_ADMIN_IDENTIFIER }}
+          SMOKE_ADMIN_PASSWORD: ${{ secrets.SMOKE_ADMIN_PASSWORD }}
       - run: node scripts/production-smoke.mjs
         env:
           SMOKE_BASE_URL: ${{ inputs.base_url }}
           SMOKE_ADMIN_IDENTIFIER: ${{ secrets.SMOKE_ADMIN_IDENTIFIER }}
           SMOKE_ADMIN_PASSWORD: ${{ secrets.SMOKE_ADMIN_PASSWORD }}
+          STRICT_SMOKE_AUTH: "true"
+          SMOKE_TIMEOUT_MS: "15000"
