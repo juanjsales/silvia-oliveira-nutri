@@ -1,0 +1,31 @@
+name: Quality gate
+
+on:
+  push:
+    branches:
+      - main
+      - codex/evolucao-seguranca-arquitetura
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Tests, types and production builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Validate Vercel configuration
+        run: node -e "JSON.parse(require('node:fs').readFileSync('vercel.json','utf8'))"
