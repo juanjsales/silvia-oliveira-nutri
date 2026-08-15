@@ -20,6 +20,16 @@ export async function sendAppointmentEmail(env:AppEnv,db:Database,input:{to:stri
   await smtpTransport(config).sendMail({from:config.from,to:input.to,subject:'Consulta nutricional agendada',text:`Olá, ${input.name}.\n\nSua consulta foi agendada.\n\nData: ${date}\nHorário: ${input.time}\nAtendimento: ${input.type}\nDuração prevista: ${input.durationMinutes} minutos\n\nAcesse ${env.APP_URL}/portal para acompanhar a consulta.`});return true;
 }
 
+export async function sendAppointmentUpdateEmail(env:AppEnv,db:Database,input:{to:string;name:string;date:string;time:string;type:string;cancelled:boolean}) {
+  const config=await loadSmtpConfig(db,env);if(!config)return false;
+  const date=new Date(`${input.date}T12:00:00`).toLocaleDateString('pt-BR');
+  const subject=input.cancelled?'Consulta nutricional cancelada':'Novo horário da consulta nutricional';
+  const details=input.cancelled
+    ? `A consulta de ${date} às ${input.time} foi cancelada pelo consultório.`
+    : `Sua consulta foi reagendada.\n\nNova data: ${date}\nNovo horário: ${input.time}\nAtendimento: ${input.type}\n\nEntre no portal para confirmar o novo horário.`;
+  await smtpTransport(config).sendMail({from:config.from,to:input.to,subject,text:`Olá, ${input.name}.\n\n${details}\n\nAcesse ${env.APP_URL}/portal para acompanhar suas consultas.`});return true;
+}
+
 export async function sendAppointmentReminderEmail(env:AppEnv,db:Database,input:{to:string;name:string;date:string;time:string;type:string;template?:string|null}) {
   const config=await loadSmtpConfig(db,env);if(!config)return false;
   const date=new Date(`${input.date}T12:00:00`).toLocaleDateString('pt-BR');

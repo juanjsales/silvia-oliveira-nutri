@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
-import { sendAppointmentEmail } from '../../integrations/email.js';
+import { sendAppointmentEmail, sendAppointmentUpdateEmail } from '../../integrations/email.js';
 import { ensureAppointmentCharge } from '../../shared/finance.js';
 
 const statusSchema = z.enum(['CONFIRMED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW']);
@@ -63,6 +63,8 @@ export async function appointmentRoutes(app: FastifyInstance) {
       [body.patientId ?? a.patient_id, body.date ?? a.appointment_date, body.time ?? a.appointment_time,
        body.durationMinutes ?? a.duration_minutes, body.type ?? a.appointment_type, body.price ?? a.price,
        body.status ?? a.status, body.notes ?? a.notes, body.meetingUrl ?? a.meeting_url, id,scheduleChanged]);if(scheduleChanged||body.status==='CANCELLED'){await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind) SELECT patient_id,CASE WHEN status='CANCELLED' THEN 'Consulta cancelada' ELSE 'Novo horário da consulta' END,CASE WHEN status='CANCELLED' THEN 'Sua consulta foi cancelada pelo consultório.' ELSE 'Sua consulta foi atualizada para '||to_char(appointment_date,'DD/MM/YYYY')||' às '||to_char(appointment_time,'HH24:MI')||'. Confirme o novo horário no portal.' END,'APPOINTMENT' FROM appointments WHERE id=$1`,[id])}if(body.status==='COMPLETED'){const finance=await ensureAppointmentCharge(client,id,request.auth!.userId);financeCreated=finance.created}await audit(client,'APPOINTMENT_UPDATED','appointment',{actorUserId:request.auth!.userId,entityId:id,metadata:{fields:Object.keys(body),financeCreated,scheduleChanged}});await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
-    return { data: { id, financeCreated } };
+    let emailSent:boolean|null=null;let warning:string|null=null;
+    if(scheduleChanged||body.status==='CANCELLED'){const delivery=await app.db.query<{email:string|null;name:string;date:string;time:string;type:string}>(`SELECT p.email,p.name,to_char(a.appointment_date,'YYYY-MM-DD') AS date,to_char(a.appointment_time,'HH24:MI') AS time,a.appointment_type AS type FROM appointments a JOIN patients p ON p.id=a.patient_id WHERE a.id=$1`,[id]);const target=delivery.rows[0];if(target?.email){try{emailSent=await sendAppointmentUpdateEmail(app.env,app.db,{to:target.email,name:target.name,date:target.date,time:target.time,type:target.type,cancelled:body.status==='CANCELLED'});if(!emailSent)warning='Consulta atualizada, mas o e-mail não foi enviado. Verifique o SMTP.'}catch(error){emailSent=false;warning='Consulta atualizada, mas o e-mail não foi enviado. Verifique o SMTP.';app.log.error({err:error,appointmentId:id},'Falha ao enviar atualização da consulta')}}else warning='Consulta atualizada, mas o paciente não possui e-mail cadastrado.'}
+    return { data: { id, financeCreated, emailSent, warning } };
   });
 }
