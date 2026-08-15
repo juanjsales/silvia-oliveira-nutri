@@ -12,8 +12,10 @@ banco ou acesso direto às tabelas clínicas.
 
 No painel do Supabase, use **Connect** para obter:
 
-- `DATABASE_URL`: Supavisor session mode (`5432`) para servidor persistente ou
-  transaction mode (`6543`) para execução serverless.
+- `DATABASE_URL`: Supavisor transaction mode (`6543`) para Vercel/serverless. Use
+  `DB_POOL_MAX=2` (ou `1` em planos com limite baixo) para não multiplicar conexões
+  a cada instância da função. Em servidor Node persistente, session mode (`5432`)
+  também pode ser usado com um pool maior configurado conscientemente.
 - `MIGRATION_DATABASE_URL`: conexão direta (`db.PROJECT_REF...:5432`) para
   migrations. Em rede sem IPv6, use Supavisor session mode.
 
