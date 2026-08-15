@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { sendAppointmentEmail } from '../../integrations/email.js';
+import { ensureAppointmentCharge } from '../../shared/finance.js';
 
 const statusSchema = z.enum(['CONFIRMED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW']);
 const appointmentSchema = z.object({
@@ -56,7 +57,12 @@ export async function appointmentRoutes(app: FastifyInstance) {
       [body.patientId ?? a.patient_id, body.date ?? a.appointment_date, body.time ?? a.appointment_time,
        body.durationMinutes ?? a.duration_minutes, body.type ?? a.appointment_type, body.price ?? a.price,
        body.status ?? a.status, body.notes ?? a.notes, body.meetingUrl ?? a.meeting_url, id]);
+    let financeCreated = false;
+    if (body.status === 'COMPLETED') {
+      const finance = await ensureAppointmentCharge(app.db, id, request.auth!.userId);
+      financeCreated = finance.created;
+    }
     await audit(app.db, 'APPOINTMENT_UPDATED', 'appointment', { actorUserId: request.auth!.userId, entityId: id, metadata: { fields: Object.keys(body) } });
-    return { data: { id } };
+    return { data: { id, financeCreated } };
   });
 }

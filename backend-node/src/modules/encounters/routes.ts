@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
+import { ensureAppointmentCharge } from '../../shared/finance.js';
 
 const sectionKey = z.enum(['context','anamnesis','recall24h','followup','assessment','exams','conduct','plan','supplements','notes']);
 const clinicalValue:z.ZodType<unknown>=z.lazy(()=>z.union([z.string().max(10000),z.number(),z.boolean(),z.null(),z.array(clinicalValue).max(100),z.record(z.string().max(80),clinicalValue)]));
@@ -94,8 +95,13 @@ export async function encounterRoutes(app: FastifyInstance) {
     const result = await app.db.query<{appointment_id:string|null}>(`UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now()
       WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id`, [id]);
     if (!result.rows[0]) return reply.code(409).send({ error: 'Atendimento não encontrado ou já finalizado.' });
-    if (result.rows[0].appointment_id) await app.db.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [result.rows[0].appointment_id]);
+    let financeCreated = false;
+    if (result.rows[0].appointment_id) {
+      await app.db.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [result.rows[0].appointment_id]);
+      const finance = await ensureAppointmentCharge(app.db, result.rows[0].appointment_id, request.auth!.userId);
+      financeCreated = finance.created;
+    }
     await audit(app.db, 'ENCOUNTER_COMPLETED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id });
-    return { data: { id, status: 'COMPLETED' } };
+    return { data: { id, status: 'COMPLETED', financeCreated } };
   });
 }
