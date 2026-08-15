@@ -44,6 +44,7 @@ export async function buildApp(env: AppEnv, db: Database) {
       return reply.code(400).send({ error: 'Dados inválidos.', details });
     }
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23505') return reply.code(409).send({ error: 'Registro duplicado.' });
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23P01') return reply.code(409).send({ error: 'Este horário conflita com outra consulta. Escolha um horário livre.' });
     if(typeof error==='object'&&error!==null&&'statusCode'in error&&error.statusCode===429){const retryAfter='retryAfter'in error?Number(error.retryAfter):900;reply.header('Retry-After',String(retryAfter));return reply.code(429).send({error:error instanceof Error?error.message:'Muitas tentativas. Tente novamente mais tarde.'})}
     const errorCode=typeof error==='object'&&error!==null&&'code'in error?String(error.code).slice(0,80):undefined;
     app.log.error({requestId:request.id,method:request.method,route:request.routeOptions.url,errorName:error instanceof Error?error.name:'UnknownError',errorCode},'Falha interna não tratada');
