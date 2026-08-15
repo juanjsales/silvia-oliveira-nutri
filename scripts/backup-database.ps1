@@ -1,5 +1,10 @@
 param([string]$OutputDirectory = "$(Join-Path $PSScriptRoot '..\backups')")
 $ErrorActionPreference = 'Stop'
+$envFile = Join-Path $PSScriptRoot '..\backend-node\.env'
+if (-not $env:MIGRATION_DATABASE_URL -and (Test-Path -LiteralPath $envFile)) {
+  $entry = Get-Content -LiteralPath $envFile | Where-Object { $_ -match '^\s*MIGRATION_DATABASE_URL=' } | Select-Object -First 1
+  if ($entry) { $env:MIGRATION_DATABASE_URL = ($entry -split '=', 2)[1].Trim().Trim('"') }
+}
 if (-not $env:MIGRATION_DATABASE_URL) { throw 'Defina MIGRATION_DATABASE_URL com o Session Pooler.' }
 if (-not $env:BACKUP_PASSPHRASE -or $env:BACKUP_PASSPHRASE.Length -lt 16) { throw 'Defina BACKUP_PASSPHRASE com pelo menos 16 caracteres.' }
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
