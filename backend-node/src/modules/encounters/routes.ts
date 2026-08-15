@@ -70,16 +70,17 @@ export async function encounterRoutes(app: FastifyInstance) {
 
   app.put('/:id/sections/:section', async (request, reply) => {
     const { id, section } = z.object({ id: z.uuid(), section: sectionKey }).parse(request.params);
-    const body = z.object({ data: sectionData }).parse(request.body);
+    const body = z.object({ data: sectionData, expectedSavedAt:z.iso.datetime().nullable().optional() }).parse(request.body);
     const encounter = await app.db.query<{status:string}>('SELECT status FROM clinical_encounters WHERE id=$1', [id]);
     if (!encounter.rows[0]) return reply.code(404).send({ error: 'Atendimento não encontrado.' });
     if (encounter.rows[0].status !== 'IN_PROGRESS') return reply.code(409).send({ error: 'Atendimento finalizado não pode ser alterado.' });
-    await app.db.query(`INSERT INTO clinical_sections(encounter_id, section_key, data, saved_by) VALUES ($1,$2,$3,$4)
-      ON CONFLICT(encounter_id, section_key) DO UPDATE SET data=excluded.data, saved_by=excluded.saved_by, saved_at=now()`,
-      [id, section, body.data, request.auth!.userId]);
+    const saved=body.expectedSavedAt
+      ?await app.db.query<{savedAt:Date}>(`UPDATE clinical_sections SET data=$3,saved_by=$4,saved_at=now() WHERE encounter_id=$1 AND section_key=$2 AND saved_at=$5::timestamptz RETURNING saved_at AS "savedAt"`,[id,section,body.data,request.auth!.userId,body.expectedSavedAt])
+      :await app.db.query<{savedAt:Date}>(`INSERT INTO clinical_sections(encounter_id,section_key,data,saved_by) VALUES($1,$2,$3,$4) ON CONFLICT(encounter_id,section_key) DO NOTHING RETURNING saved_at AS "savedAt"`,[id,section,body.data,request.auth!.userId]);
+    if(!saved.rows[0])return reply.code(409).send({error:'Esta etapa foi alterada em outra tela. Recarregue o atendimento antes de salvar novamente.'});
     await app.db.query('UPDATE clinical_encounters SET updated_at=now() WHERE id=$1', [id]);
     await audit(app.db, 'CLINICAL_SECTION_SAVED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id, metadata: { section } });
-    return { data: { section, savedAt: new Date().toISOString() } };
+    return { data: { section, savedAt: saved.rows[0].savedAt } };
   });
 
   app.put('/:id/labs',async(request,reply)=>{const{id}=z.object({id:z.uuid()}).parse(request.params);const{items}=z.object({items:z.array(labSchema).max(100)}).parse(request.body);const encounter=await app.db.query<{patient_id:string;status:string}>('SELECT patient_id,status FROM clinical_encounters WHERE id=$1',[id]);if(!encounter.rows[0])return reply.code(404).send({error:'Atendimento não encontrado.'});if(encounter.rows[0].status!=='IN_PROGRESS')return reply.code(409).send({error:'Atendimento finalizado não pode ser alterado.'});const client=await app.db.connect();try{await client.query('BEGIN');await client.query('DELETE FROM laboratory_results WHERE encounter_id=$1',[id]);for(const item of items)await client.query(`INSERT INTO laboratory_results(encounter_id,patient_id,exam_date,marker,value,unit,reference_value,status,observation) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,[id,encounter.rows[0].patient_id,item.examDate||null,item.marker,item.value,item.unit||null,item.referenceValue||null,item.status||null,item.observation||null]);await client.query(`INSERT INTO clinical_sections(encounter_id,section_key,data,saved_by) VALUES($1,'exams',$2,$3) ON CONFLICT(encounter_id,section_key) DO UPDATE SET data=excluded.data,saved_by=excluded.saved_by,saved_at=now()`,[id,{count:items.length},request.auth!.userId]);await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}await audit(app.db,'LAB_RESULTS_SAVED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{count:items.length}});return{data:{count:items.length}}});
