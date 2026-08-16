@@ -26,6 +26,9 @@ import { privacyRoutes } from './modules/privacy/routes.js';
 import { patientAppointmentRoutes } from './modules/patient-appointments/routes.js';
 import { emailDeliveryRoutes } from './modules/email-deliveries/routes.js';
 import { clinicalCoreRoutes } from './modules/clinical-core/routes.js';
+import { messageRoutes } from './modules/messages/routes.js';
+import { followUpRoutes } from './modules/follow-up/routes.js';
+import { patientExamRoutes } from './modules/patient-exams/routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
@@ -84,6 +87,9 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(patientAppointmentRoutes, { prefix: '/api/portal/appointments' });
   await app.register(emailDeliveryRoutes, { prefix: '/api/email-deliveries' });
   await app.register(clinicalCoreRoutes, { prefix: '/api/clinical' });
+  await app.register(messageRoutes, { prefix: '/api/messages' });
+  await app.register(followUpRoutes, { prefix: '/api/follow-up' });
+  await app.register(patientExamRoutes, { prefix: '/api/patient-exams' });
 
   return app;
 }

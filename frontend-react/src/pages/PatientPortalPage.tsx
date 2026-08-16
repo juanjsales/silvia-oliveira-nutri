@@ -144,7 +144,7 @@ window.open(r.data.url,'_blank','noopener,noreferrer')}return <PortalTwo><form c
 </>}/></PortalTwo>}
 
 function Messages({rows,submit}:{rows:Any[];
-submit:any}){const last=rows.at(-1);const waiting=last?.senderRole==='PATIENT';return <section className="portal-messages-layout"><div className="portal-messages panel"><header><div><h2>Mensagens seguras</h2><p>Use este canal para assuntos relacionados ao seu acompanhamento.</p></div>
+submit:any}){useEffect(()=>{void api('/api/portal/messages/read',{method:'PATCH'})},[]);const last=rows.at(-1);const waiting=last?.senderRole==='PATIENT';return <section className="portal-messages-layout"><div className="portal-messages panel"><header><div><h2>Mensagens seguras</h2><p>Use este canal para assuntos relacionados ao seu acompanhamento.</p></div>
 <span className={`message-status ${waiting?'waiting':'answered'}`}>{waiting?'Aguardando resposta':'Em dia'}</span></header>
 <div>{rows.map(r=>{const match=String(r.body).match(/^\[([^\]]+)\]\s*/);return <article className={r.senderRole==='PATIENT'?'mine':''} key={r.id}>{match&&<span className="message-category">{match[1]}</span>}<strong>{r.senderRole==='PATIENT'?'Você':'Nutricionista'}</strong><p>{String(r.body).replace(/^\[[^\]]+\]\s*/,'')}</p><small>{new Date(r.createdAt).toLocaleString('pt-BR')}</small></article>
 })}</div>

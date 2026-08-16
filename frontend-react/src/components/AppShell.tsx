@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, CircleDollarSign, FileText, LayoutDashboard, LogOut, Menu, Salad, Settings, Stethoscope, Users, X } from 'lucide-react';
+import { Activity, CalendarDays, ChevronLeft, CircleDollarSign, FileSearch, FileText, LayoutDashboard, LogOut, Menu, MessageCircle, Salad, Settings, Stethoscope, Users, X } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,6 +7,9 @@ import { ClinicMark, useClinic } from '../contexts/ClinicContext';
 const navigation = [
   { to: '/painel', label: 'Visão geral', icon: LayoutDashboard }, { to: '/pacientes', label: 'Pacientes', icon: Users },
   { to: '/agenda', label: 'Agenda', icon: CalendarDays }, { to: '/atendimentos', label: 'Atendimentos', icon: Stethoscope },
+  { to: '/mensagens', label: 'Mensagens', icon: MessageCircle },
+  { to: '/acompanhamento', label: 'Acompanhamento', icon: Activity },
+  { to: '/exames', label: 'Exames recebidos', icon: FileSearch },
   { to: '/planos', label: 'Planos e receitas', icon: Salad },
   { to: '/documentos', label: 'Documentos', icon: FileText },
   { to: '/documentos/emissoes', label: 'Emissões A4', icon: FileText },

@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useClinic } from "../contexts/ClinicContext";
 import { api } from "../lib/api";
+import { PendingCheckinsPanel } from "../components/PendingCheckinsPanel";
 type Summary = {
   monthRevenue: string;
   outstanding: string;
@@ -93,6 +94,7 @@ export function DashboardPage() {
           detail="Pagamentos confirmados"
         />
       </section>
+      <PendingCheckinsPanel />
       <section className="panel span-two">
         <div className="panel-heading">
           <div>

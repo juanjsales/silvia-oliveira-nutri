@@ -22,6 +22,17 @@ export async function encounterRoutes(app: FastifyInstance) {
     return { data: result.rows };
   });
 
+  app.get('/checkins/pending', async () => {
+    const result = await app.db.query(`SELECT c.id,c.patient_id AS "patientId",p.name AS "patientName",
+      c.appointment_id AS "appointmentId",c.answers,c.submitted_at AS "submittedAt",
+      a.appointment_date AS "appointmentDate",a.appointment_time AS "appointmentTime"
+      FROM preconsult_checkins c JOIN patients p ON p.id=c.patient_id
+      LEFT JOIN appointments a ON a.id=c.appointment_id
+      WHERE c.status='PENDING_REVIEW'
+      ORDER BY COALESCE(a.appointment_date,current_date),COALESCE(a.appointment_time,current_time),c.submitted_at DESC LIMIT 20`);
+    return { data: result.rows };
+  });
+
   app.get('/patient/:patientId/history', async (request, reply) => {
     const { patientId } = z.object({ patientId: z.uuid() }).parse(request.params);
     const patient = await app.db.query('SELECT id FROM patients WHERE id=$1', [patientId]);

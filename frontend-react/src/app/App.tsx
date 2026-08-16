@@ -27,6 +27,9 @@ import { HomePage } from '../pages/HomePage';
 import { PrivacyPage } from '../pages/PrivacyPage';
 import { PatientAppointmentsPage } from '../pages/PatientAppointmentsPage';
 import { ClinicalOverviewPage } from '../pages/ClinicalOverviewPage';
+import { MessagesPage } from '../pages/MessagesPage';
+import { FollowUpPage } from '../pages/FollowUpPage';
+import { PatientExamsPage } from '../pages/PatientExamsPage';
 
 export function App() {
   return <Routes>
@@ -46,6 +49,9 @@ export function App() {
       <Route path="pacientes/:patientId/clinico" element={<ClinicalOverviewPage />} />
       <Route path="agenda" element={<AgendaPage />} />
       <Route path="atendimentos" element={<EncounterPage />} />
+      <Route path="mensagens" element={<MessagesPage />} />
+      <Route path="acompanhamento" element={<FollowUpPage />} />
+      <Route path="exames" element={<PatientExamsPage />} />
       <Route path="planos" element={<NutritionLibraryPage />} />
       <Route path="planos/:id" element={<MealPlanEditorPage />} />
       <Route path="documentos" element={<DocumentsPage />} />
