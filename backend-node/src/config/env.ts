@@ -15,8 +15,6 @@ const envSchema = z.object({
   SESSION_TTL_HOURS: z.coerce.number().int().positive().max(168).default(6),
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().max(120).default(30),
   APP_URL: z.string().url(),
-  VIDEO_PROVIDER: z.enum(['jitsi','daily']).optional(),
-  DAILY_API_KEY: z.string().min(20).optional(),
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
   SUPABASE_EXAMS_BUCKET: z.string().min(2).optional(),
