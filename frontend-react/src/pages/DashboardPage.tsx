@@ -4,7 +4,9 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   Plus,
+  Salad,
   Sparkles,
+  Stethoscope,
   Users,
   WalletCards,
 } from "lucide-react";
@@ -122,29 +124,54 @@ export function DashboardPage() {
           </article>
         </div>
       </section>
-      <section className="panel">
+      <section className="panel dashboard-shortcuts">
         <div className="panel-heading">
           <div>
-            <span className="eyebrow">Atalho clínico</span>
-            <h3>Continue de onde parou</h3>
+            <span className="eyebrow">Ações rápidas</span>
+            <h3>Acessos diretos</h3>
           </div>
         </div>
-        <div className="clinical-steps">
-          <span className="done">1</span>
-          <div>
-            <strong>Selecionar paciente</strong>
-            <small>Cadastro e histórico</small>
-          </div>
-          <span>2</span>
-          <div>
-            <strong>Registrar consulta</strong>
-            <small>Anamnese e avaliação</small>
-          </div>
-          <span>3</span>
-          <div>
-            <strong>Finalizar conduta</strong>
-            <small>Plano e orientações</small>
-          </div>
+        <div className="shortcut-actions-grid">
+          <Link className="shortcut-card" to="/atendimentos">
+            <div className="shortcut-icon green">
+              <Stethoscope size={20} />
+            </div>
+            <div>
+              <strong>Iniciar atendimento</strong>
+              <small>Abrir prontuário e anamnese</small>
+            </div>
+            <ArrowRight size={16} className="shortcut-arrow" />
+          </Link>
+          <Link className="shortcut-card" to="/agenda">
+            <div className="shortcut-icon gold">
+              <CalendarDays size={20} />
+            </div>
+            <div>
+              <strong>Consultar agenda</strong>
+              <small>Horários e marcações</small>
+            </div>
+            <ArrowRight size={16} className="shortcut-arrow" />
+          </Link>
+          <Link className="shortcut-card" to="/pacientes">
+            <div className="shortcut-icon rose">
+              <Users size={20} />
+            </div>
+            <div>
+              <strong>Novo paciente</strong>
+              <small>Cadastrar e gerenciar acessos</small>
+            </div>
+            <ArrowRight size={16} className="shortcut-arrow" />
+          </Link>
+          <Link className="shortcut-card" to="/planos">
+            <div className="shortcut-icon green">
+              <Salad size={20} />
+            </div>
+            <div>
+              <strong>Planos & Receitas</strong>
+              <small>Tabela TACO e modelos</small>
+            </div>
+            <ArrowRight size={16} className="shortcut-arrow" />
+          </Link>
         </div>
       </section>
     </div>
