@@ -21,6 +21,7 @@ import { SmtpSettings } from "../components/SmtpSettings";
 import { ReadinessPanel } from "../components/ReadinessPanel";
 import { IncidentPanel } from "../components/IncidentPanel";
 import { PrivacyRequestsPanel } from "../components/PrivacyRequestsPanel";
+import { StorageMaintenancePanel } from "../components/StorageMaintenancePanel";
 import { PasswordInput } from "../components/PasswordInput";
 import { SetupWizardModal } from "../components/SetupWizardModal";
 import { capitalizePersonName } from "../lib/formatters";
@@ -691,6 +692,7 @@ export function SettingsPage() {
             </div>
           </div>
 
+          <StorageMaintenancePanel />
           <ReadinessPanel />
           <IncidentPanel />
           <PrivacyRequestsPanel />

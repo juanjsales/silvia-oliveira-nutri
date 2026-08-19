@@ -27,4 +27,13 @@ export async function cronRoutes(app: FastifyInstance) {
     const delivery = await processPendingAppointmentEmails(app);
     return { data: delivery };
   });
+
+  app.get('/database-prune', async (request, reply) => {
+    if (!app.env.CRON_SECRET) return reply.code(503).send({ error:'Rotina automática não configurada.' });
+    if (request.headers.authorization !== `Bearer ${app.env.CRON_SECRET}`) return reply.code(401).send({ error:'Não autorizado.' });
+
+    const { runDatabasePrune } = await import('../../shared/maintenance.js');
+    const result = await runDatabasePrune(app.db);
+    return { data: result };
+  });
 }
