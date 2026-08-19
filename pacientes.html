@@ -562,12 +562,14 @@
   <main class="container">
 
     <!-- KPI CARDS -->
+    <!-- KPI CARDS -->
     <div class="pac-kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
       <div
         style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
         <div
-          style="font-size:1.8rem; background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          👥</div>
+          style="background:var(--sage-dim); border:1px solid var(--border-forest); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--sage-light);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
         <div>
           <div style="font-size:1.6rem; font-weight:900; color:var(--sage-light); line-height:1;"
             id="kpiTotalPacientes">0</div>
@@ -580,8 +582,9 @@
       <div
         style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
         <div
-          style="font-size:1.8rem; background:rgba(226, 184, 87, 0.15); border:1px solid rgba(226, 184, 87, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          🥗</div>
+          style="background:rgba(226, 184, 87, 0.15); border:1px solid rgba(226, 184, 87, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#e2b857;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        </div>
         <div>
           <div style="font-size:1.6rem; font-weight:900; color:var(--text-title); line-height:1;" id="kpiFocoTop">
             Reeducação</div>
@@ -594,8 +597,9 @@
       <div
         style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
         <div
-          style="font-size:1.8rem; background:rgba(52, 211, 153, 0.15); border:1px solid rgba(52, 211, 153, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          ⚡</div>
+          style="background:rgba(52, 211, 153, 0.15); border:1px solid rgba(52, 211, 153, 0.3); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#34d399;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
         <div>
           <div style="font-size:1.6rem; font-weight:900; color:#34d399; line-height:1;">100%</div>
           <div
@@ -607,12 +611,12 @@
 
     <div class="card">
       <div class="card-header" style="flex-wrap:wrap; gap:14px;">
-        <div class="card-title">👤 Pacientes Cadastrados &amp; Fichas Clínicas</div>
+        <div class="card-title">Pacientes Cadastrados &amp; Fichas Clínicas</div>
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <input type="text" id="inputBuscaPacientes" class="form-control"
-            placeholder="🔍 Buscar por nome, CPF, WhatsApp ou objetivo..." oninput="filtrarPacientes(this.value)"
+            placeholder="Buscar por nome, CPF, WhatsApp ou objetivo..." oninput="filtrarPacientes(this.value)"
             style="width:300px; padding:10px 14px; font-size:0.86rem;">
-          <button type="button" class="btn" style="white-space:nowrap;" onclick="openInAdmin('agendamento.html')">📅 Novo Agendamento</button>
+          <button type="button" class="btn" style="white-space:nowrap;" onclick="openInAdmin('agendamento.html')">Novo Agendamento</button>
         </div>
       </div>
 
