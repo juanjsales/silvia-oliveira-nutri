@@ -149,6 +149,18 @@ export function PatientPortalPage() {
     }
   }
 
+  const activeTeleconsultation = useMemo(() => {
+    if (!data?.appointments) return null;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return data.appointments.find(
+      (a: Any) =>
+        a.meetingUrl &&
+        (a.status === 'IN_PROGRESS' ||
+          a.status === 'WAITING' ||
+          (a.status === 'CONFIRMED' && String(a.appointmentDate).slice(0, 10) === todayStr)),
+    );
+  }, [data?.appointments]);
+
   if (error && !data)
     return (
       <main className="patient-portal">
@@ -165,18 +177,6 @@ export function PatientPortalPage() {
     );
 
   const unreadNotifs = data.notifications?.filter((n: Any) => !n.readAt) || [];
-
-  const activeTeleconsultation = useMemo(() => {
-    if (!data?.appointments) return null;
-    const todayStr = new Date().toISOString().slice(0, 10);
-    return data.appointments.find(
-      (a: Any) =>
-        a.meetingUrl &&
-        (a.status === 'IN_PROGRESS' ||
-          a.status === 'WAITING' ||
-          (a.status === 'CONFIRMED' && String(a.appointmentDate).slice(0, 10) === todayStr)),
-    );
-  }, [data?.appointments]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
