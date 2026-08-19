@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
+import { LaminasModal } from './LaminasModal';
 import { api } from '../lib/api';
 
 type BroadcastTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
@@ -47,6 +48,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
   const [activeBroadcast, setActiveBroadcast] = useState<BroadcastTab | null>('medidas');
   const [broadcastingNotice, setBroadcastingNotice] = useState('');
   const [showBroadcastMenu, setShowBroadcastMenu] = useState(true);
+  const [laminasOpen, setLaminasOpen] = useState(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -264,6 +266,16 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
               >
                 <Scale size={13} /> Avaliação
               </button>
+
+              <button
+                type="button"
+                className="broadcast-btn"
+                onClick={() => setLaminasOpen(true)}
+                title="Ver e Imprimir Lâminas Educativas A4"
+                style={{ background: 'rgba(45, 106, 79, 0.15)', borderColor: 'var(--forest)', color: 'var(--forest)', fontWeight: 700 }}
+              >
+                <BookOpen size={13} /> Lâminas A4
+              </button>
             </div>
           )}
         </div>
@@ -317,6 +329,16 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
           </button>
         </div>
       </footer>
+
+      <LaminasModal
+        isOpen={laminasOpen}
+        onClose={() => setLaminasOpen(false)}
+        patientName={patientName}
+        onBroadcast={(laminaId, laminaTitle) => {
+          const mappedTab: BroadcastTab = laminaId === 'prato-ideal' ? 'prato' : laminaId === 'fome-saciedade' ? 'fome' : 'medidas';
+          void broadcastToPatient(mappedTab, laminaTitle);
+        }}
+      />
     </aside>
   );
 }

@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  BookOpen,
   Calendar,
   Calculator,
   Check,
@@ -37,6 +38,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { VideoConsultation } from '../components/VideoConsultation';
+import { LaminasModal } from '../components/LaminasModal';
 import { LabsList, SupplementsList, type Lab, type Supplement } from '../components/ClinicalLists';
 import { PatientHistory } from '../components/PatientHistory';
 import { EnergyCalculatorModal } from '../components/EnergyCalculatorModal';
@@ -128,6 +130,7 @@ export function EncounterPage(){
   const[params,setParams]=useSearchParams();const patientParam=params.get('paciente')||'';const appointmentParam=params.get('agendamento')||'';const videoParam=params.get('video')==='true';
   const[encounter,setEncounter]=useState<Encounter|null>(null);const[active,setActive]=useState(0);const[drafts,setDrafts]=useState<Partial<Record<SectionKey,SectionData>>>({});const[dirtyKeys,setDirtyKeys]=useState<Set<SectionKey>>(new Set());const[loading,setLoading]=useState(false);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[videoOpen,setVideoOpen]=useState(videoParam);const[calcOpen,setCalcOpen]=useState(false);
   const[finishModalOpen,setFinishModalOpen]=useState(false);
+  const[laminasOpen,setLaminasOpen]=useState(false);
   const loadEncounter=useCallback(async(id:string)=>{setLoading(true);try{const r=await api<{data:Encounter}>(`/api/encounters/${id}`);setEncounter(r.data);const loaded:Partial<Record<SectionKey,SectionData>>={};for(const key of steps.map(s=>s.key).filter(k=>k!=='review') as SectionKey[])loaded[key]=r.data.sections[key]?.data||{};setDrafts(loaded);setDirtyKeys(new Set())}catch(c){setError(c instanceof Error?c.message:'Erro ao abrir atendimento.')}finally{setLoading(false)}},[]);
   useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(dirtyKeys.size){event.preventDefault();event.returnValue=''}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirtyKeys]);
   useEffect(()=>{const id=params.get('id');if(id){void loadEncounter(id)}else{setEncounter(null)}},[params,loadEncounter]);
@@ -247,6 +250,9 @@ export function EncounterPage(){
             <p>{encounter.objective||'Objetivo não informado'}{encounter.appointmentTime ? ` · Consulta: ${formatAppointmentSchedule(encounter.appointmentTime, encounter.durationMinutes || 60)}` : ` · iniciado em ${new Date(encounter.startedAt).toLocaleDateString('pt-BR')}`}</p>
           </div>
           <div className="encounter-header-actions">
+            <button type="button" className="secondary-button" onClick={()=>setLaminasOpen(true)} title="Abrir Lâminas Educativas A4 para o paciente">
+              <BookOpen size={16}/> Lâminas Educativas A4
+            </button>
             <button type="button" className="secondary-button" onClick={()=>setCalcOpen(true)} title="Calcular Gasto Energético (VET & TMB)">
               <Calculator size={16}/> Calculadora VET / TMB
             </button>
@@ -371,6 +377,24 @@ export function EncounterPage(){
         initialAge={age||30}
         initialGender={assessment.sex==='Masculino'?'MALE':'FEMALE'}
         onApplyResults={handleApplyEnergy}
+      />
+
+      <LaminasModal
+        isOpen={laminasOpen}
+        onClose={()=>setLaminasOpen(false)}
+        patientName={encounter?.patientName}
+        onBroadcast={encounter?.appointmentId ? async (laminaId, laminaTitle) => {
+          try {
+            await api(`/api/video/appointments/${encounter.appointmentId}/broadcast`, {
+              method: 'POST',
+              body: JSON.stringify({
+                activeTab: laminaId === 'prato-ideal' ? 'prato' : laminaId === 'fome-saciedade' ? 'fome' : 'medidas',
+                customTitle: laminaTitle,
+              }),
+            });
+            setNotice(`Lâmina "${laminaTitle}" transmitida na teleconsulta!`);
+          } catch {}
+        } : undefined}
       />
 
       {finishModalOpen && encounter && (
