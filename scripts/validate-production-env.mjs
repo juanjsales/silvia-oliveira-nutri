@@ -1,7 +1,6 @@
 const secretNames = new Set([
   'APP_ENCRYPTION_KEY',
   'CRON_SECRET',
-  'DAILY_API_KEY',
   'DATABASE_URL',
   'SMTP_PASS',
   'SUPABASE_SERVICE_ROLE_KEY'
@@ -42,7 +41,6 @@ export function validateProductionEnv(env) {
   if (smtpPresent.length > 0 && smtpPresent.length !== smtp.length) {
     failures.push('SMTP_HOST, SMTP_USER e SMTP_PASS devem ser configuradas em conjunto.');
   }
-  if (env.VIDEO_PROVIDER === 'daily' && !present(env.DAILY_API_KEY)) failures.push('DAILY_API_KEY ausente para VIDEO_PROVIDER=daily.');
 
   const storage = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_EXAMS_BUCKET'];
   const storagePresent = storage.filter((name) => present(env[name]));

@@ -29,7 +29,7 @@ Após aplicar as migrações e publicar, execute manualmente o workflow `Product
 Configuração condicional:
 
 - `SMTP_HOST`, `SMTP_USER` e `SMTP_PASS`: obrigatórias em conjunto quando o SMTP não for configurado pela tela administrativa. `SMTP_PORT` e `SMTP_SECURE` são opcionais.
-- `DAILY_API_KEY`: obrigatória quando `VIDEO_PROVIDER=daily`; com Jitsi, pode ficar ausente.
+- `Teleconsulta`: 100% nativa em P2P WebRTC (não exige chaves de terceiros nem servidores pagos).
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` e `SUPABASE_EXAMS_BUCKET`: obrigatórias em conjunto para upload privado de exames. O recurso é opcional para a readiness geral.
 - `VITE_API_URL`: deixe vazia no deploy de mesma origem da Vercel; informe somente se a API estiver em outra origem.
 

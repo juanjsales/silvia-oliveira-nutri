@@ -516,6 +516,7 @@
             }
 
             if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'CALL_ENDED', action: 'CLOSED' }, '*');
                 window.parent.postMessage({ type: 'JITSI_LEFT', action: 'CLOSED' }, '*');
             } else {
                 window.close();
