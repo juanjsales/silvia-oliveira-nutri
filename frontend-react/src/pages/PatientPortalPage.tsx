@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Bell,
+  BookOpen,
   CalendarDays,
   CheckCircle2,
   ClipboardList,
@@ -35,6 +36,7 @@ import { PortalBottomNav, type PortalTab } from '../components/portal/PortalBott
 import { PortalWaterTracker } from '../components/portal/PortalWaterTracker';
 import { PortalCurrentMealCard } from '../components/portal/PortalCurrentMealCard';
 import { PortalMealPlanView } from '../components/portal/PortalMealPlanView';
+import { PortalLaminasView } from '../components/portal/PortalLaminasView';
 import '../portal-premium.css';
 
 type Any = Record<string, any>;
@@ -45,6 +47,7 @@ const tabs: [Tab, string, typeof UserRound][] = [
   ['checkin', 'Preparar consulta', ClipboardList],
   ['jornada', 'Jornada', ClipboardList],
   ['diario', 'Diário', Salad],
+  ['laminas', 'Lâminas & Guias', BookOpen],
   ['exames', 'Exames', FlaskConical],
   ['evolucao', 'Evolução', LineChart],
   ['mensagens', 'Mensagens', MessageCircle],
@@ -349,6 +352,7 @@ function PortalContent({
   if (tab === 'evolucao') return <Evolution rows={data.measurements} />;
   if (tab === 'financeiro') return <Finance rows={data.finance} />;
   if (tab === 'compras') return <Shopping plans={data.plans} />;
+  if (tab === 'laminas') return <PortalLaminasView />;
   return <Journey data={data} />;
 }
 

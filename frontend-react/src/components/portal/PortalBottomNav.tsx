@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   CalendarDays,
   CreditCard,
   FlaskConical,
@@ -22,6 +23,7 @@ export type PortalTab =
   | "diario"
   | "exames"
   | "evolucao"
+  | "laminas"
   | "mensagens"
   | "agenda"
   | "metas"
@@ -47,6 +49,7 @@ export function PortalBottomNav({
     { key: "plano", label: "Meu Plano", icon: Utensils },
     { key: "diario", label: "Diário & Água", icon: Salad },
     { key: "evolucao", label: "Evolução", icon: LineChart },
+    { key: "laminas", label: "Guias & Lâminas", icon: BookOpen },
     { key: "compras", label: "Lista de Compras", icon: ShoppingBasket },
     { key: "agenda", label: "Agenda", icon: CalendarDays },
     { key: "mensagens", label: "Mensagens", icon: MessageCircle },
@@ -146,6 +149,21 @@ export function PortalBottomNav({
             </div>
 
             <div className="portal-more-menu-grid">
+              <button
+                type="button"
+                className="more-menu-btn"
+                onClick={() => {
+                  onChangeTab("laminas");
+                  setShowMoreModal(false);
+                }}
+              >
+                <BookOpen size={20} style={{ color: "#059669" }} />
+                <div>
+                  <strong>Lâminas Educativas</strong>
+                  <small>Guias práticos & infográficos</small>
+                </div>
+              </button>
+
               <button
                 type="button"
                 className="more-menu-btn"

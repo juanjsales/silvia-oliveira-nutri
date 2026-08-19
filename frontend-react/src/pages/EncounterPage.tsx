@@ -5,14 +5,15 @@ import { VideoConsultation } from '../components/VideoConsultation';
 import { LabsList, SupplementsList, type Lab, type Supplement } from '../components/ClinicalLists';
 import { PatientHistory } from '../components/PatientHistory';
 import { EnergyCalculatorModal } from '../components/EnergyCalculatorModal';
+import { FinishEncounterModal, type FinishEncounterData } from '../components/FinishEncounterModal';
 import { api } from '../lib/api';
 
 type SectionKey='context'|'anamnesis'|'recall24h'|'followup'|'assessment'|'exams'|'conduct'|'plan'|'supplements'|'notes';
 type Value=string|number|boolean|null;
 type SectionData=Record<string,Value>;
-type Patient={id:string;name:string;objective?:string|null};
+type Patient={id:string;name:string;objective?:string|null;email?:string|null};
 type Checkin={id:string;answers:Record<string,unknown>;status:'PENDING_REVIEW'|'REVIEWED';submittedAt:string;reviewedAt?:string|null};
-type Encounter={id:string;patientId:string;patientName:string;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;status:'IN_PROGRESS'|'COMPLETED';startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
+type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;status:'IN_PROGRESS'|'COMPLETED';startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
 type Field={key:string;label:string;type?:'text'|'textarea'|'number'|'select'|'date'|'time';placeholder?:string;options?:string[];suffix?:string;profiles?:string[]};
 type Step={key:SectionKey|'review';label:string;description:string;fields?:Field[]};
 
@@ -59,6 +60,7 @@ function missingClinicalCore(sections:Encounter['sections']){
 export function EncounterPage(){
  const[params,setParams]=useSearchParams();const patientParam=params.get('paciente')||'';const appointmentParam=params.get('agendamento')||'';const videoParam=params.get('video')==='true';
  const[patients,setPatients]=useState<Patient[]>([]);const[patientId,setPatientId]=useState(patientParam);const[encounter,setEncounter]=useState<Encounter|null>(null);const[active,setActive]=useState(0);const[drafts,setDrafts]=useState<Partial<Record<SectionKey,SectionData>>>({});const[dirtyKeys,setDirtyKeys]=useState<Set<SectionKey>>(new Set());const[loading,setLoading]=useState(false);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[videoOpen,setVideoOpen]=useState(videoParam);const[calcOpen,setCalcOpen]=useState(false);
+ const[finishModalOpen,setFinishModalOpen]=useState(false);
  useEffect(()=>{api<{data:Patient[]}>('/api/patients').then(r=>setPatients(r.data)).catch(c=>setError(c instanceof Error?c.message:'Erro ao carregar pacientes.'))},[]);
  const loadEncounter=useCallback(async(id:string)=>{setLoading(true);try{const r=await api<{data:Encounter}>(`/api/encounters/${id}`);setEncounter(r.data);const loaded:Partial<Record<SectionKey,SectionData>>={};for(const key of steps.map(s=>s.key).filter(k=>k!=='review') as SectionKey[])loaded[key]=r.data.sections[key]?.data||{};setDrafts(loaded);setDirtyKeys(new Set())}catch(c){setError(c instanceof Error?c.message:'Erro ao abrir atendimento.')}finally{setLoading(false)}},[]);
  useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(dirtyKeys.size){event.preventDefault();event.returnValue=''}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirtyKeys]);
@@ -75,7 +77,38 @@ export function EncounterPage(){
  const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);
  function change(key:SectionKey,field:string,value:string){setDrafts(d=>({...d,[key]:{...(d[key]||{}),[field]:value}}));setDirtyKeys(keys=>new Set(keys).add(key));setNotice('')}
  async function saveSection(){if(!encounter||current.key==='review')return;setSaving(true);setError('');try{await api(`/api/encounters/${encounter.id}/sections/${current.key}`,{method:'PUT',body:JSON.stringify({data:drafts[current.key]||{},expectedSavedAt:encounter.sections[current.key]?.savedAt||null})});await loadEncounter(encounter.id);setNotice('Etapa salva com segurança.');if(active<steps.length-1)setActive(active+1)}catch(c){setError(c instanceof Error?c.message:'Não foi possível salvar a etapa.')}finally{setSaving(false)}}
- async function finalize(){if(!encounter)return;if(dirtyKeys.size){setError('Salve todas as alterações antes de finalizar o atendimento.');return}const missing=missingClinicalCore(encounter.sections);if(missing.length){setError(`Preencha e salve os requisitos obrigatórios: ${missing.join(', ')}.`);return}setSaving(true);setError('');try{await api(`/api/encounters/${encounter.id}/finalize`,{method:'POST'});await loadEncounter(encounter.id);setNotice('Atendimento finalizado.')}catch(c){setError(c instanceof Error?c.message:'Não foi possível finalizar.')}finally{setSaving(false)}}
+ 
+ function requestFinalize(){
+  if(!encounter)return;
+  if(dirtyKeys.size){setError('Salve todas as alterações antes de finalizar o atendimento.');return}
+  const missing=missingClinicalCore(encounter.sections);
+  if(missing.length){setError(`Preencha e salve os requisitos obrigatórios: ${missing.join(', ')}.`);return}
+  setFinishModalOpen(true);
+ }
+
+ async function handleConfirmFinalize(data: FinishEncounterData){
+  if(!encounter)return;
+  setSaving(true);
+  setError('');
+  try{
+    const response = await api<{data:{id:string;emailSent?:boolean}}>(`/api/encounters/${encounter.id}/finalize`,{
+      method:'POST',
+      body:JSON.stringify(data)
+    });
+    await loadEncounter(encounter.id);
+    setFinishModalOpen(false);
+    if(response.data.emailSent){
+      setNotice('✨ Atendimento finalizado com sucesso! E-mail com orientações, plano alimentar e lâminas nutricionais enviado ao paciente.');
+    } else {
+      setNotice('Atendimento finalizado com sucesso.');
+    }
+  }catch(c){
+    setError(c instanceof Error?c.message:'Não foi possível finalizar o atendimento.');
+  }finally{
+    setSaving(false);
+  }
+ }
+
  if(!encounter)return <section className="panel encounter-start"><div className="encounter-start-icon"><ClipboardList size={30}/></div><span className="eyebrow">Atendimento privado</span><h2>Iniciar atendimento clínico</h2><p>Selecione o paciente. As informações serão salvas por etapas e poderão ser retomadas.</p>{error&&<div className="form-error">{error}</div>}<label>Paciente<select value={patientId} onChange={e=>setPatientId(e.target.value)}><option value="">Selecione um paciente</option>{patients.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label><button className="primary-button" onClick={()=>void start()} disabled={!patientId||loading}>{loading?'Abrindo...':'Começar atendimento'}</button><div className="privacy-note"><LockKeyhole size={15}/> Anamnese disponível apenas na área profissional autenticada.</div></section>;
  const key=current.key as SectionKey;const assessment=drafts.assessment||{};const profile=String(assessment.clinicalProfile||'Adulto');const weight=Number(assessment.weight);const height=Number(assessment.height);const age=Number(assessment.age);const bmi=weight>0&&height>0?(weight/(height/100)**2).toFixed(1):null;const whr=Number(assessment.waist)>0&&Number(assessment.hip)>0?(Number(assessment.waist)/Number(assessment.hip)).toFixed(2):null;const activityFactor=parseFloat(String(assessment.activityFactor||'1.375'))||1.375;const bmr=weight>0&&height>0&&age>0?10*weight+6.25*height-5*age+(assessment.sex==='Masculino'?5:-161):null;const totalEnergy=bmr?Math.round(bmr*activityFactor):null;const gestationalGain=profile==='Gestante'&&Number(assessment.prePregnancyWeight)>0?(weight-Number(assessment.prePregnancyWeight)).toFixed(1):null;
  const roomToken=encounter.videoRoomToken||encounter.id;
@@ -103,9 +136,18 @@ export function EncounterPage(){
  <ClinicalSnapshot encounter={encounter} reload={()=>void loadEncounter(encounter.id)}/>
  <details className="history-drawer"><summary>Histórico e evolução do paciente</summary><PatientHistory patientId={encounter.patientId}/></details>
  <section className="panel clinical-workspace"><div className="clinical-title"><div><span className="eyebrow">Etapa {active+1} de {steps.length}</span><h2>{current.label}</h2><p>{current.description}</p></div>{current.key!=='review'&&<span className={`save-indicator ${savedKeys.has(current.key)&&!dirtyKeys.has(current.key)?'saved':''}`}>{dirtyKeys.has(current.key)?'Alterações não salvas':savedKeys.has(current.key)?<><Check size={14}/> Salvo</>:'Ainda não salvo'}</span>}</div>
- {current.key==='review'?<Review encounter={encounter} dirty={dirtyKeys.size>0} onFinalize={finalize} saving={saving}/>:current.key==='plan'?<EncounterPlan encounterId={encounter.id} planId={String(encounter.sections.plan?.data.planId||'')} onCreated={()=>void loadEncounter(encounter.id)}/>:current.key==='exams'?<LabsList encounterId={encounter.id} initial={encounter.labs||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:current.key==='supplements'?<SupplementsList encounterId={encounter.id} initial={encounter.supplements||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:<div className="clinical-form">{current.fields?.filter(field=>!field.profiles||field.profiles.includes(profile)).map(field=><label key={field.key} className={field.type==='textarea'?'wide':''}>{field.label}<div className={field.suffix?'field-suffix':''}>{field.type==='textarea'?<textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>:field.type==='select'?<select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)}><option value="">Selecione</option>{field.options?.map(option=><option key={option}>{option}</option>)}</select>:<input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>} {field.suffix&&<span>{field.suffix}</span>}</div></label>)}{current.key==='assessment'&&(bmi||whr||bmr)&&<div className="bmi-result assessment-results"><span>Indicadores calculados · {profile}</span><div>{bmi&&<strong>IMC {bmi}</strong>}{whr&&<strong>RCQ {whr}</strong>}{bmr&&<strong>TMB {Math.round(bmr)} kcal</strong>}{totalEnergy&&<strong>VET {totalEnergy} kcal</strong>}{gestationalGain&&<strong>Ganho gestacional {gestationalGain} kg</strong>}</div><small>Indicadores de apoio; a interpretação depende do perfil, idade e contexto clínico.</small></div>}</div>}
+ {current.key==='review'?<Review encounter={encounter} dirty={dirtyKeys.size>0} onFinalize={requestFinalize} saving={saving}/>:current.key==='plan'?<EncounterPlan encounterId={encounter.id} planId={String(encounter.sections.plan?.data.planId||'')} onCreated={()=>void loadEncounter(encounter.id)}/>:current.key==='exams'?<LabsList encounterId={encounter.id} initial={encounter.labs||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:current.key==='supplements'?<SupplementsList encounterId={encounter.id} initial={encounter.supplements||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:<><div className="clinical-form">{current.fields?.filter(field=>!field.profiles||field.profiles.includes(profile)).map(field=><label key={field.key} className={field.type==='textarea'?'wide':''}>{field.label}<div className={field.suffix?'field-suffix':''}>{field.type==='textarea'?<textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>:field.type==='select'?<select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)}><option value="">Selecione</option>{field.options?.map(option=><option key={option}>{option}</option>)}</select>:<input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>} {field.suffix&&<span>{field.suffix}</span>}</div></label>)}</div>{current.key==='assessment'&&(bmi||whr||bmr)&&<div className="bmi-result assessment-results"><span>Indicadores calculados · {profile}</span><div>{bmi&&<strong>IMC {bmi}</strong>}{whr&&<strong>RCQ {whr}</strong>}{bmr&&<strong>TMB {Math.round(bmr)} kcal</strong>}{totalEnergy&&<strong>VET {totalEnergy} kcal</strong>}{gestationalGain&&<strong>Ganho gestacional {gestationalGain} kg</strong>}</div><small>Indicadores de apoio; a interpretação depende do perfil, idade e contexto clínico.</small></div>}</>}
  <div className="clinical-footer"><button className="secondary-button" onClick={()=>setActive(Math.max(0,active-1))} disabled={active===0}><ChevronLeft size={17}/> Anterior</button>{current.key!=='review'&&current.key!=='plan'&&<div><button className="ghost-button" onClick={()=>setActive(Math.min(steps.length-1,active+1))}>Avançar sem salvar</button><button className="primary-button" onClick={()=>void saveSection()} disabled={saving||encounter.status==='COMPLETED'}><Save size={17}/>{saving?'Salvando...':'Salvar e continuar'}<ChevronRight size={16}/></button></div>}</div></section></div>
  <EnergyCalculatorModal isOpen={calcOpen} onClose={()=>setCalcOpen(false)} initialWeight={weight||70} initialHeight={height||165} initialAge={age||30} initialGender={assessment.sex==='Masculino'?'MALE':'FEMALE'} onApplyResults={handleApplyEnergy}/>
+ {finishModalOpen && encounter && (
+    <FinishEncounterModal
+      patientName={encounter.patientName}
+      patientEmail={encounter.patientEmail}
+      loading={saving}
+      onClose={()=>setFinishModalOpen(false)}
+      onConfirm={handleConfirmFinalize}
+    />
+  )}
  </div>;
 }
 

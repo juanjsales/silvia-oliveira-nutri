@@ -272,3 +272,99 @@ export async function sendAppointmentReminderEmail(
   return true;
 }
 
+export async function sendEncounterConclusionEmail(
+  env: AppEnv,
+  db: Database,
+  input: {
+    to: string;
+    patientName: string;
+    encounterDate: string;
+    planTitle?: string | undefined;
+    hasPlan: boolean;
+    hasShoppingList: boolean;
+    summaryText?: string | undefined;
+    customMessage?: string | undefined;
+    laminas?: Array<{ id: string; title: string; categoryLabel: string; summary: string; tips: string[] }> | undefined;
+  },
+) {
+  const config = await loadSmtpConfig(db, env);
+  if (!config) return false;
+
+  const date = new Date(input.encounterDate).toLocaleDateString('pt-BR');
+  const details: Array<{ label: string; value: string }> = [
+    { label: 'Data da Consulta', value: date },
+  ];
+
+  if (input.hasPlan && input.planTitle) {
+    details.push({ label: 'Plano Alimentar', value: `Liberado: ${input.planTitle}` });
+  }
+
+  if (input.hasShoppingList) {
+    details.push({ label: 'Lista de Compras', value: 'Disponível no Portal do Paciente' });
+  }
+
+  if (input.summaryText) {
+    details.push({ label: 'Metas Acordadas', value: input.summaryText });
+  }
+
+  let laminasHtml = '';
+  if (input.laminas && input.laminas.length > 0) {
+    laminasHtml = `
+      <div style="margin:24px 0 10px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:#26533c;text-transform:uppercase;margin-bottom:12px;">
+          📚 Lâminas & Guias Educativos da sua Consulta:
+        </div>
+        ${input.laminas
+          .map(
+            (l) => `
+          <div style="background-color:#f4f8f5;border-left:3px solid #2f7a4a;padding:12px 14px;border-radius:6px;margin-bottom:10px;">
+            <div style="font-size:13px;font-weight:700;color:#183b2b;">${l.title} <span style="font-size:11px;font-weight:600;color:#556b5e;">(${l.categoryLabel})</span></div>
+            <div style="font-size:12px;color:#495c50;margin:4px 0 8px;">${l.summary}</div>
+            <ul style="margin:0;padding-left:18px;font-size:12px;color:#334d3d;line-height:1.45;">
+              ${l.tips.map((t) => `<li style="margin-bottom:4px;">${t}</li>`).join('')}
+            </ul>
+          </div>
+        `,
+          )
+          .join('')}
+      </div>
+    `;
+  }
+
+  const customMessageHtml = input.customMessage
+    ? `<div style="background-color:#fbfcfb;border:1px dashed #bcd3c3;padding:14px 16px;border-radius:10px;margin:18px 0;font-size:13px;color:#20352b;line-height:1.5;">
+        <strong>Mensagem da Dra. Silvia:</strong><br/>
+        <em>"${input.customMessage.replace(/\n/g, '<br/>')}"</em>
+       </div>`
+    : '';
+
+  const baseLead = `Foi um prazer atendê-lo(a)! Seu prontuário foi finalizado com sucesso e todos os seus materiais, orientações e plano alimentar já estão disponíveis para consulta no seu portal.`;
+
+  const html = buildHtmlEmail({
+    title: 'Orientações e Plano da Sua Consulta',
+    badge: 'Consulta Finalizada',
+    recipientName: input.patientName,
+    lead: baseLead,
+    details,
+    ctaText: 'Acessar Meu Portal e Plano',
+    ctaUrl: `${env.APP_URL}/portal`,
+    footerNote: 'Dúvidas durante a sua rotina? Envie uma mensagem diretamente pela aba de mensagens do seu portal.',
+  }).replace(
+    '<!-- Conteúdo Principal -->',
+    `<!-- Conteúdo Principal -->${customMessageHtml}${laminasHtml}`,
+  );
+
+  const text = `Olá, ${input.patientName}!\n\nSua consulta com a Dra. Silvia Oliveira Lemos foi concluída com sucesso.\n\nData: ${date}\n${input.planTitle ? `Plano Alimentar: ${input.planTitle}\n` : ''}\nAcesse seu portal para visualizar seu plano, lista de compras e materiais: ${env.APP_URL}/portal\n\nAtenciosamente,\nConsultório Dra. Silvia Oliveira Lemos`;
+
+  await smtpTransport(config).sendMail({
+    from: config.from,
+    to: input.to,
+    subject: `Orientações e Plano da sua Consulta — Dra. Silvia Oliveira Lemos`,
+    text,
+    html,
+  });
+
+  return true;
+}
+
+

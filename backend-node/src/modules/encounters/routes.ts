@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { ensureAppointmentCharge } from '../../shared/finance.js';
 import { missingClinicalCore } from '../../shared/clinical-completeness.js';
+import { sendEncounterConclusionEmail } from '../../integrations/email.js';
+import { NUTRITIONAL_LAMINAS } from '../../shared/nutritional-laminas.js';
 
 const sectionKey = z.enum(['context','anamnesis','recall24h','followup','assessment','exams','conduct','plan','supplements','notes']);
 const clinicalValue:z.ZodType<unknown>=z.lazy(()=>z.union([z.string().max(10000),z.number(),z.boolean(),z.null(),z.array(clinicalValue).max(100),z.record(z.string().max(80),clinicalValue)]));
@@ -115,11 +117,97 @@ export async function encounterRoutes(app: FastifyInstance) {
 
   app.post('/:id/finalize', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const body = z.object({
+      sendEmail: z.boolean().optional(),
+      emailRecipient: z.string().email().optional(),
+      includePlan: z.boolean().optional(),
+      includeShoppingList: z.boolean().optional(),
+      includeSummary: z.boolean().optional(),
+      selectedLaminas: z.array(z.string()).optional(),
+      customMessage: z.string().max(2000).optional(),
+    }).parse(request.body || {});
+
     const saved = await app.db.query<{section_key:string}>('SELECT section_key FROM clinical_sections WHERE encounter_id=$1', [id]);
     const missing=missingClinicalCore(saved.rows.map(row=>row.section_key));
     if(missing.length)return reply.code(400).send({error:`Complete o registro clínico antes de finalizar: ${missing.join(', ')}.`});
+    
     let financeCreated = false;
-    const client=await app.db.connect();try{await client.query('BEGIN');const result=await client.query<{appointment_id:string|null}>(`UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id`,[id]);if(!result.rows[0]){await client.query('ROLLBACK');return reply.code(409).send({error:'Atendimento não encontrado ou já finalizado.'})}if(result.rows[0].appointment_id){await client.query("UPDATE appointments SET status='COMPLETED',updated_at=now() WHERE id=$1",[result.rows[0].appointment_id]);const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);financeCreated=finance.created}await audit(client,'ENCOUNTER_COMPLETED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{financeCreated}});await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
-    return { data: { id, status: 'COMPLETED', financeCreated } };
+    let emailSent = false;
+
+    const encounterInfo = await app.db.query<{
+      patientId: string;
+      patientName: string;
+      patientEmail: string | null;
+      appointmentId: string | null;
+      startedAt: Date;
+    }>(`SELECT e.patient_id AS "patientId", p.name AS "patientName", p.email AS "patientEmail",
+        e.appointment_id AS "appointmentId", e.started_at AS "startedAt"
+        FROM clinical_encounters e JOIN patients p ON p.id=e.patient_id WHERE e.id=$1`, [id]);
+    
+    if (!encounterInfo.rows[0]) return reply.code(404).send({ error: 'Atendimento não encontrado.' });
+
+    const client=await app.db.connect();
+    try{
+      await client.query('BEGIN');
+      const result=await client.query<{appointment_id:string|null}>(`UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id`,[id]);
+      if(!result.rows[0]){
+        await client.query('ROLLBACK');
+        return reply.code(409).send({error:'Atendimento não encontrado ou já finalizado.'});
+      }
+      if(result.rows[0].appointment_id){
+        await client.query("UPDATE appointments SET status='COMPLETED',updated_at=now() WHERE id=$1",[result.rows[0].appointment_id]);
+        const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);
+        financeCreated=finance.created;
+      }
+      await audit(client,'ENCOUNTER_COMPLETED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{financeCreated, emailSent: !!body.sendEmail}});
+      await client.query('COMMIT');
+    }catch(error){
+      await client.query('ROLLBACK');
+      throw error;
+    }finally{
+      client.release();
+    }
+
+    if (body.sendEmail) {
+      const recipient = body.emailRecipient || encounterInfo.rows[0].patientEmail;
+      if (recipient) {
+        const planQuery = await app.db.query<{ title: string; content: any }>(
+          `SELECT title, content FROM nutrition_plans WHERE patient_id=$1 AND status='PUBLISHED' ORDER BY updated_at DESC LIMIT 1`,
+          [encounterInfo.rows[0].patientId]
+        );
+        const plan = planQuery.rows[0];
+
+        const conductSection = await app.db.query<{ data: any }>(
+          `SELECT data FROM clinical_sections WHERE encounter_id=$1 AND section_key='conduct'`,
+          [id]
+        );
+        const summaryText = body.includeSummary && conductSection.rows[0]?.data?.goals
+          ? String(conductSection.rows[0].data.goals)
+          : undefined;
+
+        const laminas = (body.selectedLaminas || [])
+          .map(lId => NUTRITIONAL_LAMINAS.find(l => l.id === lId))
+          .filter(Boolean) as Array<(typeof NUTRITIONAL_LAMINAS)[number]>;
+
+        try {
+          emailSent = await sendEncounterConclusionEmail(app.env, app.db, {
+            to: recipient,
+            patientName: encounterInfo.rows[0].patientName,
+            encounterDate: encounterInfo.rows[0].startedAt.toISOString(),
+            hasPlan: !!body.includePlan && !!plan,
+            planTitle: plan?.title,
+            hasShoppingList: !!body.includeShoppingList,
+            summaryText,
+            customMessage: body.customMessage,
+            laminas,
+          });
+        } catch (e) {
+          app.log.warn({ err: e }, 'Falha ao enviar e-mail de conclusão de atendimento');
+        }
+      }
+    }
+
+    return { data: { id, status: 'COMPLETED', financeCreated, emailSent } };
   });
 }
+
