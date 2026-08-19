@@ -24,6 +24,7 @@ import { api } from '../lib/api';
 type BroadcastTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
 
 type Props = {
+  encounterId?: string | null;
   appointmentId?: string | null;
   roomToken: string;
   patientName: string;
@@ -33,7 +34,7 @@ type Props = {
   onClose: () => void;
 };
 
-export function VideoConsultation({ appointmentId, roomToken, patientName, appointmentTime, durationMinutes, sections, onClose }: Props) {
+export function VideoConsultation({ encounterId, appointmentId, roomToken, patientName, appointmentTime, durationMinutes, sections, onClose }: Props) {
   const { startCall, minimizeCall, endCall } = useTeleconsultation();
   const [expanded, setExpanded] = useState(false);
   const [startedAt] = useState(Date.now());
@@ -79,16 +80,22 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, appoi
 
   useEffect(() => {
     if (source) {
+      const returnTarget = encounterId
+        ? `/atendimentos?id=${encodeURIComponent(encounterId)}`
+        : appointmentId
+        ? `/atendimentos?agendamento=${encodeURIComponent(appointmentId)}`
+        : '/atendimentos';
+
       startCall({
         appointmentId,
         roomToken,
         patientName,
         roomUrl: source,
         role: 'ADMIN',
-        returnPath: '/atendimentos',
+        returnPath: returnTarget,
       });
     }
-  }, [source, appointmentId, roomToken, patientName]);
+  }, [source, encounterId, appointmentId, roomToken, patientName]);
 
   const directRoomUrl = source || `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant`;
 

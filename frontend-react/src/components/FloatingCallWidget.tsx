@@ -114,9 +114,10 @@ export function FloatingCallWidget() {
           allow="camera; microphone; fullscreen; display-capture; autoplay"
         />
         {!collapsed && (
-          <div className="pip-overlay-hint" onClick={restoreCall}>
-            <span><Sparkles size={13} /> Clique para voltar ao atendimento</span>
-          </div>
+          <button type="button" className="pip-overlay-hint" onClick={restoreCall} title="Voltar para a tela do atendimento">
+            <Sparkles size={13} />
+            <span>Voltar ao atendimento</span>
+          </button>
         )}
       </div>
     </aside>
