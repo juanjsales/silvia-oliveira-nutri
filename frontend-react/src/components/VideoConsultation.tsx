@@ -27,11 +27,13 @@ type Props = {
   appointmentId?: string | null;
   roomToken: string;
   patientName: string;
+  appointmentTime?: string | null;
+  durationMinutes?: number | null;
   sections?: Record<string, any>;
   onClose: () => void;
 };
 
-export function VideoConsultation({ appointmentId, roomToken, patientName, sections, onClose }: Props) {
+export function VideoConsultation({ appointmentId, roomToken, patientName, appointmentTime, durationMinutes, sections, onClose }: Props) {
   const { startCall, minimizeCall, endCall } = useTeleconsultation();
   const [expanded, setExpanded] = useState(false);
   const [startedAt] = useState(Date.now());
@@ -55,18 +57,25 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, secti
 
   useEffect(() => {
     setError('');
+    const timeParam = appointmentTime ? `&time=${encodeURIComponent(appointmentTime)}` : '';
+    const durParam = durationMinutes ? `&duration=${encodeURIComponent(durationMinutes)}` : '';
+
     if (!appointmentId) {
-      const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`;
+      const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true${timeParam}${durParam}`;
       setSource(url);
       return;
     }
     api<{ data: { roomUrl: string } }>(`/api/video/appointments/${appointmentId}/access`, { method: 'POST' })
-      .then((response) => setSource(response.data.roomUrl))
+      .then((response) => {
+        const base = response.data.roomUrl;
+        const separator = base.includes('?') ? '&' : '?';
+        setSource(`${base}${separator}time=${encodeURIComponent(appointmentTime || '')}&duration=${encodeURIComponent(durationMinutes || 60)}`);
+      })
       .catch(() => {
-        const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`;
+        const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true${timeParam}${durParam}`;
         setSource(url);
       });
-  }, [appointmentId, roomToken]);
+  }, [appointmentId, roomToken, appointmentTime, durationMinutes]);
 
   useEffect(() => {
     if (source) {
@@ -264,7 +273,15 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, secti
             <span className="spinner" />
             <span>Conectando à sala segura...</span>
           </div>
-        ) : null}
+        ) : (
+          <iframe
+            key={iframeKey}
+            src={source}
+            title="Teleconsulta Nutricional"
+            allow="camera; microphone; display-capture; autoplay; fullscreen"
+            allowFullScreen
+          />
+        )}
       </div>
 
       <footer>
@@ -287,7 +304,7 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, secti
               <ExternalLink size={16} />
             </a>
           )}
-          <button type="button" className="hangup" onClick={onClose} title="Ocultar split de vídeo">
+          <button type="button" className="hangup" onClick={() => { endCall(); onClose(); }} title="Ocultar split de vídeo">
             <PhoneOff size={16} />
             <span>Fechar split</span>
           </button>

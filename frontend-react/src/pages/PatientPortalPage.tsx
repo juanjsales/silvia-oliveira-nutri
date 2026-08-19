@@ -37,6 +37,7 @@ import { PortalWaterTracker } from '../components/portal/PortalWaterTracker';
 import { PortalCurrentMealCard } from '../components/portal/PortalCurrentMealCard';
 import { PortalMealPlanView } from '../components/portal/PortalMealPlanView';
 import { PortalLaminasView } from '../components/portal/PortalLaminasView';
+import { formatAppointmentSchedule } from '../lib/formatters';
 import '../portal-premium.css';
 
 type Any = Record<string, any>;
@@ -154,13 +155,8 @@ export function PatientPortalPage() {
 
   const activeTeleconsultation = useMemo(() => {
     if (!data?.appointments) return null;
-    const todayStr = new Date().toISOString().slice(0, 10);
     return data.appointments.find(
-      (a: Any) =>
-        a.meetingUrl &&
-        (a.status === 'IN_PROGRESS' ||
-          a.status === 'WAITING' ||
-          (a.status === 'CONFIRMED' && String(a.appointmentDate).slice(0, 10) === todayStr)),
+      (a: Any) => a.meetingUrl && a.status === 'IN_PROGRESS',
     );
   }, [data?.appointments]);
 
@@ -371,8 +367,11 @@ function PortalHome({
 }) {
   const upcoming = data.appointments.filter(
     (a: Any) =>
-      new Date(`${a.appointmentDate}T${a.appointmentTime}`) >= new Date() &&
-      ['CONFIRMED', 'WAITING', 'IN_PROGRESS'].includes(a.status),
+      a.status !== 'COMPLETED' &&
+      a.status !== 'CANCELLED' &&
+      a.status !== 'ABSENT' &&
+      (a.status === 'IN_PROGRESS' ||
+        new Date(`${a.appointmentDate}T${a.appointmentTime}`) >= new Date(Date.now() - 30 * 60_000)),
   );
   const unread = data.notifications.filter((n: Any) => !n.readAt);
   const activeGoals = data.goals.filter((g: Any) => g.status !== 'COMPLETED');
@@ -393,9 +392,9 @@ function PortalHome({
             <div className="appt-details">
               <strong>{upcoming[0].appointmentType}</strong>
               <span>
-                📅 {new Date(`${upcoming[0].appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} às {upcoming[0].appointmentTime.slice(0, 5)}
+                📅 {new Date(`${upcoming[0].appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} · {formatAppointmentSchedule(upcoming[0].appointmentTime, upcoming[0].durationMinutes)}
               </span>
-              <small>Duração estimada: {upcoming[0].durationMinutes} minutos</small>
+              <small>Duração: {upcoming[0].durationMinutes} minutos</small>
             </div>
           </div>
 
@@ -1011,7 +1010,7 @@ function Agenda({ appointments, requests, submit }: { appointments: Any[]; reque
                 <strong>{a.appointmentType}</strong>
                 <span>
                   <Clock3 size={14} />
-                  {String(a.appointmentTime).slice(0, 5)} · {a.durationMinutes} min
+                  {formatAppointmentSchedule(a.appointmentTime, a.durationMinutes)}
                 </span>
               </div>
               {a.meetingUrl && (

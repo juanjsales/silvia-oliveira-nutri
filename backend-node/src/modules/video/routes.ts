@@ -34,35 +34,117 @@ export async function videoRoutes(app: FastifyInstance) {
 
   app.post('/appointments/:id/access', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const r = await app.db.query<Appointment>(
-      `SELECT a.patient_id AS "patientId",p.name AS "patientName",a.status,(a.appointment_date+a.appointment_time) AT TIME ZONE 'America/Sao_Paulo' AS "startsAt",((a.appointment_date+a.appointment_time)+(a.duration_minutes||' minutes')::interval) AT TIME ZONE 'America/Sao_Paulo' AS "endsAt",a.video_room_token AS "videoRoomToken" FROM appointments a JOIN patients p ON p.id=a.patient_id WHERE a.id=$1`,
+    let patientId = '';
+    let patientName = '';
+    let status = '';
+    let encounterStatus: string | null = null;
+    let startsAt: Date = new Date();
+    let endsAt: Date = new Date(Date.now() + 60 * 60_000);
+    let videoRoomToken = '';
+
+    // 1. Tentar encontrar por agendamento
+    const rAppt = await app.db.query<{
+      patientId: string;
+      patientName: string;
+      status: string;
+      encounterStatus: string | null;
+      startsAt: Date;
+      endsAt: Date;
+      videoRoomToken: string;
+    }>(
+      `SELECT a.patient_id AS "patientId", p.name AS "patientName", a.status, e.status AS "encounterStatus",
+        (a.appointment_date+a.appointment_time) AT TIME ZONE 'America/Sao_Paulo' AS "startsAt",
+        ((a.appointment_date+a.appointment_time)+(a.duration_minutes||' minutes')::interval) AT TIME ZONE 'America/Sao_Paulo' AS "endsAt",
+        a.video_room_token AS "videoRoomToken"
+       FROM appointments a
+       JOIN patients p ON p.id=a.patient_id
+       LEFT JOIN clinical_encounters e ON e.appointment_id=a.id
+       WHERE a.id=$1`,
       [id],
     );
-    const a = r.rows[0];
-    if (!a) return reply.code(404).send({ error: 'Consulta não encontrada.' });
-    if (request.auth!.role === 'PATIENT' && a.patientId !== request.auth!.patientId)
+
+    if (rAppt.rows[0]) {
+      const a = rAppt.rows[0];
+      patientId = a.patientId;
+      patientName = a.patientName;
+      status = a.status;
+      encounterStatus = a.encounterStatus;
+      startsAt = a.startsAt;
+      endsAt = a.endsAt;
+      videoRoomToken = a.videoRoomToken;
+    } else {
+      // 2. Se não encontrou por agendamento, tentar encontrar por atendimento clínico direto (sem agendamento prévio)
+      const rEnc = await app.db.query<{
+        patientId: string;
+        patientName: string;
+        status: string;
+        startsAt: Date;
+        videoRoomToken: string | null;
+      }>(
+        `SELECT e.patient_id AS "patientId", p.name AS "patientName", e.status, e.started_at AS "startsAt",
+          COALESCE(e.video_room_token, encode(gen_random_bytes(18), 'hex')) AS "videoRoomToken"
+         FROM clinical_encounters e
+         JOIN patients p ON p.id=e.patient_id
+         WHERE e.id=$1`,
+        [id],
+      );
+
+      if (!rEnc.rows[0]) {
+        return reply.code(404).send({ error: 'Consulta não encontrada.' });
+      }
+
+      const e = rEnc.rows[0];
+      patientId = e.patientId;
+      patientName = e.patientName;
+      status = e.status;
+      encounterStatus = e.status;
+      startsAt = e.startsAt;
+      endsAt = new Date(new Date(e.startsAt).getTime() + 120 * 60_000);
+      videoRoomToken = e.videoRoomToken || id;
+    }
+
+    if (request.auth!.role === 'PATIENT' && patientId !== request.auth!.patientId) {
       return reply.code(404).send({ error: 'Consulta não encontrada.' });
-    if (!['CONFIRMED', 'WAITING', 'IN_PROGRESS'].includes(a.status))
+    }
+
+    if (encounterStatus === 'COMPLETED' || status === 'COMPLETED') {
+      return reply.code(409).send({ error: 'Esta consulta já foi finalizada pela nutricionista.' });
+    }
+
+    if (['CANCELLED', 'ABSENT'].includes(status)) {
+      return reply.code(409).send({ error: 'Esta consulta foi cancelada.' });
+    }
+
+    if (!['CONFIRMED', 'WAITING', 'IN_PROGRESS'].includes(status) && encounterStatus !== 'IN_PROGRESS') {
       return reply.code(409).send({ error: 'Esta consulta não permite acesso à videochamada.' });
-    if (request.auth!.role === 'PATIENT' && a.status !== 'IN_PROGRESS')
+    }
+
+    if (request.auth!.role === 'PATIENT' && status !== 'IN_PROGRESS' && encounterStatus !== 'IN_PROGRESS') {
       return reply.code(403).send({ error: 'Aguarde a nutricionista iniciar o atendimento. A sala será liberada em seguida.' });
-    const opens = new Date(a.startsAt).getTime() - 30 * 60_000,
-      closes = new Date(a.endsAt).getTime() + 30 * 60_000;
-    if (request.auth!.role === 'PATIENT' && (Date.now() < opens || Date.now() > closes))
+    }
+
+    const opens = new Date(startsAt).getTime() - 30 * 60_000;
+    const closes = new Date(endsAt).getTime() + 30 * 60_000;
+
+    if (request.auth!.role === 'PATIENT' && (Date.now() < opens || Date.now() > closes)) {
       return reply
         .code(403)
         .send({ error: 'A sala estará disponível 30 minutos antes da consulta e será encerrada 30 minutos depois.' });
-    const room = `nutri-${a.videoRoomToken}`;
+    }
+
+    const room = `nutri-${videoRoomToken}`;
     const moderator = request.auth!.role === 'ADMIN';
-    const userName = moderator ? 'Dra. Silvia Oliveira Lemos' : a.patientName;
+    const userName = moderator ? 'Dra. Silvia Oliveira Lemos' : patientName;
     const role = moderator ? 'moderator' : 'participant';
     const roomUrl = `/videocall.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}&role=${role}&minimal=true`;
     const provider = 'P2P_WEBRTC';
+
     await audit(app.db, 'VIDEO_ACCESS_GRANTED', 'appointment', {
       actorUserId: request.auth!.userId,
       entityId: id,
       metadata: { role: request.auth!.role, provider },
     });
+
     return { data: { roomUrl, expiresAt: new Date(closes).toISOString(), appointmentId: id, provider } };
   });
 

@@ -34,3 +34,32 @@ export function capitalizePersonName(rawName?: string | null): string {
     })
     .join(' ');
 }
+
+/**
+ * Calcula o horário de término a partir do horário de início (HH:MM) e da duração em minutos.
+ * Exemplo: ("14:00", 60) -> "15:00"
+ */
+export function getEndTime(startTime?: string | null, durationMinutes: number = 60): string {
+  if (!startTime) return '';
+  const s = String(startTime).trim();
+  const timePart = s.includes('T') ? s.split('T')[1] || '' : s;
+  const [hStr, mStr] = timePart.split(':');
+  const h = parseInt(hStr || '0', 10);
+  const m = parseInt(mStr || '0', 10);
+  if (isNaN(h) || isNaN(m)) return s.slice(0, 5);
+  const total = h * 60 + m + durationMinutes;
+  const endH = Math.floor((total % (24 * 60)) / 60);
+  const endM = total % 60;
+  return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+}
+
+/**
+ * Formata o intervalo completo da consulta.
+ * Exemplo: ("14:00", 60) -> "14:00 às 15:00 (60 min)"
+ */
+export function formatAppointmentSchedule(startTime?: string | null, durationMinutes: number = 60): string {
+  if (!startTime) return `${durationMinutes} min`;
+  const cleanStart = String(startTime).slice(0, 5);
+  const end = getEndTime(cleanStart, durationMinutes);
+  return `${cleanStart} às ${end} (${durationMinutes} min)`;
+}

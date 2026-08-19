@@ -591,6 +591,20 @@ function formatTime(val) {
   return s;
 }
 
+function getEndTime(startStr, durMinutes = 60) {
+  if (!startStr) return '';
+  const s = String(startStr).trim();
+  const timePart = s.includes('T') ? s.split('T')[1] || '' : s;
+  const p = timePart.split(':');
+  const h = parseInt(p[0] || '0', 10);
+  const m = parseInt(p[1] || '0', 10);
+  if (isNaN(h) || isNaN(m)) return s.slice(0, 5);
+  const total = h * 60 + m + (parseInt(durMinutes, 10) || 60);
+  const endH = Math.floor((total % (24 * 60)) / 60);
+  const endM = total % 60;
+  return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+}
+
 // Remove qualquer ISO timestamp que venha colado ao campo tipo/observacao
 function sanitizaTipo(val) {
   if (!val) return 'Consulta';
@@ -620,7 +634,8 @@ function renderDayList() {
 
 function buildCard(ag) {
   const hora   = formatTime(ag.hora)||ag.hora||'--:--';
-  const periodo = Number(hora.split(':')[0])<12?'AM':'PM';
+  const duracao = parseInt(ag.duracao || ag.duration_minutes || ag.durationMinutes || 60, 10);
+  const horaFim = getEndTime(hora, duracao);
   const nome   = escapeHTML(ag.paciente_nome||ag.nome||'Paciente');
   const tipo   = escapeHTML(sanitizaTipo(ag.tipo));
   const status = escapeHTML(ag.status||'Confirmado');
@@ -640,10 +655,10 @@ function buildCard(ag) {
   if (status.toLowerCase().includes('cancel')) statusClass='status-cancelado';
 
   const phone = String(ag.paciente_whatsapp||ag.whatsapp||'').replace(/\D/g,'');
-  const waTxt = encodeURIComponent(`Olá ${nome}! 🌿 Lembrando da sua consulta com a Dra. Silvia Oliveira Lemos hoje às ${hora}. Te esperamos!`);
+  const waTxt = encodeURIComponent(`Olá ${nome}! 🌿 Lembrando da sua consulta (${hora} às ${horaFim}) com a Dra. Silvia Oliveira Lemos hoje. Te esperamos!`);
 
   return `<div class="consult-card ${statusClass}" id="card-${id}">
-    <div class="consult-time">${hora}<div class="consult-time-period">${periodo}</div></div>
+    <div class="consult-time" style="min-width:85px">${hora}<div class="consult-time-period">às ${horaFim} (${duracao} min)</div></div>
     <div class="consult-info">
       <div class="consult-name">${nome}</div>
       <div class="consult-type">${tipo}${obs ? ' · '+obs : ''}</div>

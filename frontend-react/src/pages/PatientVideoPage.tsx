@@ -63,11 +63,30 @@ export function PatientVideoPage() {
   const [lastSyncedUpdate, setLastSyncedUpdate] = useState<string>('');
 
   useEffect(() => {
-    if (!id) return;
-    api<{ data: Access }>(`/api/video/appointments/${id}/access`, { method: 'POST' })
-      .then((response) => setAccess(response.data))
-      .catch((cause) => setError(cause instanceof Error ? cause.message : 'Não foi possível entrar na sala.'));
-  }, [id]);
+    if (!id || access) return;
+    let timer: number | undefined;
+
+    const checkAccess = () => {
+      api<{ data: Access }>(`/api/video/appointments/${id}/access`, { method: 'POST' })
+        .then((response) => {
+          setAccess(response.data);
+          setError('');
+        })
+        .catch((cause) => {
+          const msg = cause instanceof Error ? cause.message : 'Não foi possível entrar na sala.';
+          setError(msg);
+          // Se o paciente está na sala de espera aguardando a nutri iniciar, retentar a cada 4s
+          if (msg.includes('iniciar') || msg.includes('aguarde') || msg.includes('Aguarde')) {
+            timer = window.setTimeout(checkAccess, 4000);
+          }
+        });
+    };
+
+    checkAccess();
+    return () => {
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [id, access]);
 
   useEffect(() => {
     if (entered && id && access) {
@@ -184,14 +203,36 @@ export function PatientVideoPage() {
       </header>
 
       {error ? (
-        <section className="video-access-error">
-          <Video />
-          <h2>Sala indisponível</h2>
-          <p>{error}</p>
-          <Link className="primary-button" to="/portal">
-            Voltar ao Portal
-          </Link>
-        </section>
+        error.includes('iniciar') || error.includes('aguarde') || error.includes('Aguarde') ? (
+          <section className="video-access-error" style={{ borderColor: '#3b82f6', background: 'rgba(59, 130, 246, 0.04)' }}>
+            <span className="spinner" style={{ width: 36, height: 36, borderTopColor: '#3b82f6' }} />
+            <h2 style={{ color: '#1e40af' }}>Sala de Espera Virtual</h2>
+            <p style={{ maxWidth: 440 }}>A Dra. Silvia Oliveira Lemos está preparando seu atendimento. Esta tela liberará sua entrada automaticamente assim que a chamada começar.</p>
+            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+              <Link className="secondary-button" to="/portal">
+                Aguardar no Portal
+              </Link>
+            </div>
+          </section>
+        ) : error.includes('finalizada') || error.includes('concluída') ? (
+          <section className="video-access-error" style={{ borderColor: '#10b981', background: 'rgba(16, 185, 129, 0.04)' }}>
+            <CheckCircle2 size={40} style={{ color: '#10b981' }} />
+            <h2 style={{ color: '#065f46' }}>Consulta Concluída</h2>
+            <p style={{ maxWidth: 440 }}>Este atendimento já foi finalizado pela Dra. Silvia. Seus novos planos, orientações e documentos já estão salvos e atualizados no seu portal.</p>
+            <Link className="primary-button" to="/portal">
+              Acessar Meu Portal
+            </Link>
+          </section>
+        ) : (
+          <section className="video-access-error">
+            <Video />
+            <h2>Sala indisponível</h2>
+            <p>{error}</p>
+            <Link className="primary-button" to="/portal">
+              Voltar ao Portal
+            </Link>
+          </section>
+        )
       ) : !access ? (
         <div className="page-loader">
           <span className="spinner" />
@@ -254,6 +295,13 @@ export function PatientVideoPage() {
       ) : (
         <div className={`video-call-workspace ${showGuide ? 'with-guide' : 'full-video'}`}>
           <div className="video-stream-container" id="patient-video-slot">
+            <iframe
+              key={iframeKey}
+              src={access.roomUrl}
+              title="Sala de Teleconsulta"
+              allow="camera; microphone; display-capture; autoplay; fullscreen"
+              allowFullScreen
+            />
             <footer className="video-stream-footer">
               <small>Acesso seguro ativo até {new Date(access.expiresAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.</small>
               {!showGuide && (

@@ -59,9 +59,12 @@ export async function encounterRoutes(app: FastifyInstance) {
       if (!appointment.rows[0]) return reply.code(400).send({ error: 'Consulta não pertence ao paciente informado.' });
       const existing = await app.db.query<{id:string}>('SELECT id FROM clinical_encounters WHERE appointment_id=$1', [body.appointmentId]);
       if (existing.rows[0]) return reply.send({ data: { id: existing.rows[0].id, resumed: true } });
+    } else {
+      const existingDirect = await app.db.query<{id:string}>("SELECT id FROM clinical_encounters WHERE patient_id=$1 AND status='IN_PROGRESS' ORDER BY started_at DESC LIMIT 1", [body.patientId]);
+      if (existingDirect.rows[0]) return reply.send({ data: { id: existingDirect.rows[0].id, resumed: true } });
     }
-    const result = await app.db.query<{id:string}>(`INSERT INTO clinical_encounters(patient_id, appointment_id, opened_by)
-      VALUES ($1,$2,$3) RETURNING id`, [body.patientId, body.appointmentId ?? null, request.auth!.userId]);
+    const result = await app.db.query<{id:string}>(`INSERT INTO clinical_encounters(patient_id, appointment_id, opened_by, video_room_token)
+      VALUES ($1,$2,$3, encode(gen_random_bytes(18), 'hex')) RETURNING id`, [body.patientId, body.appointmentId ?? null, request.auth!.userId]);
     const id = result.rows[0]!.id;
     if (body.appointmentId) await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
     await audit(app.db, 'ENCOUNTER_STARTED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id, metadata: { patientId: body.patientId } });
@@ -72,7 +75,9 @@ export async function encounterRoutes(app: FastifyInstance) {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
     const result = await app.db.query(`SELECT e.id, e.patient_id AS "patientId", p.name AS "patientName", p.birth_date AS "birthDate",
       p.objective, p.whatsapp, p.email, e.appointment_id AS "appointmentId", COALESCE(a.video_room_token,e.video_room_token) AS "videoRoomToken", e.status,
-      e.started_at AS "startedAt", e.completed_at AS "completedAt"
+      e.started_at AS "startedAt", e.completed_at AS "completedAt",
+      to_char(a.appointment_date,'YYYY-MM-DD') AS "appointmentDate", to_char(a.appointment_time,'HH24:MI') AS "appointmentTime",
+      a.duration_minutes AS "durationMinutes", a.appointment_type AS "appointmentType"
       FROM clinical_encounters e JOIN patients p ON p.id=e.patient_id LEFT JOIN appointments a ON a.id=e.appointment_id WHERE e.id=$1`, [id]);
     if (!result.rows[0]) return reply.code(404).send({ error: 'Atendimento não encontrado.' });
     const sections = await app.db.query<{sectionKey:string;data:unknown;savedAt:Date}>(`SELECT section_key AS "sectionKey", data, saved_at AS "savedAt"

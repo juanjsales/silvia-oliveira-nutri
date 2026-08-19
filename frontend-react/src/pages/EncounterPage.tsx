@@ -7,13 +7,15 @@ import { PatientHistory } from '../components/PatientHistory';
 import { EnergyCalculatorModal } from '../components/EnergyCalculatorModal';
 import { FinishEncounterModal, type FinishEncounterData } from '../components/FinishEncounterModal';
 import { api } from '../lib/api';
+import { useTeleconsultation } from '../contexts/TeleconsultationContext';
+import { formatAppointmentSchedule } from '../lib/formatters';
 
 type SectionKey='context'|'anamnesis'|'recall24h'|'followup'|'assessment'|'exams'|'conduct'|'plan'|'supplements'|'notes';
 type Value=string|number|boolean|null;
 type SectionData=Record<string,Value>;
 type Patient={id:string;name:string;objective?:string|null;email?:string|null};
 type Checkin={id:string;answers:Record<string,unknown>;status:'PENDING_REVIEW'|'REVIEWED';submittedAt:string;reviewedAt?:string|null};
-type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;status:'IN_PROGRESS'|'COMPLETED';startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
+type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;appointmentDate?:string|null;appointmentTime?:string|null;durationMinutes?:number|null;appointmentType?:string|null;status:'IN_PROGRESS'|'COMPLETED';startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
 type Field={key:string;label:string;type?:'text'|'textarea'|'number'|'select'|'date'|'time';placeholder?:string;options?:string[];suffix?:string;profiles?:string[]};
 type Step={key:SectionKey|'review';label:string;description:string;fields?:Field[]};
 
@@ -58,80 +60,84 @@ function missingClinicalCore(sections:Encounter['sections']){
 }
 
 export function EncounterPage(){
- const[params,setParams]=useSearchParams();const patientParam=params.get('paciente')||'';const appointmentParam=params.get('agendamento')||'';const videoParam=params.get('video')==='true';
- const[patients,setPatients]=useState<Patient[]>([]);const[patientId,setPatientId]=useState(patientParam);const[encounter,setEncounter]=useState<Encounter|null>(null);const[active,setActive]=useState(0);const[drafts,setDrafts]=useState<Partial<Record<SectionKey,SectionData>>>({});const[dirtyKeys,setDirtyKeys]=useState<Set<SectionKey>>(new Set());const[loading,setLoading]=useState(false);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[videoOpen,setVideoOpen]=useState(videoParam);const[calcOpen,setCalcOpen]=useState(false);
- const[finishModalOpen,setFinishModalOpen]=useState(false);
- useEffect(()=>{api<{data:Patient[]}>('/api/patients').then(r=>setPatients(r.data)).catch(c=>setError(c instanceof Error?c.message:'Erro ao carregar pacientes.'))},[]);
- const loadEncounter=useCallback(async(id:string)=>{setLoading(true);try{const r=await api<{data:Encounter}>(`/api/encounters/${id}`);setEncounter(r.data);const loaded:Partial<Record<SectionKey,SectionData>>={};for(const key of steps.map(s=>s.key).filter(k=>k!=='review') as SectionKey[])loaded[key]=r.data.sections[key]?.data||{};setDrafts(loaded);setDirtyKeys(new Set())}catch(c){setError(c instanceof Error?c.message:'Erro ao abrir atendimento.')}finally{setLoading(false)}},[]);
- useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(dirtyKeys.size){event.preventDefault();event.returnValue=''}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirtyKeys]);
- useEffect(()=>{const id=params.get('id');if(id)void loadEncounter(id)},[params,loadEncounter]);
- useEffect(()=>{
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  const stepper = document.querySelector('.clinical-stepper') || document.querySelector('.encounter-page');
-  if (stepper) {
-    stepper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const { endCall } = useTeleconsultation();
+  const[params,setParams]=useSearchParams();const patientParam=params.get('paciente')||'';const appointmentParam=params.get('agendamento')||'';const videoParam=params.get('video')==='true';
+  const[patients,setPatients]=useState<Patient[]>([]);const[patientId,setPatientId]=useState(patientParam);const[encounter,setEncounter]=useState<Encounter|null>(null);const[active,setActive]=useState(0);const[drafts,setDrafts]=useState<Partial<Record<SectionKey,SectionData>>>({});const[dirtyKeys,setDirtyKeys]=useState<Set<SectionKey>>(new Set());const[loading,setLoading]=useState(false);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[videoOpen,setVideoOpen]=useState(videoParam);const[calcOpen,setCalcOpen]=useState(false);
+  const[finishModalOpen,setFinishModalOpen]=useState(false);
+  useEffect(()=>{api<{data:Patient[]}>('/api/patients').then(r=>setPatients(r.data)).catch(c=>setError(c instanceof Error?c.message:'Erro ao carregar pacientes.'))},[]);
+  const loadEncounter=useCallback(async(id:string)=>{setLoading(true);try{const r=await api<{data:Encounter}>(`/api/encounters/${id}`);setEncounter(r.data);const loaded:Partial<Record<SectionKey,SectionData>>={};for(const key of steps.map(s=>s.key).filter(k=>k!=='review') as SectionKey[])loaded[key]=r.data.sections[key]?.data||{};setDrafts(loaded);setDirtyKeys(new Set())}catch(c){setError(c instanceof Error?c.message:'Erro ao abrir atendimento.')}finally{setLoading(false)}},[]);
+  useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(dirtyKeys.size){event.preventDefault();event.returnValue=''}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirtyKeys]);
+  useEffect(()=>{const id=params.get('id');if(id)void loadEncounter(id)},[params,loadEncounter]);
+  useEffect(()=>{
+   window.scrollTo({ top: 0, behavior: 'smooth' });
+   const stepper = document.querySelector('.clinical-stepper') || document.querySelector('.encounter-page');
+   if (stepper) {
+     stepper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+   }
+  },[active]);
+  useEffect(()=>{if(!patientParam||!appointmentParam||params.get('id'))return;let cancelled=false;setLoading(true);api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId:patientParam,appointmentId:appointmentParam})}).then(r=>{if(!cancelled){setParams({id:r.data.id,...(videoParam?{video:'true'}:{})});void loadEncounter(r.data.id)}}).catch(c=>setError(c instanceof Error?c.message:'Erro ao iniciar atendimento.')).finally(()=>setLoading(false));return()=>{cancelled=true}},[patientParam,appointmentParam,videoParam,params,setParams,loadEncounter]);
+  async function start(){if(!patientId)return;setLoading(true);setError('');try{const r=await api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId})});setParams({id:r.data.id});await loadEncounter(r.data.id)}catch(c){setError(c instanceof Error?c.message:'Não foi possível iniciar.')}finally{setLoading(false)}}
+  const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);
+  function change(key:SectionKey,field:string,value:string){setDrafts(d=>({...d,[key]:{...(d[key]||{}),[field]:value}}));setDirtyKeys(keys=>new Set(keys).add(key));setNotice('')}
+  async function saveSection(){if(!encounter||current.key==='review')return;setSaving(true);setError('');try{await api(`/api/encounters/${encounter.id}/sections/${current.key}`,{method:'PUT',body:JSON.stringify({data:drafts[current.key]||{},expectedSavedAt:encounter.sections[current.key]?.savedAt||null})});await loadEncounter(encounter.id);setNotice('Etapa salva com segurança.');if(active<steps.length-1)setActive(active+1)}catch(c){setError(c instanceof Error?c.message:'Não foi possível salvar a etapa.')}finally{setSaving(false)}}
+  
+  function requestFinalize(){
+   if(!encounter)return;
+   if(dirtyKeys.size){setError('Salve todas as alterações antes de finalizar o atendimento.');return}
+   const missing=missingClinicalCore(encounter.sections);
+   if(missing.length){setError(`Preencha e salve os requisitos obrigatórios: ${missing.join(', ')}.`);return}
+   setFinishModalOpen(true);
   }
- },[active]);
- useEffect(()=>{if(!patientParam||!appointmentParam||params.get('id'))return;let cancelled=false;setLoading(true);api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId:patientParam,appointmentId:appointmentParam})}).then(r=>{if(!cancelled){setParams({id:r.data.id});void loadEncounter(r.data.id)}}).catch(c=>setError(c instanceof Error?c.message:'Erro ao iniciar atendimento.')).finally(()=>setLoading(false));return()=>{cancelled=true}},[patientParam,appointmentParam,params,setParams,loadEncounter]);
- async function start(){if(!patientId)return;setLoading(true);setError('');try{const r=await api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId})});setParams({id:r.data.id});await loadEncounter(r.data.id)}catch(c){setError(c instanceof Error?c.message:'Não foi possível iniciar.')}finally{setLoading(false)}}
- const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);
- function change(key:SectionKey,field:string,value:string){setDrafts(d=>({...d,[key]:{...(d[key]||{}),[field]:value}}));setDirtyKeys(keys=>new Set(keys).add(key));setNotice('')}
- async function saveSection(){if(!encounter||current.key==='review')return;setSaving(true);setError('');try{await api(`/api/encounters/${encounter.id}/sections/${current.key}`,{method:'PUT',body:JSON.stringify({data:drafts[current.key]||{},expectedSavedAt:encounter.sections[current.key]?.savedAt||null})});await loadEncounter(encounter.id);setNotice('Etapa salva com segurança.');if(active<steps.length-1)setActive(active+1)}catch(c){setError(c instanceof Error?c.message:'Não foi possível salvar a etapa.')}finally{setSaving(false)}}
- 
- function requestFinalize(){
-  if(!encounter)return;
-  if(dirtyKeys.size){setError('Salve todas as alterações antes de finalizar o atendimento.');return}
-  const missing=missingClinicalCore(encounter.sections);
-  if(missing.length){setError(`Preencha e salve os requisitos obrigatórios: ${missing.join(', ')}.`);return}
-  setFinishModalOpen(true);
- }
 
- async function handleConfirmFinalize(data: FinishEncounterData){
-  if(!encounter)return;
-  setSaving(true);
-  setError('');
-  try{
-    const response = await api<{data:{id:string;emailSent?:boolean}}>(`/api/encounters/${encounter.id}/finalize`,{
-      method:'POST',
-      body:JSON.stringify(data)
-    });
-    await loadEncounter(encounter.id);
-    setFinishModalOpen(false);
-    if(response.data.emailSent){
-      setNotice('✨ Atendimento finalizado com sucesso! E-mail com orientações, plano alimentar e lâminas nutricionais enviado ao paciente.');
-    } else {
-      setNotice('Atendimento finalizado com sucesso.');
-    }
-  }catch(c){
-    setError(c instanceof Error?c.message:'Não foi possível finalizar o atendimento.');
-  }finally{
-    setSaving(false);
+  async function handleConfirmFinalize(data: FinishEncounterData){
+   if(!encounter)return;
+   setSaving(true);
+   setError('');
+   try{
+     const response = await api<{data:{id:string;emailSent?:boolean}}>(`/api/encounters/${encounter.id}/finalize`,{
+       method:'POST',
+       body:JSON.stringify(data)
+     });
+     endCall();
+     setVideoOpen(false);
+     sessionStorage.removeItem(`in_call_${encounter.id}`);
+     if (encounter.appointmentId) sessionStorage.removeItem(`in_call_${encounter.appointmentId}`);
+     await loadEncounter(encounter.id);
+     setFinishModalOpen(false);
+     if(response.data.emailSent){
+       setNotice('✨ Atendimento finalizado com sucesso! E-mail com orientações, plano alimentar e lâminas nutricionais enviado ao paciente.');
+     } else {
+       setNotice('Atendimento finalizado com sucesso.');
+     }
+   }catch(c){
+     setError(c instanceof Error?c.message:'Não foi possível finalizar o atendimento.');
+   }finally{
+     setSaving(false);
+   }
   }
- }
 
  if(!encounter)return <section className="panel encounter-start"><div className="encounter-start-icon"><ClipboardList size={30}/></div><span className="eyebrow">Atendimento privado</span><h2>Iniciar atendimento clínico</h2><p>Selecione o paciente. As informações serão salvas por etapas e poderão ser retomadas.</p>{error&&<div className="form-error">{error}</div>}<label>Paciente<select value={patientId} onChange={e=>setPatientId(e.target.value)}><option value="">Selecione um paciente</option>{patients.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label><button className="primary-button" onClick={()=>void start()} disabled={!patientId||loading}>{loading?'Abrindo...':'Começar atendimento'}</button><div className="privacy-note"><LockKeyhole size={15}/> Anamnese disponível apenas na área profissional autenticada.</div></section>;
  const key=current.key as SectionKey;const assessment=drafts.assessment||{};const profile=String(assessment.clinicalProfile||'Adulto');const weight=Number(assessment.weight);const height=Number(assessment.height);const age=Number(assessment.age);const bmi=weight>0&&height>0?(weight/(height/100)**2).toFixed(1):null;const whr=Number(assessment.waist)>0&&Number(assessment.hip)>0?(Number(assessment.waist)/Number(assessment.hip)).toFixed(2):null;const activityFactor=parseFloat(String(assessment.activityFactor||'1.375'))||1.375;const bmr=weight>0&&height>0&&age>0?10*weight+6.25*height-5*age+(assessment.sex==='Masculino'?5:-161):null;const totalEnergy=bmr?Math.round(bmr*activityFactor):null;const gestationalGain=profile==='Gestante'&&Number(assessment.prePregnancyWeight)>0?(weight-Number(assessment.prePregnancyWeight)).toFixed(1):null;
  const roomToken=encounter.videoRoomToken||encounter.id;
 
  function handleApplyEnergy(results: { tmb: number; vet: number; targetKcal: number; proteinGrams: number; carbsGrams: number; fatGrams: number }) {
-   const note = `Meta Calórica: ${results.targetKcal} kcal/dia | VET: ${results.vet} kcal | TMB: ${results.tmb} kcal\nDistribuição: Proteínas: ${results.proteinGrams}g | Carboidratos: ${results.carbsGrams}g | Gorduras: ${results.fatGrams}g`;
-   setDrafts(d => ({
-     ...d,
-     assessment: {
-       ...(d.assessment || {}),
-       assessmentNotes: d.assessment?.assessmentNotes ? `${d.assessment.assessmentNotes}\n\n${note}` : note,
-     },
-     conduct: {
-       ...(d.conduct || {}),
-       guidance: d.conduct?.guidance ? `${d.conduct.guidance}\n\nPrescrição: ${results.targetKcal} kcal/dia (${results.proteinGrams}g Prot / ${results.carbsGrams}g Carb / ${results.fatGrams}g Gord)` : `Prescrição: ${results.targetKcal} kcal/dia (${results.proteinGrams}g Prot / ${results.carbsGrams}g Carb / ${results.fatGrams}g Gord)`,
-     }
-   }));
-   setDirtyKeys(k => new Set(k).add('assessment').add('conduct'));
-   setNotice('Meta calórica e macronutrientes aplicados com sucesso à Avaliação e Conduta!');
- }
+    setDrafts(d => ({
+      ...d,
+      assessment: {
+        ...(d.assessment || {}),
+        assessmentNotes: d.assessment?.assessmentNotes ? `${d.assessment.assessmentNotes}\n\nMeta Calórica: ${results.targetKcal} kcal/dia | VET: ${results.vet} kcal | TMB: ${results.tmb} kcal\nDistribuição: Proteínas: ${results.proteinGrams}g | Carboidratos: ${results.carbsGrams}g | Gorduras: ${results.fatGrams}g` : `Meta Calórica: ${results.targetKcal} kcal/dia | VET: ${results.vet} kcal | TMB: ${results.tmb} kcal\nDistribuição: Proteínas: ${results.proteinGrams}g | Carboidratos: ${results.carbsGrams}g | Gorduras: ${results.fatGrams}g`,
+      },
+      conduct: {
+        ...(d.conduct || {}),
+        guidance: d.conduct?.guidance ? `${d.conduct.guidance}\n\nPrescrição: ${results.targetKcal} kcal/dia (${results.proteinGrams}g Prot / ${results.carbsGrams}g Carb / ${results.fatGrams}g Gord)` : `Prescrição: ${results.targetKcal} kcal/dia (${results.proteinGrams}g Prot / ${results.carbsGrams}g Carb / ${results.fatGrams}g Gord)`,
+      }
+    }));
+    setDirtyKeys(k => new Set(k).add('assessment').add('conduct'));
+    setNotice('Meta calórica e macronutrientes aplicados com sucesso à Avaliação e Conduta!');
+  }
 
- return <div className={`virtual-office ${videoOpen?'with-video':''}`}>{videoOpen&&<VideoConsultation appointmentId={encounter.appointmentId} roomToken={roomToken} patientName={encounter.patientName} sections={drafts} onClose={()=>setVideoOpen(false)}/>}<div className="encounter-page"><section className="encounter-header"><div className="patient-avatar large">{encounter.patientName.charAt(0)}</div><div><span className="eyebrow">Atendimento em andamento</span><h2>{encounter.patientName}</h2><p>{encounter.objective||'Objetivo não informado'} · iniciado em {new Date(encounter.startedAt).toLocaleDateString('pt-BR')}</p></div><div className="encounter-header-actions"><button type="button" className="secondary-button" onClick={()=>setCalcOpen(true)} title="Calcular Gasto Energético (VET & TMB)"><Calculator size={16}/> Calculadora VET / TMB</button>{encounter.status!=='COMPLETED'&&<button className={`secondary-button video-toggle-btn ${videoOpen?'active':''}`} onClick={()=>setVideoOpen(v=>!v)}><Video size={17}/> {videoOpen?'Ocultar split':'Teleconsulta (Split)'}</button>}<span className={`encounter-state ${encounter.status==='COMPLETED'?'done':''}`}>{encounter.status==='COMPLETED'?<><CheckCircle2 size={15}/> Finalizado</>:'Em andamento'}</span></div></section>
- <nav className="clinical-stepper" aria-label="Etapas do atendimento">{steps.map((step,index)=><button key={step.key} className={`${active===index?'active ':''}${step.key!=='review'&&savedKeys.has(step.key)?'saved':''}`} onClick={()=>setActive(index)}><span>{step.key!=='review'&&savedKeys.has(step.key)?<Check size={15}/>:index+1}</span><div><strong>{step.label}</strong><small>{step.description}</small></div></button>)}</nav>
+  return <div className={`virtual-office ${videoOpen?'with-video':''}`}>{videoOpen&&<VideoConsultation appointmentId={encounter.appointmentId} roomToken={roomToken} patientName={encounter.patientName} appointmentTime={encounter.appointmentTime} durationMinutes={encounter.durationMinutes} sections={drafts} onClose={()=>setVideoOpen(false)}/>}<div className="encounter-page"><section className="encounter-header"><div className="patient-avatar large">{encounter.patientName.charAt(0)}</div><div><span className="eyebrow">Atendimento em andamento</span><h2>{encounter.patientName}</h2><p>{encounter.objective||'Objetivo não informado'}{encounter.appointmentTime ? ` · Consulta: ${formatAppointmentSchedule(encounter.appointmentTime, encounter.durationMinutes || 60)}` : ` · iniciado em ${new Date(encounter.startedAt).toLocaleDateString('pt-BR')}`}</p></div><div className="encounter-header-actions"><button type="button" className="secondary-button" onClick={()=>setCalcOpen(true)} title="Calcular Gasto Energético (VET & TMB)"><Calculator size={16}/> Calculadora VET / TMB</button>{encounter.status!=='COMPLETED'&&<button className={`secondary-button video-toggle-btn ${videoOpen?'active':''}`} onClick={()=>setVideoOpen(v=>!v)}><Video size={17}/> {videoOpen?'Ocultar split':'Teleconsulta (Split)'}</button>}<span className={`encounter-state ${encounter.status==='COMPLETED'?'done':''}`}>{encounter.status==='COMPLETED'?<><CheckCircle2 size={15}/> Finalizado</>:'Em andamento'}</span></div></section>
+ <nav className="clinical-stepper" aria-label="Etapas do atendimento">{steps.map((step,index)=><button key={step.key} type="button" className={`${active===index?'active ':''}${step.key!=='review'&&savedKeys.has(step.key)?'saved':''}`} onClick={()=>setActive(index)} title={`${step.label}: ${step.description}`}><span>{step.key!=='review'&&savedKeys.has(step.key)?<Check size={15}/>:index+1}</span><div><strong>{step.label}</strong><small>{step.description}</small></div></button>)}</nav>
  {error&&<div className="form-error">{error}</div>}{notice&&<div className="form-success"><CheckCircle2 size={17}/>{notice}</div>}
  <ClinicalSnapshot encounter={encounter} reload={()=>void loadEncounter(encounter.id)}/>
  <details className="history-drawer"><summary>Histórico e evolução do paciente</summary><PatientHistory patientId={encounter.patientId}/></details>

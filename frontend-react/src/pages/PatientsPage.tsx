@@ -18,6 +18,7 @@ import {
   UserPlus,
   UserRound,
   Users,
+  Video,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
@@ -454,7 +455,7 @@ export function PatientsPage() {
                       <Link
                         className="btn-start-care"
                         to={`/atendimentos?paciente=${p.id}`}
-                        title="Abrir prontuário e iniciar consulta"
+                        title="Abrir prontuário clínico"
                       >
                         <Stethoscope size={15} />
                         <span>Atender</span>
