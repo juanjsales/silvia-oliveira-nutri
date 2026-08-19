@@ -15,6 +15,11 @@ export function ClinicProvider({children}:{children:ReactNode}){
   const value=useMemo(()=>({...identity,refresh}),[identity,refresh]);
   return <ClinicContext.Provider value={value}>{children}</ClinicContext.Provider>
 }
+export function useClinic(){
+  const context=useContext(ClinicContext);
+  if(!context)throw new Error('useClinic precisa estar dentro de ClinicProvider.');
+  return context;
+}
 export function ClinicMark({className='brand-mark'}:{className?:string}){
   const clinic=useClinic();
   return clinic.logoUrl ? (

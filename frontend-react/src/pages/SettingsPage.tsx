@@ -5,6 +5,7 @@ import {
   Palette,
   Save,
   ShieldCheck,
+  Sparkles,
   Stethoscope,
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
@@ -14,6 +15,7 @@ import { ReadinessPanel } from "../components/ReadinessPanel";
 import { IncidentPanel } from "../components/IncidentPanel";
 import { PrivacyRequestsPanel } from "../components/PrivacyRequestsPanel";
 import { PasswordInput } from "../components/PasswordInput";
+import { SetupWizardModal } from "../components/SetupWizardModal";
 type Settings = {
   clinicName: string;
   professionalName: string;
@@ -61,9 +63,12 @@ export function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [wizardOpen, setWizardOpen] = useState(false);
+
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
-  useEffect(() => {
+
+  const loadSettings = () => {
     api<{ data: Settings }>("/api/settings")
       .then((r) => setForm({ ...defaults, ...r.data }))
       .catch((c) =>
@@ -72,6 +77,10 @@ export function SettingsPage() {
         ),
       )
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadSettings();
   }, []);
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -142,6 +151,36 @@ export function SettingsPage() {
           {notice}
         </div>
       )}
+
+      {/* BANNER DE ASSISTENTE DE CONFIGURAÇÃO RÁPIDA */}
+      <div className="wizard-banner-card">
+        <div className="wizard-banner-text">
+          <div className="wizard-icon-badge">
+            <Sparkles size={22} />
+          </div>
+          <div>
+            <strong>Assistente de Configuração Rápida</strong>
+            <span>Configure a identidade, preços e e-mails do seu consultório em 3 passos simples.</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="wizard-banner-btn"
+          onClick={() => setWizardOpen(true)}
+        >
+          <Sparkles size={16} /> Iniciar Assistente
+        </button>
+      </div>
+
+      <SetupWizardModal
+        isOpen={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCompleted={() => {
+          loadSettings();
+          setNotice("Consultório configurado com sucesso pelo assistente!");
+        }}
+      />
+
       <ReadinessPanel />
       <IncidentPanel />
       <PrivacyRequestsPanel />
