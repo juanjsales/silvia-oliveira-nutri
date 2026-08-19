@@ -1,4 +1,4 @@
-import { Calculator, Check, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, FileCheck2, LockKeyhole, Plus, Save, UserRound, UtensilsCrossed, Video, Zap } from 'lucide-react';
+import { Calculator, Check, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Edit3, ExternalLink, FileCheck2, FileText, HeartPulse, LockKeyhole, Mail, Pill, Plus, Printer, Save, Scale, Send, Sparkles, UserRound, UtensilsCrossed, Video, Zap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { VideoConsultation } from '../components/VideoConsultation';
@@ -142,7 +142,7 @@ export function EncounterPage(){
  <ClinicalSnapshot encounter={encounter} reload={()=>void loadEncounter(encounter.id)}/>
  <details className="history-drawer"><summary>Histórico e evolução do paciente</summary><PatientHistory patientId={encounter.patientId}/></details>
  <section className="panel clinical-workspace"><div className="clinical-title"><div><span className="eyebrow">Etapa {active+1} de {steps.length}</span><h2>{current.label}</h2><p>{current.description}</p></div>{current.key!=='review'&&<span className={`save-indicator ${savedKeys.has(current.key)&&!dirtyKeys.has(current.key)?'saved':''}`}>{dirtyKeys.has(current.key)?'Alterações não salvas':savedKeys.has(current.key)?<><Check size={14}/> Salvo</>:'Ainda não salvo'}</span>}</div>
- {current.key==='review'?<Review encounter={encounter} dirty={dirtyKeys.size>0} onFinalize={requestFinalize} saving={saving}/>:current.key==='plan'?<EncounterPlan encounterId={encounter.id} planId={String(encounter.sections.plan?.data.planId||'')} onCreated={()=>void loadEncounter(encounter.id)}/>:current.key==='exams'?<LabsList encounterId={encounter.id} initial={encounter.labs||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:current.key==='supplements'?<SupplementsList encounterId={encounter.id} initial={encounter.supplements||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:<><div className="clinical-form">{current.fields?.filter(field=>!field.profiles||field.profiles.includes(profile)).map(field=><label key={field.key} className={field.type==='textarea'?'wide':''}>{field.label}<div className={field.suffix?'field-suffix':''}>{field.type==='textarea'?<textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>:field.type==='select'?<select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)}><option value="">Selecione</option>{field.options?.map(option=><option key={option}>{option}</option>)}</select>:<input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>} {field.suffix&&<span>{field.suffix}</span>}</div></label>)}</div>{current.key==='assessment'&&(bmi||whr||bmr)&&<div className="bmi-result assessment-results"><span>Indicadores calculados · {profile}</span><div>{bmi&&<strong>IMC {bmi}</strong>}{whr&&<strong>RCQ {whr}</strong>}{bmr&&<strong>TMB {Math.round(bmr)} kcal</strong>}{totalEnergy&&<strong>VET {totalEnergy} kcal</strong>}{gestationalGain&&<strong>Ganho gestacional {gestationalGain} kg</strong>}</div><small>Indicadores de apoio; a interpretação depende do perfil, idade e contexto clínico.</small></div>}</>}
+ {current.key==='review'?<Review encounter={encounter} dirty={dirtyKeys.size>0} onFinalize={requestFinalize} saving={saving} onNavigateStep={(index)=>setActive(index)}/>:current.key==='plan'?<EncounterPlan encounterId={encounter.id} planId={String(encounter.sections.plan?.data.planId||'')} onCreated={()=>void loadEncounter(encounter.id)}/>:current.key==='exams'?<LabsList encounterId={encounter.id} initial={encounter.labs||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:current.key==='supplements'?<SupplementsList encounterId={encounter.id} initial={encounter.supplements||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:<><div className="clinical-form">{current.fields?.filter(field=>!field.profiles||field.profiles.includes(profile)).map(field=><label key={field.key} className={field.type==='textarea'?'wide':''}>{field.label}<div className={field.suffix?'field-suffix':''}>{field.type==='textarea'?<textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>:field.type==='select'?<select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)}><option value="">Selecione</option>{field.options?.map(option=><option key={option}>{option}</option>)}</select>:<input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>} {field.suffix&&<span>{field.suffix}</span>}</div></label>)}</div>{current.key==='assessment'&&(bmi||whr||bmr)&&<div className="bmi-result assessment-results"><span>Indicadores calculados · {profile}</span><div>{bmi&&<strong>IMC {bmi}</strong>}{whr&&<strong>RCQ {whr}</strong>}{bmr&&<strong>TMB {Math.round(bmr)} kcal</strong>}{totalEnergy&&<strong>VET {totalEnergy} kcal</strong>}{gestationalGain&&<strong>Ganho gestacional {gestationalGain} kg</strong>}</div><small>Indicadores de apoio; a interpretação depende do perfil, idade e contexto clínico.</small></div>}</>}
  <div className="clinical-footer"><button className="secondary-button" onClick={()=>setActive(Math.max(0,active-1))} disabled={active===0}><ChevronLeft size={17}/> Anterior</button>{current.key!=='review'&&current.key!=='plan'&&<div><button className="ghost-button" onClick={()=>setActive(Math.min(steps.length-1,active+1))}>Avançar sem salvar</button><button className="primary-button" onClick={()=>void saveSection()} disabled={saving||encounter.status==='COMPLETED'}><Save size={17}/>{saving?'Salvando...':'Salvar e continuar'}<ChevronRight size={16}/></button></div>}</div></section></div>
  <EnergyCalculatorModal isOpen={calcOpen} onClose={()=>setCalcOpen(false)} initialWeight={weight||70} initialHeight={height||165} initialAge={age||30} initialGender={assessment.sex==='Masculino'?'MALE':'FEMALE'} onApplyResults={handleApplyEnergy}/>
  {finishModalOpen && encounter && (
@@ -162,4 +162,414 @@ function ClinicalSnapshot({encounter,reload}:{encounter:Encounter;reload:()=>voi
 
 function EncounterPlan({encounterId,planId,onCreated}:{encounterId:string;planId:string;onCreated:()=>void}){const[creating,setCreating]=useState(false);const[error,setError]=useState('');async function open(){setCreating(true);setError('');try{await api('/api/nutrition/plans/for-encounter',{method:'POST',body:JSON.stringify({encounterId})});onCreated()}catch(c){setError(c instanceof Error?c.message:'Não foi possível preparar o plano.')}finally{setCreating(false)}}if(!planId)return <div className="encounter-plan-empty"><UtensilsCrossed size={34}/><h3>Plano alimentar deste atendimento</h3><p>Crie um rascunho vinculado ao paciente e use TACO e receitas sem sair da videochamada.</p>{error&&<div className="form-error">{error}</div>}<button className="primary-button" onClick={()=>void open()} disabled={creating}>{creating?'Preparando editor...':<><Plus size={17}/> Criar plano para este paciente</>}</button></div>;return <iframe className="embedded-plan-editor" src={`/embed/planos/${planId}`} title="Editor do plano alimentar"/>}
 
-function Review({encounter,dirty,onFinalize,saving}:{encounter:Encounter;dirty:boolean;onFinalize:()=>void;saving:boolean}){const requirements=[{label:'Contexto',saved:Boolean(encounter.sections.context)},{label:'Conduta',saved:Boolean(encounter.sections.conduct)},{label:'Anamnese ou Retorno',saved:Boolean(encounter.sections.anamnesis||encounter.sections.followup)}];const missing=requirements.filter(item=>!item.saved);return <div className="review-content"><div className="review-summary"><FileCheck2 size={28}/><div><strong>{requirements.length-missing.length} de {requirements.length} requisitos obrigatórios salvos</strong><p>Para finalizar, salve Contexto, Conduta e Anamnese ou Retorno. Depois da finalização, o atendimento ficará somente para leitura.</p></div></div><div className="review-sections">{requirements.map(item=><article key={item.label}><span className={item.saved?'complete':''}>{item.saved?<Check size={14}/>:<UserRound size={14}/>}</span><div><strong>{item.label}</strong><small>{item.saved?'Requisito salvo':'Requisito pendente'}</small></div></article>)}</div><button className="primary-button finalize-button" onClick={onFinalize} disabled={saving||encounter.status==='COMPLETED'||missing.length>0||dirty}>{encounter.status==='COMPLETED'?'Atendimento finalizado':saving?'Finalizando...':'Revisar e finalizar atendimento'}</button>{encounter.status!=='COMPLETED'&&dirty&&<small className="finalize-hint">Salve todas as alterações antes de finalizar.</small>}{encounter.status!=='COMPLETED'&&!dirty&&missing.length>0&&<small className="finalize-hint">Requisitos pendentes: {missing.map(item=>item.label).join(', ')}.</small>}</div>}
+function Review({
+  encounter,
+  dirty,
+  onFinalize,
+  saving,
+  onNavigateStep,
+}: {
+  encounter: Encounter;
+  dirty: boolean;
+  onFinalize: () => void;
+  saving: boolean;
+  onNavigateStep: (index: number) => void;
+}) {
+  const context = encounter.sections.context?.data || {};
+  const anamnesis = encounter.sections.anamnesis?.data || {};
+  const followup = encounter.sections.followup?.data || {};
+  const assessment = encounter.sections.assessment?.data || {};
+  const exams = encounter.sections.exams?.data || {};
+  const conduct = encounter.sections.conduct?.data || {};
+  const plan = encounter.sections.plan?.data || {};
+  const supplements = encounter.sections.supplements?.data || {};
+
+  const weightNum = parseFloat(String(assessment.weight || ''));
+  const heightNum = parseFloat(String(assessment.height || '')) / 100;
+  const ageNum = parseInt(String(assessment.age || ''), 10);
+  const bmiCalc = weightNum > 0 && heightNum > 0 ? (weightNum / (heightNum * heightNum)).toFixed(1) : null;
+  const whrCalc = Number(assessment.waist) > 0 && Number(assessment.hip) > 0 ? (Number(assessment.waist) / Number(assessment.hip)).toFixed(2) : null;
+  const bmrCalc = weightNum > 0 && heightNum > 0 && ageNum > 0 ? Math.round(10 * weightNum + 6.25 * (heightNum * 100) - 5 * ageNum + (assessment.sex === 'Masculino' ? 5 : -161)) : null;
+
+  const requirements = [
+    { label: 'Contexto social & Queixa', saved: Boolean(encounter.sections.context), step: 0 },
+    { label: 'Anamnese clínica / Retorno', saved: Boolean(encounter.sections.anamnesis || encounter.sections.followup), step: encounter.sections.followup ? 9 : 1 },
+    { label: 'Conduta e Orientações', saved: Boolean(encounter.sections.conduct), step: 5 },
+  ];
+
+  const supportingItems = [
+    { label: 'Avaliação Antropométrica', present: Boolean(assessment.weight || assessment.height), step: 3, value: assessment.weight ? `${assessment.weight} kg (IMC ${bmiCalc || '-'})` : 'Não registrada' },
+    { label: 'Plano Alimentar', present: Boolean(plan.planId), step: 6, value: plan.planId ? 'Cardápio estruturado vinculado' : 'Opcional / Não criado' },
+    { label: 'Suplementação', present: Boolean(encounter.supplements?.length || supplements.prescription), step: 7, value: encounter.supplements?.length ? `${encounter.supplements.length} item(ns) prescrito(s)` : supplements.prescription ? 'Prescrição descrita' : 'Sem suplementos' },
+    { label: 'Exames Laboratoriais', present: Boolean(encounter.labs?.length || exams.markers), step: 4, value: encounter.labs?.length ? `${encounter.labs.length} marcador(es)` : exams.markers ? 'Resultados descritos' : 'Nenhum exame anexado' },
+  ];
+
+  const missing = requirements.filter((item) => !item.saved);
+  const isReady = missing.length === 0 && !dirty;
+
+  return (
+    <div className="review-dashboard">
+      <section className="review-summary-hero">
+        <div className="review-summary-info">
+          <div className="review-hero-icon">
+            <FileCheck2 size={28} />
+          </div>
+          <div>
+            <h3>Espelho Clínico & Fechamento da Consulta</h3>
+            <p>
+              Revise o resumo consolidado antes de finalizar. Ao concluir, o prontuário será gravado com integridade clínica e você poderá disparar o plano alimentar, lista de compras e lâminas educativas ao paciente.
+            </p>
+          </div>
+        </div>
+
+        <div className={`review-hero-status-pill ${isReady ? 'ready' : 'pending'}`}>
+          {isReady ? (
+            <>
+              <CheckCircle2 size={16} /> Todos os requisitos preenchidos
+            </>
+          ) : (
+            <>
+              <Sparkles size={16} /> {missing.length} requisito(s) obrigatório(s) pendente(s)
+            </>
+          )}
+        </div>
+      </section>
+
+      <div className="review-checklist-bar">
+        {requirements.map((req) => (
+          <div key={req.label} className="review-check-card" onClick={() => onNavigateStep(req.step)} style={{ cursor: 'pointer' }} title="Clique para ir até a etapa correspondente">
+            <div className={`review-check-dot ${req.saved ? 'done' : ''}`}>
+              {req.saved ? <Check size={14} /> : <UserRound size={14} />}
+            </div>
+            <div className="review-check-info">
+              <strong>{req.label}</strong>
+              <small>{req.saved ? 'Obrigatório salvo ✓' : 'Pendente de preenchimento'}</small>
+            </div>
+          </div>
+        ))}
+
+        {supportingItems.map((item) => (
+          <div key={item.label} className="review-check-card" onClick={() => onNavigateStep(item.step)} style={{ cursor: 'pointer' }} title="Clique para editar este item">
+            <div className={`review-check-dot ${item.present ? 'done' : ''}`}>
+              {item.present ? <Check size={14} /> : <Sparkles size={14} />}
+            </div>
+            <div className="review-check-info">
+              <strong>{item.label}</strong>
+              <small>{item.value}</small>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="review-mirror-grid">
+        <div className="review-mirror-card">
+          <div className="review-card-head">
+            <span className="review-card-head-title">
+              <ClipboardList size={16} /> 1. Contexto & Queixa Principal
+            </span>
+            <button type="button" className="review-edit-btn" onClick={() => onNavigateStep(0)}>
+              <Edit3 size={12} /> Ajustar Contexto
+            </button>
+          </div>
+          <div className="review-card-body">
+            <div className="review-data-row">
+              <span>Tipo de Atendimento</span>
+              <p>{String(context.consultationType || 'Primeira consulta')}</p>
+            </div>
+            <div className="review-data-row">
+              <span>Queixa Principal</span>
+              <p>{String(context.mainComplaint || encounter.objective || 'Não especificada')}</p>
+            </div>
+            {context.expectations && (
+              <div className="review-data-row">
+                <span>Expectativas do Paciente</span>
+                <p>{String(context.expectations)}</p>
+              </div>
+            )}
+            {context.profession && (
+              <div className="review-data-row">
+                <span>Profissão / Rotina</span>
+                <p>{String(context.profession)}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="review-mirror-card">
+          <div className="review-card-head">
+            <span className="review-card-head-title">
+              <HeartPulse size={16} /> 2. Histórico & Estilo de Vida
+            </span>
+            <button type="button" className="review-edit-btn" onClick={() => onNavigateStep(encounter.sections.followup ? 9 : 1)}>
+              <Edit3 size={12} /> Ajustar Anamnese
+            </button>
+          </div>
+          <div className="review-card-body">
+            <div className="review-data-row">
+              <span>Alergias & Intolerâncias</span>
+              <p>{String(anamnesis.allergies || 'Nenhuma alergia ou intolerância informada')}</p>
+            </div>
+            <div className="review-data-row">
+              <span>Medicamentos em Uso</span>
+              <p>{String(anamnesis.medications || 'Nenhum medicamento de uso contínuo')}</p>
+            </div>
+            <div className="review-data-pills">
+              {anamnesis.bowelFunction && (
+                <span className="review-metric-pill">
+                  Intestino: <strong>{String(anamnesis.bowelFunction)}</strong>
+                </span>
+              )}
+              {anamnesis.waterIntake && (
+                <span className="review-metric-pill">
+                  Água: <strong>{String(anamnesis.waterIntake)}</strong>
+                </span>
+              )}
+              {anamnesis.sleep && (
+                <span className="review-metric-pill">
+                  Sono: <strong>{String(anamnesis.sleep)}</strong>
+                </span>
+              )}
+              {anamnesis.smoking && (
+                <span className="review-metric-pill">
+                  Tabagismo: <strong>{String(anamnesis.smoking)}</strong>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="review-mirror-card">
+          <div className="review-card-head">
+            <span className="review-card-head-title">
+              <Scale size={16} /> 3. Avaliação Física & Composição
+            </span>
+            <button type="button" className="review-edit-btn" onClick={() => onNavigateStep(3)}>
+              <Edit3 size={12} /> Ajustar Avaliação
+            </button>
+          </div>
+          <div className="review-card-body">
+            <div className="review-data-pills">
+              {assessment.weight && (
+                <span className="review-metric-pill">
+                  Peso: <strong>{String(assessment.weight)} kg</strong>
+                </span>
+              )}
+              {assessment.height && (
+                <span className="review-metric-pill">
+                  Altura: <strong>{String(assessment.height)} cm</strong>
+                </span>
+              )}
+              {bmiCalc && (
+                <span className="review-metric-pill">
+                  IMC: <strong>{bmiCalc} kg/m²</strong>
+                </span>
+              )}
+              {assessment.bodyFat && (
+                <span className="review-metric-pill">
+                  Gordura: <strong>{String(assessment.bodyFat)}%</strong>
+                </span>
+              )}
+              {assessment.muscleMass && (
+                <span className="review-metric-pill">
+                  Massa Muscular: <strong>{String(assessment.muscleMass)} kg</strong>
+                </span>
+              )}
+              {bmrCalc && (
+                <span className="review-metric-pill">
+                  TMB: <strong>{bmrCalc} kcal</strong>
+                </span>
+              )}
+              {whrCalc && (
+                <span className="review-metric-pill">
+                  RCQ: <strong>{whrCalc}</strong>
+                </span>
+              )}
+            </div>
+            {assessment.assessmentNotes && (
+              <div className="review-data-row">
+                <span>Observações da Avaliação</span>
+                <p>{String(assessment.assessmentNotes)}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="review-mirror-card">
+          <div className="review-card-head">
+            <span className="review-card-head-title">
+              <Zap size={16} /> 4. Conduta & Estratégia Nutricional
+            </span>
+            <button type="button" className="review-edit-btn" onClick={() => onNavigateStep(5)}>
+              <Edit3 size={12} /> Ajustar Conduta
+            </button>
+          </div>
+          <div className="review-card-body">
+            {conduct.diagnosticImpression && (
+              <div className="review-data-row">
+                <span>Diagnóstico Nutricional</span>
+                <p>{String(conduct.diagnosticImpression)}</p>
+              </div>
+            )}
+            <div className="review-data-row">
+              <span>Metas Acordadas</span>
+              <p>{String(conduct.goals || followup.nextGoal || 'Metas a definir com o paciente')}</p>
+            </div>
+            {conduct.guidance && (
+              <div className="review-data-row">
+                <span>Orientações & Diretrizes</span>
+                <p>{String(conduct.guidance)}</p>
+              </div>
+            )}
+            {conduct.followUp && (
+              <div className="review-data-row">
+                <span>Prazo de Retorno / Acompanhamento</span>
+                <p>{String(conduct.followUp)}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="review-mirror-card">
+          <div className="review-card-head">
+            <span className="review-card-head-title">
+              <UtensilsCrossed size={16} /> 5. Plano Alimentar do Atendimento
+            </span>
+            <button type="button" className="review-edit-btn" onClick={() => onNavigateStep(6)}>
+              <Edit3 size={12} /> Abrir Editor de Plano
+            </button>
+          </div>
+          <div className="review-card-body">
+            {plan.planId ? (
+              <>
+                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--forest)', fontWeight: 600 }}>
+                  ✨ Plano alimentar vinculado e pronto para visualização do paciente.
+                </p>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                  <a
+                    href={`/documentos/plano/${plan.planId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="review-doc-button"
+                  >
+                    <ExternalLink size={13} /> Visualizar Plano A4
+                  </a>
+                </div>
+              </>
+            ) : (
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>
+                Nenhum plano alimentar novo criado nesta sessão. O paciente manterá o plano anterior ou receberá as orientações por escrito.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="review-mirror-card">
+          <div className="review-card-head">
+            <span className="review-card-head-title">
+              <Pill size={16} /> 6. Suplementos & Exames Laboratoriais
+            </span>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button type="button" className="review-edit-btn" onClick={() => onNavigateStep(7)}>
+                <Edit3 size={12} /> Suplementos
+              </button>
+              <button type="button" className="review-edit-btn" onClick={() => onNavigateStep(4)}>
+                <Edit3 size={12} /> Exames
+              </button>
+            </div>
+          </div>
+          <div className="review-card-body">
+            <div className="review-data-row">
+              <span>Prescrição de Suplementação</span>
+              <p>
+                {encounter.supplements?.length > 0
+                  ? encounter.supplements.map((s) => `• ${s.name} (${s.dosage || ''}${s.posology ? ` - ${s.posology}` : s.pharmaceuticalForm ? ` - ${s.pharmaceuticalForm}` : ''})`).join('\n')
+                  : String(supplements.prescription || 'Nenhum suplemento prescrito')}
+              </p>
+            </div>
+            {(exams.markers || encounter.labs?.length > 0) && (
+              <div className="review-data-row">
+                <span>Marcadores de Exames</span>
+                <p>
+                  {encounter.labs?.length > 0
+                    ? encounter.labs.map((l) => `• ${l.marker}: ${l.value} ${l.unit || ''}${l.status ? ` (${l.status})` : ''}`).join('\n')
+                    : String(exams.markers)}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <section className="review-documents-bar">
+        <div className="review-documents-bar-head">
+          <FileText size={18} />
+          <span>Documentos & Impressões Rápidas (A4 Timbrado)</span>
+        </div>
+        <div className="review-doc-links">
+          {plan.planId && (
+            <a
+              href={`/documentos/plano/${plan.planId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="review-doc-button"
+            >
+              <Printer size={14} /> Imprimir Plano Alimentar A4
+            </a>
+          )}
+          <a
+            href="/documentos"
+            target="_blank"
+            rel="noreferrer"
+            className="review-doc-button"
+          >
+            <FileText size={14} /> Emitir Declaração / Atestado Nutricional
+          </a>
+          <a
+            href="/documentos"
+            target="_blank"
+            rel="noreferrer"
+            className="review-doc-button"
+          >
+            <Pill size={14} /> Emitir Receituário de Suplementação
+          </a>
+        </div>
+      </section>
+
+      <section className="review-finalize-cta-box">
+        <div className="review-finalize-cta-info">
+          <h3>Tudo pronto para finalizar a consulta?</h3>
+          <p>
+            {encounter.status === 'COMPLETED'
+              ? 'Este atendimento já foi finalizado e os materiais foram salvos com integridade clínica.'
+              : dirty
+              ? 'Existem alterações não salvas no prontuário. Clique em "Salvar e continuar" na etapa correspondente antes de finalizar.'
+              : missing.length > 0
+              ? `Requisitos obrigatórios pendentes: ${missing.map((item) => item.label).join(', ')}.`
+              : 'Ao clicar abaixo, você poderá disparar o e-mail timbrado de orientações, selecionar as lâminas educativas e concluir o atendimento.'}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="review-finalize-main-btn"
+          onClick={onFinalize}
+          disabled={saving || encounter.status === 'COMPLETED' || missing.length > 0 || dirty}
+        >
+          {encounter.status === 'COMPLETED' ? (
+            <>
+              <CheckCircle2 size={18} /> Atendimento Concluído
+            </>
+          ) : saving ? (
+            <>
+              <span className="spinner" /> Finalizando...
+            </>
+          ) : (
+            <>
+              <Send size={18} /> Concluir Atendimento & Entregar Materiais
+            </>
+          )}
+        </button>
+      </section>
+    </div>
+  );
+}
