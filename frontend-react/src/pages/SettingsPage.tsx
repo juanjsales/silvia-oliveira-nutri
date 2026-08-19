@@ -473,6 +473,8 @@ export function SettingsPage() {
                     { tag: "{NOME}", label: "Nome do Paciente" },
                     { tag: "{DATA}", label: "Data da Consulta" },
                     { tag: "{HORA}", label: "Horário da Consulta" },
+                    { tag: "{LINK_CHAMADA}", label: "Link da Videochamada / Teleconsulta" },
+                    { tag: "{LINK_PORTAL}", label: "Link do Portal do Paciente" },
                   ].map(({ tag, label }) => (
                     <button
                       key={tag}
@@ -480,7 +482,7 @@ export function SettingsPage() {
                       className="tag-chip-btn"
                       onClick={() => {
                         navigator.clipboard.writeText(tag);
-                        setNotice(`Tag ${tag} copiada! Cole no campo desejado.`);
+                        setNotice(`Tag ${tag} copiada! Cole no texto.`);
                         setTimeout(() => setNotice(""), 3000);
                       }}
                       title={`Copiar ${tag}`}
@@ -496,8 +498,21 @@ export function SettingsPage() {
                 {/* TEMPLATE 1: LEMBRETE DE CONSULTA */}
                 <div className="message-card-block" style={{ gridColumn: "1 / -1" }}>
                   <div className="message-block-header">
-                    <strong>📅 Lembrete / Confirmação de Consulta</strong>
+                    <strong>📅 Lembrete / Confirmação de Consulta (Presencial & Online)</strong>
                     <div className="preset-quick-btns">
+                      <button
+                        type="button"
+                        className="preset-pill-btn"
+                        onClick={() =>
+                          set(
+                            "reminderMessage",
+                            "Olá, {NOME}! 🎥 Sua teleconsulta nutricional está confirmada para {DATA} às {HORA}. Acesse a sala virtual da nossa chamada no link: {LINK_CHAMADA}. Até já!"
+                          )
+                        }
+                        title="Modelo específico para consultas online com link da sala"
+                      >
+                        🎥 Teleconsulta (com Link da Sala)
+                      </button>
                       <button
                         type="button"
                         className="preset-pill-btn"
@@ -508,7 +523,7 @@ export function SettingsPage() {
                           )
                         }
                       >
-                        Carregar Sugestão Padrão
+                        Presencial Padrão
                       </button>
                       <button
                         type="button"
@@ -520,7 +535,7 @@ export function SettingsPage() {
                           )
                         }
                       >
-                        Modelo Direto / Formal
+                        Direto / Formal
                       </button>
                     </div>
                   </div>

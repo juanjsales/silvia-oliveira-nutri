@@ -1,3 +1,631 @@
-.documents-layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:20px;align-items:start}.document-controls{position:sticky;top:112px;display:flex;flex-direction:column;gap:14px}.document-kind-tabs{display:grid;gap:6px}.document-kind-tabs button{border:0;border-radius:9px;background:#f2f4f0;color:#64736a;padding:10px;display:flex;align-items:center;gap:8px;font-size:.72rem;font-weight:700}.document-kind-tabs button svg{width:17px}.document-kind-tabs button.active{background:var(--forest);color:#fff}.document-controls>label,.control-row label{display:flex;flex-direction:column;gap:6px;color:#526259;font-size:.7rem;font-weight:700}.control-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.control-row label:first-child{grid-column:1/-1}.document-preview-shell{background:#464b48;border-radius:15px;padding:22px;overflow:auto;min-height:700px}.official-sheet{width:210mm;min-height:297mm;margin:auto;background:#fbfcf8;color:#192b20;padding:14mm 17mm 13mm;display:grid;grid-template-rows:auto 1fr auto;box-shadow:0 12px 35px #0004}.official-sheet>header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--doc-secondary);padding-bottom:7mm}.official-sheet>header>div{display:flex;align-items:center;gap:10px}.official-sheet>header>div>span,.official-sheet header img{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;object-fit:contain;background:var(--doc-primary);color:#fff;font:700 1.3rem 'Playfair Display',serif}.official-sheet>header>div>div{display:flex;flex-direction:column}.official-sheet header strong{font:700 13pt 'Playfair Display',serif}.official-sheet header small{font-size:7pt;color:#6d7a72}.official-sheet header em{font-style:normal;text-transform:uppercase;letter-spacing:1.4px;color:var(--doc-secondary);font-size:7pt;font-weight:700}.official-sheet>footer{border-top:1px solid #dce4d8;padding-top:4mm;font-size:7pt;color:#7d8981}.official-sheet>footer>div{display:flex;flex-direction:column}.official-sheet>footer strong{color:var(--doc-primary)}.official-content{height:100%;display:flex;flex-direction:column;align-items:center;padding:25mm 5mm 8mm}.official-content>svg{color:var(--doc-secondary);width:34px;height:34px}.official-content>span,.supplement-doc>span{text-transform:uppercase;letter-spacing:2px;color:var(--doc-secondary);font-size:7pt;font-weight:700;margin-top:5mm}.official-content h1,.supplement-doc>h1{text-transform:uppercase;letter-spacing:1.5px;color:var(--doc-primary);font-size:22pt;margin:4mm 0 16mm}.official-text{width:100%;border:1px solid #dce4d8;border-left:5px solid var(--doc-primary);border-radius:12px;background:#fff;padding:9mm}.official-text>p{font-size:11pt;line-height:1.9;text-align:justify;text-indent:10mm;margin:0 0 5mm}.official-text aside{border-top:1px dashed #d8dfd7;padding-top:5mm;margin-top:6mm}.official-text aside strong{font-size:8pt;text-transform:uppercase;color:var(--doc-primary)}.official-text aside p{font-size:9pt;line-height:1.6}.signature{margin-top:auto;display:flex;flex-direction:column;align-items:center;min-width:90mm}.signature>span{font-size:9pt;color:#66746b;margin-bottom:15mm}.signature i{width:80mm;border-top:1px solid var(--doc-primary)}.signature strong{margin-top:3mm;font-size:10pt}.signature small{font-size:8pt;color:var(--doc-secondary)}.supplement-doc{height:100%;display:flex;flex-direction:column;align-items:center;padding:15mm 4mm 5mm}.supplement-doc>h1{text-transform:none;margin-bottom:12mm}.supplement-doc>div:not(.signature){width:100%;display:flex;flex-direction:column;gap:5mm}.supplement-doc article{display:grid;grid-template-columns:12mm 1fr;gap:5mm;border:1px solid #dce4d8;border-left:5px solid var(--doc-primary);border-radius:12px;background:#fff;padding:6mm}.supplement-doc article>b{width:10mm;height:10mm;border-radius:50%;display:grid;place-items:center;background:#e4ede3;color:var(--doc-primary);font-size:8pt}.supplement-doc article h2{font-size:13pt;margin:0 0 2mm}.supplement-doc article>div>strong{font-size:9pt;color:var(--doc-secondary)}.supplement-doc article p{font-size:9pt;margin:3mm 0}.supplement-doc article small{font-size:8pt;color:#738078}.supplement-doc article aside{background:#f1f4ee;padding:3mm;margin-top:3mm;font-size:8pt}.no-prescription{color:#758178}.document-preview-empty{min-height:650px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#bdc6c0;text-align:center}.document-preview-empty strong{color:#fff;margin-top:10px}.document-preview-empty p{font-size:.75rem}@media(max-width:1200px){.documents-layout{grid-template-columns:1fr}.document-controls{position:static}.document-kind-tabs{grid-template-columns:repeat(3,1fr)}.official-sheet{transform:scale(.75);transform-origin:top center;margin-bottom:-74mm}}@media(max-width:700px){.document-kind-tabs{grid-template-columns:1fr}.official-sheet{transform:scale(.45);margin-bottom:-163mm}.document-preview-shell{padding:10px}}@media print{body *{visibility:hidden}.document-preview-shell,.document-preview-shell *{visibility:visible}.document-preview-shell{position:absolute;inset:0;padding:0;background:#fff;overflow:visible}.official-sheet{transform:none!important;box-shadow:none;margin:0;width:210mm;height:297mm;min-height:297mm}}
-/* Keep the plan-document print route independent from the clinical document center. */
-@media print{body:not(:has(.documents-center)) *{visibility:visible}}
+/* ═════════════════════════════════════════════════════════════════════
+   CENTRAL DE DOCUMENTOS & EMISSÕES A4 — RESPONSIVE DESIGN
+   ═════════════════════════════════════════════════════════════════════ */
+
+.documents-center-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-intro-v2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-intro-v2 h2 {
+  margin: 2px 0 4px;
+  font-size: 1.45rem;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+}
+
+.page-intro-v2 p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #64748b;
+}
+
+.doc-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 0.84rem;
+  box-shadow: 0 4px 14px rgba(32, 53, 40, 0.2);
+}
+
+/* ── LAYOUT EM 2 COLUNAS ── */
+.documents-layout-v2 {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── PAINEL DE CONTROLES ── */
+.doc-controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  position: sticky;
+  top: 96px;
+}
+
+.control-section-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.doc-type-selector {
+  display: grid;
+  gap: 8px;
+}
+
+.doc-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  color: #334155;
+}
+
+.doc-type-btn svg {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.doc-type-btn strong {
+  display: block;
+  font-size: 0.84rem;
+  color: #1e293b;
+}
+
+.doc-type-btn small {
+  display: block;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.doc-type-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.doc-type-btn.active {
+  background: #203528;
+  border-color: #203528;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(32, 53, 40, 0.15);
+}
+
+.doc-type-btn.active svg,
+.doc-type-btn.active strong,
+.doc-type-btn.active small {
+  color: #ffffff;
+}
+
+.doc-field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.doc-field-label select,
+.doc-field-label input,
+.doc-field-label textarea {
+  width: 100%;
+}
+
+.doc-times-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.doc-times-grid .doc-field-label:first-child {
+  grid-column: 1 / -1;
+}
+
+.doc-help-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #166534;
+  margin-top: 4px;
+}
+
+.doc-help-card strong {
+  font-size: 0.78rem;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.doc-help-card p {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: #15803d;
+}
+
+/* ── ÁREA DE PRÉ-VISUALIZAÇÃO A4 ── */
+.doc-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  background: #334155;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #1e293b;
+  color: #e2e8f0;
+  border-bottom: 1px solid #475569;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.preview-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0f172a;
+  border-radius: 8px;
+  padding: 3px 6px;
+}
+
+.zoom-btn {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+}
+
+.zoom-btn:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+.zoom-btn.reset {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+
+.zoom-value {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  min-width: 36px;
+  text-align: center;
+}
+
+.sheet-scroll-container {
+  padding: 30px 20px;
+  overflow: auto;
+  max-height: 850px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.sheet-zoom-box {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── FOLHA OFICIAL A4 ── */
+.official-sheet-v2 {
+  width: 210mm;
+  min-height: 297mm;
+  background: #ffffff;
+  color: #1e293b;
+  padding: 16mm 18mm 14mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+  border-radius: 2px;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.sheet-header-v2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6mm;
+  border-bottom: 2px solid var(--doc-secondary, #8ca481);
+}
+
+.sheet-clinic-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sheet-logo-svg {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.sheet-logo-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.sheet-prof-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--doc-primary, #203528);
+  display: block;
+}
+
+.sheet-prof-crn {
+  font-size: 7.5pt;
+  color: #64748b;
+  display: block;
+}
+
+.sheet-category-badge {
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 800;
+  color: var(--doc-secondary, #8ca481);
+  padding: 4px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.sheet-body-v2 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12mm 0 6mm;
+}
+
+.official-content-v2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+}
+
+.official-emblem-badge {
+  color: var(--doc-secondary, #8ca481);
+  margin-bottom: 4mm;
+}
+
+.doc-subtitle-badge {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 7.5pt;
+  font-weight: 800;
+  color: var(--doc-secondary, #8ca481);
+}
+
+.doc-main-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 21pt;
+  color: var(--doc-primary, #203528);
+  margin: 3mm 0 12mm;
+  font-weight: 700;
+}
+
+.official-text-box {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid var(--doc-primary, #203528);
+  border-radius: 12px;
+  padding: 9mm 10mm;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.official-text-box p {
+  font-size: 11pt;
+  line-height: 1.95;
+  color: #1e293b;
+  text-align: justify;
+  text-indent: 8mm;
+  margin: 0 0 5mm;
+}
+
+.official-text-box p:last-child {
+  margin-bottom: 0;
+}
+
+.official-notes-aside {
+  margin-top: 6mm;
+  padding-top: 5mm;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.official-notes-aside strong {
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  color: var(--doc-primary, #203528);
+  display: block;
+  margin-bottom: 2mm;
+}
+
+.official-notes-aside p {
+  font-size: 9.5pt;
+  line-height: 1.6;
+  color: #475569;
+  text-indent: 0;
+  margin: 0;
+}
+
+.sheet-signature-block {
+  margin-top: auto;
+  padding-top: 14mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.signature-date {
+  font-size: 9pt;
+  color: #64748b;
+  margin-bottom: 14mm;
+}
+
+.signature-line {
+  width: 80mm;
+  border-top: 1.5px solid var(--doc-primary, #203528);
+  margin-bottom: 3mm;
+}
+
+.signature-name {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.signature-crn {
+  font-size: 8pt;
+  color: var(--doc-secondary, #8ca481);
+}
+
+/* ── SUPLEMENTAÇÃO ── */
+.supplement-doc-v2 {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.supplements-list-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+  width: 100%;
+}
+
+.supplement-card-item {
+  display: grid;
+  grid-template-columns: 12mm 1fr;
+  gap: 5mm;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid var(--doc-primary, #203528);
+  border-radius: 10px;
+  padding: 5mm 6mm;
+  align-items: start;
+}
+
+.supplement-number {
+  width: 9mm;
+  height: 9mm;
+  border-radius: 50%;
+  background: #eef5f0;
+  color: var(--doc-primary, #203528);
+  font-size: 8pt;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.supplement-details h2 {
+  margin: 0 0 1.5mm;
+  font-size: 12pt;
+  color: #1e293b;
+}
+
+.supplement-dosage {
+  font-size: 9pt;
+  color: var(--doc-secondary, #8ca481);
+  display: block;
+}
+
+.supplement-posology {
+  margin: 2mm 0;
+  font-size: 9pt;
+  color: #334155;
+}
+
+.supplement-form {
+  font-size: 8pt;
+  color: #64748b;
+  display: block;
+}
+
+.supplement-obs {
+  margin-top: 2mm;
+  padding: 2mm 3mm;
+  background: #f8fafc;
+  border-radius: 6px;
+  font-size: 8pt;
+  color: #475569;
+}
+
+.no-prescription-notice {
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  color: #64748b;
+  text-align: center;
+  font-size: 9.5pt;
+}
+
+.sheet-footer-v2 {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 4mm;
+}
+
+.sheet-footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 7.5pt;
+  color: #64748b;
+}
+
+.footer-title {
+  color: var(--doc-primary, #203528);
+}
+
+.document-preview-empty-v2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  width: 210mm;
+  background: #1e293b;
+  color: #94a3b8;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+}
+
+.empty-doc-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  display: grid;
+  place-items: center;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+
+.document-preview-empty-v2 strong {
+  font-size: 1.1rem;
+  color: #f1f5f9;
+  margin-bottom: 6px;
+}
+
+.document-preview-empty-v2 p {
+  font-size: 0.84rem;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* ── RESPONSIVIDADE EM TELAS MENORES ── */
+@media (max-width: 1080px) {
+  .documents-layout-v2 {
+    grid-template-columns: 1fr;
+  }
+  .doc-controls-panel {
+    position: static;
+  }
+  .doc-type-selector {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .doc-type-selector {
+    grid-template-columns: 1fr;
+  }
+  .official-sheet-v2,
+  .document-preview-empty-v2 {
+    width: 100%;
+    min-height: auto;
+    padding: 20px 16px;
+  }
+  .sheet-scroll-container {
+    padding: 14px 8px;
+  }
+  .sheet-zoom-box {
+    width: 100%;
+  }
+}
+
+/* ── IMPRESSÃO A4 LIMPA ── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .official-sheet-v2,
+  .official-sheet-v2 * {
+    visibility: visible;
+  }
+  .official-sheet-v2 {
+    position: absolute;
+    inset: 0;
+    margin: 0 !important;
+    padding: 16mm 18mm 14mm !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}
