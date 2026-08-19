@@ -30,37 +30,71 @@ import { ClinicalOverviewPage } from '../pages/ClinicalOverviewPage';
 import { MessagesPage } from '../pages/MessagesPage';
 import { FollowUpPage } from '../pages/FollowUpPage';
 import { PatientExamsPage } from '../pages/PatientExamsPage';
+import { TeleconsultationProvider } from '../contexts/TeleconsultationContext';
+import { FloatingCallWidget } from '../components/FloatingCallWidget';
 
 export function App() {
-  return <Routes>
-    <Route path="/" element={<HomePage />} />
-    <Route path="/login" element={<LoginPage />} />
-    <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
-    <Route path="/redefinir-senha" element={<PasswordResetPage />} />
-    <Route element={<ProtectedRoute />}>
-      <Route element={<RoleRoute role="PATIENT"/>}><Route path="portal" element={<><PatientPortalPage/><div className="portal-floating-actions"><Link to="/portal/consultas">Confirmar consultas</Link><Link to="/portal/privacidade">Privacidade e meus dados</Link></div></>}/><Route path="portal/consultas" element={<PatientAppointmentsPage/>}/><Route path="portal/privacidade" element={<PrivacyPage/>}/><Route path="portal/alterar-senha" element={<PasswordChangePage/>}/><Route path="portal/video/:id" element={<PatientVideoPage/>}/><Route path="portal/plano/:id" element={<PatientPlanPage/>}/><Route path="portal/documento/:id" element={<PatientDocumentPage/>}/></Route>
-      <Route element={<RoleRoute role="ADMIN"/>}>
-      <Route path="embed/planos/:id" element={<div className="embedded-route"><MealPlanEditorPage /></div>} />
-      <Route path="documentos/plano/:id" element={<PlanDocumentPage />} />
-      <Route path="documentos/emitidos/:id" element={<IssuedDocumentPage />} />
-      <Route element={<AppShell />}>
-      <Route path="painel" element={<DashboardPage />} />
-      <Route path="pacientes" element={<PatientsPage />} />
-      <Route path="pacientes/:patientId/clinico" element={<ClinicalOverviewPage />} />
-      <Route path="agenda" element={<AgendaPage />} />
-      <Route path="atendimentos" element={<EncounterPage />} />
-      <Route path="mensagens" element={<MessagesPage />} />
-      <Route path="acompanhamento" element={<FollowUpPage />} />
-      <Route path="exames" element={<PatientExamsPage />} />
-      <Route path="planos" element={<NutritionLibraryPage />} />
-      <Route path="planos/:id" element={<MealPlanEditorPage />} />
-      <Route path="documentos" element={<DocumentsPage />} />
-      <Route path="documentos/emissoes" element={<DocumentIssuesPage />} />
-      <Route path="financeiro" element={<FinancePage />} />
-      <Route path="configuracoes" element={<SettingsPage />} />
-      </Route>
-      </Route>
-    </Route>
-    <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes>;
+  return (
+    <TeleconsultationProvider>
+      <FloatingCallWidget />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
+        <Route path="/redefinir-senha" element={<PasswordResetPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<RoleRoute role="PATIENT" />}>
+            <Route
+              path="portal"
+              element={
+                <>
+                  <PatientPortalPage />
+                  <div className="portal-floating-actions">
+                    <Link to="/portal/consultas">Confirmar consultas</Link>
+                    <Link to="/portal/privacidade">Privacidade e meus dados</Link>
+                  </div>
+                </>
+              }
+            />
+            <Route path="portal/consultas" element={<PatientAppointmentsPage />} />
+            <Route path="portal/privacidade" element={<PrivacyPage />} />
+            <Route path="portal/alterar-senha" element={<PasswordChangePage />} />
+            <Route path="portal/video/:id" element={<PatientVideoPage />} />
+            <Route path="portal/plano/:id" element={<PatientPlanPage />} />
+            <Route path="portal/documento/:id" element={<PatientDocumentPage />} />
+          </Route>
+          <Route element={<RoleRoute role="ADMIN" />}>
+            <Route
+              path="embed/planos/:id"
+              element={
+                <div className="embedded-route">
+                  <MealPlanEditorPage />
+                </div>
+              }
+            />
+            <Route path="documentos/plano/:id" element={<PlanDocumentPage />} />
+            <Route path="documentos/emitidos/:id" element={<IssuedDocumentPage />} />
+            <Route element={<AppShell />}>
+              <Route path="painel" element={<DashboardPage />} />
+              <Route path="pacientes" element={<PatientsPage />} />
+              <Route path="pacientes/:patientId/clinico" element={<ClinicalOverviewPage />} />
+              <Route path="agenda" element={<AgendaPage />} />
+              <Route path="atendimentos" element={<EncounterPage />} />
+              <Route path="mensagens" element={<MessagesPage />} />
+              <Route path="acompanhamento" element={<FollowUpPage />} />
+              <Route path="exames" element={<PatientExamsPage />} />
+              <Route path="planos" element={<NutritionLibraryPage />} />
+              <Route path="planos/:id" element={<MealPlanEditorPage />} />
+              <Route path="documentos" element={<DocumentsPage />} />
+              <Route path="documentos/emissoes" element={<DocumentIssuesPage />} />
+              <Route path="financeiro" element={<FinancePage />} />
+              <Route path="configuracoes" element={<SettingsPage />} />
+            </Route>
+          </Route>
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </TeleconsultationProvider>
+  );
 }
+

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from '../../shared/crypto.js';
 import { loadSmtpConfig, smtpTransport } from '../../integrations/configured-email.js';
+import { buildHtmlEmail } from '../../integrations/email.js';
 import { assertLoginAllowed, clearLoginFailures, recordLoginFailure } from '../../shared/login-rate-limit.js';
 
 const loginSchema = z.object({ identifier: z.string().trim().min(3), password: z.string().min(1) });
@@ -55,8 +56,8 @@ export async function authRoutes(app: FastifyInstance) {
     const { identifier } = recoverySchema.parse(request.body);
     const normalized = identifier.trim().toLowerCase();
     const cpf = normalized.replace(/\D/g, '');
-    const result = await app.db.query<{ id: string; email: string }>(
-      `SELECT u.id, u.email FROM users u LEFT JOIN patients p ON p.user_id = u.id
+    const result = await app.db.query<{ id: string; email: string; name: string | null }>(
+      `SELECT u.id, u.email, p.name FROM users u LEFT JOIN patients p ON p.user_id = u.id
        WHERE u.active = true AND (u.email = $1 OR p.cpf = $2) LIMIT 1`,
       [normalized, cpf.length === 11 ? cpf : null]
     );
@@ -66,12 +67,25 @@ export async function authRoutes(app: FastifyInstance) {
       if (!smtp) throw new Error('Serviço de e-mail não configurado.');
       const mailer = smtpTransport(smtp);
       const rawToken = createOpaqueToken();
+      const resetLink = `${app.env.APP_URL}/redefinir-senha?token=${encodeURIComponent(rawToken)}`;
       const expiresAt = new Date(Date.now() + app.env.PASSWORD_RESET_TTL_MINUTES * 60_000);
+
+      const html = buildHtmlEmail({
+        title: 'Redefinição de Senha',
+        badge: 'Segurança',
+        recipientName: user.name || 'Paciente',
+        lead: 'Recebemos uma solicitação para redefinir a senha de acesso à sua conta no Portal Nutricional.',
+        ctaText: 'Criar Nova Senha',
+        ctaUrl: resetLink,
+        footerNote: `Este link é temporário e expira em ${app.env.PASSWORD_RESET_TTL_MINUTES} minutos. Se você não realizou esta solicitação, desconsidere este e-mail.`,
+      });
+
       await mailer.sendMail({
         from: smtp.from,
         to: user.email,
-        subject: 'Redefinição de senha — Portal Nutricional',
-        text: `Defina uma nova senha: ${app.env.APP_URL}/redefinir-senha?token=${encodeURIComponent(rawToken)}`
+        subject: 'Redefinição de senha — Portal Nutricional Dra. Silvia Oliveira',
+        text: `Defina uma nova senha acessando: ${resetLink}\n\nO link expira em ${app.env.PASSWORD_RESET_TTL_MINUTES} minutos.`,
+        html,
       });
       await app.db.query('DELETE FROM password_reset_tokens WHERE user_id = $1 AND used_at IS NULL', [user.id]);
       await app.db.query(

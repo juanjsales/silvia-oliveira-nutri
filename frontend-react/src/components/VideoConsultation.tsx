@@ -18,6 +18,7 @@ import {
   Video,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { api } from '../lib/api';
 
 type BroadcastTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
@@ -31,6 +32,7 @@ type Props = {
 };
 
 export function VideoConsultation({ appointmentId, roomToken, patientName, sections, onClose }: Props) {
+  const { startCall, minimizeCall, endCall } = useTeleconsultation();
   const [expanded, setExpanded] = useState(false);
   const [startedAt] = useState(Date.now());
   const [elapsed, setElapsed] = useState('00:00');
@@ -54,15 +56,30 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, secti
   useEffect(() => {
     setError('');
     if (!appointmentId) {
-      setSource(`/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`);
+      const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`;
+      setSource(url);
       return;
     }
     api<{ data: { roomUrl: string } }>(`/api/video/appointments/${appointmentId}/access`, { method: 'POST' })
       .then((response) => setSource(response.data.roomUrl))
       .catch(() => {
-        setSource(`/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`);
+        const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`;
+        setSource(url);
       });
   }, [appointmentId, roomToken]);
+
+  useEffect(() => {
+    if (source) {
+      startCall({
+        appointmentId,
+        roomToken,
+        patientName,
+        roomUrl: source,
+        role: 'ADMIN',
+        returnPath: '/atendimentos',
+      });
+    }
+  }, [source, appointmentId, roomToken, patientName]);
 
   const directRoomUrl = source || `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant`;
 

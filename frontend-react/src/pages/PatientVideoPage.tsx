@@ -9,6 +9,7 @@ import {
   Layers,
   Maximize2,
   Mic,
+  PhoneOff,
   PieChart,
   RefreshCw,
   Ruler,
@@ -23,6 +24,7 @@ import {
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { api } from '../lib/api';
 
 type Access = { roomUrl: string; expiresAt: string };
@@ -47,6 +49,7 @@ type BroadcastData = {
 export function PatientVideoPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { startCall, minimizeCall, endCall } = useTeleconsultation();
   const [access, setAccess] = useState<Access | null>(null);
   const [entered, setEntered] = useState(() => {
     return sessionStorage.getItem(`in_call_${id}`) === 'true';
@@ -67,10 +70,18 @@ export function PatientVideoPage() {
   }, [id]);
 
   useEffect(() => {
-    if (entered && id) {
+    if (entered && id && access) {
       sessionStorage.setItem(`in_call_${id}`, 'true');
+      startCall({
+        appointmentId: id,
+        roomToken: id,
+        patientName: user?.name || 'Paciente',
+        roomUrl: access.roomUrl,
+        role: 'PATIENT',
+        returnPath: `/portal/video/${id}`,
+      });
     }
-  }, [entered, id]);
+  }, [entered, id, access, user?.name]);
 
   useEffect(() => {
     if (!entered) return;
@@ -108,20 +119,27 @@ export function PatientVideoPage() {
     setTimeout(() => setReconnecting(false), 1200);
   }
 
+  function handleExitCall() {
+    if (window.confirm('Deseja realmente encerrar a teleconsulta?')) {
+      sessionStorage.removeItem(`in_call_${id}`);
+      setEntered(false);
+      endCall();
+    }
+  }
+
   return (
     <main className={`patient-video-page ${entered ? 'in-call' : 'prejoin'}`}>
       <header>
         <Link
           to="/portal"
-          onClick={(e) => {
-            if (entered && !window.confirm('Deseja realmente sair da chamada? Você poderá retornar a qualquer momento pelo portal.')) {
-              e.preventDefault();
-            } else {
-              sessionStorage.removeItem(`in_call_${id}`);
+          onClick={() => {
+            if (entered) {
+              minimizeCall();
             }
           }}
+          title="Navegar pelo portal com o vídeo minimizado"
         >
-          <ArrowLeft /> Voltar ao portal
+          <ArrowLeft /> {entered ? 'Navegar pelo portal (Miniplayer)' : 'Voltar ao portal'}
         </Link>
 
         {entered && (
@@ -145,6 +163,16 @@ export function PatientVideoPage() {
             >
               <RefreshCw size={15} className={reconnecting ? 'spin' : ''} />
               <span>{reconnecting ? 'Reconectando...' : 'Reconectar'}</span>
+            </button>
+
+            <button
+              type="button"
+              className="video-hangup-btn"
+              onClick={handleExitCall}
+              title="Encerrar consulta"
+            >
+              <PhoneOff size={15} />
+              <span>Encerrar</span>
             </button>
           </div>
         )}
