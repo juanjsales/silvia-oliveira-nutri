@@ -220,5 +220,102 @@ export async function encounterRoutes(app: FastifyInstance) {
 
     return { data: { id, status: 'COMPLETED', financeCreated, emailSent } };
   });
+
+  app.patch('/:id/quick-close', async (request, reply) => {
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const client = await app.db.connect();
+    try {
+      await client.query('BEGIN');
+      const result = await client.query<{ appointment_id: string | null }>(
+        `UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id`,
+        [id]
+      );
+      if (!result.rows[0]) {
+        await client.query('ROLLBACK');
+        return reply.code(404).send({ error: 'Atendimento não encontrado ou já finalizado.' });
+      }
+      if (result.rows[0].appointment_id) {
+        await client.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [result.rows[0].appointment_id]);
+      }
+      await audit(client, 'ENCOUNTER_QUICK_CLOSED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id });
+      await client.query('COMMIT');
+      return { data: { id, status: 'COMPLETED' } };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  });
+
+  app.delete('/:id', async (request, reply) => {
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const client = await app.db.connect();
+    try {
+      await client.query('BEGIN');
+      const encounter = await client.query<{ appointment_id: string | null; patient_id: string }>(
+        'SELECT appointment_id, patient_id FROM clinical_encounters WHERE id=$1',
+        [id]
+      );
+      if (!encounter.rows[0]) {
+        await client.query('ROLLBACK');
+        return reply.code(404).send({ error: 'Atendimento não encontrado.' });
+      }
+
+      await client.query('UPDATE laboratory_results SET encounter_id=NULL WHERE encounter_id=$1', [id]);
+      await client.query('UPDATE supplement_prescriptions SET encounter_id=NULL WHERE encounter_id=$1', [id]);
+      await client.query('UPDATE clinical_documents SET encounter_id=NULL WHERE encounter_id=$1', [id]);
+      await client.query('DELETE FROM clinical_sections WHERE encounter_id=$1', [id]);
+      await client.query('DELETE FROM clinical_encounters WHERE id=$1', [id]);
+
+      if (encounter.rows[0].appointment_id) {
+        await client.query(
+          "UPDATE appointments SET status='CONFIRMED', updated_at=now() WHERE id=$1 AND status='IN_PROGRESS'",
+          [encounter.rows[0].appointment_id]
+        );
+      }
+
+      await audit(client, 'ENCOUNTER_DELETED', 'clinical_encounter', {
+        actorUserId: request.auth!.userId,
+        entityId: id,
+        metadata: { patientId: encounter.rows[0].patient_id },
+      });
+      await client.query('COMMIT');
+      return { message: 'Atendimento excluído com sucesso.' };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  });
+
+  app.post('/bulk-close', async (request, reply) => {
+    const { ids } = z.object({ ids: z.array(z.uuid()).min(1).max(100) }).parse(request.body);
+    const client = await app.db.connect();
+    try {
+      await client.query('BEGIN');
+      const updated = await client.query<{ id: string; appointment_id: string | null }>(
+        `UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=ANY($1::uuid[]) AND status='IN_PROGRESS' RETURNING id, appointment_id`,
+        [ids]
+      );
+      for (const row of updated.rows) {
+        if (row.appointment_id) {
+          await client.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [row.appointment_id]);
+        }
+      }
+      await audit(client, 'ENCOUNTERS_BULK_CLOSED', 'clinical_encounter', {
+        actorUserId: request.auth!.userId,
+        metadata: { count: updated.rowCount },
+      });
+      await client.query('COMMIT');
+      return { message: `${updated.rowCount} atendimento(s) encerrado(s) com sucesso.`, count: updated.rowCount };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  });
 }
 

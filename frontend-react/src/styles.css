@@ -4310,6 +4310,58 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   background: var(--bg-alt);
 }
 
+.encounter-hub-action-btn.danger {
+  background: rgba(235, 77, 75, 0.1);
+  border: 1px solid rgba(235, 77, 75, 0.25);
+  color: #eb4d4b;
+  padding: 7px 10px;
+}
+
+.encounter-hub-action-btn.danger:hover {
+  background: #eb4d4b;
+  color: #ffffff;
+}
+
+.encounter-hub-action-btn.success {
+  background: rgba(33, 150, 83, 0.1);
+  border: 1px solid rgba(33, 150, 83, 0.25);
+  color: #219653;
+}
+
+.encounter-hub-action-btn.success:hover {
+  background: #219653;
+  color: #ffffff;
+}
+
+.encounter-hub-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: -6px;
+  margin-bottom: 6px;
+}
+
+.encounter-hub-bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(33, 150, 83, 0.3);
+  background: rgba(33, 150, 83, 0.08);
+  color: #1b4332;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.encounter-hub-bulk-btn:hover {
+  background: rgba(33, 150, 83, 0.18);
+}
+
 .encounter-hub-empty {
   padding: 48px 24px;
   text-align: center;

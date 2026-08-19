@@ -25,6 +25,7 @@ import {
   Search,
   Send,
   Sparkles,
+  Trash2,
   UserCheck,
   UserRound,
   Users,
@@ -468,6 +469,46 @@ function EncounterHub({
     }
   }
 
+  async function handleQuickClose(id: string, patientName: string) {
+    if (!window.confirm(`Deseja encerrar e arquivar o atendimento de "${patientName}" agora? Ele será movido para o Histórico de Realizados.`)) {
+      return;
+    }
+    try {
+      await api(`/api/encounters/${id}/quick-close`, { method: 'PATCH' });
+      await loadHubData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao encerrar atendimento.');
+    }
+  }
+
+  async function handleDeleteEncounter(id: string, patientName: string) {
+    if (!window.confirm(`⚠️ Atenção: Deseja realmente EXCLUIR o atendimento de "${patientName}"? Esta ação removerá o prontuário permanentemente.`)) {
+      return;
+    }
+    try {
+      await api(`/api/encounters/${id}`, { method: 'DELETE' });
+      await loadHubData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir atendimento.');
+    }
+  }
+
+  async function handleBulkCloseAll() {
+    if (!inProgressList.length) return;
+    if (!window.confirm(`Deseja encerrar e arquivar todos os ${inProgressList.length} atendimentos em andamento? Eles serão movidos para o Histórico.`)) {
+      return;
+    }
+    try {
+      await api('/api/encounters/bulk-close', {
+        method: 'POST',
+        body: JSON.stringify({ ids: inProgressList.map((e) => e.id) }),
+      });
+      await loadHubData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao encerrar atendimentos.');
+    }
+  }
+
   const inProgressList = encounters.filter((e) => e.status === 'IN_PROGRESS');
   const completedList = encounters.filter((e) => e.status === 'COMPLETED');
 
@@ -585,49 +626,82 @@ function EncounterHub({
             </button>
           </div>
         ) : (
-          <div className="encounter-hub-grid">
-            {filteredInProgress.map((enc) => (
-              <article key={enc.id} className="encounter-hub-card">
-                <div className="encounter-hub-card-header">
-                  <div className="encounter-hub-avatar">{enc.patientName.charAt(0)}</div>
-                  <div className="encounter-hub-patient-info">
-                    <strong>{enc.patientName}</strong>
-                    <small>{enc.patientEmail || enc.objective || 'Atendimento clínico'}</small>
-                  </div>
-                  <span className="encounter-hub-tag in_progress">Em Andamento</span>
-                </div>
-
-                <div className="encounter-hub-card-meta">
-                  <div className="encounter-hub-card-meta-row">
-                    <Clock size={13} />
-                    <span>Iniciado em: <strong>{new Date(enc.startedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</strong></span>
-                  </div>
-                  {enc.appointmentTime && (
-                    <div className="encounter-hub-card-meta-row">
-                      <Calendar size={13} />
-                      <span>Agendamento: <strong>{enc.appointmentTime} ({enc.durationMinutes || 60} min)</strong></span>
+          <>
+            {inProgressList.length > 1 && (
+              <div className="encounter-hub-toolbar">
+                <small style={{ color: 'var(--muted)' }}>
+                  Você possui <strong>{inProgressList.length}</strong> atendimento(s) em aberto.
+                </small>
+                <button
+                  type="button"
+                  className="encounter-hub-bulk-btn"
+                  onClick={() => void handleBulkCloseAll()}
+                  title="Encerrar e arquivar todos os rascunhos em aberto"
+                >
+                  <CheckCircle2 size={14} /> Encerrar todos os {inProgressList.length} rascunhos
+                </button>
+              </div>
+            )}
+            <div className="encounter-hub-grid">
+              {filteredInProgress.map((enc) => (
+                <article key={enc.id} className="encounter-hub-card">
+                  <div className="encounter-hub-card-header">
+                    <div className="encounter-hub-avatar">{enc.patientName.charAt(0)}</div>
+                    <div className="encounter-hub-patient-info">
+                      <strong>{enc.patientName}</strong>
+                      <small>{enc.patientEmail || enc.objective || 'Atendimento clínico'}</small>
                     </div>
-                  )}
-                  {enc.objective && (
-                    <div className="encounter-hub-card-meta-row">
-                      <Zap size={13} />
-                      <span>Objetivo: <strong>{enc.objective}</strong></span>
-                    </div>
-                  )}
-                </div>
+                    <span className="encounter-hub-tag in_progress">Em Andamento</span>
+                  </div>
 
-                <div className="encounter-hub-card-footer">
-                  <button
-                    type="button"
-                    className="encounter-hub-action-btn primary"
-                    onClick={() => onSelectEncounter(enc.id, false)}
-                  >
-                    <Play size={14} /> Continuar Atendimento
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
+                  <div className="encounter-hub-card-meta">
+                    <div className="encounter-hub-card-meta-row">
+                      <Clock size={13} />
+                      <span>Iniciado em: <strong>{new Date(enc.startedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</strong></span>
+                    </div>
+                    {enc.appointmentTime && (
+                      <div className="encounter-hub-card-meta-row">
+                        <Calendar size={13} />
+                        <span>Agendamento: <strong>{enc.appointmentTime} ({enc.durationMinutes || 60} min)</strong></span>
+                      </div>
+                    )}
+                    {enc.objective && (
+                      <div className="encounter-hub-card-meta-row">
+                        <Zap size={13} />
+                        <span>Objetivo: <strong>{enc.objective}</strong></span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="encounter-hub-card-footer">
+                    <button
+                      type="button"
+                      className="encounter-hub-action-btn danger"
+                      onClick={() => void handleDeleteEncounter(enc.id, enc.patientName)}
+                      title="Excluir este rascunho de atendimento"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className="encounter-hub-action-btn secondary"
+                      onClick={() => void handleQuickClose(enc.id, enc.patientName)}
+                      title="Encerrar e mover para o histórico de realizados"
+                    >
+                      <Check size={14} /> Encerrar
+                    </button>
+                    <button
+                      type="button"
+                      className="encounter-hub-action-btn primary"
+                      onClick={() => onSelectEncounter(enc.id, false)}
+                    >
+                      <Play size={14} /> Continuar
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
         )
       ) : activeTab === 'today' ? (
         filteredToday.length === 0 ? (
@@ -720,6 +794,14 @@ function EncounterHub({
                 </div>
 
                 <div className="encounter-hub-card-footer">
+                  <button
+                    type="button"
+                    className="encounter-hub-action-btn danger"
+                    onClick={() => void handleDeleteEncounter(enc.id, enc.patientName)}
+                    title="Excluir registro permanentemente"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                   <button
                     type="button"
                     className="encounter-hub-action-btn secondary"
