@@ -6,7 +6,7 @@
     <title>Teleconsulta · Dra. Silvia Oliveira Lemos</title>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <script src='https://meet.ffmuc.net/external_api.js'></script>
+    <script src='https://meet.jit.si/external_api.js'></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
@@ -187,7 +187,7 @@
             }
 
             if (roomName) {
-                const domain = params.get('domain') || 'meet.ffmuc.net';
+                const domain = params.get('domain') || 'meet.jit.si';
 
                 if (typeof JitsiMeetExternalAPI === 'undefined') {
                     await new Promise((resolve) => {

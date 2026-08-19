@@ -268,7 +268,10 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
         <div style="font-size:0.95rem; font-weight:800; color:var(--sage-light); display:flex; align-items:center; gap:6px;">
           📹 Teleconsulta ao Vivo
         </div>
-        <button type="button" class="btn btn-secondary" onclick="toggleTeleconsultaSplit()" style="padding:4px 10px; font-size:0.75rem;">✕ Fechar Vídeo</button>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn btn-secondary" onclick="abrirTeleconsultaJanela()" style="padding:4px 9px; font-size:0.75rem; color:#63b3ed;" title="Abrir em Janela Flutuante">↗ Janela</button>
+          <button type="button" class="btn btn-secondary" onclick="toggleTeleconsultaSplit()" style="padding:4px 9px; font-size:0.75rem;">✕ Fechar</button>
+        </div>
       </div>
 
       <iframe id="videoConferenceFrame" 
@@ -2693,6 +2696,14 @@ function toggleTeleconsultaSplit() {
   } else {
     frame.src = 'about:blank';
   }
+}
+
+function abrirTeleconsultaJanela() {
+  const ag = (typeof agendamento !== 'undefined' && agendamento) ? agendamento : null;
+  const pacId = (typeof PAC_ID !== 'undefined' && PAC_ID) ? PAC_ID : null;
+  const roomName = resolveRoomName(ag, pacId);
+  const roomUrl = `videocall.html?room=${encodeURIComponent(roomName)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator`;
+  window.open(roomUrl, 'TeleconsultaNutricional', 'width=1000,height=750,menubar=no,toolbar=no,location=no,status=no,resizable=yes');
 }
 
 // ── RECORDATÓRIO 24H & BRISTOL ──────────────────────────────────────
