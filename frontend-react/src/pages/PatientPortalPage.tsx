@@ -27,6 +27,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api';
+import { PwaInstallBanner } from '../components/PwaInstallBanner';
+import { BodyEvolutionChart } from '../components/BodyEvolutionChart';
+import { ShoppingListSection } from '../components/ShoppingListModal';
 
 type Any = Record<string, any>;
 type Tab =
@@ -255,6 +258,8 @@ export function PatientPortalPage() {
           </div>
         )}
       </section>
+
+      <PwaInstallBanner />
 
       <nav className="portal-tabs">
         {tabs.map(([key, label, Icon]) => (
@@ -1148,37 +1153,7 @@ function Goals({ rows, reload }: { rows: Any[]; reload: any }) {
 }
 
 function Evolution({ rows }: { rows: Any[] }) {
-  return (
-    <section className="panel portal-evolution">
-      <h2>Minha evolução</h2>
-      {rows.length ? (
-        <>
-          <div className="evolution-bars">
-            {rows.map((r) => (
-              <div key={r.id}>
-                <i style={{ height: `${Math.max(15, (r.weight || 0) * 1.7)}px` }} />
-                <strong>{r.weight || '—'} kg</strong>
-                <small>{new Date(`${r.measuredAt}T12:00`).toLocaleDateString('pt-BR')}</small>
-              </div>
-            ))}
-          </div>
-          <Cards
-            rows={rows}
-            render={(r: Any) => (
-              <>
-                <strong>{r.weight || '—'} kg</strong>
-                <span>
-                  Gordura: {r.bodyFat || '—'}% · Cintura: {r.waist || '—'} cm
-                </span>
-              </>
-            )}
-          />
-        </>
-      ) : (
-        <Empty />
-      )}
-    </section>
-  );
+  return <BodyEvolutionChart rows={rows} />;
 }
 
 function Finance({ rows }: { rows: Any[] }) {
@@ -1199,30 +1174,7 @@ function Finance({ rows }: { rows: Any[] }) {
 }
 
 function Shopping({ plans }: { plans: Any[] }) {
-  const foods = useMemo(() => {
-    const meals = plans[0]?.content?.meals || plans[0]?.content?.refeicoes || [];
-    return meals
-      .flatMap((m: Any) => m.items || m.alimentosList || [])
-      .map((i: Any) => i.name || i.nome)
-      .filter(Boolean)
-      .filter((x: string, i: number, a: string[]) => a.indexOf(x) === i);
-  }, [plans]);
-  return (
-    <section className="panel shopping-list">
-      <h2>Lista de compras</h2>
-      <p>Gerada a partir do plano publicado mais recente.</p>
-      {foods.length ? (
-        foods.map((f: string) => (
-          <label key={f}>
-            <input type="checkbox" />
-            {f}
-          </label>
-        ))
-      ) : (
-        <Empty />
-      )}
-    </section>
-  );
+  return <ShoppingListSection plans={plans} />;
 }
 
 function Journey({ data }: { data: Any }) {

@@ -1,12 +1,13 @@
-import {
   BadgeCheck,
   Calendar,
   Clock,
+  CreditCard,
   Download,
   FileCheck2,
   FileText,
   Pill,
   Printer,
+  Receipt,
   Sparkles,
   Stethoscope,
   User,
@@ -47,7 +48,7 @@ type Settings = {
   secondaryColor: string;
   documentFooter: string;
 };
-type Kind = 'declaration' | 'certificate' | 'supplements';
+type Kind = 'declaration' | 'certificate' | 'supplements' | 'receipt';
 
 const today = new Date().toISOString().slice(0, 10);
 const fmt = (date: string) =>
@@ -69,6 +70,9 @@ export function DocumentsPage() {
   const [start, setStart] = useState('14:00');
   const [end, setEnd] = useState('15:00');
   const [observation, setObservation] = useState('');
+  const [amount, setAmount] = useState('250,00');
+  const [paymentMethod, setPaymentMethod] = useState('PIX');
+  const [serviceDesc, setServiceDesc] = useState('Consulta e Acompanhamento Nutricional Clínico');
   const [error, setError] = useState('');
   const [zoomScale, setZoomScale] = useState(1);
 
@@ -189,6 +193,18 @@ export function DocumentsPage() {
                 <small>Prescrição individualizada</small>
               </div>
             </button>
+
+            <button
+              type="button"
+              className={`doc-type-btn ${kind === 'receipt' ? 'active' : ''}`}
+              onClick={() => setKind('receipt')}
+            >
+              <Receipt size={18} />
+              <div>
+                <strong>Recibo & Reembolso</strong>
+                <small>Comprovante de pagamento</small>
+              </div>
+            </button>
           </div>
 
           <span className="control-section-title" style={{ marginTop: 10 }}>
@@ -229,6 +245,63 @@ export function DocumentsPage() {
                 ))}
               </select>
             </label>
+          ) : kind === 'receipt' ? (
+            <>
+              <div className="doc-times-grid">
+                <label className="doc-field-label">
+                  Data do Pagamento
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                </label>
+
+                <label className="doc-field-label">
+                  Valor Pago (R$)
+                  <input
+                    type="text"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="250,00"
+                  />
+                </label>
+              </div>
+
+              <label className="doc-field-label">
+                Forma de Pagamento
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <option value="PIX">PIX</option>
+                  <option value="Cartão de Crédito">Cartão de Crédito</option>
+                  <option value="Cartão de Débito">Cartão de Débito</option>
+                  <option value="Transferência Bancária">Transferência Bancária</option>
+                  <option value="Dinheiro em Espécie">Dinheiro em Espécie</option>
+                </select>
+              </label>
+
+              <label className="doc-field-label">
+                Descrição do Serviço
+                <input
+                  type="text"
+                  value={serviceDesc}
+                  onChange={(e) => setServiceDesc(e.target.value)}
+                  placeholder="Consulta e Acompanhamento Nutricional Clínico"
+                />
+              </label>
+
+              <label className="doc-field-label">
+                Observações Adicionais (Opcional)
+                <textarea
+                  rows={2}
+                  value={observation}
+                  onChange={(e) => setObservation(e.target.value)}
+                  placeholder="Ex.: Recibo emitido para fins de solicitação de reembolso junto ao plano de saúde..."
+                />
+              </label>
+            </>
           ) : (
             <>
               <div className="doc-times-grid">
@@ -330,6 +403,20 @@ export function DocumentsPage() {
                     <SupplementDocument settings={settings} encounter={encounter} />
                   ) : (
                     <PreviewEmpty text="Selecione um paciente e a consulta para visualizar a prescrição de suplementação." />
+                  )
+                ) : kind === 'receipt' ? (
+                  patient ? (
+                    <ReceiptDocument
+                      settings={settings}
+                      patient={patient}
+                      date={date}
+                      amount={amount}
+                      paymentMethod={paymentMethod}
+                      serviceDesc={serviceDesc}
+                      observation={observation}
+                    />
+                  ) : (
+                    <PreviewEmpty text="Selecione um paciente para gerar o recibo de pagamento timbrado." />
                   )
                 ) : patient ? (
                   <OfficialDocument
@@ -532,6 +619,74 @@ function SupplementDocument({
   );
 }
 
+function ReceiptDocument({
+  settings,
+  patient,
+  date,
+  amount,
+  paymentMethod,
+  serviceDesc,
+  observation,
+}: {
+  settings: Settings;
+  patient: Patient;
+  date: string;
+  amount: string;
+  paymentMethod: string;
+  serviceDesc: string;
+  observation: string;
+}) {
+  return (
+    <Sheet settings={settings} label="Recibo de Pagamento & Reembolso">
+      <section className="official-doc-content-v2 receipt-doc">
+        <span className="doc-subtitle-badge">Comprovante de Pagamento & Quitação</span>
+        <h1 className="doc-main-title">Recibo de Consulta Nutricional</h1>
+
+        <div className="official-body-paragraphs">
+          <div className="receipt-amount-highlight">
+            <span className="receipt-tag">VALOR RECEBIDO</span>
+            <strong className="receipt-val">R$ {amount || '0,00'}</strong>
+          </div>
+
+          <p>
+            Recebi de <strong>{patient.name}</strong>
+            {patient.cpf ? `, inscrito(a) no CPF sob o nº ${patient.cpf},` : ','} a quantia de{' '}
+            <strong>R$ {amount || '0,00'}</strong>, paga via <strong>{paymentMethod}</strong>, referente à prestação
+            dos seguintes serviços profissionais:
+          </p>
+
+          <div className="receipt-service-card">
+            <strong>{serviceDesc || 'Consulta e Acompanhamento Nutricional Clínico'}</strong>
+            <span>Data de realização do atendimento: <strong>{fmt(date)}</strong></span>
+          </div>
+
+          <p>
+            Pelo presente, firmo e dou plena, rasa e geral quitação da quantia retro mencionada, sendo este
+            documento hábil e emitido para os devidos fins de comprovação e solicitação de <strong>reembolso junto a
+            operadoras de planos de saúde</strong> ou comprovação perante a <strong>Receita Federal (IRPF)</strong>.
+          </p>
+
+          {observation && (
+            <aside className="official-notes-aside">
+              <strong>Observações:</strong>
+              <p>{observation}</p>
+            </aside>
+          )}
+        </div>
+
+        <div className="sheet-signature-block">
+          <span className="signature-date">
+            {settings.city || 'São Paulo'}, {fmt(date)}
+          </span>
+          <div className="signature-line" />
+          <strong className="signature-name">{settings.professionalName}</strong>
+          <small className="signature-crn">Nutricionista · {settings.crn}</small>
+        </div>
+      </section>
+    </Sheet>
+  );
+}
+
 function PreviewEmpty({ text }: { text: string }) {
   return (
     <div className="document-preview-empty-v2">
@@ -543,3 +698,4 @@ function PreviewEmpty({ text }: { text: string }) {
     </div>
   );
 }
+
