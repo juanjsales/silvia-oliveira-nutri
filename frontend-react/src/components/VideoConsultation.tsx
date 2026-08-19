@@ -28,22 +28,22 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
   useEffect(() => {
     setError('');
     if (!appointmentId) {
-      setSource(`https://meet.jit.si/nutri-${encodeURIComponent(roomToken)}#config.prejoinPageEnabled=false`);
+      setSource(`/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`);
       return;
     }
     api<{ data: { roomUrl: string } }>(`/api/video/appointments/${appointmentId}/access`, { method: 'POST' })
       .then((response) => setSource(response.data.roomUrl))
       .catch((cause) => {
         // Fallback direto caso a consulta ainda não esteja com status IN_PROGRESS na API
-        setSource(`https://meet.jit.si/nutri-${encodeURIComponent(roomToken)}#config.prejoinPageEnabled=false`);
+        setSource(`/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`);
       });
   }, [appointmentId, roomToken]);
 
   const patientUrl = appointmentId 
     ? `${window.location.origin}/portal` 
-    : `https://meet.jit.si/nutri-${encodeURIComponent(roomToken)}#config.prejoinPageEnabled=false`;
+    : `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant`;
 
-  const directRoomUrl = source || `https://meet.jit.si/nutri-${encodeURIComponent(roomToken)}#config.prejoinPageEnabled=false`;
+  const directRoomUrl = source || `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant`;
 
   function copyPatientLink() {
     navigator.clipboard.writeText(directRoomUrl).then(() => {
