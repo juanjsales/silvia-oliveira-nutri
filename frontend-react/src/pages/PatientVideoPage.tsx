@@ -253,13 +253,7 @@ export function PatientVideoPage() {
         </section>
       ) : (
         <div className={`video-call-workspace ${showGuide ? 'with-guide' : 'full-video'}`}>
-          <div className="video-stream-container">
-            <iframe
-              key={iframeKey}
-              src={access.roomUrl}
-              title="Videochamada nutricional"
-              allow="camera; microphone; fullscreen; display-capture; autoplay"
-            />
+          <div className="video-stream-container" id="patient-video-slot">
             <footer className="video-stream-footer">
               <small>Acesso seguro ativo até {new Date(access.expiresAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.</small>
               {!showGuide && (

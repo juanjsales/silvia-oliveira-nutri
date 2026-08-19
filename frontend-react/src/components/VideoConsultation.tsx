@@ -253,25 +253,18 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, secti
         </div>
       )}
 
-      <div className="video-frame">
+      <div className="video-frame" id="encounter-video-slot">
         {error ? (
           <div className="video-frame-status">
             <strong>Sala indisponível</strong>
             <span>{error}</span>
           </div>
-        ) : source ? (
-          <iframe 
-            key={iframeKey}
-            src={source} 
-            title={`Teleconsulta com ${patientName}`} 
-            allow="camera; microphone; fullscreen; display-capture; autoplay" 
-          />
-        ) : (
+        ) : !source ? (
           <div className="video-frame-status">
             <span className="spinner" />
             <span>Conectando à sala segura...</span>
           </div>
-        )}
+        ) : null}
       </div>
 
       <footer>
