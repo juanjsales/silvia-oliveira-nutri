@@ -28,22 +28,22 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
   useEffect(() => {
     setError('');
     if (!appointmentId) {
-      setSource(`https://meet.jit.si/nutri-${encodeURIComponent(roomToken)}`);
+      setSource(`https://meet.ffmuc.net/nutri-${encodeURIComponent(roomToken)}#config.prejoinPageEnabled=false`);
       return;
     }
     api<{ data: { roomUrl: string } }>(`/api/video/appointments/${appointmentId}/access`, { method: 'POST' })
       .then((response) => setSource(response.data.roomUrl))
       .catch((cause) => {
         // Fallback direto caso a consulta ainda não esteja com status IN_PROGRESS na API
-        setSource(`https://meet.jit.si/nutri-${encodeURIComponent(roomToken)}`);
+        setSource(`https://meet.ffmuc.net/nutri-${encodeURIComponent(roomToken)}#config.prejoinPageEnabled=false`);
       });
   }, [appointmentId, roomToken]);
 
   const patientUrl = appointmentId 
     ? `${window.location.origin}/portal` 
-    : `https://meet.jit.si/nutri-${encodeURIComponent(roomToken)}`;
+    : `https://meet.ffmuc.net/nutri-${encodeURIComponent(roomToken)}#config.prejoinPageEnabled=false`;
 
-  const directRoomUrl = source || `https://meet.jit.si/nutri-${encodeURIComponent(roomToken)}`;
+  const directRoomUrl = source || `https://meet.ffmuc.net/nutri-${encodeURIComponent(roomToken)}#config.prejoinPageEnabled=false`;
 
   function copyPatientLink() {
     navigator.clipboard.writeText(directRoomUrl).then(() => {
