@@ -139,9 +139,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
-        }
-
-        /* ── VIDEO STAGE ── */
+          /* ── VIDEO STAGE ── */
         .stage-container {
             flex: 1;
             position: relative;
@@ -152,7 +150,17 @@
             justify-content: center;
         }
 
-        .remote-video-wrap {
+        /* ── CONTAINER PRINCIPAL DOS VÍDEOS ── */
+        .videos-layout-grid {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* MODO 1: DESTAQUE (Principal + Miniatura PiP) */
+        .videos-layout-grid.mode-spotlight .remote-video-wrap {
             width: 100%;
             height: 100%;
             position: absolute;
@@ -163,92 +171,139 @@
             background: #040805;
         }
 
-        #remoteVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background: #040805;
-        }
-
-        .waiting-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 18px;
-            background: radial-gradient(circle at center, #102015 0%, #040805 100%);
-            z-index: 10;
-            padding: 24px;
-            text-align: center;
-        }
-
-        .pulse-avatar {
-            width: 88px;
-            height: 88px;
-            border-radius: 50%;
-            background: rgba(140, 164, 129, 0.12);
-            border: 2px solid var(--sage-accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--sage-glow);
-            animation: pulse-ring 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-        }
-
-        @keyframes pulse-ring {
-            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.45); }
-            70% { box-shadow: 0 0 0 24px rgba(52, 211, 153, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
-        }
-
-        /* ── LOCAL VIDEO (PiP) ── */
-        .local-video-wrap {
+        .videos-layout-grid.mode-spotlight .local-video-wrap {
             position: absolute;
             bottom: 84px;
             right: 20px;
-            width: 180px;
-            height: 125px;
+            width: 200px;
+            height: 140px;
             border-radius: 14px;
             overflow: hidden;
             border: 2px solid rgba(140, 164, 129, 0.45);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.85);
             background: #0d1710;
-            z-index: 20;
+            z-index: 25;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
         }
 
-        .local-video-wrap:hover {
-            transform: scale(1.04);
-            border-color: var(--sage-glow);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85);
+        /* MODO 2: LADO A LADO (Grid 50% / 50% sem cortes) */
+        .videos-layout-grid.mode-grid {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            padding: 10px;
+            padding-bottom: 80px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .videos-layout-grid.mode-grid .remote-video-wrap,
+        .videos-layout-grid.mode-grid .local-video-wrap {
+            position: relative;
+            flex: 1;
+            width: 50%;
+            height: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #08120a;
+            border: 1.5px solid rgba(140, 164, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            bottom: auto;
+            right: auto;
+        }
+
+        /* MODO 3: PRÉVIA LOCAL (Enquanto aguarda a outra pessoa) */
+        .videos-layout-grid.mode-waiting .remote-video-wrap {
+            display: none;
+        }
+
+        .videos-layout-grid.mode-waiting .local-video-wrap {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            border: none;
+            z-index: 5;
+        }
+
+        /* ── ELEMENTOS DE VÍDEO (SEM CORTES) ── */
+        .video-element {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Padrão sem cortes: 100% da pessoa visível */
+            background: #040805;
+            transition: object-fit 0.2s ease;
+        }
+
+        .fit-cover .video-element {
+            object-fit: cover !important;
         }
 
         #localVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1); /* espelha câmera local */
+            transform: scaleX(-1); /* espelha câmera própria */
+        }
+
+        .waiting-status-banner {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(14, 26, 18, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1.5px solid var(--sage-accent);
+            padding: 10px 22px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 30;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            animation: fadeInDown 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .waiting-status-banner .pulse-dot-large {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--sage-glow);
+            box-shadow: 0 0 10px var(--sage-glow);
+            animation: pulse-ring 1.8s infinite;
+        }
+
+        .waiting-status-banner strong {
+            font-size: 0.86rem;
+            color: #ffffff;
+        }
+
+        .waiting-status-banner small {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            display: block;
         }
 
         .video-label {
             position: absolute;
-            bottom: 6px;
-            left: 8px;
-            background: rgba(0,0,0,0.72);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
+            bottom: 8px;
+            left: 10px;
+            background: rgba(0,0,0,0.75);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.72rem;
             font-weight: 800;
             color: #ffffff;
-            backdrop-filter: blur(6px);
+            backdrop-filter: blur(8px);
             pointer-events: none;
             display: flex;
             align-items: center;
-            gap: 4px;
-            border: 1px solid rgba(255,255,255,0.1);
+            gap: 5px;
+            border: 1px solid rgba(255,255,255,0.15);
+            z-index: 10;
         }
 
         /* ── FLOATING CONTROLS ── */
@@ -259,22 +314,22 @@
             transform: translateX(-50%);
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: rgba(14, 26, 18, 0.88);
-            backdrop-filter: blur(16px);
-            border: 1.5px solid rgba(140, 164, 129, 0.3);
+            gap: 10px;
+            background: rgba(14, 26, 18, 0.92);
+            backdrop-filter: blur(18px);
+            border: 1.5px solid rgba(140, 164, 129, 0.35);
             padding: 8px 18px;
             border-radius: 36px;
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
-            z-index: 30;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
+            z-index: 40;
         }
 
         .ctrl-btn {
-            width: 46px;
-            height: 46px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: 1.5px solid rgba(140, 164, 129, 0.3);
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
             display: flex;
             align-items: center;
@@ -285,40 +340,37 @@
         }
 
         .ctrl-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 19px;
+            height: 19px;
             stroke-width: 2;
             transition: transform 0.2s ease;
         }
 
         .ctrl-btn:hover {
-            background: rgba(140, 164, 129, 0.25);
+            background: rgba(140, 164, 129, 0.3);
             border-color: var(--sage-accent);
             transform: translateY(-2px);
         }
 
-        .ctrl-btn:active {
-            transform: translateY(0);
+        .ctrl-btn.active {
+            background: var(--sage-glow) !important;
+            color: #070d09 !important;
+            border-color: var(--sage-glow) !important;
         }
 
         .ctrl-btn.off {
-            background: rgba(239, 68, 68, 0.22);
-            border-color: rgba(239, 68, 68, 0.7);
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.75);
             color: #fca5a5;
-        }
-
-        .ctrl-btn.off:hover {
-            background: rgba(239, 68, 68, 0.35);
-            border-color: #ef4444;
         }
 
         .ctrl-btn.btn-hangup {
             background: var(--danger);
             border-color: var(--danger);
             color: #ffffff;
-            width: 50px;
-            height: 50px;
-            margin-left: 6px;
+            width: 48px;
+            height: 48px;
+            margin-left: 4px;
         }
 
         .ctrl-btn.btn-hangup:hover {
@@ -330,20 +382,20 @@
         /* ── TOAST NOTIFICATIONS ── */
         .toast-msg {
             position: absolute;
-            top: 16px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(14, 26, 18, 0.92);
+            background: rgba(14, 26, 18, 0.94);
             border: 1px solid var(--sage-accent);
             color: #e4ebe1;
-            padding: 8px 18px;
+            padding: 8px 20px;
             border-radius: 24px;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-weight: 700;
-            z-index: 40;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            z-index: 50;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.7);
             display: none;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             animation: slide-toast 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -353,14 +405,25 @@
         }
 
         @media (max-width: 600px) {
-            .call-header { padding: 6px 12px; height: 48px; }
-            .call-title { font-size: 0.85rem; }
-            .call-security-badge { display: none; }
-            .local-video-wrap { width: 110px; height: 80px; bottom: 78px; right: 12px; }
-            .controls-bar { gap: 8px; padding: 6px 14px; bottom: 14px; }
-            .ctrl-btn { width: 40px; height: 40px; }
-            .ctrl-btn svg { width: 17px; height: 17px; }
-            .ctrl-btn.btn-hangup { width: 44px; height: 44px; }
+            .videos-layout-grid.mode-grid {
+                flex-direction: column;
+                padding-bottom: 74px;
+            }
+            .videos-layout-grid.mode-grid .remote-video-wrap,
+            .videos-layout-grid.mode-grid .local-video-wrap {
+                width: 100%;
+                height: 50%;
+            }
+            .videos-layout-grid.mode-spotlight .local-video-wrap {
+                width: 120px;
+                height: 90px;
+                bottom: 78px;
+                right: 12px;
+            }
+            .controls-bar { gap: 6px; padding: 6px 12px; bottom: 12px; }
+            .ctrl-btn { width: 38px; height: 38px; }
+            .ctrl-btn svg { width: 16px; height: 16px; }
+            .ctrl-btn.btn-hangup { width: 42px; height: 42px; }
         }
     </style>
 </head>
@@ -395,7 +458,7 @@
             </span>
             <span class="call-status" id="callStatus">
                 <span class="status-dot"></span>
-                <span>Conectando...</span>
+                <span>Iniciando câmera...</span>
             </span>
             <div class="call-timer" id="callTimer">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -411,41 +474,39 @@
     <main class="stage-container" id="stageContainer">
         <div id="toastMsg" class="toast-msg"></div>
 
-        <!-- VÍDEO REMOTO (OUTRA PESSOA) -->
-        <div class="remote-video-wrap">
-            <video id="remoteVideo" autoplay playsinline></video>
-            <div class="video-label" id="remoteLabel">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <span id="remoteNameText">Paciente</span>
+        <!-- BANNER DE STATUS DE ESPERA -->
+        <div class="waiting-status-banner" id="waitingBanner">
+            <div class="pulse-dot-large"></div>
+            <div>
+                <strong id="waitingTitle">Sua câmera está pronta</strong>
+                <small id="waitingDesc">Aguardando o participante conectar à sala...</small>
             </div>
         </div>
 
-        <!-- TELA DE ESPERA -->
-        <div class="waiting-overlay" id="waitingOverlay">
-            <div class="pulse-avatar">
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/>
-                    <rect x="2" y="6" width="14" height="12" rx="2"/>
-                </svg>
+        <!-- LAYOUT DE VÍDEOS (INICIA EM MODO ESPERA/PREVIEW) -->
+        <div class="videos-layout-grid mode-waiting" id="videosLayout">
+            <!-- VÍDEO REMOTO (OUTRA PESSOA) -->
+            <div class="remote-video-wrap" id="remoteVideoBox">
+                <video id="remoteVideo" class="video-element" autoplay playsinline></video>
+                <div class="video-label" id="remoteLabel">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span id="remoteNameText">Paciente</span>
+                </div>
             </div>
-            <div style="max-width: 340px;">
-                <h3 style="font-size:1.15rem; color:#ffffff; font-family:'Playfair Display',serif; margin-bottom:6px;" id="waitingTitle">Aguardando Conexão...</h3>
-                <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.45;" id="waitingDesc">A transmissão direta em alta definição iniciará automaticamente assim que a outra pessoa conectar.</p>
-            </div>
-        </div>
 
-        <!-- MINIATURA LOCAL (SUA CÂMERA) -->
-        <div class="local-video-wrap" id="localVideoBox" title="Sua câmera (Clique para alternar tamanho)">
-            <video id="localVideo" autoplay playsinline muted></video>
-            <div class="video-label" id="localLabel">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <span id="localNameText">Você</span>
+            <!-- VÍDEO LOCAL (SUA CÂMERA) -->
+            <div class="local-video-wrap" id="localVideoBox" title="Clique para alternar destaque">
+                <video id="localVideo" class="video-element" autoplay playsinline muted></video>
+                <div class="video-label" id="localLabel">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span id="localNameText">Você</span>
+                </div>
             </div>
         </div>
 
@@ -480,6 +541,22 @@
                     <path d="M2 6a2 2 0 0 1 2-2h10"/>
                     <path d="M2 18v-8"/>
                     <path d="M6 20h8a2 2 0 0 0 2-2v-4"/>
+                </svg>
+            </button>
+
+            <!-- BOTÃO AJUSTAR ENQUADRAMENTO (SEM CORTES vs PREENCHER) -->
+            <button class="ctrl-btn" id="btnFit" onclick="toggleFitMode()" title="Ajustar Enquadramento (Sem Cortes / Preencher)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                    <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                </svg>
+            </button>
+
+            <!-- BOTÃO MUDAR LAYOUT (GRID 50/50 vs DESTAQUE PiP) -->
+            <button class="ctrl-btn" id="btnLayout" onclick="toggleLayoutMode()" title="Alternar Layout (Lado a Lado / Destaque)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    <path d="M12 3v18"/>
                 </svg>
             </button>
 
@@ -522,6 +599,8 @@
         let isVideoMuted = false;
         let isScreenSharing = false;
         let isModerator = false;
+        let isCoverFit = false;
+        let currentLayout = 'grid'; // 'grid' | 'spotlight'
         let myPeerId = '';
         let targetPeerId = '';
         let connectRetryTimer = null;
@@ -564,6 +643,38 @@
             }
         }
 
+        // ── CONTROLE DE ENQUADRAMENTO E LAYOUT ──
+        function toggleFitMode() {
+            isCoverFit = !isCoverFit;
+            const stage = document.getElementById('stageContainer');
+            const btn = document.getElementById('btnFit');
+            if (isCoverFit) {
+                stage.classList.add('fit-cover');
+                if (btn) btn.classList.add('active');
+                showToast('Enquadramento: Preencher Tela (com zoom)');
+            } else {
+                stage.classList.remove('fit-cover');
+                if (btn) btn.classList.remove('active');
+                showToast('Enquadramento: Sem Cortes (Proporção Original)');
+            }
+        }
+
+        function toggleLayoutMode() {
+            const layout = document.getElementById('videosLayout');
+            const btn = document.getElementById('btnLayout');
+            if (currentLayout === 'grid') {
+                currentLayout = 'spotlight';
+                if (layout) layout.className = 'videos-layout-grid mode-spotlight';
+                if (btn) btn.classList.remove('active');
+                showToast('Layout: Destaque Principal + Miniatura');
+            } else {
+                currentLayout = 'grid';
+                if (layout) layout.className = 'videos-layout-grid mode-grid';
+                if (btn) btn.classList.add('active');
+                showToast('Layout: Lado a Lado (50% / 50%)');
+            }
+        }
+
         function toggleStageFullscreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(() => {});
@@ -582,7 +693,9 @@
                     audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
                 });
                 const localVideo = document.getElementById('localVideo');
-                localVideo.srcObject = localStream;
+                if (localVideo) {
+                    localVideo.srcObject = localStream;
+                }
                 return true;
             } catch (err) {
                 console.error('Erro ao obter câmera/microfone:', err);
@@ -602,13 +715,13 @@
             const iconOff = document.getElementById('iconMicOff');
             
             if (isAudioMuted) {
-                iconOn.style.display = 'none';
-                iconOff.style.display = 'block';
-                btn.classList.add('off');
+                if (iconOn) iconOn.style.display = 'none';
+                if (iconOff) iconOff.style.display = 'block';
+                if (btn) btn.classList.add('off');
             } else {
-                iconOn.style.display = 'block';
-                iconOff.style.display = 'none';
-                btn.classList.remove('off');
+                if (iconOn) iconOn.style.display = 'block';
+                if (iconOff) iconOff.style.display = 'none';
+                if (btn) btn.classList.remove('off');
             }
             showToast(isAudioMuted ? 'Microfone silenciado' : 'Microfone ativo');
         }
@@ -622,13 +735,13 @@
             const iconOff = document.getElementById('iconCamOff');
 
             if (isVideoMuted) {
-                iconOn.style.display = 'none';
-                iconOff.style.display = 'block';
-                btn.classList.add('off');
+                if (iconOn) iconOn.style.display = 'none';
+                if (iconOff) iconOff.style.display = 'block';
+                if (btn) btn.classList.add('off');
             } else {
-                iconOn.style.display = 'block';
-                iconOff.style.display = 'none';
-                btn.classList.remove('off');
+                if (iconOn) iconOn.style.display = 'block';
+                if (iconOff) iconOff.style.display = 'none';
+                if (btn) btn.classList.remove('off');
             }
             showToast(isVideoMuted ? 'Câmera desligada' : 'Câmera ligada');
         }
@@ -647,10 +760,24 @@
                         const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                         if (sender) sender.replaceTrack(screenTrack);
                     }
-                    document.getElementById('localVideo').srcObject = screenStream;
+
+                    // Exibe a tela compartilhada com destaque total
+                    const localVideo = document.getElementById('localVideo');
+                    if (localVideo) {
+                        localVideo.srcObject = screenStream;
+                        localVideo.style.transform = 'none'; // Não espelha a tela compartilhada!
+                    }
+
+                    // Se estiver em modo spotlight ou grid, destaca o compartilhamento
+                    const layout = document.getElementById('videosLayout');
+                    if (layout) {
+                        layout.className = 'videos-layout-grid mode-spotlight';
+                    }
+
                     isScreenSharing = true;
-                    document.getElementById('btnScreen').classList.add('off');
-                    showToast('Compartilhando tela');
+                    const btnScreen = document.getElementById('btnScreen');
+                    if (btnScreen) btnScreen.classList.add('active');
+                    showToast('Compartilhando tela com visualização ao vivo');
 
                     screenTrack.onended = () => {
                         stopScreenShare();
@@ -670,9 +797,20 @@
                 const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                 if (sender) sender.replaceTrack(camTrack);
             }
-            document.getElementById('localVideo').srcObject = localStream;
+            const localVideo = document.getElementById('localVideo');
+            if (localVideo) {
+                localVideo.srcObject = localStream;
+                localVideo.style.transform = 'scaleX(-1)'; // Restaura espelhamento natural da câmera
+            }
             isScreenSharing = false;
-            document.getElementById('btnScreen').classList.remove('off');
+            const btnScreen = document.getElementById('btnScreen');
+            if (btnScreen) btnScreen.classList.remove('active');
+            
+            // Restaura o layout escolhido
+            const layout = document.getElementById('videosLayout');
+            if (layout) {
+                layout.className = `videos-layout-grid mode-${currentLayout}`;
+            }
             showToast('Retornou para a câmera');
         }
 
@@ -682,12 +820,27 @@
             remoteStream = remoteStreamObj;
 
             const remoteVideo = document.getElementById('remoteVideo');
-            remoteVideo.srcObject = remoteStreamObj;
+            if (remoteVideo) {
+                remoteVideo.srcObject = remoteStreamObj;
+            }
 
-            document.getElementById('waitingOverlay').style.display = 'none';
+            // Oculta o banner de espera e ativa o layout da chamada
+            const banner = document.getElementById('waitingBanner');
+            if (banner) banner.style.display = 'none';
+
+            const layout = document.getElementById('videosLayout');
+            if (layout) {
+                layout.className = `videos-layout-grid mode-${currentLayout}`;
+            }
+
+            const btnLayout = document.getElementById('btnLayout');
+            if (btnLayout && currentLayout === 'grid') {
+                btnLayout.classList.add('active');
+            }
+
             setStatus('Conectado em HD', true);
             startTimer();
-            showToast('Chamada conectada com sucesso!', 4000);
+            showToast('Teleconsulta conectada com sucesso!', 4000);
 
             if (connectRetryTimer) {
                 clearInterval(connectRetryTimer);
@@ -700,9 +853,18 @@
         }
 
         function handleCallDisconnected() {
-            document.getElementById('waitingOverlay').style.display = 'flex';
-            document.getElementById('waitingTitle').textContent = 'Participante Desconectou';
-            document.getElementById('waitingDesc').textContent = 'Aguardando reconexão da outra pessoa...';
+            const banner = document.getElementById('waitingBanner');
+            if (banner) {
+                banner.style.display = 'flex';
+                document.getElementById('waitingTitle').textContent = 'Participante Desconectou';
+                document.getElementById('waitingDesc').textContent = 'Sua câmera continua ativa. Aguardando reconexão...';
+            }
+
+            const layout = document.getElementById('videosLayout');
+            if (layout) {
+                layout.className = 'videos-layout-grid mode-waiting';
+            }
+
             setStatus('Aguardando reconexão...');
             stopTimer();
 
