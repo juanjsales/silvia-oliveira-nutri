@@ -3,40 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Login Unificado · Dra. Silvia Oliveira Lemos Nutricionista</title>
+<title>Acesso Seguro · Dra. Silvia Oliveira Nutricionista</title>
 <meta name="kos-auth-level" content="guest-only">
 <script src="assets/js/auth-guard.js"></script>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 
 <style>
-:root, [data-theme="dark"] {
-  --bg-deep: #0e1a12;
-  --bg-card: #182a1f;
-  --bg-header: #203528;
-  --text-primary: #eef4e5;
-  --text-title: #ffffff;
-  --text-muted: #a0b399;
-  --border-forest: rgba(140, 164, 129, 0.25);
-  --sage-light: #8ca481;
-  --sage-dim: rgba(140, 164, 129, 0.2);
-  --input-bg: rgba(0, 0, 0, 0.4);
+:root, [data-theme="light"] {
+  --bg-deep: #f8fafc;
+  --bg-card: #ffffff;
+  --text-primary: #334155;
+  --text-title: #0f172a;
+  --text-muted: #64748b;
+  --border-forest: #e2e8f0;
+  --sage-light: #203528;
+  --sage-accent: #16a34a;
+  --sage-dim: #f0fdf4;
+  --input-bg: #f8fafc;
   --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  --radius: 24px;
+  --radius: 20px;
 }
 
-[data-theme="light"] {
-  --bg-deep: #f3f6f1;
-  --bg-card: #ffffff;
-  --bg-header: #e6ede0;
-  --text-primary: #1c2e22;
-  --text-title: #142419;
-  --text-muted: #57695b;
-  --border-forest: #d1ded0;
-  --sage-light: #486640;
-  --sage-dim: rgba(72, 102, 64, 0.12);
-  --input-bg: #f8faf6;
+[data-theme="dark"] {
+  --bg-deep: #09130b;
+  --bg-card: #122116;
+  --text-primary: #e2e8f0;
+  --text-title: #ffffff;
+  --text-muted: #8ea488;
+  --border-forest: rgba(140, 164, 129, 0.22);
+  --sage-light: #8ca481;
+  --sage-accent: #34d399;
+  --sage-dim: rgba(140, 164, 129, 0.15);
+  --input-bg: rgba(0, 0, 0, 0.3);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,99 +55,75 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-.login-card { background: var(--bg-card); border-color: var(--border-forest); }
-.brand-title { color: var(--text-title); }
-
 /* DECORAÇÃO DE FUNDO BOTÂNICA */
 .bg-glow {
-  position: absolute; width: 350px; height: 350px;
-  background: radial-gradient(circle, rgba(140, 164, 129, 0.15) 0%, rgba(14, 26, 18, 0) 70%);
-  top: 10%; left: 50%; transform: translateX(-50%); pointer-events: none;
+  position: absolute; width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(32, 53, 40, 0.08) 0%, rgba(0,0,0,0) 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;
 }
 
 /* CARTÃO CENTRAL DE LOGIN */
 .login-card {
-  background: var(--forest-card);
-  border: 1.5px solid var(--border-forest);
+  background: var(--bg-card);
+  border: 1px solid var(--border-forest);
   border-radius: var(--radius);
-  padding: 40px 32px;
+  padding: 40px 34px;
   width: 100%;
-  max-width: 420px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  max-width: 430px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.06);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
   position: relative;
   z-index: 10;
 }
 
-.brand-header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.brand-header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .brand-logo {
-  width: 64px; height: 64px;
-  background: var(--sage-dim); border: 1.5px solid var(--sage-light);
-  border-radius: 50%; font-size: 1.8rem;
+  width: 58px; height: 58px;
+  border-radius: 16px;
+  background: #203528;
   display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(32, 53, 40, 0.2);
 }
-.brand-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #fff; }
-.brand-sub { font-size: 0.8rem; color: var(--sage-light); font-weight: 700; letter-spacing: 0.05em; }
+.brand-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-title); margin-top: 2px; }
+.brand-sub { font-size: 0.74rem; color: #16a34a; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
 
 .form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+.form-group label { font-size: 0.76rem; font-weight: 800; text-transform: uppercase; color: #475569; letter-spacing: 0.05em; }
 .form-control {
-  background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-forest);
-  padding: 14px 18px; border-radius: 12px; color: #fff;
-  font-family: inherit; font-size: 0.95rem; outline: none; transition: var(--tr); width: 100%;
+  background: var(--input-bg); border: 1px solid var(--border-forest);
+  padding: 12px 16px; border-radius: 10px; color: var(--text-title);
+  font-family: inherit; font-size: 0.92rem; outline: none; transition: var(--tr); width: 100%;
 }
-.form-control:focus { border-color: var(--sage-light); box-shadow: 0 0 0 3px rgba(140, 164, 129, 0.15); }
+.form-control:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12); }
 
 .btn-submit {
-  background: var(--sage-light); color: var(--forest-dark); border: none;
-  padding: 15px; border-radius: 12px; font-family: inherit; font-weight: 900;
-  font-size: 0.95rem; cursor: pointer; transition: var(--tr); width: 100%;
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px;
+  background: #203528; color: #ffffff; border: none;
+  padding: 14px; border-radius: 10px; font-family: inherit; font-weight: 800;
+  font-size: 0.92rem; cursor: pointer; transition: var(--tr); width: 100%;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px;
+  box-shadow: 0 4px 14px rgba(32, 53, 40, 0.2);
 }
-.btn-submit:hover { background: #9bb590; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(140, 164, 129, 0.35); }
+.btn-submit:hover { background: #16261d; transform: translateY(-1px); }
 
 .footer-links { text-align: center; display: flex; flex-direction: column; gap: 10px; font-size: 0.82rem; color: var(--text-muted); }
-.footer-links a { color: var(--sage-light); text-decoration: none; font-weight: 700; transition: var(--tr); }
-.footer-links a:hover { color: #fff; }
+.footer-links a { color: #16a34a; text-decoration: none; font-weight: 700; transition: var(--tr); }
+.footer-links a:hover { text-decoration: underline; }
 
 .status-msg {
-  padding: 12px; border-radius: 10px; font-size: 0.82rem; text-align: center; display: none; font-weight: 700;
+  padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; text-align: center; display: none; font-weight: 700;
 }
-.status-msg.error { background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; }
-.status-msg.success { background: rgba(140, 164, 129, 0.15); border: 1px solid var(--sage-light); color: #eef4e5; }
+.status-msg.error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+.status-msg.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
 
-/* ===== MOBILE-FIRST MEDIA QUERIES ===== */
 @media (max-width: 480px) {
   body { padding: 16px 12px; }
-
-  .login-card {
-    padding: 28px 20px;
-    border-radius: 18px;
-    gap: 18px;
-  }
-
+  .login-card { padding: 28px 20px; border-radius: 16px; }
   .brand-title { font-size: 1.3rem; }
-
-  /* Evita zoom automático no iOS ao focar inputs */
-  .form-control {
-    font-size: 16px !important;
-    padding: 13px 14px;
-  }
-
-  .btn-submit {
-    padding: 14px;
-    font-size: 0.9rem;
-  }
-
-  .brand-logo {
-    width: 52px;
-    height: 52px;
-    font-size: 1.4rem;
-  }
+  .form-control { font-size: 16px !important; }
 }
-
 </style>
 <link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
@@ -157,7 +133,7 @@ body {
 
 <main class="login-card">
   <div class="brand-header">
-    <div class="brand-logo" style="padding:0; overflow:hidden; background:transparent;">
+    <div class="brand-logo">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
         <circle cx="50" cy="50" r="48" fill="#203528" stroke="#8ca481" stroke-width="3"/>
         <path d="M 50 18 Q 72 40 50 82 Q 28 40 50 18 Z" fill="#8ca481" />
@@ -169,8 +145,8 @@ body {
       </svg>
     </div>
     <div>
-      <div class="brand-title">Silvia Oliveira</div>
-      <div class="brand-sub">NUTRICIONISTA · CRN-4 25104731</div>
+      <div class="brand-title">Dra. Silvia Oliveira</div>
+      <div class="brand-sub">Nutricionista Clínica</div>
     </div>
   </div>
 
@@ -179,18 +155,18 @@ body {
   <!-- FORMULÁRIO DE LOGIN ÚNICO UNIFICADO -->
   <form onsubmit="handleUnifiedLogin(event)" style="display: flex; flex-direction: column; gap: 16px;">
     <div class="form-group">
-      <label>CPF ou E-mail de Acesso</label>
-      <input type="text" id="userInput" class="form-control" placeholder="000.000.000-00 ou email@exemplo.com" required>
+      <label>CPF ou E-mail Cadastrado</label>
+      <input type="text" id="userInput" class="form-control" placeholder="000.000.000-00 ou seu@email.com" required>
     </div>
 
     <div class="form-group">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <label>Sua Senha ou PIN</label>
-        <a href="#" onclick="abrirModalEsqueciSenha(event)" style="font-size:0.75rem; color:var(--sage-light); text-decoration:none; font-weight:700;">Esqueci minha senha</a>
+        <label>Senha de Acesso</label>
+        <a href="#" onclick="abrirModalEsqueciSenha(event)" style="font-size:0.75rem; color:#16a34a; text-decoration:none; font-weight:700;">Esqueci minha senha</a>
       </div>
       <div style="position:relative; width:100%;">
-        <input type="password" id="passInput" class="form-control" placeholder="Digite sua senha de acesso" required style="padding-right:45px;">
-        <button type="button" onclick="togglePassVisibility()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:var(--sage-light); font-size:1.1rem; cursor:pointer; padding:4px;">👁️</button>
+        <input type="password" id="passInput" class="form-control" placeholder="Digite sua senha" required style="padding-right:45px;">
+        <button type="button" onclick="togglePassVisibility()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#64748b; font-size:1.1rem; cursor:pointer; padding:4px;">👁️</button>
       </div>
     </div>
 
@@ -207,26 +183,26 @@ body {
 </main>
 
 <!-- MODAL DE RECUPERAÇÃO DE SENHA -->
-<div id="modalEsqueciSenha" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:16px; overflow-y:auto;">
-  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:16px; padding:24px; width:100%; max-width:440px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:16px;">
-      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:#fff;">🔑 Recuperar Senha / PIN</div>
-      <button onclick="fecharModalEsqueciSenha()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+<div id="modalEsqueciSenha" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:16px; padding:24px; width:100%; max-width:420px; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:12px; margin-bottom:14px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--text-title);">🔑 Recuperar Senha / PIN</div>
+      <button onclick="fecharModalEsqueciSenha()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">✕</button>
     </div>
 
-    <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
-      Informe seu <strong>CPF ou E-mail</strong> cadastrado. Se o cadastro constar em nosso sistema, enviaremos um novo PIN temporário diretamente para sua caixa de e-mail.
+    <p style="font-size:0.84rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+      Informe seu <strong>CPF ou E-mail</strong> cadastrado. Se o cadastro constar em nosso sistema, enviaremos as instruções de acesso para sua caixa de entrada.
     </p>
 
-    <form onsubmit="solicitarRecuperacao(event)" style="display:flex; flex-direction:column; gap:16px;">
+    <form onsubmit="solicitarRecuperacao(event)" style="display:flex; flex-direction:column; gap:14px;">
       <div class="form-group">
-        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">CPF ou E-mail</label>
-        <input type="text" id="reqIdInput" class="form-control" placeholder="000.000.000-00 ou email@exemplo.com" required style="background:rgba(0,0,0,0.4); border:1px solid var(--border-forest); padding:12px; border-radius:10px; color:#fff; width:100%;">
+        <label style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">CPF ou E-mail</label>
+        <input type="text" id="reqIdInput" class="form-control" placeholder="000.000.000-00 ou seu@email.com" required>
       </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
-        <button type="button" class="btn-submit" style="background:transparent; border:1.5px solid var(--border-forest); color:var(--text-muted);" onclick="fecharModalEsqueciSenha()">Cancelar</button>
-        <button type="submit" class="btn-submit" id="btnEnviarRecuperacao">📧 Enviar Novo PIN por E-mail</button>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px; padding-top:12px; border-top:1px solid var(--border-forest);">
+        <button type="button" class="btn-submit" style="background:transparent; border:1px solid var(--border-forest); color:var(--text-muted); width:auto;" onclick="fecharModalEsqueciSenha()">Cancelar</button>
+        <button type="submit" class="btn-submit" id="btnEnviarRecuperacao" style="width:auto;">📧 Enviar Instruções</button>
       </div>
     </form>
   </div>
@@ -251,7 +227,7 @@ function togglePassVisibility() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('kos_theme') || 'dark';
+  const savedTheme = localStorage.getItem('kos_theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
 
   const inp = document.getElementById('userInput');
@@ -300,13 +276,10 @@ async function handleUnifiedLogin(e) {
 
   showStatus("Autenticando no banco de dados...", "success");
 
-  // Chamada à API unificada loginUsuario
   const res = await apiCall('loginUsuario', { identifierInput, passwordInput });
 
   if (res && res.success && res.data) {
     const user = res.data;
-    const userTipo = (user.tipo || "PACIENTE").toUpperCase();
-
     const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
 
     if (user.tipo === 'ADMIN') {
@@ -358,7 +331,7 @@ async function solicitarRecuperacao(e) {
   const res = await apiCall('recuperarSenha', { identifier: idVal });
 
   btn.disabled = false;
-  btn.innerText = "📧 Enviar Novo PIN por E-mail";
+  btn.innerText = "📧 Enviar Instruções";
 
   fecharModalEsqueciSenha();
 
@@ -371,26 +344,5 @@ async function solicitarRecuperacao(e) {
   }
 }
 </script>
-<style>
-    .kos-footer-brand{display:flex;align-items:center;gap:10px;justify-content:center;padding:14px 0 8px;border-top:1px solid rgba(140,164,129,0.25);margin-top:16px;opacity:.85;transition:opacity .2s;}
-    .kos-footer-brand:hover{opacity:1;}
-    .kos-footer-brand .kos-dev-by{font-size:0.62rem;color:var(--text-muted, #a0b399);font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
-    .kos-footer-brand .kos-brand-inner{display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
-    .kos-footer-brand .kos-logo-text{font-family:'Courier New',monospace;font-size:1rem;font-weight:900;color:#fff;letter-spacing:.18em;text-transform:uppercase;display:flex;align-items:center;gap:4px;}
-    .kos-footer-brand .kos-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#7c3aed,#ec4899,#f59e0b,#06b6d4);background-size:300% 300%;animation:kosFtRainbow 3s linear infinite;box-shadow:0 0 8px rgba(6,182,212,.75);}
-    .kos-footer-brand .kos-sub-text{font-family:'Courier New',monospace;font-size:0.55rem;font-weight:700;color:#22d3ee;letter-spacing:.12em;text-transform:uppercase;}
-    .kos-footer-brand .kos-bar{height:2px;width:100%;border-radius:999px;background:linear-gradient(90deg,#06b6d4,#7c3aed,#ec4899,#f59e0b,#06b6d4);background-size:300% 100%;animation:kosFtRainbow 3s linear infinite;opacity:.75;margin-top:2px;}
-    @keyframes kosFtRainbow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
-  </style>
-  <footer style="width:100%;padding:0 24px 16px;">
-    <a href="https://kos-rho.vercel.app/" target="_blank" rel="noopener" class="kos-footer-brand" style="text-decoration:none;cursor:pointer;">
-      <span class="kos-dev-by">Desenvolvido por</span>
-      <div class="kos-brand-inner">
-        <span class="kos-logo-text">KOS<span class="kos-dot"></span></span>
-        <span class="kos-sub-text">Web &amp; Automação</span>
-        <div class="kos-bar"></div>
-      </div>
-    </a>
-  </footer>
 </body>
 </html>

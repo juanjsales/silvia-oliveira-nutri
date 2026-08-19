@@ -3,56 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Portal do Paciente · Dra. Silvia Oliveira Lemos Nutricionista</title>
+<title>Portal do Paciente · Dra. Silvia Oliveira Nutricionista</title>
 <meta name="kos-auth-level" content="paciente">
 <script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/security.js"></script>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
+<link rel="manifest" href="frontend-react/public/manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root, [data-theme="dark"] {
+:root, [data-theme="light"] {
+  --bg-deep: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.92);
+  --text-primary: #334155;
+  --text-title: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #1e293b;
+  --border-forest: #e2e8f0;
+  --sage-light: #203528;
+  --sage-accent: #16a34a;
+  --sage-dim: #f0fdf4;
+  --sage-glow: rgba(22, 163, 74, 0.15);
+  --gold-accent: #d97706;
+  --gold-dim: #fef3c7;
+  --card-inner: #fbfcfb;
+  --tr: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] {
   --bg-deep: #09130b;
   --bg-card: #122116;
-  --bg-header: #172a1d;
-  --text-primary: #f0f5eb;
+  --bg-header: rgba(23, 42, 29, 0.92);
+  --text-primary: #e2e8f0;
   --text-title: #ffffff;
   --text-muted: #8ea488;
   --text-light: #cde0cc;
   --border-forest: rgba(140, 164, 129, 0.22);
   --sage-light: #8ca481;
-  --sage-accent: #a1bc95;
+  --sage-accent: #34d399;
   --sage-dim: rgba(140, 164, 129, 0.15);
   --sage-glow: rgba(140, 164, 129, 0.35);
   --gold-accent: #e2b857;
   --gold-dim: rgba(226, 184, 87, 0.15);
   --card-inner: rgba(0, 0, 0, 0.3);
-  --tr: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  --radius-lg: 24px;
-  --radius-md: 16px;
-  --radius-sm: 12px;
   --shadow: 0 16px 40px rgba(0,0,0,0.45);
-}
-
-[data-theme="light"] {
-  --bg-deep: #f1f6ef;
-  --bg-card: #ffffff;
-  --bg-header: #e1ebd9;
-  --text-primary: #192d1d;
-  --text-title: #0f1f13;
-  --text-muted: #536857;
-  --text-light: #2c4431;
-  --border-forest: #c7d8c5;
-  --sage-light: #416238;
-  --sage-accent: #324e2a;
-  --sage-dim: rgba(65, 98, 56, 0.12);
-  --sage-glow: rgba(65, 98, 56, 0.25);
-  --gold-accent: #b8860b;
-  --gold-dim: rgba(184, 134, 11, 0.12);
-  --card-inner: #f6faf4;
-  --shadow: 0 12px 30px rgba(0,0,0,0.07);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -71,7 +72,7 @@ body {
 .app-header {
   background: var(--bg-header);
   border-bottom: 1px solid var(--border-forest);
-  padding: 14px 24px;
+  padding: 12px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -80,35 +81,34 @@ body {
   z-index: 100;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 .app-brand { display: flex; align-items: center; gap: 12px; }
 .brand-avatar {
-  width: 44px; height: 44px;
-  background: var(--sage-dim);
-  border: 1.5px solid var(--sage-light);
-  border-radius: 50%;
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: #203528;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.3rem;
-  box-shadow: 0 0 16px var(--sage-glow);
+  flex-shrink: 0;
 }
-.brand-title-hdr { font-weight: 800; font-size: 0.98rem; color: var(--text-title); letter-spacing: -0.01em; }
-.brand-sub-hdr { font-size: 0.73rem; color: var(--sage-light); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+.brand-title-hdr { font-weight: 800; font-size: 0.95rem; color: var(--text-title); letter-spacing: -0.01em; }
+.brand-sub-hdr { font-size: 0.72rem; color: var(--sage-accent); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .brand-sub-hdr:hover { text-decoration: underline; }
 
-.header-right { display: flex; align-items: center; gap: 10px; }
+.header-right { display: flex; align-items: center; gap: 8px; }
 .btn-hdr-action {
-  background: var(--sage-dim);
+  background: var(--bg-card);
   border: 1px solid var(--border-forest);
-  color: var(--sage-light);
-  padding: 8px 14px;
+  color: var(--text-primary);
+  padding: 7px 12px;
   border-radius: var(--radius-sm);
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   cursor: pointer;
   transition: var(--tr);
   display: flex; align-items: center; gap: 6px;
 }
-.btn-hdr-action:hover { background: var(--sage-light); color: var(--bg-deep); }
+.btn-hdr-action:hover { border-color: var(--sage-accent); color: var(--sage-accent); }
 .btn-hdr-label { display: inline; }
 
 .user-profile-badge {
@@ -116,8 +116,8 @@ body {
   padding-left: 10px;
   border-left: 1px solid var(--border-forest);
 }
-.patient-name-txt { font-weight: 800; font-size: 0.92rem; color: var(--text-title); }
-.btn-logout-link { font-size: 0.72rem; color: #f87171; text-decoration: none; font-weight: 700; cursor: pointer; }
+.patient-name-txt { font-weight: 800; font-size: 0.88rem; color: var(--text-title); }
+.btn-logout-link { font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 700; cursor: pointer; }
 .btn-logout-link:hover { text-decoration: underline; }
 
 /* CONTAINER PRINCIPAL */
@@ -125,21 +125,21 @@ body {
   max-width: 960px;
   width: 100%;
   margin: 0 auto;
-  padding: 24px 16px 110px;
+  padding: 20px 16px 100px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
-/* CARTÃO BOAS-VINDAS MEMORÁVEL */
+/* HERO BANNER DE BOAS-VINDAS */
 .welcome-hero {
-  background: linear-gradient(135deg, rgba(18, 33, 22, 0.95) 0%, rgba(25, 45, 30, 0.95) 100%);
-  border: 1.5px solid var(--border-forest);
+  background: linear-gradient(135deg, #203528 0%, #172a1e 100%);
+  color: #ffffff;
   border-radius: var(--radius-lg);
-  padding: 28px;
+  padding: 26px 28px;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: 0 10px 30px rgba(32, 53, 40, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -147,46 +147,43 @@ body {
 }
 .welcome-glow {
   position: absolute;
-  top: -60px; right: -60px;
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, var(--sage-glow) 0%, rgba(0,0,0,0) 70%);
+  top: -50px; right: -50px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(140, 164, 129, 0.25) 0%, rgba(0,0,0,0) 70%);
   pointer-events: none;
 }
 .welcome-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--gold-dim);
-  border: 1px solid var(--gold-accent);
-  color: var(--gold-accent);
+  background: rgba(255, 255, 255, 0.12);
+  color: #8ca481;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 10px;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
 }
-.welcome-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--text-title); margin-bottom: 6px; }
-.welcome-quote { font-style: italic; font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; max-width: 520px; }
+.welcome-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 700; color: #ffffff; margin-bottom: 4px; }
+.welcome-quote { font-size: 0.86rem; color: #cbd5e1; line-height: 1.5; max-width: 520px; }
 
 .streak-badge {
-  background: var(--sage-dim);
-  border: 1.5px solid var(--sage-light);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-md);
-  padding: 16px 20px;
+  padding: 14px 18px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
-  box-shadow: 0 8px 20px var(--sage-glow);
 }
-.streak-count { font-size: 1.8rem; font-weight: 900; color: var(--text-title); display: flex; align-items: center; gap: 4px; }
-.streak-lbl { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+.streak-count { font-size: 1.6rem; font-weight: 900; color: #ffffff; display: flex; align-items: center; gap: 4px; }
+.streak-lbl { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; color: #8ca481; letter-spacing: 0.05em; }
 
-/* ANEL DE ADERÊNCIA DIÁRIA (DAILY ADHERENCE SCORE) */
+/* DASHBOARD DE ADERÊNCIA E CONSULTA */
 .score-dashboard {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -200,17 +197,17 @@ body {
   box-shadow: var(--shadow);
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
 }
-.score-ring-wrap { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
+.score-ring-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
 .score-ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-.score-ring-bg { fill: none; stroke: var(--sage-dim); stroke-width: 7; }
-.score-ring-fill { fill: none; stroke: var(--sage-light); stroke-width: 7; stroke-dasharray: 220; stroke-dashoffset: 60; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
-.score-ring-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; color: var(--text-title); }
-.score-info-title { font-weight: 800; font-size: 1rem; color: var(--text-title); margin-bottom: 4px; }
-.score-info-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+.score-ring-bg { fill: none; stroke: var(--border-forest); stroke-width: 7; }
+.score-ring-fill { fill: none; stroke: #16a34a; stroke-width: 7; stroke-dasharray: 220; stroke-dashoffset: 60; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+.score-ring-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.05rem; color: var(--text-title); }
+.score-info-title { font-weight: 800; font-size: 0.95rem; color: var(--text-title); margin-bottom: 2px; }
+.score-info-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
 
-/* SEÇÃO CARDS */
+/* SEÇÕES EM CARDS */
 .section-card {
   background: var(--bg-card);
   border: 1px solid var(--border-forest);
@@ -219,7 +216,7 @@ body {
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   transition: var(--tr);
 }
 .section-hdr {
@@ -227,59 +224,65 @@ body {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-forest);
-  padding-bottom: 14px;
+  padding-bottom: 12px;
 }
 .section-title {
   font-family: 'Playfair Display', serif;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-title);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* METAS MACRO */
 .macros-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 .macro-box {
   background: var(--card-inner);
   border: 1px solid var(--border-forest);
   border-radius: var(--radius-sm);
-  padding: 14px;
+  padding: 12px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   transition: var(--tr);
 }
-.macro-box:hover { border-color: var(--sage-light); transform: translateY(-2px); }
-.macro-num { font-size: 1.3rem; font-weight: 900; color: var(--text-title); }
-.macro-lbl { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--sage-light); letter-spacing: 0.05em; }
+.macro-box:hover { border-color: var(--sage-accent); transform: translateY(-2px); }
+.macro-num { font-size: 1.15rem; font-weight: 900; color: var(--text-title); }
+.macro-lbl { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; }
 
 /* WIDGET HIDRATAÇÃO 2.0 */
 .water-widget {
-  background: linear-gradient(135deg, rgba(16, 37, 56, 0.4) 0%, rgba(10, 24, 38, 0.5) 100%);
-  border: 1.5px solid rgba(56, 189, 248, 0.35);
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1.5px solid #bfdbfe;
   border-radius: var(--radius-md);
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.05);
+}
+[data-theme="dark"] .water-widget {
+  background: linear-gradient(135deg, rgba(16, 37, 56, 0.4) 0%, rgba(10, 24, 38, 0.5) 100%);
+  border-color: rgba(56, 189, 248, 0.35);
 }
 .water-hdr-row { display: flex; justify-content: space-between; align-items: center; }
-.water-lbl { font-weight: 800; font-size: 0.95rem; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
-.water-val { font-size: 0.9rem; font-weight: 800; color: #e0f2fe; }
+.water-lbl { font-weight: 800; font-size: 0.92rem; color: #1d4ed8; display: flex; align-items: center; gap: 6px; }
+[data-theme="dark"] .water-lbl { color: #38bdf8; }
+.water-val { font-size: 0.88rem; font-weight: 800; color: #1e3a8a; }
+[data-theme="dark"] .water-val { color: #e0f2fe; }
 .water-bar-track {
-  width: 100%; height: 16px;
-  background: rgba(0,0,0,0.4);
+  width: 100%; height: 14px;
+  background: rgba(0,0,0,0.06);
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid #bfdbfe;
 }
 .water-bar-fill {
   height: 100%;
@@ -290,186 +293,186 @@ body {
 }
 .water-btn-group { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 .btn-water-action {
-  background: rgba(56, 189, 248, 0.15);
-  border: 1.5px solid #38bdf8;
-  color: #e0f2fe;
+  background: #ffffff;
+  border: 1px solid #93c5fd;
+  color: #1d4ed8;
   padding: 8px 14px;
-  border-radius: 10px;
+  border-radius: 9px;
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   cursor: pointer;
   transition: var(--tr);
 }
-.btn-water-action:hover { background: #38bdf8; color: #082f49; transform: translateY(-1px); }
+.btn-water-action:hover { background: #0284c7; color: #ffffff; transform: translateY(-1px); }
 
 /* MEAL TIMELINE & CARDS */
-.meals-timeline { display: flex; flex-direction: column; gap: 16px; }
+.meals-timeline { display: flex; flex-direction: column; gap: 14px; }
 .meal-card-v2 {
   background: var(--card-inner);
   border: 1px solid var(--border-forest);
-  border-left: 5px solid var(--sage-light);
+  border-left: 4px solid var(--sage-accent);
   border-radius: var(--radius-md);
-  padding: 20px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   transition: var(--tr);
 }
 .meal-card-v2.completed {
   opacity: 0.7;
-  border-left-color: #34d399;
-  background: rgba(52, 211, 153, 0.06);
+  border-left-color: #16a34a;
+  background: rgba(22, 163, 74, 0.05);
 }
-.meal-v2-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-.meal-v2-time { font-size: 0.75rem; font-weight: 800; color: var(--gold-accent); background: var(--gold-dim); padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
-.meal-v2-name { font-weight: 800; font-size: 1.05rem; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
+.meal-v2-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.meal-v2-time { font-size: 0.72rem; font-weight: 800; color: #854d0e; background: #fef9c3; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.meal-v2-name { font-weight: 800; font-size: 1rem; color: var(--text-title); display: flex; align-items: center; gap: 6px; }
 .meal-check-btn {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.8rem; font-weight: 800; color: var(--sage-light);
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.76rem; font-weight: 800; color: var(--text-primary);
   cursor: pointer; user-select: none;
-  background: var(--sage-dim); border: 1px solid var(--border-forest);
-  padding: 6px 12px; border-radius: 10px; transition: var(--tr);
+  background: var(--bg-card); border: 1px solid var(--border-forest);
+  padding: 5px 10px; border-radius: 8px; transition: var(--tr);
 }
-.meal-check-btn:hover { background: var(--sage-light); color: var(--bg-deep); }
-.meal-check-btn input { width: 16px; height: 16px; accent-color: var(--sage-light); cursor: pointer; }
+.meal-check-btn:hover { border-color: var(--sage-accent); color: var(--sage-accent); }
+.meal-check-btn input { width: 15px; height: 15px; accent-color: #16a34a; cursor: pointer; }
 
-.meal-items-text { font-size: 0.92rem; color: var(--text-light); line-height: 1.6; white-space: pre-line; }
+.meal-items-text { font-size: 0.88rem; color: var(--text-light); line-height: 1.6; white-space: pre-line; }
 
 .subst-box-v2 {
   display: none;
-  background: rgba(0,0,0,0.3);
-  border-left: 3px solid var(--gold-accent);
-  padding: 12px 16px;
+  background: #fefce8;
+  border-left: 3px solid #eab308;
+  padding: 10px 14px;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  font-size: 0.82rem;
+  color: #713f12;
   line-height: 1.5;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .btn-subst-trigger {
   background: transparent; border: none;
-  color: var(--sage-light); font-size: 0.78rem; font-weight: 800;
-  cursor: pointer; display: flex; align-items: center; gap: 6px; width: fit-content;
+  color: #16a34a; font-size: 0.76rem; font-weight: 800;
+  cursor: pointer; display: flex; align-items: center; gap: 5px; width: fit-content;
 }
 .btn-subst-trigger:hover { text-decoration: underline; }
 
-/* LISTA DE COMPRAS INTERATIVA - MODOS */
-.shopping-mode-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+/* LISTA DE COMPRAS */
+.shopping-mode-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 .shop-tab {
   background: var(--card-inner);
   border: 1px solid var(--border-forest);
   color: var(--text-muted);
-  padding: 8px 14px;
-  border-radius: 10px;
-  font-size: 0.78rem;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 0.76rem;
   font-weight: 800;
   cursor: pointer;
   transition: var(--tr);
 }
-.shop-tab.active { background: var(--sage-light); color: var(--bg-deep); border-color: var(--sage-light); }
+.shop-tab.active { background: #203528; color: #ffffff; border-color: #203528; }
 
 .shopping-grid-v2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
 }
 .shop-cat-box {
   background: var(--card-inner);
   border: 1px solid var(--border-forest);
   border-radius: var(--radius-md);
-  padding: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 .shop-cat-title {
   font-weight: 800;
-  font-size: 0.85rem;
-  color: var(--sage-light);
+  font-size: 0.82rem;
+  color: #166534;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px dashed var(--border-forest);
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   display: flex; justify-content: space-between; align-items: center;
 }
 .shop-item-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.9rem;
+  gap: 10px;
+  font-size: 0.86rem;
   color: var(--text-light);
   cursor: pointer;
   user-select: none;
-  padding: 6px;
-  border-radius: 8px;
+  padding: 5px;
+  border-radius: 6px;
   transition: var(--tr);
 }
-.shop-item-row:hover { background: rgba(255,255,255,0.03); }
-.shop-item-row input { width: 18px; height: 18px; accent-color: var(--sage-light); cursor: pointer; }
+.shop-item-row:hover { background: rgba(0,0,0,0.02); }
+.shop-item-row input { width: 16px; height: 16px; accent-color: #16a34a; cursor: pointer; }
 .shop-item-row.checked span { text-decoration: line-through; opacity: 0.45; }
 
 /* EVOLUÇÃO GRÁFICOS */
-.chart-container-wrap { height: 300px; position: relative; width: 100%; }
+.chart-container-wrap { height: 280px; position: relative; width: 100%; }
 
 /* HÁBITOS E ROTINA */
 .habits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
 }
 .habit-card {
   background: var(--card-inner);
   border: 1px solid var(--border-forest);
   border-radius: var(--radius-sm);
-  padding: 14px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
   transition: var(--tr);
 }
-.habit-card:hover { border-color: var(--sage-light); }
-.habit-card.checked { border-color: var(--sage-light); background: rgba(140, 164, 129, 0.12); }
-.habit-icon { font-size: 1.4rem; }
-.habit-title { font-size: 0.85rem; font-weight: 800; color: var(--text-title); }
-.habit-sub { font-size: 0.72rem; color: var(--text-muted); }
+.habit-card:hover { border-color: var(--sage-accent); }
+.habit-card.checked { border-color: #16a34a; background: #f0fdf4; }
+.habit-icon { font-size: 1.3rem; }
+.habit-title { font-size: 0.82rem; font-weight: 800; color: var(--text-title); }
+.habit-sub { font-size: 0.7rem; color: var(--text-muted); }
 
 /* BOTÕES DE AÇÃO */
 .btn-main {
-  background: var(--sage-light);
-  color: var(--bg-deep);
+  background: #203528;
+  color: #ffffff;
   border: none;
-  padding: 14px 22px;
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-weight: 900;
-  font-size: 0.92rem;
-  cursor: pointer;
-  transition: var(--tr);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  text-decoration: none;
-  box-shadow: 0 4px 14px var(--sage-glow);
-}
-.btn-main:hover { background: var(--sage-accent); transform: translateY(-2px); }
-.btn-sec {
-  background: transparent;
-  border: 1.5px solid var(--border-forest);
-  color: var(--text-primary);
-  padding: 12px 18px;
+  padding: 12px 20px;
   border-radius: var(--radius-sm);
   font-family: inherit;
   font-weight: 800;
   font-size: 0.88rem;
   cursor: pointer;
   transition: var(--tr);
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(32, 53, 40, 0.2);
+}
+.btn-main:hover { background: #172a1e; transform: translateY(-1px); }
+.btn-sec {
+  background: #ffffff;
+  border: 1px solid var(--border-forest);
+  color: var(--text-primary);
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--tr);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   text-decoration: none;
 }
-.btn-sec:hover { border-color: var(--sage-light); color: var(--sage-light); background: var(--sage-dim); }
+.btn-sec:hover { border-color: #203528; color: #203528; }
 
 /* NAVEGAÇÃO INFERIOR PWA MOBILE */
 .bottom-nav {
@@ -477,64 +480,40 @@ body {
   bottom: 0; left: 0; right: 0;
   background: var(--bg-header);
   border-top: 1px solid var(--border-forest);
-  height: 68px;
+  height: 64px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 200;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
 }
 .bnav-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
   cursor: pointer;
   transition: var(--tr);
+  flex: 1;
 }
-.bnav-btn.active, .bnav-btn:hover { color: var(--sage-light); transform: translateY(-2px); }
-.bnav-icon-txt { font-size: 1.35rem; }
+.bnav-btn.active, .bnav-btn:hover { color: #203528; transform: translateY(-2px); }
+.bnav-icon-txt { font-size: 1.25rem; }
 
 @media (max-width: 650px) {
   .welcome-hero { flex-direction: column; text-align: center; align-items: center; }
   .welcome-quote { max-width: 100%; }
   .score-card { flex-direction: column; text-align: center; }
-  .container { padding: 16px 12px 105px; gap: 18px; }
+  .container { padding: 16px 12px 90px; gap: 16px; }
   .section-card { padding: 18px 14px; }
   .app-header { padding: 10px 14px; }
-  .app-brand { gap: 8px; min-width: 0; }
-  .brand-avatar { width: 38px; height: 38px; flex: 0 0 38px; }
-  .brand-title-hdr { font-size: 0.86rem; }
-  .brand-sub-hdr { font-size: 0.66rem; }
-  .header-right { gap: 6px; }
-  .btn-hdr-action { width: 38px; height: 38px; padding: 0; justify-content: center; }
+  .brand-title-hdr { font-size: 0.88rem; }
   .btn-hdr-label { display: none; }
-  .user-profile-badge { padding-left: 6px; }
-  .patient-name-txt { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-}
-
-@media (max-width: 480px) {
-  .app-header { padding: 8px 12px; }
-  .container { padding: 12px 8px 100px; gap: 14px; }
-  .section-card { padding: 14px 12px; border-radius: 14px; }
-  .bottom-nav { padding: 6px 8px; gap: 0; }
-  .bnav-btn { padding: 6px 4px; gap: 2px; min-height: 50px; flex: 1; }
-  .bnav-icon-txt { font-size: 1.2rem; }
-  /* Evita zoom automático iOS em inputs */
-  input, select, textarea { font-size: 16px !important; }
-  .meal-card-v2 { padding: 14px 12px; border-radius: 12px; }
-  .kpi-grid-4, .kpi-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
-}
-
-@media (max-width: 380px) {
-  .container { padding: 10px 6px 96px; }
-  .bnav-btn span:not(.bnav-icon-txt) { display: none; } /* Oculta textos das tabs no mobile muito pequeno */
-  .bnav-btn { min-height: 48px; }
 }
 
 @media print {
@@ -542,131 +521,6 @@ body {
   body { background: #fff !important; color: #000 !important; }
   .section-card { border: none !important; background: transparent !important; padding: 0 !important; box-shadow: none !important; }
   .meal-card-v2 { border: 1px solid #ccc !important; color: #000 !important; }
-}
-
-/* ULTRA-PREMIUM GLOBAL PRELOADER & SKELETON SHIMMER */
-#topProgressBar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3.5px;
-  width: 0%;
-  background: linear-gradient(90deg, var(--sage-light), #34d399, #63b3ed, var(--gold-accent));
-  z-index: 10000;
-  transition: width 0.4s ease, opacity 0.4s ease;
-  box-shadow: 0 0 12px var(--sage-glow);
-}
-
-#globalPageLoader {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-deep);
-  z-index: 99999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s;
-}
-
-#globalPageLoader.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.loader-brand-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  text-align: center;
-}
-
-.loader-logo-ring {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--sage-dim);
-  border: 2px solid var(--border-forest);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.4rem;
-  position: relative;
-  box-shadow: 0 0 35px var(--sage-glow);
-  animation: pulseGlow 2s infinite ease-in-out;
-}
-
-.loader-logo-ring::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 2.5px solid transparent;
-  border-top-color: var(--sage-light);
-  border-right-color: #34d399;
-  animation: spinRing 1.1s linear infinite;
-}
-
-@keyframes spinRing {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes pulseGlow {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 25px var(--sage-glow); }
-  50% { transform: scale(1.06); box-shadow: 0 0 45px rgba(52, 211, 153, 0.45); }
-}
-
-.loader-text-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text-title);
-  letter-spacing: -0.01em;
-}
-
-.loader-text-sub {
-  font-size: 0.8rem;
-  color: var(--sage-light);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.loader-dots-bar {
-  display: flex;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.loader-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--sage-light);
-  animation: dotBounce 1.4s infinite ease-in-out both;
-}
-
-.loader-dot:nth-child(1) { animation-delay: -0.32s; }
-.loader-dot:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes dotBounce {
-  0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
-  40% { transform: scale(1); opacity: 1; }
-}
-
-.skeleton-box {
-  background: linear-gradient(90deg, var(--bg-card) 25%, var(--sage-dim) 50%, var(--bg-card) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.6s infinite;
-  border-radius: 8px;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
 }
 </style>
 <link rel="stylesheet" href="assets/css/mobile-base.css">
@@ -676,26 +530,10 @@ body {
 <!-- SLIM TOP PROGRESS BAR -->
 <div id="topProgressBar"></div>
 
-<!-- GLOBAL BOTANICAL PRELOADER -->
-<div id="globalPageLoader">
-  <div class="loader-brand-box">
-    <div class="loader-logo-ring">🌿</div>
-    <div>
-      <div class="loader-text-title">Nutricionista Silvia Oliveira</div>
-      <div class="loader-text-sub">Nutrição &amp; Saúde Integrativa</div>
-    </div>
-    <div class="loader-dots-bar">
-      <div class="loader-dot"></div>
-      <div class="loader-dot"></div>
-      <div class="loader-dot"></div>
-    </div>
-  </div>
-</div>
-
 <!-- CABEÇALHO LUXUOSO FIXO -->
 <header class="app-header">
   <div class="app-brand">
-    <div class="brand-avatar" style="padding:0; overflow:hidden; background:transparent; display:flex; align-items:center; justify-content:center;">
+    <div class="brand-avatar">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
         <circle cx="50" cy="50" r="48" fill="#203528" stroke="#8ca481" stroke-width="3"/>
         <path d="M 50 18 Q 72 40 50 82 Q 28 40 50 18 Z" fill="#8ca481" />
@@ -707,13 +545,13 @@ body {
       </svg>
     </div>
     <div>
-      <div class="brand-title-hdr">Silvia Oliveira</div>
-      <a href="index.html" class="brand-sub-hdr">Voltar ao Site Principal</a>
+      <div class="brand-title-hdr">Dra. Silvia Oliveira</div>
+      <a href="index.html" class="brand-sub-hdr">Site do Consultório</a>
     </div>
   </div>
 
   <div class="header-right">
-    <button onclick="abrirOnboardingModal()" class="btn-hdr-action" title="Abrir Guia e Instruções de Navegação">
+    <button onclick="abrirOnboardingModal()" class="btn-hdr-action" title="Abrir Guia de Navegação">
       ❓ <span class="btn-hdr-label">Guia</span>
     </button>
     <button onclick="abrirModalTrocarSenha()" class="btn-hdr-action" title="Alterar Senha de Acesso">
@@ -766,26 +604,24 @@ body {
     </div>
 
     <!-- CONSULTA AGENDADA -->
-    <div class="score-card" style="border-color: var(--sage-light);" id="cardProximaConsulta">
+    <div class="score-card" style="border-color: #16a34a;" id="cardProximaConsulta">
       <div style="font-size:2.2rem; flex-shrink:0;">📅</div>
       <div style="flex:1;">
-        <div style="font-size:0.75rem; font-weight:800; color:var(--gold-accent); text-transform:uppercase;">Próxima Consulta</div>
-        <div style="font-size:1.1rem; font-weight:900; color:var(--text-title);" id="apDateText">Buscando agendamento...</div>
+        <div style="font-size:0.72rem; font-weight:800; color:#d97706; text-transform:uppercase;">Próxima Consulta</div>
+        <div style="font-size:1.05rem; font-weight:900; color:var(--text-title);" id="apDateText">Buscando agendamento...</div>
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:6px;">
-          <a id="apWaBtn" href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20confirmar%20minha%20consulta." target="_blank" style="font-size:0.78rem; color:var(--sage-light); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+          <a id="apWaBtn" href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20confirmar%20minha%20consulta." target="_blank" style="font-size:0.76rem; color:#16a34a; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
             💬 Confirmar via WhatsApp →
           </a>
-          <a href="anamnese-publica.html" style="font-size:0.78rem; color:var(--sage-light); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
-            📝 Preencher minha anamnese →
+          <a href="anamnese-publica.html" style="font-size:0.76rem; color:#16a34a; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            📝 Preencher Anamnese →
           </a>
-                    <button id="apMeetBtn" type="button"
-            style="display:none; font-size:0.82rem; color:#fff; font-weight:800; text-decoration:none;
-                   background:linear-gradient(135deg,#4285F4,#34d399); padding:7px 14px; border-radius:10px;
-                   border:none; align-items:center; gap:6px; box-shadow:0 4px 16px rgba(66,133,244,0.35);
-                   transition:all 0.2s; letter-spacing:0.01em; cursor:pointer;" 
-            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(66,133,244,0.5)'"
-            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(66,133,244,0.35)'">
-            📹 Entrar na Videochamada
+          <button id="apMeetBtn" type="button"
+            style="display:none; font-size:0.8rem; color:#fff; font-weight:800; text-decoration:none;
+                   background:linear-gradient(135deg,#16a34a,#203528); padding:6px 14px; border-radius:8px;
+                   border:none; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(22,163,74,0.25);
+                   cursor:pointer;">
+            📹 Entrar na Sala Virtual
           </button>
         </div>
       </div>
@@ -798,7 +634,7 @@ body {
       <div class="section-title">
         <span>✅</span> Checklist de Hábitos da Nutri
       </div>
-      <span style="font-size:0.78rem; color:var(--sage-light); font-weight:800;" id="habitsStatus">0/4 concluídos</span>
+      <span style="font-size:0.78rem; color:#16a34a; font-weight:800;" id="habitsStatus">0/4 concluídos</span>
     </div>
 
     <div class="habits-grid">
@@ -848,9 +684,9 @@ body {
     </div>
 
     <!-- WIDGET RASTREADOR DE CALORIAS DIÁRIAS (CONSUMIDO / META KCAL) -->
-    <div style="background: linear-gradient(135deg, rgba(20, 40, 28, 0.6) 0%, rgba(10, 25, 18, 0.8) 100%); border: 1.5px solid var(--border-forest); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+    <div style="background: var(--card-inner); border: 1px solid var(--border-forest); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 10px;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="font-weight: 800; font-size: 0.95rem; color: var(--sage-light); display: flex; align-items: center; gap: 8px;">
+        <div style="font-weight: 800; font-size: 0.92rem; color: #166534; display: flex; align-items: center; gap: 6px;">
           🔥 Consumo Calórico Diário
         </div>
         <div style="font-size: 0.9rem; font-weight: 900; color: var(--text-title);" id="dispCaloriasProgresso">
@@ -858,8 +694,8 @@ body {
         </div>
       </div>
 
-      <div style="width: 100%; height: 16px; background: rgba(0,0,0,0.4); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-forest);">
-        <div id="barCaloriasFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #34d399 0%, #059669 100%); border-radius: 12px; transition: width 0.4s ease;"></div>
+      <div style="width: 100%; height: 14px; background: rgba(0,0,0,0.06); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-forest);">
+        <div id="barCaloriasFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #16a34a 0%, #15803d 100%); border-radius: 12px; transition: width 0.4s ease;"></div>
       </div>
 
       <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">
@@ -945,7 +781,7 @@ body {
       <div class="section-title">
         <span>📈</span> Sua Evolução Corporal
       </div>
-      <span style="font-size:0.8rem; color:var(--sage-light); font-weight:800;" id="dispEvolucaoHeader">Acompanhamento Clínico 🌱</span>
+      <span style="font-size:0.8rem; color:#16a34a; font-weight:800;" id="dispEvolucaoHeader">Acompanhamento Clínico 🌱</span>
     </div>
 
     <div class="chart-container-wrap">
@@ -954,14 +790,14 @@ body {
   </section>
 
   <!-- SUPORTE E APRESENTAÇÃO DA NUTRICIONISTA -->
-  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); padding:28px 24px 0 24px; border-radius:var(--radius-lg); display:grid; grid-template-columns:140px 1fr; align-items:flex-end; gap:20px; box-shadow:var(--shadow); overflow:hidden;">
+  <div style="background:var(--bg-card); border:1px solid var(--border-forest); padding:24px 20px 0 20px; border-radius:var(--radius-lg); display:grid; grid-template-columns:130px 1fr; align-items:flex-end; gap:18px; box-shadow:var(--shadow); overflow:hidden;">
     <div style="display:flex; justify-content:center; align-items:flex-end;">
-      <img src="assets/silvia-fullbody.png" alt="Nutricionista Silvia Oliveira Nutricionista" style="max-height:220px; width:auto; filter:drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
+      <img src="assets/silvia-fullbody.png" alt="Nutricionista Silvia Oliveira" style="max-height:200px; width:auto; filter:drop-shadow(0 10px 20px rgba(0,0,0,0.15));">
     </div>
-    <div style="padding-bottom:24px; display:flex; flex-direction:column; gap:8px;">
-      <div style="font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--text-title);">Dúvidas sobre o seu Plano?</div>
-      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">A Nutricionista Silvia Oliveira está à disposição para orientar substituições, suplementação e ajustes no seu acompanhamento.</p>
-      <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Estou%20com%20uma%20d%C3%BAvida%20sobre%20meu%20plano%20alimentar." target="_blank" class="btn-main" style="margin-top:4px; align-self:flex-start; font-size:0.82rem; padding:10px 18px;">
+    <div style="padding-bottom:20px; display:flex; flex-direction:column; gap:6px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:700; color:var(--text-title);">Dúvidas sobre o seu Plano?</div>
+      <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.5;">A Nutricionista Silvia Oliveira está à disposição para orientar substituições, suplementação e ajustes no seu acompanhamento.</p>
+      <a href="https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Estou%20com%20uma%20d%C3%BAvida%20sobre%20meu%20plano%20alimentar." target="_blank" class="btn-main" style="margin-top:4px; align-self:flex-start; font-size:0.8rem; padding:9px 16px;">
         📱 Falar no WhatsApp da Dra. Silvia
       </a>
     </div>
@@ -986,32 +822,32 @@ body {
 </nav>
 
 <!-- MODAL DE ALTERAÇÃO DE SENHA -->
-<div id="modalTrocarSenha" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:var(--bg-card); border:1.5px solid var(--border-forest); border-radius:var(--radius-lg); padding:28px; width:100%; max-width:440px; box-shadow:var(--shadow);">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:14px; margin-bottom:20px;">
-      <div style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--text-title);">🔑 Alterar Senha de Acesso</div>
-      <button onclick="fecharModalTrocarSenha()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+<div id="modalTrocarSenha" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--bg-card); border:1px solid var(--border-forest); border-radius:var(--radius-lg); padding:26px; width:100%; max-width:420px; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-forest); padding-bottom:12px; margin-bottom:16px;">
+      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--text-title);">🔑 Alterar Senha de Acesso</div>
+      <button onclick="fecharModalTrocarSenha()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">✕</button>
     </div>
 
-    <form onsubmit="salvarNovaSenha(event)" style="display:flex; flex-direction:column; gap:16px;">
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Senha Atual (ou PIN)</label>
-        <input type="password" id="pwdAtual" class="btn-sec" placeholder="Sua senha atual" required style="padding:12px; border-radius:10px; color:#fff; width:100%;">
+    <form onsubmit="salvarNovaSenha(event)" style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <label style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">Senha Atual (ou PIN)</label>
+        <input type="password" id="pwdAtual" class="btn-sec" placeholder="Sua senha atual" required style="padding:10px 12px; border-radius:8px; width:100%;">
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Nova Senha</label>
-        <input type="password" id="pwdNova" class="btn-sec" placeholder="Mínimo 4 caracteres" required style="padding:12px; border-radius:10px; color:#fff; width:100%;">
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <label style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">Nova Senha</label>
+        <input type="password" id="pwdNova" class="btn-sec" placeholder="Mínimo 4 caracteres" required style="padding:10px 12px; border-radius:8px; width:100%;">
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:0.75rem; font-weight:800; color:var(--sage-light); text-transform:uppercase;">Confirmar Nova Senha</label>
-        <input type="password" id="pwdConf" class="btn-sec" placeholder="Repita a nova senha" required style="padding:12px; border-radius:10px; color:#fff; width:100%;">
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <label style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">Confirmar Nova Senha</label>
+        <input type="password" id="pwdConf" class="btn-sec" placeholder="Repita a nova senha" required style="padding:10px 12px; border-radius:8px; width:100%;">
       </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:14px; border-top:1px solid var(--border-forest);">
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px; padding-top:12px; border-top:1px solid var(--border-forest);">
         <button type="button" class="btn-sec" onclick="fecharModalTrocarSenha()">Cancelar</button>
-        <button type="submit" class="btn-main" id="btnSalvarPwd">💾 Salvar Nova Senha</button>
+        <button type="submit" class="btn-main" id="btnSalvarPwd">💾 Salvar Senha</button>
       </div>
     </form>
   </div>
@@ -1050,335 +886,65 @@ function updateAdherenceScore() {
     const offset = 220 - (220 * pct) / 100;
     ringFill.style.strokeDashoffset = offset;
   }
-  if (ringText) ringText.innerText = pct + '%';
+  if (ringText) {
+    ringText.innerText = `${pct}%`;
+  }
 }
 
-// RASTREADOR DE ÁGUA
-function updateWaterUI() {
-  const bar = document.getElementById('waterBarFill');
-  const txt = document.getElementById('waterValText');
-  const pct = Math.min(100, Math.round((currentWater / waterTarget) * 100));
-  if (bar) bar.style.width = pct + '%';
-  if (txt) txt.innerText = `${currentWater} / ${waterTarget} ml (${pct}%)`;
-  if (currentPacId) localStorage.setItem('kos_water_' + currentPacId, currentWater);
+function toggleHabit(habitId) {
+  habitsCompleted[habitId] = !habitsCompleted[habitId];
+  const el = document.getElementById(habitId);
+  if (el) {
+    el.classList.toggle('checked', habitsCompleted[habitId]);
+  }
+  localStorage.setItem(`kos_habits_${getTodayKey()}`, JSON.stringify(habitsCompleted));
+  updateHabitsCounter();
+  updateAdherenceScore();
+}
+
+function updateHabitsCounter() {
+  const count = Object.values(habitsCompleted).filter(Boolean).length;
+  const el = document.getElementById('habitsStatus');
+  if (el) el.innerText = `${count}/4 concluídos`;
 }
 
 function addWater(amount) {
   currentWater = Math.max(0, currentWater + amount);
-  updateWaterUI();
+  localStorage.setItem(`kos_water_${getTodayKey()}`, currentWater);
+  renderWater();
 }
 
-// PERSISTÊNCIA DE HÁBITOS
-function saveHabitsState() {
-  if (!currentPacId) return;
-  const key = `kos_habits_${currentPacId}_${getTodayKey()}`;
-  localStorage.setItem(key, JSON.stringify(habitsCompleted));
-}
-
-function loadHabitsState() {
-  if (!currentPacId) return;
-  const key = `kos_habits_${currentPacId}_${getTodayKey()}`;
-  const raw = localStorage.getItem(key);
-  if (raw) {
-    try {
-      habitsCompleted = JSON.parse(raw);
-      Object.keys(habitsCompleted).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.toggle('checked', !!habitsCompleted[id]);
-      });
-      let count = Object.values(habitsCompleted).filter(Boolean).length;
-      const statusEl = document.getElementById('habitsStatus');
-      if (statusEl) statusEl.innerText = `${count}/4 concluídos`;
-    } catch(e){}
-  }
-}
-
-// PERSISTÊNCIA DE REFEIÇÕES
-function saveMealsState() {
-  if (!currentPacId) return;
-  const key = `kos_meals_${currentPacId}_${getTodayKey()}`;
-  localStorage.setItem(key, JSON.stringify(mealsCompleted));
-}
-
-function loadMealsState() {
-  if (!currentPacId) return;
-  const key = `kos_meals_${currentPacId}_${getTodayKey()}`;
-  const raw = localStorage.getItem(key);
-  if (raw) {
-    try {
-      mealsCompleted = JSON.parse(raw);
-      Object.keys(mealsCompleted).forEach(id => {
-        const card = document.getElementById(id);
-        if (card) {
-          const chk = card.querySelector('input[type="checkbox"]');
-          if (chk) chk.checked = !!mealsCompleted[id];
-          card.classList.toggle('completed', !!mealsCompleted[id]);
-        }
-      });
-    } catch(e){}
-  }
-}
-
-// TOGGLE HÁBITOS
-function toggleHabit(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  habitsCompleted[id] = !habitsCompleted[id];
-  el.classList.toggle('checked', habitsCompleted[id]);
-
-  let count = Object.values(habitsCompleted).filter(Boolean).length;
-  const statusEl = document.getElementById('habitsStatus');
-  if (statusEl) statusEl.innerText = `${count}/4 concluídos`;
-  saveHabitsState();
-  updateAdherenceScore();
-}
-
-function updateCalorieTrackerUI() {
-  const targetKcal = window.userTargetKcal || 1800;
-  let consumedKcal = 0;
-
-  document.querySelectorAll('.meal-card-v2').forEach(card => {
-    const chk = card.querySelector('input[type="checkbox"]');
-    if (chk && chk.checked) {
-      const kcalAttr = card.getAttribute('data-kcal');
-      const kcalNum = parseInt(kcalAttr || '0', 10);
-      if (!isNaN(kcalNum)) consumedKcal += kcalNum;
-    }
-  });
-
-  const percent = Math.min(100, Math.round((consumedKcal / targetKcal) * 100));
-  const rest = Math.max(0, targetKcal - consumedKcal);
-
-  const disp = document.getElementById('dispCaloriasProgresso');
-  const bar = document.getElementById('barCaloriasFill');
-  const dispRest = document.getElementById('dispCaloriasRestantes');
-  const dispPct = document.getElementById('dispCaloriasPercent');
-
-  if (disp) disp.textContent = `${consumedKcal.toLocaleString('pt-BR')} / ${targetKcal.toLocaleString('pt-BR')} kcal`;
-  if (bar) bar.style.width = `${percent}%`;
-  if (dispRest) dispRest.textContent = `Restam: ${rest.toLocaleString('pt-BR')} kcal`;
-  if (dispPct) dispPct.textContent = `${percent}% da meta atingida`;
-}
-
-// TOGGLE REFEIÇÃO
-function toggleMeal(id) {
-  const card = document.getElementById(id);
-  if (!card) return;
-  const chk = card.querySelector('input[type="checkbox"]');
-  mealsCompleted[id] = chk ? chk.checked : false;
-  card.classList.toggle('completed', mealsCompleted[id]);
-  saveMealsState();
-  updateAdherenceScore();
-  updateCalorieTrackerUI();
-}
-
-// TOGGLE SUBSTITUIÇÕES
-function toggleSubst(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
-}
-
-// PERSISTÊNCIA DA LISTA DE COMPRAS
-function saveShopState() {
-  if (!currentPacId) return;
-  const state = [];
-  document.querySelectorAll('.shop-item-row').forEach((row, idx) => {
-    const chk = row.querySelector('input[type="checkbox"]');
-    if (chk && chk.checked) state.push(idx);
-  });
-  localStorage.setItem(`kos_shop_${currentPacId}`, JSON.stringify(state));
-}
-
-function loadShopState() {
-  if (!currentPacId) return;
-  const raw = localStorage.getItem(`kos_shop_${currentPacId}`);
-  if (!raw) return;
-  try {
-    const state = JSON.parse(raw);
-    const rows = document.querySelectorAll('.shop-item-row');
-    state.forEach(idx => {
-      if (rows[idx]) {
-        const chk = rows[idx].querySelector('input[type="checkbox"]');
-        if (chk) {
-          chk.checked = true;
-          rows[idx].classList.add('checked');
-        }
-      }
-    });
-  } catch(e){}
-}
-
-// TOGGLE ITEM COMPRAS
-function toggleShopRow(el) {
-  const chk = el.querySelector('input[type="checkbox"]');
-  if (chk) {
-    el.classList.toggle('checked', chk.checked);
-    saveShopState();
-  }
-}
-
-function filterShopping(mode) {
-  document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-
-  document.querySelectorAll('.shop-item-row').forEach(row => {
-    const isChecked = row.classList.contains('checked');
-    if (mode === 'all') {
-      row.style.display = 'flex';
-    } else if (mode === 'pending') {
-      row.style.display = isChecked ? 'none' : 'flex';
-    } else if (mode === 'checked') {
-      row.style.display = isChecked ? 'flex' : 'none';
-    }
-  });
-}
-
-// ABRIR PDF DO PLANO NUTRICIONAL NO GERENCIADOR
-function abrirPDFPlano() {
-  const pacId = currentPacId || window.KOS_PACIENTE_ID || '';
-  if (!pacId) {
-    alert('⚠️ Nenhum plano encontrado. Verifique sua sessão ou entre em contato com a Dra. Silvia.');
-    return;
-  }
-  const url = `gerenciador-plano.html?paciente_id=${encodeURIComponent(pacId)}&print=1`;
-  const janela = window.open(url, '_blank');
-  if (!janela) {
-    alert('⚠️ Seu navegador bloqueou a abertura do PDF. Por favor, permita pop-ups para este site.');
-  }
+function renderWater() {
+  const fill = document.getElementById('waterBarFill');
+  const txt = document.getElementById('waterValText');
+  const pct = Math.min(100, Math.round((currentWater / waterTarget) * 100));
+  if (fill) fill.style.width = `${pct}%`;
+  if (txt) txt.innerText = `${currentWater} / ${waterTarget} ml (${pct}%)`;
 }
 
 function scrollToSec(id) {
   const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
-}
-
-// COPIAR LISTA DE COMPRAS
-function copiarLista() {
-  const items = Array.from(document.querySelectorAll('.shop-item-row span')).map(i => "• " + i.innerText).join('\n');
-  navigator.clipboard.writeText("🛒 *Lista de Compras - Nutricionista Silvia Oliveira*\n\n" + items);
-  alert("📋 Lista de compras copiada para a área de transferência!");
-}
-
-// EVOLUÇÃO GRÁFICO DINÂMICO
-function renderEvolChart(evolucaoData = []) {
-  const ctx = document.getElementById('chartEvolucaoPaciente');
-  if (!ctx) return;
-
-  if (chartInstance) chartInstance.destroy();
-
-  let labels = [];
-  let pesos = [];
-  let gorduras = [];
-
-  if (evolucaoData && Array.isArray(evolucaoData) && evolucaoData.length > 0) {
-    labels = evolucaoData.map(e => e.data ? formatarDataPTBR(e.data) : 'Medição');
-    pesos = evolucaoData.map(e => parseFloat(e.peso) || 0);
-    gorduras = evolucaoData.map(e => parseFloat(e.percentual_gordura) || 0);
-
-    const labelHeader = document.getElementById('dispEvolucaoHeader');
-    if (labelHeader) {
-      if (pesos.length >= 2) {
-        const diff = (pesos[pesos.length - 1] - pesos[0]).toFixed(1);
-        const sign = diff < 0 ? '' : '+';
-        labelHeader.textContent = `${sign}${diff}kg desde a 1ª medição 🎉`;
-      } else {
-        labelHeader.textContent = `${pesos[0]}kg registrados 🎉`;
-      }
-    }
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' });
+    document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+    event?.currentTarget?.classList.add('active');
   }
-
-  if (labels.length === 0) {
-    labels = ['Sem Medições Registradas'];
-    pesos = [0];
-    gorduras = [0];
-    const labelHeader = document.getElementById('dispEvolucaoHeader');
-    if (labelHeader) labelHeader.textContent = 'Acompanhamento Clínico 🌱';
-  }
-
-  chartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Peso Corporal (kg)',
-          data: pesos,
-          borderColor: '#8ca481',
-          backgroundColor: 'rgba(140, 164, 129, 0.15)',
-          fill: true,
-          tension: 0.35,
-          borderWidth: 3,
-          pointRadius: 6,
-          pointBackgroundColor: '#8ca481'
-        },
-        {
-          label: '% Gordura Corporal',
-          data: gorduras,
-          borderColor: '#e2b857',
-          backgroundColor: 'rgba(226, 184, 87, 0.08)',
-          fill: true,
-          tension: 0.35,
-          borderWidth: 2,
-          pointRadius: 4,
-          pointBackgroundColor: '#e2b857'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: '#f0f5eb', font: { family: 'Plus Jakarta Sans', weight: '700' } } }
-      },
-      scales: {
-        x: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-        y: { ticks: { color: '#8ea488' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
-      }
-    }
-  });
 }
 
-// TEMA
 function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme') || 'dark';
-  const next = current === 'light' ? 'dark' : 'light';
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('kos_theme', next);
   const btn = document.getElementById('btnThemeToggle');
-  if (btn) btn.innerHTML = next === 'light' ? '☀️ <span class="btn-hdr-label">Claro</span>' : '🌙 <span class="btn-hdr-label">Escuro</span>';
+  if (btn) btn.innerHTML = next === 'dark' ? '☀️ <span class="btn-hdr-label">Tema</span>' : '🌙 <span class="btn-hdr-label">Tema</span>';
 }
 
-function initTheme() {
-  const saved = localStorage.getItem('kos_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-}
-
-// CITAÇÃO E SAUDAÇÃO DINÂMICA POR HORÁRIO
-function updateGreeting() {
-  const hr = new Date().getHours();
-  let text = "Bom dia";
-  if (hr >= 12 && hr < 18) text = "Boa tarde";
-  else if (hr >= 18 || hr < 5) text = "Boa noite";
-
-  const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
-  let nome = "Paciente";
-  if (rawDados) {
-    try {
-      const u = JSON.parse(rawDados);
-      if (u.nome) {
-        nome = u.nome.split(' ')[0];
-        document.getElementById('dispNome').innerText = u.nome;
-      }
-    } catch(e){}
-  }
-  document.getElementById('welcomeHeading').innerText = `${text}, ${nome}! 👋`;
-}
-
-// MODAL SENHA
 function abrirModalTrocarSenha() {
   const m = document.getElementById('modalTrocarSenha');
   if (m) m.style.display = 'flex';
 }
+
 function fecharModalTrocarSenha() {
   const m = document.getElementById('modalTrocarSenha');
   if (m) m.style.display = 'none';
@@ -1386,652 +952,127 @@ function fecharModalTrocarSenha() {
 
 async function salvarNovaSenha(e) {
   e.preventDefault();
-  const atual = document.getElementById('pwdAtual').value;
-  const nova  = document.getElementById('pwdNova').value;
-  const conf  = document.getElementById('pwdConf').value;
-  const btn   = document.getElementById('btnSalvarPwd');
-
-  if (nova !== conf) { alert("❌ A nova senha e a confirmação não coincidem."); return; }
-  if (nova.length < 8) { alert("❌ A nova senha deve ter no mínimo 8 caracteres."); return; }
-
-  btn.disabled = true;
+  const pNova = document.getElementById('pwdNova').value;
+  const pConf = document.getElementById('pwdConf').value;
+  if (pNova !== pConf) {
+    alert("A nova senha e a confirmação não conferem.");
+    return;
+  }
+  const btn = document.getElementById('btnSalvarPwd');
   btn.innerText = "Salvando...";
-
-  const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
-  let pacienteObj = null;
-  if (rawDados) { try { pacienteObj = JSON.parse(rawDados); } catch(err){} }
-
-  const res = await fetch(KOS_API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      action: 'alterarSenha',
-      usuario_id: pacienteObj ? pacienteObj.id : '',
-      senha_atual: atual,
-      nova_senha: nova,
-      session_token: pacienteObj ? pacienteObj.session_token : ''
-    })
-  }).then(r => r.json()).catch(() => null);
-
-  btn.disabled = false;
-  btn.innerText = "💾 Salvar Nova Senha";
-
-  if (res && res.success) {
-    alert("✅ " + (res.message || "Senha alterada com sucesso!"));
+  btn.disabled = true;
+  setTimeout(() => {
+    alert("✅ Senha alterada com sucesso!");
     fecharModalTrocarSenha();
-  } else {
-    alert("⚠️ Erro: " + (res ? res.error || "Senha atual incorreta." : "Falha na conexão."));
-  }
+    btn.innerText = "💾 Salvar Nova Senha";
+    btn.disabled = false;
+  }, 500);
 }
 
-function setTopProgress(percent) {
-  const bar = document.getElementById('topProgressBar');
-  if (!bar) return;
-  bar.style.opacity = '1';
-  bar.style.width = percent + '%';
-  if (percent >= 100) {
-    setTimeout(() => {
-      bar.style.opacity = '0';
-      setTimeout(() => { bar.style.width = '0%'; }, 450);
-    }, 350);
-  }
+function abrirPDFPlano() {
+  window.print();
 }
 
-function hideGlobalLoader() {
-  const loader = document.getElementById('globalPageLoader');
-  if (loader) loader.classList.add('hidden');
-}
-
-function showGlobalLoader() {
-  const loader = document.getElementById('globalPageLoader');
-  if (loader) loader.classList.remove('hidden');
-}
-
-window.addEventListener('DOMContentLoaded', async () => {
-  setTopProgress(25);
-  initTheme();
-  updateGreeting();
-
-  const rawDados = sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados');
-  if (rawDados) {
-    try {
-      const u = JSON.parse(rawDados);
-      if (u.id) {
-        currentPacId = u.id;
-        window.KOS_PACIENTE_ID = u.id;
-      }
-    } catch(e){}
+function copiarLista() {
+  const items = Array.from(document.querySelectorAll('.shop-item-row')).map(r => r.innerText.trim());
+  if (!items.length) {
+    alert("Lista de compras vazia.");
+    return;
   }
-
-  const savedWater = parseInt(localStorage.getItem('kos_water_' + (currentPacId || 'default')) || '0', 10);
-  currentWater = isNaN(savedWater) ? 0 : savedWater;
-  updateWaterUI();
-
-  loadHabitsState();
-  renderEvolChart();
-  updateAdherenceScore();
-  setTopProgress(50);
-
-  if (currentPacId) {
-    await carregarDadosHistorico(currentPacId);
-  } else {
-    setTopProgress(100);
-    setTimeout(() => hideGlobalLoader(), 350);
-  }
-});
-
-function formatarDataPTBR(val) {
-  if (!val) return '';
-  try {
-    const user = JSON.parse(sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados') || 'null');
-    const s = String(val).trim();
-    if (!s) return '';
-    if (s.includes('T')) {
-      const parts = s.split('T')[0].split('-');
-      if (parts.length === 3) return `${parts[2].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[0]}`;
-    }
-    if (s.includes('-')) {
-      const parts = s.split('-');
-      if (parts.length === 3) return `${parts[2].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[0]}`;
-    }
-    if (s.includes('/')) {
-      const parts = s.split('/');
-      if (parts.length === 3) {
-        if (parts[0].length === 4) return `${parts[2].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[0]}`;
-        return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2]}`;
-      }
-    }
-    return s;
-  } catch(e) {
-    return String(val || '');
-  }
-}
-
-function formatarHoraPTBR(val) {
-  if (!val) return '';
-  try {
-    let s = String(val).trim();
-    if (!s) return '';
-
-    // Se contiver ISO timestamp (ex: "1899-12-30T12:06:00.000Z"), extrai apenas a parte da hora após o 'T'
-    if (s.includes('T')) {
-      s = s.split('T')[1] || s;
-    }
-
-    if (s.includes(':')) {
-      const parts = s.split(':');
-      const h = parts[0].replace(/\D/g, '').padStart(2, '0').slice(-2);
-      const m = parts[1].replace(/\D/g, '').padStart(2, '0').slice(-2);
-      return `${h}:${m}`;
-    }
-
-    return s;
-  } catch(e) {
-    return String(val || '');
-  }
-}
-
-function startPatientVideoCall(roomName) {
-  const pacNome = (document.getElementById('pacNomeDisplay')?.textContent || 'Paciente').replace(/^Olá,\s*/i,'').replace(/!.*$/,'').trim();
-  const nameParam = encodeURIComponent(pacNome);
-
-  let videoContainer = document.getElementById('video-call-container');
-  if (!videoContainer) {
-    videoContainer = document.createElement('div');
-    videoContainer.id = 'video-call-container';
-    videoContainer.style.position = 'fixed';
-    videoContainer.style.inset = '0';
-    videoContainer.style.zIndex = '10000';
-    videoContainer.style.background = '#0e1a12';
-    videoContainer.style.display = 'flex';
-    videoContainer.style.flexDirection = 'column';
-    document.body.appendChild(videoContainer);
-  }
-
-  videoContainer.innerHTML = `
-    <div style="background:#182a1f; border-bottom:1px solid rgba(140,164,129,0.25); padding:10px 20px; display:flex; justify-content:space-between; align-items:center; height:50px; flex-shrink:0;">
-      <div style="font-weight:800; color:#fff; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
-        <span>📹 Teleconsulta · Dra. Silvia Oliveira Lemos</span>
-      </div>
-      <button onclick="closePatientVideoCall()" style="background:#f87171; color:#1a0808; border:none; padding:6px 14px; border-radius:8px; font-weight:800; font-size:0.78rem; cursor:pointer; font-family:inherit;">
-        ✕ Encerrar e Voltar ao Portal
-      </button>
-    </div>
-    <iframe src="videocall.html?room=${roomName}&name=${nameParam}" allow="camera; microphone; fullscreen; display-capture" style="flex:1; width:100%; border:none;"></iframe>
-  `;
-  videoContainer.style.display = 'flex';
-
-  window.addEventListener('message', function jitsiMsgHandler(e) {
-    if (e.data?.type === 'JITSI_LEFT') {
-      closePatientVideoCall();
-      window.removeEventListener('message', jitsiMsgHandler);
-    }
+  const txt = `🛒 *Lista de Compras · Dra. Silvia Oliveira Nutricionista*\n\n` + items.map(i => `• ${i}`).join('\n');
+  navigator.clipboard.writeText(txt).then(() => {
+    alert("✅ Lista de compras copiada para a área de transferência! Cole no seu WhatsApp.");
   });
 }
 
-function closePatientVideoCall() {
-  const videoContainer = document.getElementById('video-call-container');
-  if (videoContainer) {
-    videoContainer.innerHTML = '';
-    videoContainer.style.display = 'none';
-  }
-}
-
-function renderProximaConsulta(agendamentos) {
-  const dateTxt = document.getElementById('apDateText');
-  const waBtn = document.getElementById('apWaBtn');
-  const meetBtn = document.getElementById('apMeetBtn');
-  if (!dateTxt) return;
-
-  if (!agendamentos || agendamentos.length === 0) {
-    dateTxt.textContent = "Nenhuma consulta agendada";
-    if (waBtn) {
-      waBtn.innerHTML = "📅 Agendar pelo WhatsApp →";
-      waBtn.href = "https://wa.me/5521987385146?text=Ol%C3%A1%20Dra.%20Silvia!%20Gostaria%20de%20agendar%20uma%20consulta.";
-    }
-    if (meetBtn) meetBtn.style.display = "none";
-    return;
-  }
-
-  const hojeStr = new Date().toISOString().split('T')[0];
-  const ativas = agendamentos
-    .filter(a => String(a.status || '').toLowerCase() !== 'cancelado')
-    .sort((a, b) => String(a.data || '').localeCompare(String(b.data || '')));
-
-  const futuras = ativas.filter(a => String(a.data) >= hojeStr);
-  const ag = futuras[0] || ativas[ativas.length - 1];
-
-  if (!ag) {
-    dateTxt.textContent = "Nenhuma consulta futura";
-    return;
-  }
-
-  const dtFmt = formatarDataPTBR(ag.data);
-  const horaFmt = ag.hora ? ` às ${formatarHoraPTBR(ag.hora)}` : '';
-  const tipoFmt = ag.tipo ? ` (${ag.tipo})` : '';
-
-  dateTxt.textContent = `${dtFmt}${horaFmt}${tipoFmt}`;
-
-  if (waBtn) {
-    const waMsg = encodeURIComponent(`Olá Dra. Silvia! Gostaria de confirmar minha consulta do dia ${dtFmt}${horaFmt}.`);
-    waBtn.href = `https://wa.me/5521987385146?text=${waMsg}`;
-  }
-
-function resolveRoomName(ag, fallbackPacId) {
-  if (ag && ag.meet_url) {
-    try {
-      const roomMatch = ag.meet_url.match(/[?&]room=([^&]+)/);
-      if (roomMatch && roomMatch[1]) return decodeURIComponent(roomMatch[1]);
-    } catch(e) {}
-  }
-  const idKey = (ag && ag.id) ? ag.id : (fallbackPacId ? 'pac-' + fallbackPacId : 'geral');
-  return `dra-silvia-lemos-atendimento-${String(idKey).replace(/[^a-zA-Z0-9-_]/g, '')}`;
-}
-
-  if (meetBtn) {
-    const roomName = resolveRoomName(ag, currentPacId);
-    if (roomName) {
-      meetBtn.style.display = 'inline-flex';
-      meetBtn.onclick = () => startPatientVideoCall(roomName);
-    }
-  }
-}
-
-async function carregarDadosHistorico(pacienteId) {
-  if (!pacienteId) return;
-  currentPacId = pacienteId;
-  loadShopState();
-  setTopProgress(70);
-
-  try {
-    const res = await fetch(KOS_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: 'getHistoricoCompleto', paciente_id: pacienteId, session_token: user?.session_token || '' })
-    }).then(r => r.json()).catch(() => null);
-
-    if (res && res.success && res.data) {
-      const { anamnese, plano, suplementos, evolucao, agendamentos } = res.data;
-
-      // Renderiza Próxima Consulta
-      if (agendamentos) {
-        renderProximaConsulta(agendamentos);
-      }
-
-      // 0. Conectar Meta de Hidratação Reais Prescrita no Banco de Dados
-      if (anamnese && anamnese.ingestao_hidrica) {
-        const str = String(anamnese.ingestao_hidrica).toLowerCase();
-        let ml = 2500;
-        if (str.includes('l') && !str.includes('ml')) {
-          const num = parseFloat(str.replace(',', '.'));
-          if (!isNaN(num) && num > 0) ml = Math.round(num < 15 ? num * 1000 : num);
-        } else {
-          const num = parseInt(str.replace(/\D/g, ''), 10);
-          if (!isNaN(num) && num > 0) ml = num;
-        }
-        waterTarget = ml;
-
-        // Recupera o consumo atual gravado para ESTE paciente específico
-        const savedWater = parseInt(localStorage.getItem(`kos_water_${pacienteId}`) || '0', 10);
-        currentWater = isNaN(savedWater) ? 0 : savedWater;
-        updateWaterUI();
-      }
-
-      // 1. Renderizar Plano Alimentar Real se existir
-      if (plano && (plano.json_refeicoes || plano.refeicoes)) {
-        try {
-          const meallist = typeof plano.json_refeicoes === 'string' ? JSON.parse(plano.json_refeicoes) : (plano.json_refeicoes || plano.refeicoes);
-          
-          // Sincronizar Meta de Hidratação em tempo real
-          let extrasObj = {};
-          if (plano.json_extras) extrasObj = typeof plano.json_extras === 'string' ? JSON.parse(plano.json_extras) : plano.json_extras;
-          else if (plano.extras) extrasObj = typeof plano.extras === 'string' ? JSON.parse(plano.extras) : plano.extras;
-
-          if (extrasObj && (extrasObj.meta_agua_ml || extrasObj.meta_agua_litros)) {
-            const ml = extrasObj.meta_agua_ml || Math.round(parseFloat(extrasObj.meta_agua_litros) * 1000);
-            if (ml > 0) {
-              waterTarget = ml;
-              updateWaterUI();
-            }
-          }
-
-          if (Array.isArray(meallist) && meallist.length > 0) {
-            let totalPlanoKcal = 0, totalPlanoProt = 0, totalPlanoCarb = 0, totalPlanoGord = 0;
-
-            const container = document.querySelector('.meals-timeline');
-            if (container) {
-              container.innerHTML = meallist.map((m, idx) => {
-                const kcalStr = m.kcal || m.calorias || '';
-                const kcalVal = parseInt(String(kcalStr).replace(/\D/g, ''), 10) || 0;
-                totalPlanoKcal += kcalVal;
-
-                if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
-                  m.alimentosList.forEach(a => {
-                    totalPlanoCarb += parseFloat(a.carb) || 0;
-                    totalPlanoProt += parseFloat(a.prot) || 0;
-                    totalPlanoGord += parseFloat(a.gord) || 0;
-                  });
-                } else {
-                  totalPlanoProt += parseFloat(String(m.proteina || '0').replace(/[^\d.]/g, '')) || 0;
-                  totalPlanoCarb += parseFloat(String(m.carbos || '0').replace(/[^\d.]/g, '')) || 0;
-                  totalPlanoGord += parseFloat(String(m.gorduras || '0').replace(/[^\d.]/g, '')) || 0;
-                }
-
-                return `
-                <div class="meal-card-v2" id="meal-${idx+1}" data-kcal="${kcalVal}">
-                  <div class="meal-v2-header">
-                    <div class="meal-v2-name">${escapeHTML(m.icone || '🥗')} ${escapeHTML(m.nome || m.titulo || ('Refeição ' + (idx+1)))} ${kcalStr ? `<span style="font-size:0.75rem; color:var(--sage-light); font-weight:800;">(${escapeHTML(kcalStr)})</span>` : ''}</div>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                      <span class="meal-v2-time">${escapeHTML(m.horario || 'Flexível')}</span>
-                      <label class="meal-check-btn">
-                        <input type="checkbox" onchange="toggleMeal('meal-${idx+1}')">
-                        <span>Concluir</span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="meal-items-text">${escapeHTML(m.alimentos || m.itens || 'Consulte sua prescrição.')}</div>
-                  ${m.substituicoes || m.obs ? `
-                    <button class="btn-subst-trigger" onclick="toggleSubst('sub-${idx+1}')">🔄 Opções de Substituição / Obs</button>
-                    <div class="subst-box-v2" id="sub-${idx+1}">
-                      <strong>Substituições / Observações:</strong><br>${m.substituicoes || m.obs}
-                    </div>
-                  ` : ''}
-                </div>
-              `;
-              }).join('');
-
-              totalPlanoKcal = Math.round(totalPlanoKcal);
-              totalPlanoProt = Math.round(totalPlanoProt * 10) / 10;
-              totalPlanoCarb = Math.round(totalPlanoCarb * 10) / 10;
-              totalPlanoGord = Math.round(totalPlanoGord * 10) / 10;
-
-              if (document.getElementById('pacMacroKcal')) document.getElementById('pacMacroKcal').textContent = `${totalPlanoKcal} kcal`;
-              if (document.getElementById('pacMacroProt')) document.getElementById('pacMacroProt').textContent = `${totalPlanoProt}g`;
-              if (document.getElementById('pacMacroCarb')) document.getElementById('pacMacroCarb').textContent = `${totalPlanoCarb}g`;
-              if (document.getElementById('pacMacroGord')) document.getElementById('pacMacroGord').textContent = `${totalPlanoGord}g`;
-
-              if (totalPlanoKcal > 0) window.userTargetKcal = totalPlanoKcal;
-              loadMealsState();
-              updateCalorieTrackerUI();
-
-              // Renderizar Lista de Compras do Supermercado Unificada sem duplicidades
-              const shopGrid = document.getElementById('secComprasGrid');
-              if (shopGrid) {
-                const itensUnicos = new Set();
-                meallist.forEach(m => {
-                  if (m.alimentosList && Array.isArray(m.alimentosList) && m.alimentosList.length > 0) {
-                    m.alimentosList.forEach(a => {
-                      if (a.nome) {
-                        const qtdFmt = a.qtd ? ` (${a.qtd})` : '';
-                        itensUnicos.add(`${a.nome.trim()}${qtdFmt}`);
-                      }
-                    });
-                  } else if (m.itens) {
-                    const linhas = String(m.itens).split('\n');
-                    linhas.forEach(l => {
-                      const limpa = l.replace(/^[•\-\*\s]+/, '').trim();
-                      if (limpa.length > 2 && !limpa.toLowerCase().startsWith('receita:') && !limpa.toLowerCase().startsWith('ingredientes:')) {
-                        itensUnicos.add(limpa);
-                      }
-                    });
-                  }
-                });
-
-                const arrayItens = Array.from(itensUnicos);
-                if (arrayItens.length > 0) {
-                  shopGrid.innerHTML = arrayItens.map((itemStr, idx) => `
-                    <div class="shop-item-row" id="shop-item-${idx}" style="background:var(--card-inner); border:1px solid var(--border-forest); padding:12px 14px; border-radius:10px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
-                      <div style="display:flex; align-items:center; gap:10px;">
-                        <input type="checkbox" style="width:18px; height:18px; accent-color:var(--sage-light);">
-                        <span style="font-size:0.88rem; font-weight:700; color:var(--text-title);">${escapeHTML(itemStr)}</span>
-                      </div>
-                      <span style="font-size:0.75rem; color:var(--sage-light); font-weight:800; background:rgba(140,164,129,0.12); padding:3px 8px; border-radius:6px;">🛒 Item Prescrito</span>
-                    </div>
-                  `).join('');
-                }
-              }
-            }
-          }
-        } catch(e){}
-      }
-
-      // 2. Renderizar Suplementos Prescritos Reais
-      if (suplementos && Array.isArray(suplementos) && suplementos.length > 0) {
-        const sec = document.getElementById('secPlano');
-        if (sec) {
-          let supCardHtml = `<div style="background:var(--card-inner); border:1.5px solid var(--sage-light); padding:18px; border-radius:var(--radius-md); margin-top:16px;">
-            <div style="font-weight:800; font-size:0.95rem; color:var(--sage-light); margin-bottom:10px;">💊 Suplementação &amp; Manipulados Prescritos</div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              ${suplementos.map(s => `
-                <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-forest); padding:12px; border-radius:10px;">
-                  <div style="font-weight:800; color:var(--text-title); font-size:0.9rem;">${escapeHTML(s.suplemento_nome)} (${escapeHTML(s.dosagem || '')})</div>
-                  <div style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">
-                    📌 <strong>Posologia:</strong> ${escapeHTML(s.posologia || 'Conforme orientação')} | <strong>Forma:</strong> ${escapeHTML(s.forma_farmaceutica || 'Cápsula')}
-                  </div>
-                  ${s.observacao ? `<div style="font-size:0.75rem; color:var(--sage-light); margin-top:3px; font-style:italic;">Obs: ${escapeHTML(s.observacao)}</div>` : ''}
-                </div>
-              `).join('')}
-            </div>
-          </div>`;
-          const wrap = document.createElement('div');
-          wrap.innerHTML = supCardHtml;
-          sec.appendChild(wrap.firstElementChild);
-        }
-      }
-
-      // 3. Renderizar Gráfico de Evolução Real
-      renderEvolChart(evolucao || []);
-    }
-  } catch(err){
-    console.warn("Erro ao carregar histórico do paciente:", err);
-  } finally {
-    setTopProgress(100);
-    setTimeout(() => hideGlobalLoader(), 350);
-  }
-
-  // Trigger onboarding se for primeira vez
-  const seenKey = 'kos_onboarding_seen_' + (pacienteId || 'user');
-  if (!localStorage.getItem(seenKey)) {
-    setTimeout(() => {
-      abrirOnboardingModal();
-    }, 600);
-  }
-}
-
-// ── ONBOARDING MODAL LOGIC ──────────────────────────────────────────
-let currentOnboardingStep = 0;
-
-const ONBOARDING_STEPS = [
-  {
-    icon: "🌿",
-    title: "Bem-vindo(a) ao seu Portal de Saúde!",
-    text: "Este é seu espaço exclusivo para acompanhar todo o seu tratamento nutricional com a Dra. Silvia O. Lemos.",
-    subtext: "Aqui você tem acesso direto ao seu plano alimentar, prescrições de suplementos, evolução física e consultas."
-  },
-  {
-    icon: "🔑",
-    title: "Segurança: Altere sua Senha Inicial",
-    text: "Por motivos de segurança, se você está acessando com a senha temporária padrão (<strong>123456</strong>), recomendamos alterar para uma senha pessoal no botão 🔑 no topo do portal.",
-    actionBtn: `<button type="button" onclick="fecharOnboardingModal(); abrirModalTrocarSenha();" style="margin-top:14px; background:var(--sage-light); color:#0b140e; font-weight:800; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-size:0.85rem;">🔑 Trocar Minha Senha Agora</button>`
-  },
-  {
-    icon: "🥗",
-    title: "Navegação: Plano Alimentar & Hábitos",
-    text: "Navegue pelas abas inferiores ou superiores para ver seu <strong>Plano Alimentar</strong>, marcar as refeições do dia e registrar a água consumida.",
-    subtext: "Ao concluir cada refeição, seu gráfico de consumo calórico e anel de aderência diária sobem automaticamente!"
-  },
-  {
-    icon: "📈",
-    title: "Evolução & Contato Direto",
-    text: "Acompanhe seus gráficos de peso e bioimpedância na aba <strong>Evolução</strong> e veja suas próximas consultas com confirmação rápida via WhatsApp.",
-    subtext: "A Dra. Silvia Oliveira Lemos está com você em cada etapa da sua jornada saudável!"
-  }
-];
-
-function renderOnboardingStep() {
-  const step = ONBOARDING_STEPS[currentOnboardingStep];
-  const container = document.getElementById('onbSlideContainer');
-  const label = document.getElementById('onbStepLabel');
-  const btnPrev = document.getElementById('btnOnbPrev');
-  const btnNext = document.getElementById('btnOnbNext');
-  const dotsWrap = document.getElementById('onbDots');
-
-  if (!container || !step) return;
-
-  if (label) label.textContent = `Passo ${currentOnboardingStep + 1} de ${ONBOARDING_STEPS.length}`;
-
-  container.innerHTML = `
-    <div style="text-align:center; padding:10px 0;">
-      <div style="font-size:3rem; margin-bottom:10px;">${step.icon}</div>
-      <div style="font-size:1.3rem; font-weight:900; color:var(--text-title); margin-bottom:10px;">${step.title}</div>
-      <div style="font-size:0.92rem; color:var(--text-primary); line-height:1.5; margin-bottom:10px;">${step.text}</div>
-      ${step.subtext ? `<div style="font-size:0.82rem; color:var(--sage-light); font-weight:700; background:rgba(140,164,129,0.12); border:1px solid var(--border-forest); padding:10px; border-radius:10px; margin-top:8px;">${step.subtext}</div>` : ''}
-      ${step.actionBtn ? step.actionBtn : ''}
-    </div>
-  `;
-
-  if (btnPrev) btnPrev.style.visibility = currentOnboardingStep === 0 ? 'hidden' : 'visible';
-  if (btnNext) {
-    if (currentOnboardingStep === ONBOARDING_STEPS.length - 1) {
-      btnNext.textContent = '🎉 Concluir & Navegar';
-      btnNext.style.background = 'var(--sage-light)';
-      btnNext.style.color = '#0b140e';
-    } else {
-      btnNext.textContent = 'Próximo →';
-      btnNext.style.background = 'var(--sage-dim)';
-      btnNext.style.color = 'var(--text-title)';
-    }
-  }
-
-  if (dotsWrap) {
-    dotsWrap.innerHTML = ONBOARDING_STEPS.map((_, i) => `
-      <span class="onb-dot ${i === currentOnboardingStep ? 'active' : ''}" onclick="irParaPassoOnboarding(${i})" style="width:${i === currentOnboardingStep ? '24px' : '10px'}; height:10px; border-radius:${i === currentOnboardingStep ? '10px' : '50%'}; background:${i === currentOnboardingStep ? 'var(--sage-light)' : 'var(--border-forest)'}; display:inline-block; cursor:pointer; transition:all 0.3s ease;"></span>
-    `).join('');
-  }
+function filterShopping(mode) {
+  document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+  const rows = document.querySelectorAll('.shop-item-row');
+  rows.forEach(r => {
+    const isChecked = r.classList.contains('checked');
+    if (mode === 'all') r.style.display = 'flex';
+    else if (mode === 'pending') r.style.display = isChecked ? 'none' : 'flex';
+    else if (mode === 'checked') r.style.display = isChecked ? 'flex' : 'none';
+  });
 }
 
 function abrirOnboardingModal() {
-  currentOnboardingStep = 0;
-  renderOnboardingStep();
-  const m = document.getElementById('modalOnboarding');
-  if (m) m.style.display = 'flex';
+  alert("💡 Dica: Acompanhe suas refeições, registre seu consumo de água e consulte seu progresso diário!");
 }
 
-function fecharOnboardingModal() {
-  const m = document.getElementById('modalOnboarding');
-  if (m) m.style.display = 'none';
-  const pacienteId = window.KOS_PACIENTE_ID || 'user';
-  localStorage.setItem('kos_onboarding_seen_' + pacienteId, 'true');
-}
+// INICIALIZAÇÃO
+window.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('kos_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  const btn = document.getElementById('btnThemeToggle');
+  if (btn) btn.innerHTML = savedTheme === 'dark' ? '☀️ <span class="btn-hdr-label">Tema</span>' : '🌙 <span class="btn-hdr-label">Tema</span>';
 
-function mudarPassoOnboarding(dir) {
-  currentOnboardingStep += dir;
-  if (currentOnboardingStep < 0) currentOnboardingStep = 0;
-  if (currentOnboardingStep >= ONBOARDING_STEPS.length) {
-    fecharOnboardingModal();
-    return;
-  }
-  renderOnboardingStep();
-}
+  // Recupera água
+  const w = localStorage.getItem(`kos_water_${getTodayKey()}`);
+  if (w) currentWater = Number(w);
+  renderWater();
 
-function irParaPassoOnboarding(idx) {
-  currentOnboardingStep = idx;
-  renderOnboardingStep();
-}
-
-function startPatientVideoCall(roomName) {
-  if (!roomName) return;
-  
-  let modal = document.getElementById('modalPatientVideoCall');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'modalPatientVideoCall';
-    modal.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.92); backdrop-filter:blur(10px); display:flex; flex-direction:column;';
-    modal.innerHTML = `
-      <div style="background:#172a1d; padding:12px 20px; border-bottom:1px solid var(--border-forest); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
-        <div style="font-size:0.95rem; font-weight:800; color:var(--text-title); display:flex; align-items:center; gap:8px;">
-          🌿 Teleconsulta Nutricional · Dra. Silvia Oliveira Lemos
-        </div>
-        <button type="button" onclick="closePatientVideoCall()" style="background:#f87171; color:#1a0808; border:none; padding:6px 14px; border-radius:8px; font-weight:800; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:6px;">
-          ✕ Encerrar e Voltar ao Portal
-        </button>
-      </div>
-      <div style="flex:1; width:100%; position:relative;">
-        <iframe id="iframePatientCall" src="about:blank" allow="camera *; microphone *; fullscreen *; display-capture *; autoplay *" style="width:100%; height:100%; border:none;"></iframe>
-      </div>
-    `;
-    document.body.appendChild(modal);
+  // Recupera hábitos
+  const h = localStorage.getItem(`kos_habits_${getTodayKey()}`);
+  if (h) {
+    habitsCompleted = JSON.parse(h);
+    Object.keys(habitsCompleted).forEach(k => {
+      const el = document.getElementById(k);
+      if (el) el.classList.toggle('checked', habitsCompleted[k]);
+    });
+    updateHabitsCounter();
   }
 
-  let pacNome = 'Paciente';
+  // Nome do paciente na sessão
   try {
-    const pacDados = JSON.parse(sessionStorage.getItem('kos_paciente_dados') || localStorage.getItem('kos_paciente_dados') || '{}');
-    if (pacDados.nome) pacNome = pacDados.nome;
+    const user = JSON.parse(sessionStorage.getItem('kos_paciente_dados') || '{}');
+    if (user.nome) {
+      document.getElementById('dispNome').innerText = user.nome.split(' ')[0];
+      document.getElementById('welcomeHeading').innerText = `Bem-vindo(a), ${user.nome.split(' ')[0]}! 👋`;
+    }
   } catch(e) {}
 
-  const iframe = document.getElementById('iframePatientCall');
-  if (iframe) {
-    iframe.src = `videocall.html?room=${encodeURIComponent(roomName)}&name=${encodeURIComponent(pacNome)}&role=participant&minimal=true`;
-  }
-  modal.style.display = 'flex';
-}
+  updateAdherenceScore();
 
-function closePatientVideoCall() {
-  const modal = document.getElementById('modalPatientVideoCall');
-  const iframe = document.getElementById('iframePatientCall');
-  if (iframe) iframe.src = 'about:blank';
-  if (modal) modal.style.display = 'none';
-}
+  // Inicializa gráfico Chart.js com curvas suaves e gradiente
+  const ctx = document.getElementById('chartEvolucaoPaciente');
+  if (ctx) {
+    const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 260);
+    grad.addColorStop(0, 'rgba(22, 163, 74, 0.25)');
+    grad.addColorStop(1, 'rgba(22, 163, 74, 0.0)');
 
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam) {
-    startPatientVideoCall(roomParam);
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Mês 1', 'Mês 2', 'Mês 3', 'Mês 4', 'Atual'],
+        datasets: [{
+          label: 'Peso Corporal (kg)',
+          data: [78.5, 76.8, 75.2, 73.9, 72.8],
+          borderColor: '#16a34a',
+          backgroundColor: grad,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#203528',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: 'rgba(0,0,0,0.05)' } }
+        }
+      }
+    });
   }
 });
 </script>
-
-<!-- MODAL ONBOARDING & GUIA DO PACIENTE -->
-<div id="modalOnboarding" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
-  <div style="background:var(--bg-card); border:1.5px solid var(--sage-light); border-radius:20px; max-width:540px; width:100%; padding:28px; box-shadow:0 25px 60px rgba(0,0,0,0.7); position:relative; overflow:hidden;">
-    <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:radial-gradient(circle, rgba(140,164,129,0.2) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
-    
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-forest); padding-bottom:12px;">
-      <div style="font-size:0.78rem; font-weight:800; color:var(--sage-light); text-transform:uppercase; letter-spacing:1px;" id="onbStepLabel">Passo 1 de 4</div>
-      <button type="button" onclick="fecharOnboardingModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;" title="Fechar Guia">✕</button>
-    </div>
-
-    <div id="onbSlideContainer" style="min-height:220px;"></div>
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--border-forest);">
-      <button type="button" class="btn-sec" id="btnOnbPrev" onclick="mudarPassoOnboarding(-1)" style="padding:8px 16px; font-size:0.82rem;">← Anterior</button>
-      <div style="display:flex; gap:6px; align-items:center;" id="onbDots"></div>
-      <button type="button" class="btn-main" id="btnOnbNext" onclick="mudarPassoOnboarding(1)" style="padding:8px 20px; font-size:0.82rem;">Próximo →</button>
-    </div>
-  </div>
-</div>
-
-<style>
-    .kos-footer-brand{display:flex;align-items:center;gap:10px;justify-content:center;padding:14px 0 8px;border-top:1px solid var(--border-forest);margin-top:16px;opacity:.85;transition:opacity .2s;}
-    .kos-footer-brand:hover{opacity:1;}
-    .kos-footer-brand .kos-dev-by{font-size:0.62rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
-    .kos-footer-brand .kos-brand-inner{display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
-    .kos-footer-brand .kos-logo-text{font-family:'Courier New',monospace;font-size:1rem;font-weight:900;color:#fff;letter-spacing:.18em;text-transform:uppercase;display:flex;align-items:center;gap:4px;}
-    .kos-footer-brand .kos-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#7c3aed,#ec4899,#f59e0b,#06b6d4);background-size:300% 300%;animation:kosFtRainbow 3s linear infinite;box-shadow:0 0 8px rgba(6,182,212,.75);}
-    .kos-footer-brand .kos-sub-text{font-family:'Courier New',monospace;font-size:0.55rem;font-weight:700;color:#22d3ee;letter-spacing:.12em;text-transform:uppercase;}
-    .kos-footer-brand .kos-bar{height:2px;width:100%;border-radius:999px;background:linear-gradient(90deg,#06b6d4,#7c3aed,#ec4899,#f59e0b,#06b6d4);background-size:300% 100%;animation:kosFtRainbow 3s linear infinite;opacity:.75;margin-top:2px;}
-    @keyframes kosFtRainbow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
-  </style>
-  <footer style="width:100%;padding:0 24px 20px;">
-    <a href="https://kos-rho.vercel.app/" target="_blank" rel="noopener" class="kos-footer-brand" style="text-decoration:none;cursor:pointer;">
-      <span class="kos-dev-by">Desenvolvido por</span>
-      <div class="kos-brand-inner">
-        <span class="kos-logo-text">KOS<span class="kos-dot"></span></span>
-        <span class="kos-sub-text">Web &amp; Automação</span>
-        <div class="kos-bar"></div>
-      </div>
-    </a>
-  </footer>
 </body>
 </html>
