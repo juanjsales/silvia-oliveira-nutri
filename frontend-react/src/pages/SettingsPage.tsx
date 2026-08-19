@@ -450,46 +450,169 @@ export function SettingsPage() {
         </form>
       )}
 
-      {/* ── ABA 3: MENSAGENS WHATSAPP ── */}
+      {/* ── ABA 3: MENSAGENS WHATSAPP & MODELOS ── */}
       {activeTab === "MESSAGES" && (
-        <form onSubmit={save}>
-          <section className="panel settings-section">
-            <header>
-              <MessageCircle />
-              <div>
-                <h2>Modelos de Mensagem</h2>
-                <p>
-                  Textos rápidos pré-formatados. Use as variáveis <strong>{"{NOME}"}</strong>, <strong>{"{DATA}"}</strong> e <strong>{"{HORA}"}</strong>.
-                </p>
-              </div>
-            </header>
-            <div className="settings-grid">
-              <label className="wide">
-                Lembrete / Confirmação de Consulta
-                <textarea
-                  rows={4}
-                  value={form.reminderMessage}
-                  onChange={(e) => set("reminderMessage", e.target.value)}
-                  placeholder="Olá {NOME}, passando para confirmar sua consulta no dia {DATA} às {HORA}..."
-                />
-              </label>
-              <label className="wide">
-                Mensagem de Envio do Plano Alimentar (Pós-Consulta)
-                <textarea
-                  rows={4}
-                  value={form.followupMessage}
-                  onChange={(e) => set("followupMessage", e.target.value)}
-                  placeholder="Olá {NOME}, seu plano alimentar e orientações já estão disponíveis no Portal do Paciente!"
-                />
-              </label>
-            </div>
-          </section>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <form onSubmit={save}>
+            <section className="panel settings-section">
+              <header>
+                <MessageCircle />
+                <div>
+                  <h2>Modelos de Mensagem do Consultório</h2>
+                  <p>
+                    Personalize os textos automáticos enviados aos pacientes via WhatsApp e e-mail.
+                  </p>
+                </div>
+              </header>
 
-          <button className="primary-button settings-save" disabled={saving}>
-            <Save size={18} />
-            {saving ? "Salvando..." : "Salvar Mensagens"}
-          </button>
-        </form>
+              {/* CHIPS DE VARIÁVEIS DISPONÍVEIS */}
+              <div className="message-tags-banner">
+                <span className="tags-title">📌 Variáveis dinâmicas para usar nos textos (clique para copiar):</span>
+                <div className="tags-chips-list">
+                  {[
+                    { tag: "{NOME}", label: "Nome do Paciente" },
+                    { tag: "{DATA}", label: "Data da Consulta" },
+                    { tag: "{HORA}", label: "Horário da Consulta" },
+                  ].map(({ tag, label }) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className="tag-chip-btn"
+                      onClick={() => {
+                        navigator.clipboard.writeText(tag);
+                        setNotice(`Tag ${tag} copiada! Cole no campo desejado.`);
+                        setTimeout(() => setNotice(""), 3000);
+                      }}
+                      title={`Copiar ${tag}`}
+                    >
+                      <code>{tag}</code>
+                      <small>{label}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="settings-grid" style={{ marginTop: 16 }}>
+                {/* TEMPLATE 1: LEMBRETE DE CONSULTA */}
+                <div className="message-card-block" style={{ gridColumn: "1 / -1" }}>
+                  <div className="message-block-header">
+                    <strong>📅 Lembrete / Confirmação de Consulta</strong>
+                    <div className="preset-quick-btns">
+                      <button
+                        type="button"
+                        className="preset-pill-btn"
+                        onClick={() =>
+                          set(
+                            "reminderMessage",
+                            "Olá, {NOME}! 🌿 Passando para lembrar da sua consulta nutricional amanhã, dia {DATA} às {HORA}. Caso precise remarcar, me avise com antecedência. Nos vemos em breve!"
+                          )
+                        }
+                      >
+                        Carregar Sugestão Padrão
+                      </button>
+                      <button
+                        type="button"
+                        className="preset-pill-btn"
+                        onClick={() =>
+                          set(
+                            "reminderMessage",
+                            "Olá {NOME}, tudo bem? Confirmando sua consulta nutricional agendada para {DATA} às {HORA}. Por favor, confirme o recebimento desta mensagem. Abraços!"
+                          )
+                        }
+                      >
+                        Modelo Direto / Formal
+                      </button>
+                    </div>
+                  </div>
+
+                  <textarea
+                    rows={4}
+                    value={form.reminderMessage}
+                    onChange={(e) => set("reminderMessage", e.target.value)}
+                    placeholder="Olá {NOME}, passando para confirmar sua consulta no dia {DATA} às {HORA}..."
+                  />
+
+                  {/* PRÉVIA ESTILO WHATSAPP */}
+                  {form.reminderMessage && (
+                    <div className="whatsapp-preview-wrap">
+                      <span className="wa-preview-label">📱 Prévia de como o paciente receberá no WhatsApp:</span>
+                      <div className="whatsapp-bubble">
+                        <p>
+                          {form.reminderMessage
+                            .replace(/{NOME}/g, "Maria Clara")
+                            .replace(/{DATA}/g, "24/08/2026")
+                            .replace(/{HORA}/g, "15:30")}
+                        </p>
+                        <span className="wa-time">14:30 ✓✓</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* TEMPLATE 2: PÓS-CONSULTA & PLANO ALIMENTAR */}
+                <div className="message-card-block" style={{ gridColumn: "1 / -1" }}>
+                  <div className="message-block-header">
+                    <strong>🥗 Mensagem Pós-Consulta (Envio de Plano Alimentar & Orientações)</strong>
+                    <div className="preset-quick-btns">
+                      <button
+                        type="button"
+                        className="preset-pill-btn"
+                        onClick={() =>
+                          set(
+                            "followupMessage",
+                            "Olá, {NOME}! 🥑 Foi excelente nossa consulta. Seu plano alimentar personalizado, metas e orientações já estão disponíveis no seu Portal do Paciente. Bom foco e qualquer dúvida estou por aqui!"
+                          )
+                        }
+                      >
+                        Carregar Sugestão Padrão
+                      </button>
+                      <button
+                        type="button"
+                        className="preset-pill-btn"
+                        onClick={() =>
+                          set(
+                            "followupMessage",
+                            "Olá {NOME}! Seu plano alimentar atualizado já foi liberado no portal. Lembre-se de registrar sua água e refeições no diário alimentar. Conte comigo para alcançar seus objetivos!"
+                          )
+                        }
+                      >
+                        Modelo com Incentivo ao Diário
+                      </button>
+                    </div>
+                  </div>
+
+                  <textarea
+                    rows={4}
+                    value={form.followupMessage}
+                    onChange={(e) => set("followupMessage", e.target.value)}
+                    placeholder="Olá {NOME}, seu plano alimentar e orientações já estão disponíveis no Portal do Paciente!"
+                  />
+
+                  {/* PRÉVIA ESTILO WHATSAPP */}
+                  {form.followupMessage && (
+                    <div className="whatsapp-preview-wrap">
+                      <span className="wa-preview-label">📱 Prévia de como o paciente receberá no WhatsApp:</span>
+                      <div className="whatsapp-bubble">
+                        <p>
+                          {form.followupMessage
+                            .replace(/{NOME}/g, "Maria Clara")
+                            .replace(/{DATA}/g, "24/08/2026")
+                            .replace(/{HORA}/g, "15:30")}
+                        </p>
+                        <span className="wa-time">16:45 ✓✓</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <button className="primary-button settings-save" disabled={saving} style={{ marginTop: 18 }}>
+              <Save size={18} />
+              {saving ? "Salvando..." : "Salvar Modelos de Mensagem"}
+            </button>
+          </form>
+        </div>
       )}
 
       {/* ── ABA 4: E-MAILS & SMTP ── */}
