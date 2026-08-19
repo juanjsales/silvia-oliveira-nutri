@@ -61,6 +61,13 @@ export function EncounterPage(){
  const loadEncounter=useCallback(async(id:string)=>{setLoading(true);try{const r=await api<{data:Encounter}>(`/api/encounters/${id}`);setEncounter(r.data);const loaded:Partial<Record<SectionKey,SectionData>>={};for(const key of steps.map(s=>s.key).filter(k=>k!=='review') as SectionKey[])loaded[key]=r.data.sections[key]?.data||{};setDrafts(loaded);setDirtyKeys(new Set())}catch(c){setError(c instanceof Error?c.message:'Erro ao abrir atendimento.')}finally{setLoading(false)}},[]);
  useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(dirtyKeys.size){event.preventDefault();event.returnValue=''}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirtyKeys]);
  useEffect(()=>{const id=params.get('id');if(id)void loadEncounter(id)},[params,loadEncounter]);
+ useEffect(()=>{
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const stepper = document.querySelector('.clinical-stepper') || document.querySelector('.encounter-page');
+  if (stepper) {
+    stepper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+ },[active]);
  useEffect(()=>{if(!patientParam||!appointmentParam||params.get('id'))return;let cancelled=false;setLoading(true);api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId:patientParam,appointmentId:appointmentParam})}).then(r=>{if(!cancelled){setParams({id:r.data.id});void loadEncounter(r.data.id)}}).catch(c=>setError(c instanceof Error?c.message:'Erro ao iniciar atendimento.')).finally(()=>setLoading(false));return()=>{cancelled=true}},[patientParam,appointmentParam,params,setParams,loadEncounter]);
  async function start(){if(!patientId)return;setLoading(true);setError('');try{const r=await api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId})});setParams({id:r.data.id});await loadEncounter(r.data.id)}catch(c){setError(c instanceof Error?c.message:'Não foi possível iniciar.')}finally{setLoading(false)}}
  const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);

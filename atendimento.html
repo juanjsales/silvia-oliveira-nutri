@@ -1230,6 +1230,13 @@ function openTab(name, btn) {
   if (name === 'recordatorio') renderRecordatorioLinhas();
   if (typeof updateFinishStatus === 'function') updateFinishStatus();
   updateClinicalFlow(name);
+
+  // Rola automaticamente para o topo para iniciar o preenchimento da nova etapa
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const tabsNav = document.getElementById('tabsNav') || document.querySelector('.main-container');
+  if (tabsNav) {
+    tabsNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 const CLINICAL_FLOW = [
