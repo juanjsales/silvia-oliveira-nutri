@@ -20,6 +20,7 @@ import {
   ShoppingBasket,
   Sparkles,
   UserRound,
+  Utensils,
   Video,
   X,
 } from 'lucide-react';
@@ -1020,7 +1021,7 @@ function Goals({ rows, reload }: { rows: Any[]; reload: any }) {
 }
 
 function Evolution({ rows }: { rows: Any[] }) {
-  return <BodyEvolutionChart rows={rows} />;
+  return <BodyEvolutionChart rows={rows as any} />;
 }
 
 function Finance({ rows }: { rows: Any[] }) {

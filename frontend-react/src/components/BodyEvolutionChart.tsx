@@ -41,7 +41,7 @@ export function BodyEvolutionChart({ rows }: { rows: Measurement[] }) {
           notes: r.notes,
         };
       })
-      .filter((d): d is { index: number; dateStr: string; fullDate: string; value: number; notes?: string | null } => d.value !== null && !isNaN(d.value));
+      .filter((d): d is { index: number; dateStr: string; fullDate: string; value: number; notes: string | null | undefined } => d.value !== null && !isNaN(d.value));
   }, [sorted, activeMetric]);
 
   const cfg = metricConfig[activeMetric];
