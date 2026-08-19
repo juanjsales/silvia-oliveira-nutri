@@ -23,6 +23,7 @@ import {
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { capitalizePersonName } from "../lib/formatters";
 
 type Patient = {
   id: string;
@@ -159,6 +160,9 @@ export function PatientsPage() {
     const body = Object.fromEntries(
       Object.entries(form).map(([k, v]) => [k, v.trim() || undefined])
     );
+    if (body.name) {
+      body.name = capitalizePersonName(body.name);
+    }
     try {
       await api(editing ? `/api/patients/${editing.id}` : "/api/patients", {
         method: editing ? "PATCH" : "POST",
@@ -555,6 +559,7 @@ export function PatientsPage() {
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    onBlur={() => setForm((f) => ({ ...f, name: capitalizePersonName(f.name) }))}
                     placeholder="Ex: Maria Clara Souza"
                     required
                     minLength={2}

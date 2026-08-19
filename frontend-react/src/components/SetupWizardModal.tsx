@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { api } from "../lib/api";
+import { capitalizePersonName } from "../lib/formatters";
 
 type WizardData = {
   clinicName: string;
@@ -122,12 +123,13 @@ export function SetupWizardModal({
     setSaving(true);
     setError("");
     try {
+      const profName = capitalizePersonName(data.professionalName);
       // 1. Salvar configurações principais
       await api("/api/settings", {
         method: "PUT",
         body: JSON.stringify({
-          clinicName: data.clinicName || data.professionalName,
-          professionalName: data.professionalName,
+          clinicName: data.clinicName || profName,
+          professionalName: profName,
           crn: data.crn,
           specialty: data.specialty,
           phone: data.phone || undefined,
@@ -143,15 +145,17 @@ export function SetupWizardModal({
 
       // 2. Salvar SMTP se preenchido
       if (data.smtpEnabled && data.smtpUser && data.smtpPass) {
+        const cleanEmail = data.smtpUser.trim().toLowerCase();
+        const cleanPass = data.smtpPass.replace(/\s+/g, "");
         await api("/api/settings/smtp", {
           method: "PUT",
           body: JSON.stringify({
             host: "smtp.gmail.com",
             port: 587,
             secure: false,
-            user: data.smtpUser,
-            password: data.smtpPass.replace(/\s+/g, ""),
-            from: `${data.professionalName || data.clinicName} <${data.smtpUser}>`,
+            user: cleanEmail,
+            password: cleanPass,
+            from: `${profName || "Consultório"} <${cleanEmail}>`,
             enabled: true,
           }),
         });
@@ -168,8 +172,10 @@ export function SetupWizardModal({
   }
 
   async function testEmail() {
-    if (!data.smtpUser || !data.smtpPass) {
-      setError("Preencha o e-mail do Gmail e a Senha de App antes de testar.");
+    const cleanEmail = data.smtpUser.trim().toLowerCase();
+    const cleanPass = data.smtpPass.replace(/\s+/g, "");
+    if (!cleanEmail || !cleanPass) {
+      setError("Preencha o e-mail do Gmail e a Senha de App de 16 letras antes de testar.");
       return;
     }
     setTestingEmail(true);
@@ -183,21 +189,21 @@ export function SetupWizardModal({
           host: "smtp.gmail.com",
           port: 587,
           secure: false,
-          user: data.smtpUser,
-          password: data.smtpPass.replace(/\s+/g, ""),
-          from: `${data.professionalName || data.clinicName || "Consultório"} <${data.smtpUser}>`,
+          user: cleanEmail,
+          password: cleanPass,
+          from: `${data.professionalName || data.clinicName || "Consultório"} <${cleanEmail}>`,
           enabled: true,
         }),
       });
 
-      await api("/api/settings/smtp/test", {
+      const res = await api<{ message: string }>("/api/settings/smtp/test", {
         method: "POST",
-        body: JSON.stringify({ to: data.smtpUser }),
+        body: JSON.stringify({ to: cleanEmail }),
       });
 
       setTestEmailSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao enviar e-mail de teste. Verifique a senha de app.");
+      setError(err instanceof Error ? err.message : "Falha ao enviar e-mail de teste. Verifique se o e-mail e a senha de app de 16 letras estão corretos.");
     } finally {
       setTestingEmail(false);
     }

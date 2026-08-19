@@ -3,9 +3,10 @@ import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { createOpaqueToken, hashPassword, hashToken } from '../../shared/crypto.js';
 import { sendPatientInvitationEmail } from '../../integrations/email.js';
+import { capitalizePersonName } from '../../shared/formatters.js';
 
 const patientSchema = z.object({
-  name: z.string().trim().min(2).max(160),
+  name: z.string().trim().min(2).max(160).transform(capitalizePersonName),
   cpf: z.string().transform(v => v.replace(/\D/g, '')).refine(v => !v || v.length === 11, 'CPF inválido').optional(),
   email: z.string().trim().toLowerCase().email().optional(),
   whatsapp: z.string().transform(v => v.replace(/\D/g, '')).optional(),
