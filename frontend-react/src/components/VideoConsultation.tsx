@@ -1,15 +1,36 @@
-import { Check, Copy, ExternalLink, Maximize2, Minimize2, PhoneOff, Video, MessageCircle, RefreshCw } from 'lucide-react';
+import {
+  BookOpen,
+  Check,
+  Copy,
+  ExternalLink,
+  Layers,
+  Maximize2,
+  Minimize2,
+  PhoneOff,
+  PieChart,
+  RefreshCw,
+  Ruler,
+  Scale,
+  Send,
+  Smile,
+  Sparkles,
+  Target,
+  Video,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+
+type BroadcastTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
 
 type Props = {
   appointmentId?: string | null;
   roomToken: string;
   patientName: string;
+  sections?: Record<string, any>;
   onClose: () => void;
 };
 
-export function VideoConsultation({ appointmentId, roomToken, patientName, onClose }: Props) {
+export function VideoConsultation({ appointmentId, roomToken, patientName, sections, onClose }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [startedAt] = useState(Date.now());
   const [elapsed, setElapsed] = useState('00:00');
@@ -18,6 +39,9 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
   const [error, setError] = useState('');
   const [iframeKey, setIframeKey] = useState(1);
   const [reconnecting, setReconnecting] = useState(false);
+  const [activeBroadcast, setActiveBroadcast] = useState<BroadcastTab | null>('medidas');
+  const [broadcastingNotice, setBroadcastingNotice] = useState('');
+  const [showBroadcastMenu, setShowBroadcastMenu] = useState(true);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -35,15 +59,10 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
     }
     api<{ data: { roomUrl: string } }>(`/api/video/appointments/${appointmentId}/access`, { method: 'POST' })
       .then((response) => setSource(response.data.roomUrl))
-      .catch((cause) => {
-        // Fallback direto caso a consulta ainda não esteja com status IN_PROGRESS na API
+      .catch(() => {
         setSource(`/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true`);
       });
   }, [appointmentId, roomToken]);
-
-  const patientUrl = appointmentId 
-    ? `${window.location.origin}/portal` 
-    : `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant`;
 
   const directRoomUrl = source || `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant`;
 
@@ -58,6 +77,43 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
     setReconnecting(true);
     setIframeKey((prev) => prev + 1);
     setTimeout(() => setReconnecting(false), 1200);
+  }
+
+  async function broadcastToPatient(tab: BroadcastTab, label: string) {
+    if (!appointmentId) return;
+    setActiveBroadcast(tab);
+
+    const assessment = sections?.assessment || {};
+    const conduct = sections?.conduct || {};
+    const followup = sections?.followup || {};
+
+    const weightNum = parseFloat(String(assessment.weight || ''));
+    const heightNum = parseFloat(String(assessment.height || '')) / 100;
+    const bmiCalc = weightNum > 0 && heightNum > 0 ? (weightNum / (heightNum * heightNum)).toFixed(1) : undefined;
+
+    const clinicalData = {
+      weight: assessment.weight ? `${assessment.weight} kg` : undefined,
+      height: assessment.height ? `${assessment.height} cm` : undefined,
+      bmi: bmiCalc,
+      bodyFat: assessment.bodyFat ? `${assessment.bodyFat}%` : undefined,
+      goals: conduct.goals || followup.nextGoal || undefined,
+      guidance: conduct.guidance || undefined,
+      dietRating: followup.dietRating || undefined,
+    };
+
+    try {
+      await api(`/api/video/appointments/${appointmentId}/broadcast`, {
+        method: 'POST',
+        body: JSON.stringify({
+          activeTab: tab,
+          clinicalData,
+        }),
+      });
+      setBroadcastingNotice(`Transmitindo: ${label}`);
+      setTimeout(() => setBroadcastingNotice(''), 3000);
+    } catch {
+      // Ignora falhas de broadcast silenciosamente
+    }
   }
 
   return (
@@ -98,6 +154,87 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
           </button>
         </div>
       </header>
+
+      {/* ── BARRA DE COMANDO DA APRESENTAÇÃO AO PACIENTE ── */}
+      {appointmentId && (
+        <div className="video-broadcast-bar">
+          <div className="broadcast-bar-head">
+            <span className="broadcast-tag">
+              <Sparkles size={13} /> Transmitir ao Paciente:
+            </span>
+            {broadcastingNotice && (
+              <span className="broadcast-live-notice">
+                <Check size={12} /> {broadcastingNotice}
+              </span>
+            )}
+            <button
+              type="button"
+              className="broadcast-toggle-collapse"
+              onClick={() => setShowBroadcastMenu(!showBroadcastMenu)}
+            >
+              {showBroadcastMenu ? 'Ocultar' : 'Mostrar opções'}
+            </button>
+          </div>
+
+          {showBroadcastMenu && (
+            <div className="broadcast-actions-row">
+              <button
+                type="button"
+                className={`broadcast-btn ${activeBroadcast === 'medidas' ? 'active' : ''}`}
+                onClick={() => broadcastToPatient('medidas', 'Guia de Medidas')}
+                title="Mostrar como tirar medidas com a fita métrica"
+              >
+                <Ruler size={13} /> Medidas
+              </button>
+
+              <button
+                type="button"
+                className={`broadcast-btn ${activeBroadcast === 'fome' ? 'active' : ''}`}
+                onClick={() => broadcastToPatient('fome', 'Escala de Fome & Saciedade')}
+                title="Mostrar escala de fome de 1 a 10"
+              >
+                <Smile size={13} /> Fome (1-10)
+              </button>
+
+              <button
+                type="button"
+                className={`broadcast-btn ${activeBroadcast === 'prato' ? 'active' : ''}`}
+                onClick={() => broadcastToPatient('prato', 'Prato Saudável')}
+                title="Mostrar proporções de macronutrientes"
+              >
+                <PieChart size={13} /> Prato Ideal
+              </button>
+
+              <button
+                type="button"
+                className={`broadcast-btn ${activeBroadcast === 'bristol' ? 'active' : ''}`}
+                onClick={() => broadcastToPatient('bristol', 'Escala de Bristol')}
+                title="Mostrar escala de fezes de Bristol"
+              >
+                <Layers size={13} /> Bristol
+              </button>
+
+              <button
+                type="button"
+                className={`broadcast-btn ${activeBroadcast === 'metas' ? 'active' : ''}`}
+                onClick={() => broadcastToPatient('metas', 'Metas da Consulta')}
+                title="Transmitir as metas digitadas no prontuário"
+              >
+                <Target size={13} /> Metas
+              </button>
+
+              <button
+                type="button"
+                className={`broadcast-btn ${activeBroadcast === 'avaliacao' ? 'active' : ''}`}
+                onClick={() => broadcastToPatient('avaliacao', 'Avaliação Corporal & IMC')}
+                title="Transmitir peso, altura e IMC calculados"
+              >
+                <Scale size={13} /> Avaliação
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="video-frame">
         {error ? (

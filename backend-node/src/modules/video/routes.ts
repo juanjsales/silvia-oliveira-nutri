@@ -1,3 +1,109 @@
-import type{FastifyInstance}from'fastify';import{z}from'zod';import{audit}from'../../shared/audit.js';
-type Appointment={patientId:string;patientName:string;status:string;startsAt:Date;endsAt:Date;videoRoomToken:string};
-export async function videoRoutes(app:FastifyInstance){app.addHook('preHandler',app.authenticate);app.post('/appointments/:id/access',async(request,reply)=>{const{id}=z.object({id:z.uuid()}).parse(request.params);const r=await app.db.query<Appointment>(`SELECT a.patient_id AS "patientId",p.name AS "patientName",a.status,(a.appointment_date+a.appointment_time) AT TIME ZONE 'America/Sao_Paulo' AS "startsAt",((a.appointment_date+a.appointment_time)+(a.duration_minutes||' minutes')::interval) AT TIME ZONE 'America/Sao_Paulo' AS "endsAt",a.video_room_token AS "videoRoomToken" FROM appointments a JOIN patients p ON p.id=a.patient_id WHERE a.id=$1`,[id]);const a=r.rows[0];if(!a)return reply.code(404).send({error:'Consulta não encontrada.'});if(request.auth!.role==='PATIENT'&&a.patientId!==request.auth!.patientId)return reply.code(404).send({error:'Consulta não encontrada.'});if(!['CONFIRMED','WAITING','IN_PROGRESS'].includes(a.status))return reply.code(409).send({error:'Esta consulta não permite acesso à videochamada.'});if(request.auth!.role==='PATIENT'&&a.status!=='IN_PROGRESS')return reply.code(403).send({error:'Aguarde a nutricionista iniciar o atendimento. A sala será liberada em seguida.'});const opens=new Date(a.startsAt).getTime()-30*60_000,closes=new Date(a.endsAt).getTime()+30*60_000;if(request.auth!.role==='PATIENT'&&(Date.now()<opens||Date.now()>closes))return reply.code(403).send({error:'A sala estará disponível 30 minutos antes da consulta e será encerrada 30 minutos depois.'});const room=`nutri-${a.videoRoomToken}`;const moderator=request.auth!.role==='ADMIN';const userName=moderator?'Dra. Silvia Oliveira Lemos':a.patientName;const role=moderator?'moderator':'participant';const roomUrl=`/videocall.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}&role=${role}&minimal=true`;const provider='P2P_WEBRTC';await audit(app.db,'VIDEO_ACCESS_GRANTED','appointment',{actorUserId:request.auth!.userId,entityId:id,metadata:{role:request.auth!.role,provider}});return{data:{roomUrl,expiresAt:new Date(closes).toISOString(),appointmentId:id,provider}}})}
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import { audit } from '../../shared/audit.js';
+
+type Appointment = {
+  patientId: string;
+  patientName: string;
+  status: string;
+  startsAt: Date;
+  endsAt: Date;
+  videoRoomToken: string;
+};
+
+type BroadcastState = {
+  activeTab: 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
+  customTitle?: string | undefined;
+  customNote?: string | undefined;
+  clinicalData?: {
+    weight?: string | undefined;
+    height?: string | undefined;
+    bmi?: string | undefined;
+    bodyFat?: string | undefined;
+    goals?: string | undefined;
+    guidance?: string | undefined;
+    dietRating?: string | undefined;
+  } | undefined;
+  updatedAt: string;
+};
+
+const liveBroadcasts = new Map<string, BroadcastState>();
+
+export async function videoRoutes(app: FastifyInstance) {
+  app.addHook('preHandler', app.authenticate);
+
+  app.post('/appointments/:id/access', async (request, reply) => {
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const r = await app.db.query<Appointment>(
+      `SELECT a.patient_id AS "patientId",p.name AS "patientName",a.status,(a.appointment_date+a.appointment_time) AT TIME ZONE 'America/Sao_Paulo' AS "startsAt",((a.appointment_date+a.appointment_time)+(a.duration_minutes||' minutes')::interval) AT TIME ZONE 'America/Sao_Paulo' AS "endsAt",a.video_room_token AS "videoRoomToken" FROM appointments a JOIN patients p ON p.id=a.patient_id WHERE a.id=$1`,
+      [id],
+    );
+    const a = r.rows[0];
+    if (!a) return reply.code(404).send({ error: 'Consulta não encontrada.' });
+    if (request.auth!.role === 'PATIENT' && a.patientId !== request.auth!.patientId)
+      return reply.code(404).send({ error: 'Consulta não encontrada.' });
+    if (!['CONFIRMED', 'WAITING', 'IN_PROGRESS'].includes(a.status))
+      return reply.code(409).send({ error: 'Esta consulta não permite acesso à videochamada.' });
+    if (request.auth!.role === 'PATIENT' && a.status !== 'IN_PROGRESS')
+      return reply.code(403).send({ error: 'Aguarde a nutricionista iniciar o atendimento. A sala será liberada em seguida.' });
+    const opens = new Date(a.startsAt).getTime() - 30 * 60_000,
+      closes = new Date(a.endsAt).getTime() + 30 * 60_000;
+    if (request.auth!.role === 'PATIENT' && (Date.now() < opens || Date.now() > closes))
+      return reply
+        .code(403)
+        .send({ error: 'A sala estará disponível 30 minutos antes da consulta e será encerrada 30 minutos depois.' });
+    const room = `nutri-${a.videoRoomToken}`;
+    const moderator = request.auth!.role === 'ADMIN';
+    const userName = moderator ? 'Dra. Silvia Oliveira Lemos' : a.patientName;
+    const role = moderator ? 'moderator' : 'participant';
+    const roomUrl = `/videocall.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}&role=${role}&minimal=true`;
+    const provider = 'P2P_WEBRTC';
+    await audit(app.db, 'VIDEO_ACCESS_GRANTED', 'appointment', {
+      actorUserId: request.auth!.userId,
+      entityId: id,
+      metadata: { role: request.auth!.role, provider },
+    });
+    return { data: { roomUrl, expiresAt: new Date(closes).toISOString(), appointmentId: id, provider } };
+  });
+
+  // Salvar o estado de apresentação ao vivo (controlado pela nutricionista)
+  app.post('/appointments/:id/broadcast', async (request, reply) => {
+    if (request.auth!.role !== 'ADMIN') {
+      return reply.code(403).send({ error: 'Apenas a nutricionista pode comandar a apresentação do paciente.' });
+    }
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const body = z
+      .object({
+        activeTab: z.enum(['medidas', 'fome', 'prato', 'bristol', 'metas', 'avaliacao', 'conduta']),
+        customTitle: z.string().max(200).optional(),
+        customNote: z.string().max(1000).optional(),
+        clinicalData: z
+          .object({
+            weight: z.string().optional(),
+            height: z.string().optional(),
+            bmi: z.string().optional(),
+            bodyFat: z.string().optional(),
+            goals: z.string().optional(),
+            guidance: z.string().optional(),
+            dietRating: z.string().optional(),
+          })
+          .optional(),
+      })
+      .parse(request.body);
+
+    const broadcastState: BroadcastState = {
+      ...body,
+      updatedAt: new Date().toISOString(),
+    };
+    liveBroadcasts.set(id, broadcastState);
+    return { message: 'Apresentação transmitida ao paciente com sucesso.', data: broadcastState };
+  });
+
+  // Obter o estado atual de apresentação ao vivo para o paciente/nutricionista
+  app.get('/appointments/:id/broadcast', async (request, reply) => {
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const state = liveBroadcasts.get(id) || null;
+    return { data: state };
+  });
+}
+

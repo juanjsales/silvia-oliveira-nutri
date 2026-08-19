@@ -2788,6 +2788,173 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   }
 }
 
+/* =========================================================
+   LIVE BROADCAST CONTROLS (NUTRITIONIST COMMAND BAR)
+   ========================================================= */
+.video-broadcast-bar {
+  background: #152b20;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: fadeInDown 0.2s ease;
+}
+.broadcast-bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.broadcast-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7ee0a4;
+}
+.broadcast-live-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(56, 199, 119, 0.2);
+  color: #7ee0a4;
+  border: 1px solid rgba(56, 199, 119, 0.35);
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+.broadcast-toggle-collapse {
+  background: transparent;
+  border: 0;
+  color: #a3b8ab;
+  font-size: 0.68rem;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.broadcast-toggle-collapse:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+.broadcast-actions-row {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.broadcast-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #cfe1d5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 5px 9px;
+  border-radius: 7px;
+  font-size: 0.69rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.broadcast-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.broadcast-btn.active {
+  background: #7ee0a4 !important;
+  color: #0c2015 !important;
+  border-color: #7ee0a4 !important;
+  font-weight: 800;
+}
+
+/* Patient Live Synchronization Banner */
+.broadcast-live-banner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #e4f4e7, #eef9f0);
+  border-bottom: 1px solid #cce5d1;
+  color: #1b532f;
+  padding: 7px 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* Live Clinical Cards for Patient */
+.live-clinical-card {
+  background: #f9fbf9;
+  border: 1px solid #dfe7e0;
+  border-radius: 12px;
+  padding: 13px 15px;
+}
+.live-clinical-card.highlight {
+  background: #f2f9f4;
+  border-color: #b7e0c1;
+}
+.live-clinical-card.empty {
+  text-align: center;
+  padding: 24px 16px;
+  color: #728479;
+  font-size: 0.75rem;
+}
+.clinical-card-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #183b2b;
+  margin-bottom: 6px;
+}
+.clinical-card-head strong {
+  font-size: 0.82rem;
+}
+.clinical-card-body {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #35473d;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.live-assessment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.live-metric-box {
+  background: #f8faf8;
+  border: 1px solid #e2e8e2;
+  border-radius: 11px;
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.live-metric-box.primary {
+  grid-column: 1 / -1;
+  background: #eef7f0;
+  border-color: #bce0c6;
+}
+.live-metric-box span {
+  font-size: 0.66rem;
+  color: #64756b;
+  font-weight: 600;
+}
+.live-metric-box strong {
+  font-size: 0.95rem;
+  color: #183b2b;
+}
+.live-metric-box.primary strong {
+  font-size: 1.15rem;
+  color: #185a31;
+}
+
+
 
 
 

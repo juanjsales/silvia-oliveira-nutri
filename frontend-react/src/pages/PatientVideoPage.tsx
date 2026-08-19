@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   BookOpen,
   Camera,
+  Check,
   CheckCircle2,
   ChevronRight,
   HelpCircle,
@@ -11,9 +12,11 @@ import {
   PieChart,
   RefreshCw,
   Ruler,
+  Scale,
   ShieldCheck,
   Smile,
   Sparkles,
+  Target,
   UserRound,
   Video,
 } from 'lucide-react';
@@ -23,7 +26,23 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api';
 
 type Access = { roomUrl: string; expiresAt: string };
-type GuideTab = 'medidas' | 'fome' | 'prato' | 'bristol';
+type GuideTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
+
+type BroadcastData = {
+  activeTab: GuideTab;
+  customTitle?: string;
+  customNote?: string;
+  clinicalData?: {
+    weight?: string;
+    height?: string;
+    bmi?: string;
+    bodyFat?: string;
+    goals?: string;
+    guidance?: string;
+    dietRating?: string;
+  };
+  updatedAt: string;
+};
 
 export function PatientVideoPage() {
   const { id } = useParams();
@@ -37,6 +56,8 @@ export function PatientVideoPage() {
   const [guideTab, setGuideTab] = useState<GuideTab>('medidas');
   const [iframeKey, setIframeKey] = useState(1);
   const [reconnecting, setReconnecting] = useState(false);
+  const [broadcast, setBroadcast] = useState<BroadcastData | null>(null);
+  const [lastSyncedUpdate, setLastSyncedUpdate] = useState<string>('');
 
   useEffect(() => {
     if (!id) return;
@@ -60,6 +81,26 @@ export function PatientVideoPage() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [entered]);
+
+  // Sincronização em tempo real do que a nutricionista está transmitindo
+  useEffect(() => {
+    if (!id || !entered) return;
+    const fetchBroadcast = () => {
+      api<{ data: BroadcastData | null }>(`/api/video/appointments/${id}/broadcast`)
+        .then((res) => {
+          if (res.data && res.data.updatedAt !== lastSyncedUpdate) {
+            setBroadcast(res.data);
+            setLastSyncedUpdate(res.data.updatedAt);
+            setGuideTab(res.data.activeTab);
+            setShowGuide(true);
+          }
+        })
+        .catch(() => {});
+    };
+    fetchBroadcast();
+    const interval = window.setInterval(fetchBroadcast, 2500);
+    return () => window.clearInterval(interval);
+  }, [id, entered, lastSyncedUpdate]);
 
   function handleReconnect() {
     setReconnecting(true);
@@ -92,7 +133,7 @@ export function PatientVideoPage() {
               title="Abrir guia de apoio e medidas"
             >
               <BookOpen size={16} />
-              <span>{showGuide ? 'Ocultar Guia' : 'Guia de Apoio & Medidas'}</span>
+              <span>{showGuide ? 'Ocultar Apoio' : 'Painel de Apoio'}</span>
             </button>
 
             <button
@@ -167,8 +208,8 @@ export function PatientVideoPage() {
             <li>
               <Ruler />
               <div>
-                <strong>Guia de auto-medição disponível</strong>
-                <span>Durante a consulta, você terá um painel lateral para consultar como tirar medidas em casa.</span>
+                <strong>Apresentação interativa ao vivo</strong>
+                <span>A nutricionista pode projetar guias de medidas, metas e escalas na sua tela durante a chamada.</span>
               </div>
               <CheckCircle2 />
             </li>
@@ -195,7 +236,7 @@ export function PatientVideoPage() {
               <small>Acesso seguro ativo até {new Date(access.expiresAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.</small>
               {!showGuide && (
                 <button type="button" className="ghost-button" onClick={() => setShowGuide(true)}>
-                  <BookOpen size={14} /> Abrir Guia de Apoio
+                  <BookOpen size={14} /> Abrir Painel de Apoio
                 </button>
               )}
             </footer>
@@ -207,8 +248,8 @@ export function PatientVideoPage() {
                 <div className="guide-title">
                   <Sparkles className="guide-sparkle-icon" size={18} />
                   <div>
-                    <strong>Guia de Apoio ao Paciente</strong>
-                    <small>Acompanhe e tire medidas com facilidade</small>
+                    <strong>Apoio ao Vivo na Consulta</strong>
+                    <small>Acompanhe orientações e materiais em tempo real</small>
                   </div>
                 </div>
                 <button
@@ -221,34 +262,55 @@ export function PatientVideoPage() {
                 </button>
               </div>
 
+              {broadcast && (
+                <div className="broadcast-live-banner">
+                  <Sparkles size={14} />
+                  <span>A nutricionista está apresentando este tópico com você</span>
+                </div>
+              )}
+
               <nav className="guide-tabs">
                 <button
                   type="button"
                   className={guideTab === 'medidas' ? 'active' : ''}
                   onClick={() => setGuideTab('medidas')}
                 >
-                  <Ruler size={15} /> Medidas em Casa
+                  <Ruler size={15} /> Medidas
                 </button>
                 <button
                   type="button"
                   className={guideTab === 'fome' ? 'active' : ''}
                   onClick={() => setGuideTab('fome')}
                 >
-                  <Smile size={15} /> Fome & Saciedade
+                  <Smile size={15} /> Fome
                 </button>
                 <button
                   type="button"
                   className={guideTab === 'prato' ? 'active' : ''}
                   onClick={() => setGuideTab('prato')}
                 >
-                  <PieChart size={15} /> Prato Ideal
+                  <PieChart size={15} /> Prato
                 </button>
                 <button
                   type="button"
                   className={guideTab === 'bristol' ? 'active' : ''}
                   onClick={() => setGuideTab('bristol')}
                 >
-                  <Layers size={15} /> Escala Bristol
+                  <Layers size={15} /> Bristol
+                </button>
+                <button
+                  type="button"
+                  className={guideTab === 'metas' ? 'active' : ''}
+                  onClick={() => setGuideTab('metas')}
+                >
+                  <Target size={15} /> Metas
+                </button>
+                <button
+                  type="button"
+                  className={guideTab === 'avaliacao' ? 'active' : ''}
+                  onClick={() => setGuideTab('avaliacao')}
+                >
+                  <Scale size={15} /> Avaliação
                 </button>
               </nav>
 
@@ -416,6 +478,84 @@ export function PatientVideoPage() {
                     </div>
                   </div>
                 )}
+
+                {guideTab === 'metas' && (
+                  <div className="guide-content-section">
+                    <h4>🎯 Metas Acordadas no Atendimento</h4>
+                    <p className="guide-lead">
+                      Objetivos pactuados diretamente com a nutricionista para este período:
+                    </p>
+
+                    {broadcast?.clinicalData?.goals ? (
+                      <div className="live-clinical-card highlight">
+                        <div className="clinical-card-head">
+                          <Target size={17} />
+                          <strong>Metas Principais</strong>
+                        </div>
+                        <p className="clinical-card-body">{broadcast.clinicalData.goals}</p>
+                      </div>
+                    ) : (
+                      <div className="live-clinical-card empty">
+                        <p>A nutricionista está definindo as metas com você durante a consulta.</p>
+                      </div>
+                    )}
+
+                    {broadcast?.clinicalData?.guidance && (
+                      <div className="live-clinical-card" style={{ marginTop: '10px' }}>
+                        <div className="clinical-card-head">
+                          <Sparkles size={17} />
+                          <strong>Estratégia & Orientações</strong>
+                        </div>
+                        <p className="clinical-card-body">{broadcast.clinicalData.guidance}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {guideTab === 'avaliacao' && (
+                  <div className="guide-content-section">
+                    <h4>⚖️ Avaliação Corporal & Indicadores</h4>
+                    <p className="guide-lead">
+                      Dados corporais registrados no prontuário nesta consulta:
+                    </p>
+
+                    <div className="live-assessment-grid">
+                      {broadcast?.clinicalData?.weight && (
+                        <article className="live-metric-box">
+                          <span>Peso Atual</span>
+                          <strong>{broadcast.clinicalData.weight}</strong>
+                        </article>
+                      )}
+
+                      {broadcast?.clinicalData?.height && (
+                        <article className="live-metric-box">
+                          <span>Altura</span>
+                          <strong>{broadcast.clinicalData.height}</strong>
+                        </article>
+                      )}
+
+                      {broadcast?.clinicalData?.bmi && (
+                        <article className="live-metric-box primary">
+                          <span>Índice de Massa Corporal</span>
+                          <strong>IMC {broadcast.clinicalData.bmi}</strong>
+                        </article>
+                      )}
+
+                      {broadcast?.clinicalData?.bodyFat && (
+                        <article className="live-metric-box">
+                          <span>Gordura Corporal</span>
+                          <strong>{broadcast.clinicalData.bodyFat}</strong>
+                        </article>
+                      )}
+                    </div>
+
+                    {!broadcast?.clinicalData?.weight && !broadcast?.clinicalData?.bmi && (
+                      <div className="live-clinical-card empty">
+                        <p>A nutricionista preencherá e calculará seus dados durante a etapa de avaliação corporal.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </aside>
           )}
@@ -424,4 +564,5 @@ export function PatientVideoPage() {
     </main>
   );
 }
+
 
