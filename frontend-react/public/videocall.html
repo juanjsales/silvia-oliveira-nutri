@@ -7,20 +7,21 @@
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         :root {
-            --bg-main: #0a130d;
-            --bg-card: #122117;
-            --bg-header: #15261b;
-            --forest-deep: #1b3324;
+            --bg-main: #070d09;
+            --bg-card: #0e1a12;
+            --bg-header: #122218;
+            --forest-deep: #162b1e;
             --sage-accent: #8ca481;
             --sage-glow: #34d399;
             --text-title: #ffffff;
             --text-body: #e4ebe1;
-            --text-muted: #8ca481;
+            --text-muted: #9ab390;
             --danger: #ef4444;
+            --danger-hover: #dc2626;
             --warning: #f59e0b;
         }
 
@@ -35,6 +36,7 @@
             color: var(--text-body);
             display: flex;
             flex-direction: column;
+            user-select: none;
         }
 
         /* ── HEADER ── */
@@ -56,6 +58,19 @@
             gap: 10px;
         }
 
+        .brand-icon-wrap {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(140, 164, 129, 0.15);
+            border: 1px solid rgba(140, 164, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--sage-glow);
+            flex-shrink: 0;
+        }
+
         .call-title {
             font-family: 'Playfair Display', serif;
             font-size: 0.95rem;
@@ -64,22 +79,50 @@
             line-height: 1.1;
         }
 
+        .call-security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: var(--sage-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(140, 164, 129, 0.08);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(140, 164, 129, 0.2);
+        }
+
         .call-status {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(245, 158, 11, 0.15);
+            gap: 7px;
+            background: rgba(245, 158, 11, 0.12);
             border: 1px solid rgba(245, 158, 11, 0.35);
             color: #fbbf24;
-            padding: 3px 10px;
+            padding: 4px 11px;
             border-radius: 20px;
             font-size: 0.75rem;
-            font-weight: 700;
+            font-weight: 800;
             transition: all 0.3s ease;
         }
 
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: currentColor;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
         .call-status.connected {
-            background: rgba(52, 211, 153, 0.15);
+            background: rgba(52, 211, 153, 0.12);
             border-color: rgba(52, 211, 153, 0.4);
             color: #34d399;
         }
@@ -90,16 +133,19 @@
             font-weight: 800;
             color: var(--sage-accent);
             background: rgba(140, 164, 129, 0.12);
-            padding: 3px 9px;
+            padding: 4px 10px;
             border-radius: 6px;
             border: 1px solid rgba(140, 164, 129, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         /* ── VIDEO STAGE ── */
         .stage-container {
             flex: 1;
             position: relative;
-            background: #060b08;
+            background: #040805;
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -114,14 +160,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #060b08;
+            background: #040805;
         }
 
         #remoteVideo {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            background: #060b08;
+            background: #040805;
         }
 
         .waiting-overlay {
@@ -131,52 +177,53 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            background: radial-gradient(circle at center, #122117 0%, #060b08 100%);
+            gap: 18px;
+            background: radial-gradient(circle at center, #102015 0%, #040805 100%);
             z-index: 10;
-            padding: 20px;
+            padding: 24px;
             text-align: center;
         }
 
         .pulse-avatar {
-            width: 84px;
-            height: 84px;
+            width: 88px;
+            height: 88px;
             border-radius: 50%;
-            background: rgba(140, 164, 129, 0.15);
+            background: rgba(140, 164, 129, 0.12);
             border: 2px solid var(--sage-accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem;
-            animation: pulse-ring 2s infinite;
+            color: var(--sage-glow);
+            animation: pulse-ring 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
         }
 
         @keyframes pulse-ring {
-            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
-            70% { box-shadow: 0 0 0 20px rgba(52, 211, 153, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.45); }
+            70% { box-shadow: 0 0 0 24px rgba(52, 211, 153, 0); }
             100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
         }
 
         /* ── LOCAL VIDEO (PiP) ── */
         .local-video-wrap {
             position: absolute;
-            bottom: 80px;
-            right: 18px;
-            width: 170px;
-            height: 120px;
-            border-radius: 12px;
+            bottom: 84px;
+            right: 20px;
+            width: 180px;
+            height: 125px;
+            border-radius: 14px;
             overflow: hidden;
-            border: 2px solid rgba(140, 164, 129, 0.4);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
-            background: #111a13;
+            border: 2px solid rgba(140, 164, 129, 0.45);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75);
+            background: #0d1710;
             z-index: 20;
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
         }
 
         .local-video-wrap:hover {
-            transform: scale(1.03);
+            transform: scale(1.04);
             border-color: var(--sage-glow);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85);
         }
 
         #localVideo {
@@ -190,99 +237,130 @@
             position: absolute;
             bottom: 6px;
             left: 8px;
-            background: rgba(0,0,0,0.65);
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: #fff;
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.72);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #ffffff;
+            backdrop-filter: blur(6px);
             pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         /* ── FLOATING CONTROLS ── */
         .controls-bar {
             position: absolute;
-            bottom: 16px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(18, 33, 23, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(140, 164, 129, 0.3);
-            padding: 8px 16px;
-            border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            background: rgba(14, 26, 18, 0.88);
+            backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(140, 164, 129, 0.3);
+            padding: 8px 18px;
+            border-radius: 36px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
             z-index: 30;
         }
 
         .ctrl-btn {
-            width: 44px;
-            height: 44px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
-            border: 1px solid rgba(140, 164, 129, 0.3);
-            background: rgba(255,255,255,0.06);
-            color: #fff;
+            border: 1.5px solid rgba(140, 164, 129, 0.3);
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .ctrl-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+            transition: transform 0.2s ease;
         }
 
         .ctrl-btn:hover {
             background: rgba(140, 164, 129, 0.25);
+            border-color: var(--sage-accent);
             transform: translateY(-2px);
         }
 
+        .ctrl-btn:active {
+            transform: translateY(0);
+        }
+
         .ctrl-btn.off {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.6);
-            color: #f87171;
+            background: rgba(239, 68, 68, 0.22);
+            border-color: rgba(239, 68, 68, 0.7);
+            color: #fca5a5;
+        }
+
+        .ctrl-btn.off:hover {
+            background: rgba(239, 68, 68, 0.35);
+            border-color: #ef4444;
         }
 
         .ctrl-btn.btn-hangup {
-            background: #ef4444;
-            border-color: #ef4444;
+            background: var(--danger);
+            border-color: var(--danger);
             color: #ffffff;
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
+            margin-left: 6px;
         }
 
         .ctrl-btn.btn-hangup:hover {
-            background: #dc2626;
-            transform: translateY(-2px) scale(1.05);
+            background: var(--danger-hover);
+            border-color: var(--danger-hover);
+            transform: translateY(-2px) scale(1.06);
         }
 
         /* ── TOAST NOTIFICATIONS ── */
         .toast-msg {
             position: absolute;
-            top: 14px;
+            top: 16px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(18, 33, 23, 0.9);
+            background: rgba(14, 26, 18, 0.92);
             border: 1px solid var(--sage-accent);
             color: #e4ebe1;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.78rem;
+            padding: 8px 18px;
+            border-radius: 24px;
+            font-size: 0.8rem;
             font-weight: 700;
             z-index: 40;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
             display: none;
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
+            animation: slide-toast 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slide-toast {
+            from { transform: translate(-50%, -12px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
         }
 
         @media (max-width: 600px) {
-            .call-header { padding: 6px 12px; height: 46px; }
+            .call-header { padding: 6px 12px; height: 48px; }
             .call-title { font-size: 0.85rem; }
-            .local-video-wrap { width: 110px; height: 80px; bottom: 76px; right: 12px; }
-            .controls-bar { gap: 8px; padding: 6px 12px; bottom: 12px; }
-            .ctrl-btn { width: 38px; height: 38px; font-size: 0.95rem; }
-            .ctrl-btn.btn-hangup { width: 42px; height: 42px; }
+            .call-security-badge { display: none; }
+            .local-video-wrap { width: 110px; height: 80px; bottom: 78px; right: 12px; }
+            .controls-bar { gap: 8px; padding: 6px 14px; bottom: 14px; }
+            .ctrl-btn { width: 40px; height: 40px; }
+            .ctrl-btn svg { width: 17px; height: 17px; }
+            .ctrl-btn.btn-hangup { width: 44px; height: 44px; }
         }
     </style>
 </head>
@@ -291,49 +369,139 @@
     <!-- CABEÇALHO -->
     <header class="call-header" id="callHeader">
         <div class="call-brand">
-            <span style="font-size:1.2rem">🌿</span>
+            <div class="brand-icon-wrap" title="Dra. Silvia Oliveira Lemos">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+                </svg>
+            </div>
             <div>
                 <div class="call-title" id="headerTitle">Teleconsulta Nutricional</div>
-                <div style="font-size:0.7rem; color:var(--text-muted)" id="headerSub">Dra. Silvia Oliveira Lemos</div>
+                <div style="font-size:0.7rem; color:var(--text-muted)" id="headerSub">Dra. Silvia Oliveira Lemos · CRN-1 12345</div>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:10px">
-            <span class="call-status" id="callStatus">🟡 Conectando...</span>
-            <div class="call-timer" id="callTimer">⏱️ 00:00</div>
+            <span class="call-security-badge" title="Conexão direta ponta a ponta criptografada">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                P2P Seguro
+            </span>
+            <span class="call-status" id="callStatus">
+                <span class="status-dot"></span>
+                <span>Conectando...</span>
+            </span>
+            <div class="call-timer" id="callTimer">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span id="timerText">00:00</span>
+            </div>
         </div>
     </header>
 
     <!-- PALCO DE VÍDEO -->
-    <main class="stage-container">
+    <main class="stage-container" id="stageContainer">
         <div id="toastMsg" class="toast-msg"></div>
 
         <!-- VÍDEO REMOTO (OUTRA PESSOA) -->
         <div class="remote-video-wrap">
             <video id="remoteVideo" autoplay playsinline></video>
-            <div class="video-label" id="remoteLabel">Paciente</div>
+            <div class="video-label" id="remoteLabel">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span id="remoteNameText">Paciente</span>
+            </div>
         </div>
 
         <!-- TELA DE ESPERA -->
         <div class="waiting-overlay" id="waitingOverlay">
-            <div class="pulse-avatar">👩‍⚕️</div>
-            <div style="max-width: 320px;">
-                <h3 style="font-size:1.1rem; color:#fff; font-family:'Playfair Display',serif; margin-bottom:4px;" id="waitingTitle">Aguardando Conexão...</h3>
-                <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4;" id="waitingDesc">Assim que a outra pessoa entrar, a transmissão de alta definição iniciará automaticamente.</p>
+            <div class="pulse-avatar">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/>
+                    <rect x="2" y="6" width="14" height="12" rx="2"/>
+                </svg>
+            </div>
+            <div style="max-width: 340px;">
+                <h3 style="font-size:1.15rem; color:#ffffff; font-family:'Playfair Display',serif; margin-bottom:6px;" id="waitingTitle">Aguardando Conexão...</h3>
+                <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.45;" id="waitingDesc">A transmissão direta em alta definição iniciará automaticamente assim que a outra pessoa conectar.</p>
             </div>
         </div>
 
         <!-- MINIATURA LOCAL (SUA CÂMERA) -->
-        <div class="local-video-wrap" id="localVideoBox" title="Sua câmera">
+        <div class="local-video-wrap" id="localVideoBox" title="Sua câmera (Clique para alternar tamanho)">
             <video id="localVideo" autoplay playsinline muted></video>
-            <div class="video-label" id="localLabel">Você</div>
+            <div class="video-label" id="localLabel">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span id="localNameText">Você</span>
+            </div>
         </div>
 
         <!-- CONTROLES FLUTUANTES -->
         <div class="controls-bar">
-            <button class="ctrl-btn" id="btnMic" onclick="toggleAudio()" title="Ligar/Desligar Microfone">🎙️</button>
-            <button class="ctrl-btn" id="btnCam" onclick="toggleVideo()" title="Ligar/Desligar Câmera">📹</button>
-            <button class="ctrl-btn" id="btnScreen" onclick="toggleScreenShare()" title="Compartilhar Tela" style="display:none">🖥️</button>
-            <button class="ctrl-btn btn-hangup" onclick="encerrarChamada()" title="Encerrar Chamada">✕</button>
+            <!-- BOTÃO MICROFONE -->
+            <button class="ctrl-btn" id="btnMic" onclick="toggleAudio()" title="Ligar/Desligar Microfone">
+                <svg id="iconMicOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+                <svg id="iconMicOff" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="2" x2="22" y1="2" y2="22"/>
+                    <path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"/>
+                    <path d="M5 10v2a7 7 0 0 0 12 5"/>
+                    <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/>
+                    <path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>
+                    <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+            </button>
+
+            <!-- BOTÃO CÂMERA -->
+            <button class="ctrl-btn" id="btnCam" onclick="toggleVideo()" title="Ligar/Desligar Câmera">
+                <svg id="iconCamOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/>
+                    <rect x="2" y="6" width="14" height="12" rx="2"/>
+                </svg>
+                <svg id="iconCamOff" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="2" x2="22" y1="2" y2="22"/>
+                    <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/>
+                    <path d="M2 6a2 2 0 0 1 2-2h10"/>
+                    <path d="M2 18v-8"/>
+                    <path d="M6 20h8a2 2 0 0 0 2-2v-4"/>
+                </svg>
+            </button>
+
+            <!-- BOTÃO COMPARTILHAR TELA -->
+            <button class="ctrl-btn" id="btnScreen" onclick="toggleScreenShare()" title="Compartilhar Tela" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="14" x="2" y="3" rx="2"/>
+                    <line x1="8" x2="16" y1="21" y2="21"/>
+                    <line x1="12" x2="12" y1="17" y2="21"/>
+                    <polyline points="16 7 12 3 8 7"/>
+                    <line x1="12" x2="12" y1="3" y2="13"/>
+                </svg>
+            </button>
+
+            <!-- BOTÃO TELA CHEIA -->
+            <button class="ctrl-btn" id="btnFullscreen" onclick="toggleStageFullscreen()" title="Tela Cheia">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+            </button>
+
+            <!-- BOTÃO ENCERRAR (DESLIGAR) -->
+            <button class="ctrl-btn btn-hangup" onclick="encerrarChamada()" title="Encerrar Consulta">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.99.99 0 0 1 0-1.41C3.28 8.77 7.42 7 12 7s8.72 1.77 11.71 4.67c.39.39.39 1.02 0 1.41l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>
+                </svg>
+            </button>
         </div>
     </main>
 
@@ -365,7 +533,7 @@
         function setStatus(text, isConnected = false) {
             const statusEl = document.getElementById('callStatus');
             if (!statusEl) return;
-            statusEl.textContent = text;
+            statusEl.innerHTML = `<span class="status-dot"></span><span>${text}</span>`;
             if (isConnected) {
                 statusEl.classList.add('connected');
             } else {
@@ -379,7 +547,8 @@
                 secondsElapsed++;
                 const m = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
                 const s = String(secondsElapsed % 60).padStart(2, '0');
-                document.getElementById('callTimer').textContent = `⏱️ ${m}:${s}`;
+                const textEl = document.getElementById('timerText');
+                if (textEl) textEl.textContent = `${m}:${s}`;
             }, 1000);
         }
 
@@ -387,6 +556,16 @@
             if (timerInterval) {
                 clearInterval(timerInterval);
                 timerInterval = null;
+            }
+        }
+
+        function toggleStageFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                }
             }
         }
 
@@ -402,8 +581,8 @@
                 return true;
             } catch (err) {
                 console.error('Erro ao obter câmera/microfone:', err);
-                showToast('⚠️ Permita o acesso à câmera e microfone para continuar.', 6000);
-                setStatus('🔴 Câmera bloqueada');
+                showToast('Permita o acesso à câmera e microfone para continuar.', 6000);
+                setStatus('Câmera bloqueada');
                 return false;
             }
         }
@@ -414,9 +593,19 @@
             isAudioMuted = !isAudioMuted;
             localStream.getAudioTracks().forEach(t => t.enabled = !isAudioMuted);
             const btn = document.getElementById('btnMic');
-            btn.innerHTML = isAudioMuted ? '🔇' : '🎙️';
-            btn.classList.toggle('off', isAudioMuted);
-            showToast(isAudioMuted ? 'Microfone desativado' : 'Microfone ativado');
+            const iconOn = document.getElementById('iconMicOn');
+            const iconOff = document.getElementById('iconMicOff');
+            
+            if (isAudioMuted) {
+                iconOn.style.display = 'none';
+                iconOff.style.display = 'block';
+                btn.classList.add('off');
+            } else {
+                iconOn.style.display = 'block';
+                iconOff.style.display = 'none';
+                btn.classList.remove('off');
+            }
+            showToast(isAudioMuted ? 'Microfone silenciado' : 'Microfone ativo');
         }
 
         function toggleVideo() {
@@ -424,14 +613,24 @@
             isVideoMuted = !isVideoMuted;
             localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
             const btn = document.getElementById('btnCam');
-            btn.innerHTML = isVideoMuted ? '📷' : '📹';
-            btn.classList.toggle('off', isVideoMuted);
-            showToast(isVideoMuted ? 'Câmera desativada' : 'Câmera ativada');
+            const iconOn = document.getElementById('iconCamOn');
+            const iconOff = document.getElementById('iconCamOff');
+
+            if (isVideoMuted) {
+                iconOn.style.display = 'none';
+                iconOff.style.display = 'block';
+                btn.classList.add('off');
+            } else {
+                iconOn.style.display = 'block';
+                iconOff.style.display = 'none';
+                btn.classList.remove('off');
+            }
+            showToast(isVideoMuted ? 'Câmera desligada' : 'Câmera ligada');
         }
 
         async function toggleScreenShare() {
             if (!navigator.mediaDevices.getDisplayMedia) {
-                showToast('Compartilhamento de tela não suportado neste dispositivo.');
+                showToast('Compartilhamento de tela não suportado neste navegador.');
                 return;
             }
             try {
@@ -446,7 +645,7 @@
                     document.getElementById('localVideo').srcObject = screenStream;
                     isScreenSharing = true;
                     document.getElementById('btnScreen').classList.add('off');
-                    showToast('Compartilhando sua tela');
+                    showToast('Compartilhando tela');
 
                     screenTrack.onended = () => {
                         stopScreenShare();
@@ -481,9 +680,9 @@
             remoteVideo.srcObject = remoteStreamObj;
 
             document.getElementById('waitingOverlay').style.display = 'none';
-            setStatus('🟢 Conectado em HD', true);
+            setStatus('Conectado em HD', true);
             startTimer();
-            showToast('✅ Chamada conectada em tempo real!', 4000);
+            showToast('Chamada conectada com sucesso!', 4000);
 
             if (connectRetryTimer) {
                 clearInterval(connectRetryTimer);
@@ -498,13 +697,50 @@
         function handleCallDisconnected() {
             document.getElementById('waitingOverlay').style.display = 'flex';
             document.getElementById('waitingTitle').textContent = 'Participante Desconectou';
-            document.getElementById('waitingDesc').textContent = 'Aguardando o retorno ou reconexão da outra pessoa...';
-            setStatus('🟡 Aguardando reconexão...');
+            document.getElementById('waitingDesc').textContent = 'Aguardando reconexão da outra pessoa...';
+            setStatus('Aguardando reconexão...');
             stopTimer();
-            showToast('Chamada finalizada pelo outro participante');
+
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (remoteVideo) remoteVideo.srcObject = null;
+
+            if (isModerator && !connectRetryTimer) {
+                iniciarTentativaDeChamada();
+            }
+        }
+
+        function iniciarTentativaDeChamada() {
+            if (!localStream || !peer || currentCall?.open) return;
+
+            function tentarChamar() {
+                if (currentCall && currentCall.open) return;
+                try {
+                    const call = peer.call(targetPeerId, localStream);
+                    if (call) {
+                        call.on('stream', (stream) => {
+                            handleCallConnected(call, stream);
+                        });
+                        call.on('error', (e) => {
+                            console.log('Tentativa de chamada pendente...', e);
+                        });
+                    }
+                } catch(err) {
+                    console.log('Aguardando paciente estar online...');
+                }
+            }
+
+            tentarChamar();
+            if (!connectRetryTimer) {
+                connectRetryTimer = setInterval(tentarChamar, 3000);
+            }
         }
 
         function encerrarChamada() {
+            stopTimer();
+            if (connectRetryTimer) {
+                clearInterval(connectRetryTimer);
+                connectRetryTimer = null;
+            }
             if (currentCall) {
                 try { currentCall.close(); } catch(e){}
             }
@@ -536,87 +772,90 @@
             isModerator = roleParam === 'moderator' || (userName && userName.toLowerCase().includes('silvia'));
 
             if (isMinimal) {
-                const hdr = document.getElementById('callHeader');
-                if (hdr) hdr.style.display = 'none';
+                const header = document.getElementById('callHeader');
+                if (header) header.style.display = 'none';
             }
 
-            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-                document.getElementById('btnScreen').style.display = 'flex';
-            }
-
-            // Define identificadores determinísticos para Nutricionista e Paciente se conectarem
             if (isModerator) {
                 myPeerId = `nutri_${cleanRoom}`;
                 targetPeerId = `pac_${cleanRoom}`;
-                document.getElementById('remoteLabel').textContent = 'Paciente';
-                document.getElementById('localLabel').textContent = 'Dra. Silvia (Você)';
+                document.getElementById('localNameText').textContent = 'Dra. Silvia';
+                document.getElementById('remoteNameText').textContent = userName.includes('Silvia') ? 'Paciente' : userName;
+                document.getElementById('waitingTitle').textContent = 'Aguardando o Paciente...';
+                document.getElementById('waitingDesc').textContent = 'Assim que o paciente acessar o portal, a teleconsulta iniciará imediatamente.';
+                const btnScreen = document.getElementById('btnScreen');
+                if (btnScreen) btnScreen.style.display = 'flex';
             } else {
                 myPeerId = `pac_${cleanRoom}`;
                 targetPeerId = `nutri_${cleanRoom}`;
-                document.getElementById('remoteLabel').textContent = 'Dra. Silvia Oliveira Lemos';
-                document.getElementById('localLabel').textContent = `${userName} (Você)`;
+                document.getElementById('localNameText').textContent = userName || 'Você';
+                document.getElementById('remoteNameText').textContent = 'Dra. Silvia Oliveira Lemos';
+                document.getElementById('waitingTitle').textContent = 'Aguardando a Nutricionista...';
+                document.getElementById('waitingDesc').textContent = 'Dra. Silvia já está conectando seu prontuário para iniciar o atendimento.';
             }
 
-            // Inicializa câmera local
-            const hasMedia = await initLocalStream();
-            if (!hasMedia) return;
+            setStatus('Iniciando câmera...');
+            const streamOk = await initLocalStream();
+            if (!streamOk) return;
 
-            setStatus('🟡 Conectando à sala...');
+            setStatus('Conectando à sala...');
 
-            // Conexão PeerJS com servidores STUN mundiais gratuitos do Google
-            peer = new Peer(myPeerId, {
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' }
-                    ]
-                }
-            });
-
-            peer.on('open', (id) => {
-                console.log('PeerJS Conectado com ID:', id);
-                setStatus('🟡 Aguardando ' + (isModerator ? 'Paciente...' : 'Nutricionista...'));
-
-                // Se for o paciente, tenta discar para a Nutricionista imediatamente
-                if (!isModerator) {
-                    tentarLigarParaNutri();
-                    connectRetryTimer = setInterval(tentarLigarParaNutri, 3500);
-                }
-            });
-
-            // Escuta chamada recebida (Nutri atende Paciente ou vice-versa)
-            peer.on('call', (call) => {
-                console.log('Recebendo chamada de:', call.peer);
-                call.answer(localStream);
-                call.on('stream', (remoteStreamObj) => {
-                    handleCallConnected(call, remoteStreamObj);
+            try {
+                peer = new Peer(myPeerId, {
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' },
+                            { urls: 'stun:stun3.l.google.com:19302' },
+                            { urls: 'stun:stun4.l.google.com:19302' }
+                        ]
+                    },
+                    debug: 1
                 });
-            });
 
-            peer.on('error', (err) => {
-                console.warn('Peer status/info:', err.type);
-                // Se o ID já estiver ocupado (ex: refresh rápido), tenta discar direto
-                if (err.type === 'unavailable-id') {
+                peer.on('open', (id) => {
+                    console.log('PeerJS Conectado. Meu ID:', id);
+                    setStatus('Aguardando outro participante...');
+
                     if (isModerator) {
-                        myPeerId = `nutri_${cleanRoom}_alt`;
+                        iniciarTentativaDeChamada();
+                    } else {
+                        iniciarTentativaDeChamada();
                     }
-                }
-            });
+                });
 
-            function tentarLigarParaNutri() {
-                if (currentCall && currentCall.open) return;
-                try {
-                    const call = peer.call(targetPeerId, localStream);
-                    if (call) {
-                        call.on('stream', (remoteStreamObj) => {
-                            handleCallConnected(call, remoteStreamObj);
-                        });
-                        call.on('error', () => {});
+                peer.on('call', (incomingCall) => {
+                    console.log('Recebendo chamada de:', incomingCall.peer);
+                    incomingCall.answer(localStream);
+
+                    incomingCall.on('stream', (remoteStreamObj) => {
+                        handleCallConnected(incomingCall, remoteStreamObj);
+                    });
+
+                    incomingCall.on('close', () => {
+                        handleCallDisconnected();
+                    });
+                });
+
+                peer.on('error', (err) => {
+                    console.warn('Alerta na conexão P2P:', err.type, err);
+                    if (err.type === 'peer-unavailable') {
+                        // O outro participante ainda não entrou
+                    } else if (err.type === 'unavailable-id') {
+                        showToast('Reconectando sala de atendimento...');
                     }
-                } catch(e){}
+                });
+
+            } catch (err) {
+                console.error('Falha ao inicializar WebRTC:', err);
+                setStatus('Erro ao conectar');
             }
         };
+
+        window.addEventListener('beforeunload', () => {
+            encerrarChamada();
+        });
     </script>
 </body>
 </html>
