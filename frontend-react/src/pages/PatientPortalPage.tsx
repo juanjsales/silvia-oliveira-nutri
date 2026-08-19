@@ -30,21 +30,14 @@ import { api } from '../lib/api';
 import { PwaInstallBanner } from '../components/PwaInstallBanner';
 import { BodyEvolutionChart } from '../components/BodyEvolutionChart';
 import { ShoppingListSection } from '../components/ShoppingListModal';
+import { PortalBottomNav, type PortalTab } from '../components/portal/PortalBottomNav';
+import { PortalWaterTracker } from '../components/portal/PortalWaterTracker';
+import { PortalCurrentMealCard } from '../components/portal/PortalCurrentMealCard';
+import { PortalMealPlanView } from '../components/portal/PortalMealPlanView';
+import '../portal-premium.css';
 
 type Any = Record<string, any>;
-type Tab =
-  | 'inicio'
-  | 'checkin'
-  | 'jornada'
-  | 'diario'
-  | 'exames'
-  | 'evolucao'
-  | 'mensagens'
-  | 'agenda'
-  | 'metas'
-  | 'compras'
-  | 'financeiro'
-  | 'perfil';
+type Tab = PortalTab;
 
 const tabs: [Tab, string, typeof UserRound][] = [
   ['inicio', 'Início', UserRound],
@@ -172,32 +165,40 @@ export function PatientPortalPage() {
 
   const unreadNotifs = data.notifications?.filter((n: Any) => !n.readAt) || [];
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+  const firstName = data.patient.name.split(' ')[0];
+
   return (
-    <main className="patient-portal">
-      <header className="patient-portal-header">
-        <div className="portal-brand">
-          {data.settings?.logoUrl ? (
-            <img src={data.settings.logoUrl} alt="Logotipo" />
-          ) : (
-            <span>{data.settings?.clinicName?.[0] || 'N'}</span>
-          )}
-          <div>
-            <strong>{data.settings?.clinicName || 'Portal Nutricional'}</strong>
-            <small>{data.settings?.professionalName}</small>
+    <main className="patient-portal-v2">
+      {/* ── CABEÇALHO TIMBRADO OFICIAL DO PORTAL ── */}
+      <header className="portal-header-v2">
+        <div className="portal-brand-v2">
+          <div className="portal-logo-avatar">
+            {data.settings?.logoUrl ? (
+              <img src={data.settings.logoUrl} alt="Logotipo" />
+            ) : (
+              <span>{data.settings?.clinicName?.[0] || 'N'}</span>
+            )}
+          </div>
+          <div className="portal-brand-text">
+            <strong>{data.settings?.clinicName || 'Consultório Nutricional'}</strong>
+            <small>{data.settings?.professionalName} · Nutricionista</small>
           </div>
         </div>
 
         <div className="portal-header-actions">
-          {/* Sino de Notificações Interativo */}
+          {/* SINO DE NOTIFICAÇÕES */}
           <div className="portal-notif-container" ref={notifRef}>
             <button
-              className={`portal-notif-trigger ${unreadNotifs.length > 0 ? 'has-unread' : ''}`}
+              type="button"
+              className="portal-icon-btn"
               onClick={() => setNotifOpen((prev) => !prev)}
               aria-label="Notificações do paciente"
               title="Notificações"
             >
               <Bell size={18} />
-              {unreadNotifs.length > 0 && <span className="notif-badge">{unreadNotifs.length}</span>}
+              {unreadNotifs.length > 0 && <span className="notif-badge-dot" />}
             </button>
 
             {notifOpen && (
@@ -235,40 +236,40 @@ export function PatientPortalPage() {
             )}
           </div>
 
-          <Link className="ghost-button" to="/portal/alterar-senha">
-            <KeyRound size={16} /> Senha
-          </Link>
-          <button className="ghost-button" onClick={exit}>
-            <LogOut size={16} /> Sair
+          <button
+            type="button"
+            className="portal-icon-btn"
+            onClick={() => setTab('perfil')}
+            title="Meu Perfil & Senha"
+          >
+            <UserRound size={18} />
+          </button>
+
+          <button type="button" className="portal-logout-btn" onClick={exit} title="Sair do portal com segurança">
+            <LogOut size={14} /> Sair
           </button>
         </div>
       </header>
 
-      <section className="portal-welcome">
-        <span>Olá, {data.patient.name.split(' ')[0]}</span>
-        <h1>
-          Seu cuidado nutricional,
-          <br />
-          sempre por perto.
-        </h1>
-        <p>{data.patient.objective || 'Acompanhe consultas e orientações preparadas para você.'}</p>
-        {unreadNotifs.length > 0 && (
-          <div className="portal-alert" onClick={() => setNotifOpen(true)} style={{ cursor: 'pointer' }}>
-            <Bell size={16} /> Você tem {unreadNotifs.length} novidade(s) não lida(s). Clique para ver.
-          </div>
-        )}
+      {/* ── HERO BANNER DE SAUDAÇÃO ── */}
+      <section className="portal-hero-card">
+        <div className="hero-left">
+          <span className="hero-greeting-tag">
+            <Sparkles size={13} /> {greeting}, {firstName}!
+          </span>
+          <h1>Seu plano, diário e evolução em um só lugar.</h1>
+          <p>{data.patient.objective || 'Acompanhe suas metas e orientações nutricionais individualizadas.'}</p>
+        </div>
       </section>
 
       <PwaInstallBanner />
 
-      <nav className="portal-tabs">
-        {tabs.map(([key, label, Icon]) => (
-          <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>
-            <Icon size={16} />
-            {label}
-          </button>
-        ))}
-      </nav>
+      {/* ── BARRA DE NAVEGAÇÃO NATIVA (DESKTOP PILLS + MOBILE BOTTOM BAR) ── */}
+      <PortalBottomNav
+        currentTab={tab}
+        onChangeTab={(newTab) => setTab(newTab)}
+        unreadCount={unreadNotifs.length}
+      />
 
       {error && <div className="form-error">{error}</div>}
       {notice && (
@@ -280,6 +281,7 @@ export function PatientPortalPage() {
 
       <PortalContent
         tab={tab}
+        setTab={setTab}
         data={data}
         submit={submit}
         reload={load}
@@ -291,18 +293,21 @@ export function PatientPortalPage() {
 
 function PortalContent({
   tab,
+  setTab,
   data,
   submit,
   reload,
   addQuickWater,
 }: {
   tab: Tab;
+  setTab: (t: Tab) => void;
   data: Any;
   submit: (p: string, b: Any) => Promise<void>;
   reload: () => Promise<void> | void;
   addQuickWater: (l: number) => Promise<void>;
 }) {
-  if (tab === 'inicio') return <PortalHome data={data} reload={reload} addQuickWater={addQuickWater} />;
+  if (tab === 'inicio') return <PortalHome data={data} setTab={setTab} reload={reload} addQuickWater={addQuickWater} />;
+  if (tab === 'plano') return <PortalMealPlanView plan={data.plans[0]} />;
   if (tab === 'checkin') return <PreCheckin appointments={data.appointments} />;
   if (tab === 'perfil') return <Profile data={data.patient} submit={submit} />;
   if (tab === 'diario') return <Diary rows={data.diary} submit={submit} />;
@@ -320,10 +325,12 @@ const openPortalTab = (tab: Tab) => window.dispatchEvent(new CustomEvent<Tab>('p
 
 function PortalHome({
   data,
+  setTab,
   reload,
   addQuickWater,
 }: {
   data: Any;
+  setTab: (t: Tab) => void;
   reload: () => Promise<void> | void;
   addQuickWater: (l: number) => Promise<void>;
 }) {
@@ -335,257 +342,117 @@ function PortalHome({
   const unread = data.notifications.filter((n: Any) => !n.readAt);
   const activeGoals = data.goals.filter((g: Any) => g.status !== 'COMPLETED');
   const latestPlan = data.plans[0];
-  const planMeals = latestPlan?.content?.meals || latestPlan?.content?.refeicoes || [];
-  const planVisibility = latestPlan?.content?.patientVisibility || 'SUMMARY';
-  const showPlanDetails = planVisibility !== 'HIDDEN';
-  const showPlanNutrition = planVisibility === 'FULL';
-  const latestMeasurement = data.measurements[0];
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayDiary = data.diary?.find((d: Any) => String(d.entryDate).slice(0, 10) === todayStr);
 
   return (
-    <section className="portal-home">
-      <header className="portal-home-intro">
-        <span>Visão de hoje</span>
-        <h2>O essencial, sem procurar em várias telas</h2>
-        <p>
-          Comece pelas ações pendentes e consulte seu plano ou sua evolução quando precisar. Acessibilidade: Alt + ou Alt
-          - ajusta o texto; Alt C ativa o alto contraste.
-        </p>
-      </header>
-
-      <div className="portal-priority-grid">
-        <section className="portal-question portal-question-now">
-          <header>
-            <div>
-              <small>1</small>
-              <h2>O que preciso fazer agora?</h2>
+    <div className="portal-today-dashboard">
+      {/* ── CARD DE PRÓXIMA CONSULTA COM AÇÃO IMEDIATA ── */}
+      {upcoming[0] ? (
+        <section className="portal-next-appointment-card">
+          <div className="appt-left-info">
+            <div className="appt-icon-box">
+              <CalendarDays size={24} />
             </div>
-            <span>{unread.length + activeGoals.length + (!upcoming.length ? 1 : 0)} pendência(s)</span>
-          </header>
-
-          <div className="portal-action-list">
-            {/* Ação Rápida Interativa de Hidratação */}
-            <article className="portal-quick-hydration">
-              <div className="hydration-info">
-                <Droplets size={20} className="water-drop" />
-                <div>
-                  <strong>Água hoje: {todayDiary?.waterLiters ? `${todayDiary.waterLiters} L` : '0 L'}</strong>
-                  <small>Meta recomendada: 2.0 a 2.5 L</small>
-                </div>
-              </div>
-              <div className="hydration-btns">
-                <button
-                  type="button"
-                  className="quick-water-btn"
-                  onClick={() => void addQuickWater(0.25)}
-                  title="Adicionar 250ml de água"
-                >
-                  +250 ml
-                </button>
-                <button
-                  type="button"
-                  className="quick-water-btn"
-                  onClick={() => void addQuickWater(0.5)}
-                  title="Adicionar 500ml de água"
-                >
-                  +500 ml
-                </button>
-              </div>
-            </article>
-
-            {upcoming[0] ? (
-              <article className="upcoming-appt-highlight">
-                <DateBox date={upcoming[0].appointmentDate} />
-                <div>
-                  <strong>{upcoming[0].appointmentType}</strong>
-                  <span>
-                    <Clock3 size={14} />
-                    {upcoming[0].appointmentTime.slice(0, 5)} · {upcoming[0].durationMinutes} min
-                  </span>
-                </div>
-                {upcoming[0].meetingUrl && (
-                  <Link className="primary-button pulse-button" to={upcoming[0].meetingUrl}>
-                    <Video size={16} /> Entrar na Sala
-                  </Link>
-                )}
-              </article>
-            ) : (
-              <button onClick={() => openPortalTab('agenda')}>
-                <CalendarDays size={18} />
-                <span>
-                  <strong>Solicitar uma consulta</strong>
-                  <small>Escolha a melhor data e período.</small>
-                </span>
-                <ArrowRight size={16} />
-              </button>
-            )}
-
-            {upcoming[0] && (
-              <button onClick={() => openPortalTab('checkin')}>
-                <ClipboardList size={18} />
-                <span>
-                  <strong>Preparar minha consulta</strong>
-                  <small>Conte como você está antes do atendimento.</small>
-                </span>
-                <ArrowRight size={16} />
-              </button>
-            )}
-
-            {unread.slice(0, 2).map((n: Any) => (
-              <article key={n.id} className="unread portal-notif-card-inline">
-                <Bell size={18} />
-                <div>
-                  <strong>{n.title}</strong>
-                  <span>{n.body}</span>
-                </div>
-                <button
-                  className="secondary-button"
-                  onClick={async () => {
-                    await api(`/api/portal/notifications/${n.id}/read`, { method: 'PATCH' });
-                    await reload();
-                  }}
-                >
-                  Marcar lida
-                </button>
-              </article>
-            ))}
-
-            {activeGoals[0] && (
-              <button onClick={() => openPortalTab('metas')}>
-                <Goal size={18} />
-                <span>
-                  <strong>{activeGoals[0].title}</strong>
-                  <small>
-                    {activeGoals[0].dueDate ? `Prazo: ${portalDate(activeGoals[0].dueDate)}` : 'Meta em andamento'}
-                  </small>
-                </span>
-                <ArrowRight size={16} />
-              </button>
-            )}
+            <div className="appt-details">
+              <strong>{upcoming[0].appointmentType}</strong>
+              <span>
+                📅 {new Date(`${upcoming[0].appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} às {upcoming[0].appointmentTime.slice(0, 5)}
+              </span>
+              <small>Duração estimada: {upcoming[0].durationMinutes} minutos</small>
+            </div>
           </div>
 
-          <button className="portal-section-link" onClick={() => openPortalTab('agenda')}>
-            Ver agenda completa <ArrowRight size={14} />
+          {upcoming[0].meetingUrl ? (
+            <Link className="appt-video-btn" to={upcoming[0].meetingUrl}>
+              <Video size={17} /> Entrar na Sala Virtual
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setTab('checkin')}
+            >
+              <ClipboardList size={16} /> Preparar Consulta
+            </button>
+          )}
+        </section>
+      ) : (
+        <section className="portal-next-appointment-card" style={{ borderColor: '#e2e8f0' }}>
+          <div className="appt-left-info">
+            <div className="appt-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
+              <CalendarDays size={24} />
+            </div>
+            <div className="appt-details">
+              <strong>Agende seu próximo retorno</strong>
+              <span style={{ color: '#64748b' }}>Mantenha seu acompanhamento em dia</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => setTab('agenda')}
+          >
+            Solicitar Horário <ArrowRight size={15} />
           </button>
         </section>
+      )}
 
-        <section className="portal-question portal-plan-card">
-          <header>
-            <div>
-              <small>2</small>
-              <h2>Meu plano nutricional</h2>
-            </div>
-            {latestPlan && <span>Plano vigente</span>}
-          </header>
-          {latestPlan ? (
-            <div className="portal-plan-highlight">
-              <div className="portal-plan-heading">
-                <div className="portal-plan-icon">
-                  <Salad size={22} />
-                </div>
-                <div>
-                  <strong>{latestPlan.title}</strong>
-                  <span>{latestPlan.objective || 'Orientações preparadas para a sua rotina.'}</span>
-                </div>
-              </div>
-              <div className="portal-meal-preview">
-                {planMeals.length ? (
-                  planMeals.map((meal: Any, index: number) => {
-                    const macro = (meal.items || meal.alimentosList || []).reduce(
-                      (sum: Any, item: Any) => {
-                        const m = item.macros || {};
-                        return {
-                          kcal: sum.kcal + Number(m.kcal ?? item.kcal ?? 0),
-                          protein: sum.protein + Number(m.protein ?? item.prot ?? 0),
-                          carbohydrate: sum.carbohydrate + Number(m.carbohydrate ?? item.carb ?? 0),
-                          fat: sum.fat + Number(m.fat ?? item.gord ?? 0),
-                        };
-                      },
-                      { kcal: 0, protein: 0, carbohydrate: 0, fat: 0 },
-                    );
-                    return (
-                      <article key={meal.id || index}>
-                        <time>{showPlanDetails ? meal.time || meal.horario || 'Flexível' : 'Conforme orientação'}</time>
-                        <div>
-                          <strong>{meal.title || meal.titulo || 'Refeição'}</strong>
-                          <span>
-                            {(meal.items || meal.alimentosList || [])
-                              .map(
-                                (item: Any) =>
-                                  `${item.name || item.nome}${showPlanDetails && portalQuantity(item) ? ` (${portalQuantity(item)})` : ''}`,
-                              )
-                              .join(' · ') || 'Itens conforme orientação'}
-                          </span>
-                          {showPlanNutrition && (
-                            <small>
-                              {macro.kcal.toFixed(0)} kcal · P {macro.protein.toFixed(1)}g · C {macro.carbohydrate.toFixed(1)}g · G {macro.fat.toFixed(1)}g
-                            </small>
-                          )}
-                          {(meal.notes || meal.obs) && <small>{meal.notes || meal.obs}</small>}
-                        </div>
-                      </article>
-                    );
-                  })
-                ) : (
-                  <p>As refeições aparecerão assim que o plano for publicado.</p>
-                )}
-              </div>
-              <Link className="portal-plan-details" to={`/portal/plano/${latestPlan.id}`}>
-                Ver substituições e orientações <ArrowRight size={14} />
-              </Link>
-            </div>
-          ) : (
-            <Empty />
-          )}
-          <div className="portal-quick-links">
-            <button onClick={() => openPortalTab('compras')}>
-              <ShoppingBasket size={16} /> Lista de compras
-            </button>
-            <button onClick={() => openPortalTab('exames')}>
-              <FlaskConical size={16} /> Enviar exame
-            </button>
-            <button onClick={() => openPortalTab('mensagens')}>
-              <MessageCircle size={16} /> Tirar uma dúvida
-            </button>
-          </div>
-        </section>
+      {/* ── GRADE PRINCIPAL: ANEL DE ÁGUA + REFEIÇÃO DO MOMENTO ── */}
+      <div className="today-widgets-grid">
+        <PortalWaterTracker
+          currentLiters={todayDiary?.waterLiters || 0}
+          goalLiters={2.5}
+          onAddWater={addQuickWater}
+        />
 
-        <section className="portal-question">
-          <header>
-            <div>
-              <small>3</small>
-              <h2>Como estou evoluindo?</h2>
-            </div>
-          </header>
-          <div className="portal-progress-summary">
-            {latestMeasurement ? (
-              <>
-                <strong>{latestMeasurement.weight || '—'} kg</strong>
-                <span>Última medida em {portalDate(latestMeasurement.measuredAt)}</span>
-              </>
-            ) : (
-              <>
-                <strong>{activeGoals.length}</strong>
-                <span>meta(s) em andamento</span>
-              </>
-            )}
-          </div>
-          <div className="portal-quick-links">
-            <button onClick={() => openPortalTab('evolucao')}>
-              <LineChart size={16} /> Ver evolução
-            </button>
-            <button onClick={() => openPortalTab('diario')}>
-              <Salad size={16} /> Registrar meu dia
-            </button>
-            <button onClick={() => openPortalTab('jornada')}>
-              <ClipboardList size={16} /> Ver jornada
-            </button>
-          </div>
-        </section>
+        <PortalCurrentMealCard
+          plan={latestPlan}
+          onOpenMealPlan={() => setTab('plano')}
+        />
       </div>
-    </section>
+
+      {/* ── ATALHOS RÁPIDOS (QUICK ACTIONS) ── */}
+      <section>
+        <span className="control-section-title" style={{ marginBottom: 10, display: 'block' }}>
+          Acesso Rápido
+        </span>
+        <div className="portal-quick-actions-grid">
+          <div className="quick-action-card" onClick={() => setTab('plano')}>
+            <div className="action-icon" style={{ background: '#f0fdf4', color: '#166534' }}>
+              <Utensils size={18} />
+            </div>
+            <strong>Meu Plano</strong>
+            <small>Ver todas as refeições</small>
+          </div>
+
+          <div className="quick-action-card" onClick={() => setTab('compras')}>
+            <div className="action-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+              <ShoppingBasket size={18} />
+            </div>
+            <strong>Lista de Compras</strong>
+            <small>Setores do supermercado</small>
+          </div>
+
+          <div className="quick-action-card" onClick={() => setTab('evolucao')}>
+            <div className="action-icon" style={{ background: '#eff6ff', color: '#2563eb' }}>
+              <LineChart size={18} />
+            </div>
+            <strong>Minha Evolução</strong>
+            <small>Curva de peso e medidas</small>
+          </div>
+
+          <div className="quick-action-card" onClick={() => setTab('mensagens')}>
+            <div className="action-icon" style={{ background: '#fffbeb', color: '#d97706' }}>
+              <MessageCircle size={18} />
+            </div>
+            <strong>Falar com a Nutri</strong>
+            <small>Tirar dúvidas rápidas</small>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }
 
