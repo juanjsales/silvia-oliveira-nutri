@@ -6,14 +6,14 @@ import { ClinicMark, useClinic } from '../contexts/ClinicContext';
 import { ProfessionalNotifications } from './ProfessionalNotifications';
 
 const navigation = [
-  { to: '/painel', label: 'Visão geral', icon: LayoutDashboard }, { to: '/pacientes', label: 'Pacientes', icon: Users },
-  { to: '/agenda', label: 'Agenda', icon: CalendarDays }, { to: '/atendimentos', label: 'Atendimentos', icon: Stethoscope },
+  { to: '/painel', label: 'Visão geral', icon: LayoutDashboard },
+  { to: '/pacientes', label: 'Pacientes', icon: Users },
+  { to: '/agenda', label: 'Agenda & Atendimentos', icon: CalendarDays },
   { to: '/mensagens', label: 'Mensagens', icon: MessageCircle },
   { to: '/acompanhamento', label: 'Acompanhamento', icon: Activity },
   { to: '/exames', label: 'Exames recebidos', icon: FileSearch },
   { to: '/planos', label: 'Planos e receitas', icon: Salad },
   { to: '/documentos', label: 'Documentos', icon: FileText },
-  { to: '/documentos/emissoes', label: 'Emissões A4', icon: FileText },
   { to: '/financeiro', label: 'Financeiro', icon: CircleDollarSign },
   { to: '/configuracoes', label: 'Configurações', icon: Settings }
 ];

@@ -4,18 +4,23 @@ import {
   Clock,
   CreditCard,
   Download,
+  Eye,
   FileCheck2,
+  FilePlus2,
   FileText,
+  Layers,
   Pill,
   Printer,
   Receipt,
+  ReceiptText,
   Sparkles,
   Stethoscope,
   User,
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 
 type Patient = { id: string; name: string; cpf?: string | null };
@@ -35,6 +40,26 @@ type Supplement = {
   observation?: string;
 };
 type Encounter = { id: string; patientName: string; supplements: Supplement[] };
+type Tx = {
+  id: string;
+  patientId: string;
+  patientName: string;
+  description: string;
+  amount: string;
+  paidAt?: string | null;
+  status: string;
+};
+type Doc = {
+  id: string;
+  documentNumber: string;
+  type: string;
+  patientId: string;
+  patientName: string;
+  title: string;
+  status: string;
+  availableToPatient: boolean;
+  issuedAt: string;
+};
 type Settings = {
   clinicName: string;
   professionalName: string;
@@ -60,9 +85,15 @@ const fmt = (date: string) =>
   });
 
 export function DocumentsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeMainTab = searchParams.get('tab') === 'emitidos' ? 'emitidos' : 'modelos';
+
   const [patients, setPatients] = useState<Patient[]>([]);
   const [encounters, setEncounters] = useState<EncounterList[]>([]);
+  const [transactions, setTransactions] = useState<Tx[]>([]);
+  const [documents, setDocuments] = useState<Doc[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
+
   const [kind, setKind] = useState<Kind>('declaration');
   const [patientId, setPatientId] = useState('');
   const [encounterId, setEncounterId] = useState('');
@@ -77,21 +108,35 @@ export function DocumentsPage() {
   const [error, setError] = useState('');
   const [zoomScale, setZoomScale] = useState(1);
 
-  useEffect(() => {
-    Promise.all([
-      api<{ data: Patient[] }>('/api/patients'),
-      api<{ data: EncounterList[] }>('/api/encounters'),
-      api<{ data: Settings }>('/api/settings'),
-    ])
-      .then(([p, e, s]) => {
-        setPatients(p.data);
-        setEncounters(e.data);
-        setSettings(s.data);
-      })
-      .catch((c) =>
-        setError(c instanceof Error ? c.message : 'Erro ao carregar dados de documentos.')
-      );
+  // Estados da aba "Documentos Emitidos"
+  const [issueType, setIssueType] = useState<'RECEIPT' | 'CLINICAL_SUMMARY'>('RECEIPT');
+  const [issuePatientId, setIssuePatientId] = useState('');
+  const [issueSourceId, setIssueSourceId] = useState('');
+  const [issueShare, setIssueShare] = useState(true);
+  const [issueBusy, setIssueBusy] = useState(false);
+
+  const loadData = useCallback(async () => {
+    try {
+      const [p, e, s, t, d] = await Promise.all([
+        api<{ data: Patient[] }>('/api/patients'),
+        api<{ data: EncounterList[] }>('/api/encounters'),
+        api<{ data: Settings }>('/api/settings'),
+        api<{ data: Tx[] }>('/api/finance').catch(() => ({ data: [] as Tx[] })),
+        api<{ data: Doc[] }>('/api/documents').catch(() => ({ data: [] as Doc[] })),
+      ]);
+      setPatients(p.data);
+      setEncounters(e.data);
+      setSettings(s.data);
+      setTransactions(t.data || []);
+      setDocuments(d.data || []);
+    } catch (c) {
+      setError(c instanceof Error ? c.message : 'Erro ao carregar dados de documentos.');
+    }
   }, []);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   useEffect(() => {
     if (encounterId) {
@@ -112,6 +157,57 @@ export function DocumentsPage() {
   const patientEncounters = encounters.filter(
     (e) => !patientId || e.patientId === patientId
   );
+
+  const issueSources = useMemo(
+    () =>
+      issueType === 'RECEIPT'
+        ? transactions.filter((t) => t.patientId === issuePatientId && t.status === 'PAID')
+        : encounters.filter((e) => e.patientId === issuePatientId),
+    [issueType, issuePatientId, transactions, encounters]
+  );
+
+  async function handleIssueDocument() {
+    if (!issuePatientId || !issueSourceId) return;
+    setIssueBusy(true);
+    setError('');
+    try {
+      const selectedPat = patients.find((p) => p.id === issuePatientId)!;
+      const body = {
+        type: issueType,
+        patientId: issuePatientId,
+        title:
+          issueType === 'RECEIPT'
+            ? `Recibo de pagamento — ${selectedPat.name}`
+            : `Resumo clínico — ${selectedPat.name}`,
+        availableToPatient: issueShare,
+        ...(issueType === 'RECEIPT'
+          ? { financialTransactionId: issueSourceId }
+          : { encounterId: issueSourceId }),
+      };
+      const r = await api<{ data: { id: string } }>('/api/documents', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      await loadData();
+      window.open(`/documentos/emitidos/${r.data.id}`, '_blank');
+    } catch (c) {
+      setError(c instanceof Error ? c.message : 'Erro ao emitir documento oficial.');
+    } finally {
+      setIssueBusy(false);
+    }
+  }
+
+  async function handleToggleAvailability(d: Doc) {
+    try {
+      await api(`/api/documents/${d.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ availableToPatient: !d.availableToPatient }),
+      });
+      await loadData();
+    } catch (c) {
+      setError(c instanceof Error ? c.message : 'Não foi possível atualizar a visibilidade.');
+    }
+  }
 
   const style = settings
     ? ({
@@ -134,25 +230,179 @@ export function DocumentsPage() {
       {/* ── CABEÇALHO DA PÁGINA ── */}
       <div className="page-intro-v2">
         <div>
-          <span className="eyebrow">Documentos Clínicos Oficiais</span>
+          <span className="eyebrow">Documentos Clínicos & Oficiais</span>
           <h2>Emissões & Laudos A4</h2>
           <p>
-            Gere declarações de comparecimento, atestados nutricionais e prescrições em formato A4 padronizado.
+            Gere declarações, atestados, prescrições e consulte o registro permanente de documentos emitidos.
           </p>
         </div>
         <div className="doc-header-actions">
-          <button
-            type="button"
-            className="primary-button doc-print-btn"
-            onClick={print}
-            disabled={!isReady}
-          >
-            <Printer size={17} /> Imprimir / Salvar em PDF
-          </button>
+          {activeMainTab === 'modelos' && (
+            <button
+              type="button"
+              className="primary-button doc-print-btn"
+              onClick={print}
+              disabled={!isReady}
+            >
+              <Printer size={17} /> Imprimir / Salvar em PDF
+            </button>
+          )}
         </div>
       </div>
 
       {error && <div className="form-error">{error}</div>}
+
+      {/* ── ABAS DA CENTRAL DE DOCUMENTOS ── */}
+      <div className="hub-tabs" style={{ marginBottom: 20 }}>
+        <button
+          type="button"
+          className={`hub-tab-btn ${activeMainTab === 'modelos' ? 'active' : ''}`}
+          onClick={() => setSearchParams({ tab: 'modelos' })}
+        >
+          <FileText size={16} /> Modelos & Emissão Rápida A4
+        </button>
+        <button
+          type="button"
+          className={`hub-tab-btn ${activeMainTab === 'emitidos' ? 'active' : ''}`}
+          onClick={() => setSearchParams({ tab: 'emitidos' })}
+        >
+          <Layers size={16} /> Documentos Emitidos (Auditoria & Portal)
+          {documents.length > 0 && <span className="hub-badge">{documents.length}</span>}
+        </button>
+      </div>
+
+      {activeMainTab === 'emitidos' ? (
+        <div className="issue-layout">
+          <section className="panel issue-form">
+            <span className="eyebrow">Nova emissão oficial</span>
+            <h2>Emitir documento numerado</h2>
+            <div className="issue-types">
+              <button
+                type="button"
+                className={issueType === 'RECEIPT' ? 'active' : ''}
+                onClick={() => {
+                  setIssueType('RECEIPT');
+                  setIssueSourceId('');
+                }}
+              >
+                <ReceiptText size={16} /> Recibo oficial
+              </button>
+              <button
+                type="button"
+                className={issueType === 'CLINICAL_SUMMARY' ? 'active' : ''}
+                onClick={() => {
+                  setIssueType('CLINICAL_SUMMARY');
+                  setIssueSourceId('');
+                }}
+              >
+                <Stethoscope size={16} /> Resumo clínico
+              </button>
+            </div>
+            <label>
+              Paciente *
+              <select
+                value={issuePatientId}
+                onChange={(e) => {
+                  setIssuePatientId(e.target.value);
+                  setIssueSourceId('');
+                }}
+              >
+                <option value="">Selecione um paciente</option>
+                {patients.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              {issueType === 'RECEIPT' ? 'Pagamento confirmado *' : 'Atendimento realizado *'}
+              <select
+                value={issueSourceId}
+                onChange={(e) => setIssueSourceId(e.target.value)}
+              >
+                <option value="">Selecione o registro de origem</option>
+                {issueSources.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {issueType === 'RECEIPT'
+                      ? `${(s as Tx).description} · ${Number((s as Tx).amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+                      : `${new Date((s as EncounterList).startedAt).toLocaleDateString('pt-BR')} · ${(s as EncounterList).patientName}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="share-check">
+              <input
+                type="checkbox"
+                checked={issueShare}
+                onChange={(e) => setIssueShare(e.target.checked)}
+              />{' '}
+              Disponibilizar automaticamente no portal do paciente
+            </label>
+            <button
+              type="button"
+              className="primary-button"
+              disabled={!issueSourceId || issueBusy}
+              onClick={() => void handleIssueDocument()}
+            >
+              <FilePlus2 size={16} /> {issueBusy ? 'Emitindo documento...' : 'Emitir e visualizar A4'}
+            </button>
+          </section>
+
+          <section className="panel">
+            <div className="panel-heading">
+              <div>
+                <span className="eyebrow">Registro permanente</span>
+                <h3>Documentos emitidos com auditoria</h3>
+              </div>
+            </div>
+            {documents.length === 0 ? (
+              <div className="empty-state">
+                <FileText size={32} />
+                <strong>Nenhum documento emitido oficialmente</strong>
+                <p>Emita um recibo ou resumo clínico no painel ao lado para gerar histórico permanente.</p>
+              </div>
+            ) : (
+              <div className="issued-list">
+                {documents.map((d) => (
+                  <article key={d.id}>
+                    <div className="issued-number">
+                      <span>Nº</span>
+                      <strong>{d.documentNumber}</strong>
+                    </div>
+                    <div>
+                      <strong>{d.title}</strong>
+                      <span>
+                        {d.patientName} · {new Date(d.issuedAt).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                    <span className={`status ${d.status === 'ISSUED' ? 'active' : ''}`}>
+                      {d.status === 'ISSUED' ? 'Emitido' : 'Cancelado'}
+                    </span>
+                    <button
+                      type="button"
+                      className={`icon-button ${d.availableToPatient ? 'shared' : ''}`}
+                      title={d.availableToPatient ? 'Visível no portal (clique para ocultar)' : 'Oculto no portal (clique para liberar)'}
+                      onClick={() => void handleToggleAvailability(d)}
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <a
+                      className="icon-button"
+                      href={`/documentos/emitidos/${d.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Imprimir / Visualizar A4"
+                    >
+                      <Printer size={16} />
+                    </a>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      ) : (
 
       <div className="documents-layout-v2">
         {/* ── PAINEL LATERAL DE CONTROLES ── */}
@@ -436,6 +686,7 @@ export function DocumentsPage() {
           </div>
         </section>
       </div>
+      )}
     </div>
   );
 }

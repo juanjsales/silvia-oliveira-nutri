@@ -78,7 +78,7 @@ export function App() {
               <Route path="painel" element={<DashboardPage />} />
               <Route path="pacientes" element={<PatientsPage />} />
               <Route path="pacientes/:patientId/clinico" element={<ClinicalOverviewPage />} />
-              <Route path="agenda" element={<AgendaPage />} />
+              <Route path="agenda" element={<EncounterPage />} />
               <Route path="atendimentos" element={<EncounterPage />} />
               <Route path="mensagens" element={<MessagesPage />} />
               <Route path="acompanhamento" element={<FollowUpPage />} />
@@ -86,7 +86,7 @@ export function App() {
               <Route path="planos" element={<NutritionLibraryPage />} />
               <Route path="planos/:id" element={<MealPlanEditorPage />} />
               <Route path="documentos" element={<DocumentsPage />} />
-              <Route path="documentos/emissoes" element={<DocumentIssuesPage />} />
+              <Route path="documentos/emissoes" element={<Navigate to="/documentos?tab=emitidos" replace />} />
               <Route path="financeiro" element={<FinancePage />} />
               <Route path="configuracoes" element={<SettingsPage />} />
             </Route>

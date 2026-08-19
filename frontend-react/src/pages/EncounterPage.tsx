@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   BookOpen,
   Calendar,
+  CalendarDays,
   Calculator,
   Check,
   CheckCircle2,
@@ -9,6 +10,7 @@ import {
   ChevronRight,
   ClipboardList,
   Clock,
+  Clock3,
   Edit3,
   ExternalLink,
   Eye,
@@ -17,6 +19,7 @@ import {
   HeartPulse,
   LockKeyhole,
   Mail,
+  MessageCircle,
   Pill,
   Play,
   Plus,
@@ -26,6 +29,7 @@ import {
   Search,
   Send,
   Sparkles,
+  Stethoscope,
   Trash2,
   UserCheck,
   UserRound,
@@ -35,8 +39,8 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { VideoConsultation } from '../components/VideoConsultation';
 import { LaminasModal } from '../components/LaminasModal';
 import { LabsList, SupplementsList, type Lab, type Supplement } from '../components/ClinicalLists';
@@ -45,12 +49,12 @@ import { EnergyCalculatorModal } from '../components/EnergyCalculatorModal';
 import { FinishEncounterModal, type FinishEncounterData } from '../components/FinishEncounterModal';
 import { api } from '../lib/api';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
-import { formatAppointmentSchedule } from '../lib/formatters';
+import { formatAppointmentSchedule, getEndTime } from '../lib/formatters';
 
 type SectionKey='context'|'anamnesis'|'recall24h'|'followup'|'assessment'|'exams'|'conduct'|'plan'|'supplements'|'notes';
 type Value=string|number|boolean|null;
 type SectionData=Record<string,Value>;
-type Patient={id:string;name:string;objective?:string|null;email?:string|null};
+type Patient={id:string;name:string;objective?:string|null;email?:string|null;whatsapp?:string|null};
 type Checkin={id:string;answers:Record<string,unknown>;status:'PENDING_REVIEW'|'REVIEWED';submittedAt:string;reviewedAt?:string|null};
 type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;appointmentDate?:string|null;appointmentTime?:string|null;durationMinutes?:number|null;appointmentType?:string|null;status:'IN_PROGRESS'|'COMPLETED';startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
 type Field={key:string;label:string;type?:'text'|'textarea'|'number'|'select'|'date'|'time';placeholder?:string;options?:string[];suffix?:string;profiles?:string[]};
@@ -72,7 +76,9 @@ type EncounterListItem = {
   appointmentType?: string | null;
 };
 
-type TodayAppointment = {
+type AppointmentStatus = 'CONFIRMED' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+
+type CalendarAppointment = {
   id: string;
   patientId: string;
   patientName: string;
@@ -81,9 +87,71 @@ type TodayAppointment = {
   time: string;
   durationMinutes: number;
   type: string;
-  status: string;
+  price?: number | null;
+  status: AppointmentStatus;
   notes?: string | null;
+  meetingUrl?: string | null;
+  patientResponse: 'PENDING' | 'CONFIRMED' | 'RESCHEDULE_REQUESTED';
+  patientResponseNote?: string | null;
 };
+
+type AppointmentFormState = {
+  patientId: string;
+  date: string;
+  time: string;
+  durationMinutes: string;
+  type: string;
+  price: string;
+  status: AppointmentStatus;
+  notes: string;
+  meetingUrl: string;
+};
+
+type AppointmentRequest = {
+  id: string;
+  patientId: string;
+  patientName: string;
+  preferredDate: string;
+  preferredPeriod: 'MORNING' | 'AFTERNOON' | 'EVENING';
+  appointmentType: string;
+  notes?: string | null;
+  status: 'PENDING';
+};
+
+const statusLabels: Record<AppointmentStatus, string> = {
+  CONFIRMED: 'Confirmado',
+  WAITING: 'Aguardando',
+  IN_PROGRESS: 'Em atendimento',
+  COMPLETED: 'Concluído',
+  CANCELLED: 'Cancelado',
+  NO_SHOW: 'Não compareceu',
+};
+
+const statusTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
+  CONFIRMED: ['CONFIRMED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW'],
+  WAITING: ['WAITING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW'],
+  IN_PROGRESS: ['IN_PROGRESS', 'COMPLETED'],
+  COMPLETED: ['COMPLETED'],
+  CANCELLED: ['CANCELLED'],
+  NO_SHOW: ['NO_SHOW'],
+};
+
+const newAppointmentStatuses: AppointmentStatus[] = ['CONFIRMED', 'WAITING'];
+const appointmentTypes = ['Avaliação Inicial', 'Presencial', 'Online (Teleconsulta)', 'Retorno de Avaliação', 'Retorno Online'];
+const pad = (value: number) => String(value).padStart(2, '0');
+const isoDate = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+const todayIso = isoDate(new Date());
+const initialAppointmentForm = (date = todayIso): AppointmentFormState => ({
+  patientId: '',
+  date,
+  time: '09:00',
+  durationMinutes: '60',
+  type: appointmentTypes[0],
+  price: '250',
+  status: 'CONFIRMED',
+  notes: '',
+  meetingUrl: '',
+});
 
 const yesNo=['Não','Sim'];
 const steps:Step[]=[
@@ -416,52 +484,88 @@ function EncounterHub({
 }: {
   onSelectEncounter: (id: string, openVideo?: boolean) => void;
 }) {
-  const navigate = useNavigate();
+  const location = useLocation();
   const [encounters, setEncounters] = useState<EncounterListItem[]>([]);
-  const [todayAppointments, setTodayAppointments] = useState<TodayAppointment[]>([]);
+  const [todayAppointments, setTodayAppointments] = useState<CalendarAppointment[]>([]);
+  const [monthAppointments, setMonthAppointments] = useState<CalendarAppointment[]>([]);
+  const [requests, setRequests] = useState<AppointmentRequest[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [activeTab, setActiveTab] = useState<'in_progress' | 'today' | 'completed'>('in_progress');
+
+  const [activeTab, setActiveTab] = useState<'calendar' | 'today' | 'in_progress' | 'completed'>('calendar');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [selectedDate, setSelectedDate] = useState(todayIso);
+
+  const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
+  const [appointmentForm, setAppointmentForm] = useState<AppointmentFormState>(() => initialAppointmentForm());
+  const [editingAppointmentId, setEditingAppointmentId] = useState<string | null>(null);
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const [isRebooking, setIsRebooking] = useState(false);
+  const [savingAppointment, setSavingAppointment] = useState(false);
+
   const [walkInOpen, setWalkInOpen] = useState(false);
   const [walkInPatientId, setWalkInPatientId] = useState('');
   const [startingWalkIn, setStartingWalkIn] = useState(false);
-  const [error, setError] = useState('');
 
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const range = useMemo(
+    () => ({
+      from: isoDate(new Date(month.getFullYear(), month.getMonth(), 1)),
+      to: isoDate(new Date(month.getFullYear(), month.getMonth() + 1, 0)),
+    }),
+    [month]
+  );
+
+  const calendarCells = useMemo(() => {
+    const first = new Date(month.getFullYear(), month.getMonth(), 1);
+    const start = new Date(first);
+    start.setDate(1 - first.getDay());
+    return Array.from({ length: 42 }, (_, i) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      return date;
+    });
+  }, [month]);
 
   const loadHubData = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
-      const [encRes, appRes, patRes] = await Promise.all([
+      const [encRes, todayAppRes, monthAppRes, reqRes, patRes] = await Promise.all([
         api<{ data: EncounterListItem[] }>('/api/encounters'),
-        api<{ data: TodayAppointment[] }>(`/api/appointments?from=${todayStr}&to=${todayStr}`),
+        api<{ data: CalendarAppointment[] }>(`/api/appointments?from=${todayIso}&to=${todayIso}`),
+        api<{ data: CalendarAppointment[] }>(`/api/appointments?from=${range.from}&to=${range.to}`),
+        api<{ data: AppointmentRequest[] }>('/api/appointments/requests').catch(() => ({ data: [] as AppointmentRequest[] })),
         api<{ data: Patient[] }>('/api/patients'),
       ]);
+
       setEncounters(encRes.data || []);
-      setTodayAppointments(appRes.data || []);
+      setTodayAppointments(todayAppRes.data || []);
+      setMonthAppointments(monthAppRes.data || []);
+      setRequests(reqRes.data || []);
       setPatients(patRes.data || []);
 
-      const inProg = encRes.data?.filter((e) => e.status === 'IN_PROGRESS') || [];
-      if (inProg.length > 0) {
-        setActiveTab('in_progress');
-      } else if (appRes.data?.length > 0) {
-        setActiveTab('today');
-      } else {
-        setActiveTab('completed');
+      if (location.pathname === '/atendimentos') {
+        const inProg = encRes.data?.filter((e) => e.status === 'IN_PROGRESS') || [];
+        if (inProg.length > 0) {
+          setActiveTab('in_progress');
+        }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar atendimentos.');
+      setError(err instanceof Error ? err.message : 'Erro ao carregar agenda e atendimentos.');
     } finally {
       setLoading(false);
     }
-  }, [todayStr]);
+  }, [range, location.pathname]);
 
   useEffect(() => {
     void loadHubData();
   }, [loadHubData]);
 
-  async function handleStartAppointment(appointment: TodayAppointment) {
+  async function handleStartAppointment(appointment: CalendarAppointment | { id: string; patientId: string }) {
     try {
       const res = await api<{ data: { id: string } }>('/api/encounters', {
         method: 'POST',
@@ -492,6 +596,167 @@ function EncounterHub({
     } finally {
       setStartingWalkIn(false);
     }
+  }
+
+  function showCreateAppointment(date = selectedDate) {
+    setRequestId(null);
+    setEditingAppointmentId(null);
+    setIsRebooking(false);
+    setAppointmentForm(initialAppointmentForm(date));
+    setAppointmentModalOpen(true);
+  }
+
+  function showEditAppointment(item: CalendarAppointment) {
+    setRequestId(null);
+    setEditingAppointmentId(item.id);
+    setIsRebooking(item.patientResponse === 'RESCHEDULE_REQUESTED');
+    setAppointmentForm({
+      patientId: item.patientId,
+      date: item.date.slice(0, 10),
+      time: item.time.slice(0, 5),
+      durationMinutes: String(item.durationMinutes),
+      type: item.type,
+      price: item.price == null ? '' : String(item.price),
+      status: item.status,
+      notes: item.notes || '',
+      meetingUrl: item.meetingUrl || '',
+    });
+    setAppointmentModalOpen(true);
+  }
+
+  function approveRequest(item: AppointmentRequest) {
+    const time = { MORNING: '09:00', AFTERNOON: '14:00', EVENING: '18:00' }[item.preferredPeriod];
+    setRequestId(item.id);
+    setEditingAppointmentId(null);
+    setIsRebooking(false);
+    setAppointmentForm({
+      ...initialAppointmentForm(item.preferredDate),
+      patientId: item.patientId,
+      time,
+      type: item.appointmentType,
+      notes: item.notes || '',
+    });
+    setSelectedDate(item.preferredDate);
+    setMonth(new Date(`${item.preferredDate}T12:00:00`));
+    setAppointmentModalOpen(true);
+  }
+
+  async function declineRequest(item: AppointmentRequest) {
+    if (!window.confirm(`Recusar a solicitação de ${item.patientName}?`)) return;
+    try {
+      await api(`/api/appointments/requests/${item.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'DECLINED' }),
+      });
+      setNotice('Solicitação atualizada e paciente notificado no portal.');
+      await loadHubData();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar a solicitação.');
+    }
+  }
+
+  async function saveAppointment(event: FormEvent) {
+    event.preventDefault();
+    setSavingAppointment(true);
+    setError('');
+    setNotice('');
+
+    const now = new Date();
+    const currentHourMin = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const isPastDate = appointmentForm.date < todayIso;
+    const isPastTimeToday = appointmentForm.date === todayIso && appointmentForm.time < currentHourMin;
+
+    if (!editingAppointmentId && (isPastDate || isPastTimeToday)) {
+      if (
+        !window.confirm(
+          `⚠️ O horário selecionado (${appointmentForm.time} em ${appointmentForm.date.split('-').reverse().join('/')}) já passou em relação ao horário atual (${currentHourMin}).\n\nDeseja realmente registrar esta consulta retroativa no passado?`
+        )
+      ) {
+        setSavingAppointment(false);
+        return;
+      }
+    }
+
+    try {
+      const payload = {
+        patientId: appointmentForm.patientId,
+        date: appointmentForm.date,
+        time: appointmentForm.time,
+        durationMinutes: Number(appointmentForm.durationMinutes),
+        type: appointmentForm.type,
+        price: appointmentForm.price ? Number(appointmentForm.price) : undefined,
+        status: appointmentForm.status,
+        notes: appointmentForm.notes || undefined,
+        meetingUrl: appointmentForm.meetingUrl || undefined,
+        ...(!editingAppointmentId && requestId ? { requestId } : {}),
+      };
+
+      if (editingAppointmentId) {
+        const result = await api<{ data: { emailSent: boolean | null; warning?: string | null } }>(
+          `/api/appointments/${editingAppointmentId}`,
+          { method: 'PATCH', body: JSON.stringify(payload) }
+        );
+        setNotice(
+          result.data.emailSent
+            ? 'Consulta atualizada e paciente avisado por e-mail e no portal.'
+            : result.data.warning || 'Consulta atualizada e paciente notificado no portal.'
+        );
+      } else {
+        const result = await api<{ data: { emailSent: boolean; warning?: string | null } }>(
+          '/api/appointments',
+          { method: 'POST', body: JSON.stringify(payload) }
+        );
+        setNotice(
+          result.data.emailSent
+            ? 'Consulta criada e confirmação enviada por e-mail.'
+            : result.data.warning || 'Consulta criada.'
+        );
+      }
+
+      setAppointmentModalOpen(false);
+      setRequestId(null);
+      setEditingAppointmentId(null);
+      setSelectedDate(appointmentForm.date);
+      await loadHubData();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível salvar a consulta.');
+    } finally {
+      setSavingAppointment(false);
+    }
+  }
+
+  async function updateAppointmentStatus(item: CalendarAppointment, status: AppointmentStatus) {
+    try {
+      const result = await api<{ data: { emailSent: boolean | null; warning?: string | null } }>(
+        `/api/appointments/${item.id}`,
+        { method: 'PATCH', body: JSON.stringify({ status }) }
+      );
+      if (status === 'CANCELLED') {
+        setNotice(
+          result.data.emailSent
+            ? 'Consulta cancelada e paciente avisado por e-mail e no portal.'
+            : result.data.warning || 'Consulta cancelada e paciente notificado no portal.'
+        );
+      }
+      await loadHubData();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível alterar o status.');
+    }
+  }
+
+  function getWhatsAppLink(item: CalendarAppointment) {
+    if (!item.whatsapp) return null;
+    const cleanPhone = item.whatsapp.replace(/\D/g, '');
+    const fullPhone = cleanPhone.length === 10 || cleanPhone.length === 11 ? `55${cleanPhone}` : cleanPhone;
+    const isOnline = item.type.toLowerCase().includes('online') || item.type.toLowerCase().includes('tele');
+    const dateFormatted = new Date(`${item.date.slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR');
+    const callUrl = item.meetingUrl || `${window.location.origin}/teleconsulta/${item.id}`;
+
+    const text = isOnline
+      ? `Olá, ${item.patientName}! 🎥 Sua teleconsulta nutricional está confirmada para ${dateFormatted} às ${item.time}. Acesse a sala virtual da nossa chamada no link: ${callUrl}. Até já!`
+      : `Olá, ${item.patientName}! 🌿 Passando para confirmar sua consulta nutricional agendada para ${dateFormatted} às ${item.time}. Nos vemos em breve!`;
+
+    return `https://wa.me/${fullPhone}?text=${encodeURIComponent(text)}`;
   }
 
   async function handleQuickClose(id: string, patientName: string) {
@@ -536,32 +801,61 @@ function EncounterHub({
 
   const inProgressList = encounters.filter((e) => e.status === 'IN_PROGRESS');
   const completedList = encounters.filter((e) => e.status === 'COMPLETED');
-
-  const filteredInProgress = inProgressList.filter((e) =>
-    e.patientName.toLowerCase().includes(search.toLowerCase()) ||
-    (e.objective && e.objective.toLowerCase().includes(search.toLowerCase()))
+  const selectedDateAppointments = monthAppointments.filter(
+    (item) => item.date.slice(0, 10) === selectedDate
   );
 
-  const filteredToday = todayAppointments.filter((a) =>
-    a.patientName.toLowerCase().includes(search.toLowerCase()) ||
-    a.type.toLowerCase().includes(search.toLowerCase())
+  const filteredInProgress = inProgressList.filter(
+    (e) =>
+      e.patientName.toLowerCase().includes(search.toLowerCase()) ||
+      (e.objective && e.objective.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const filteredCompleted = completedList.filter((e) =>
-    e.patientName.toLowerCase().includes(search.toLowerCase()) ||
-    (e.appointmentType && e.appointmentType.toLowerCase().includes(search.toLowerCase()))
+  const filteredToday = todayAppointments.filter(
+    (a) =>
+      a.patientName.toLowerCase().includes(search.toLowerCase()) ||
+      a.type.toLowerCase().includes(search.toLowerCase())
   );
+
+  const filteredCompleted = completedList.filter(
+    (e) =>
+      e.patientName.toLowerCase().includes(search.toLowerCase()) ||
+      (e.appointmentType && e.appointmentType.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const editingAppointment = editingAppointmentId
+    ? monthAppointments.find((item) => item.id === editingAppointmentId)
+    : undefined;
+
+  const scheduleChanged = Boolean(
+    editingAppointment &&
+      (appointmentForm.date !== editingAppointment.date.slice(0, 10) ||
+        appointmentForm.time !== editingAppointment.time.slice(0, 5))
+  );
+
+  const formStatuses = editingAppointment
+    ? [
+        ...new Set([
+          ...statusTransitions[editingAppointment.status],
+          ...(scheduleChanged && ['CANCELLED', 'NO_SHOW'].includes(editingAppointment.status)
+            ? newAppointmentStatuses
+            : []),
+        ]),
+      ]
+    : newAppointmentStatuses;
 
   return (
     <div className="encounter-hub">
       <header className="encounter-hub-header">
         <div className="encounter-hub-title">
           <div className="encounter-hub-icon">
-            <ClipboardList size={26} />
+            <CalendarDays size={26} />
           </div>
           <div>
-            <h1>Central de Atendimentos</h1>
-            <p>Acompanhe consultas do dia, retome rascunhos em andamento e consulte o histórico de prontuários.</p>
+            <h1>Agenda & Atendimentos</h1>
+            <p>
+              Organize horários, acompanhe consultas do dia, retome atendimentos em andamento e acesse o histórico clínico completo.
+            </p>
           </div>
         </div>
 
@@ -569,10 +863,10 @@ function EncounterHub({
           <button
             type="button"
             className="secondary-button"
-            onClick={() => navigate('/agenda')}
-            title="Abrir a agenda completa"
+            onClick={() => showCreateAppointment()}
+            title="Agendar uma nova consulta na agenda"
           >
-            <Calendar size={16} /> Abrir Agenda
+            <Plus size={16} /> Nova Consulta
           </button>
           <button
             type="button"
@@ -580,23 +874,66 @@ function EncounterHub({
             onClick={() => setWalkInOpen(true)}
             title="Iniciar atendimento sem agendamento prévio (Encaixe)"
           >
-            <Plus size={16} /> Atendimento Avulso (Encaixe)
+            <Zap size={16} /> Atendimento Avulso (Encaixe)
           </button>
         </div>
       </header>
 
       {error && <div className="form-error">{error}</div>}
+      {notice && <div className="form-success">{notice}</div>}
+
+      {requests.length > 0 && (
+        <section className="panel appointment-requests" style={{ marginBottom: 20 }}>
+          <div className="panel-heading">
+            <div>
+              <span className="eyebrow">Portal do Paciente</span>
+              <h3>Solicitações pendentes de confirmação</h3>
+            </div>
+            <strong>{requests.length}</strong>
+          </div>
+          <div>
+            {requests.map((item) => (
+              <article key={item.id}>
+                <CalendarDays size={20} />
+                <div>
+                  <strong>{item.patientName}</strong>
+                  <span>
+                    {new Date(`${item.preferredDate}T12:00:00`).toLocaleDateString('pt-BR')} ·{' '}
+                    {{ MORNING: 'Manhã', AFTERNOON: 'Tarde', EVENING: 'Noite' }[item.preferredPeriod]} ·{' '}
+                    {item.appointmentType}
+                  </span>
+                  {item.notes && <small>{item.notes}</small>}
+                </div>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => void declineRequest(item)}
+                >
+                  Recusar
+                </button>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={() => approveRequest(item)}
+                >
+                  Agendar
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="encounter-hub-tabs-bar">
         <div className="encounter-hub-tabs">
           <button
             type="button"
-            className={`encounter-hub-tab-btn ${activeTab === 'in_progress' ? 'active' : ''}`}
-            onClick={() => setActiveTab('in_progress')}
+            className={`encounter-hub-tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
+            onClick={() => setActiveTab('calendar')}
           >
-            <Clock size={15} />
-            <span>Em Andamento / Rascunhos</span>
-            <span className="encounter-hub-tab-badge">{inProgressList.length}</span>
+            <CalendarDays size={15} />
+            <span>Calendário & Agenda</span>
+            <span className="encounter-hub-tab-badge">{monthAppointments.length}</span>
           </button>
 
           <button
@@ -611,6 +948,16 @@ function EncounterHub({
 
           <button
             type="button"
+            className={`encounter-hub-tab-btn ${activeTab === 'in_progress' ? 'active' : ''}`}
+            onClick={() => setActiveTab('in_progress')}
+          >
+            <Clock size={15} />
+            <span>Em Andamento / Rascunhos</span>
+            <span className="encounter-hub-tab-badge">{inProgressList.length}</span>
+          </button>
+
+          <button
+            type="button"
             className={`encounter-hub-tab-btn ${activeTab === 'completed' ? 'active' : ''}`}
             onClick={() => setActiveTab('completed')}
           >
@@ -620,21 +967,207 @@ function EncounterHub({
           </button>
         </div>
 
-        <div className="encounter-hub-search-box">
-          <Search size={15} />
-          <input
-            type="text"
-            placeholder="Buscar por paciente ou tipo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        {activeTab !== 'calendar' && (
+          <div className="encounter-hub-search-box">
+            <Search size={15} />
+            <input
+              type="text"
+              placeholder="Buscar por paciente ou tipo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        )}
       </div>
 
       {loading ? (
         <div className="encounter-hub-empty">
           <span className="spinner" />
-          <p>Carregando atendimentos...</p>
+          <p>Carregando dados clínicos e agenda...</p>
+        </div>
+      ) : activeTab === 'calendar' ? (
+        <div className="agenda-layout">
+          <section className="panel calendar-panel">
+            <div className="calendar-heading">
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
+              >
+                <ChevronLeft size={19} />
+              </button>
+              <h2>{month.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h2>
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+              >
+                <ChevronRight size={19} />
+              </button>
+            </div>
+
+            <div className="calendar-weekdays">
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+                <span key={day}>{day}</span>
+              ))}
+            </div>
+
+            <div className="calendar-grid">
+              {calendarCells.map((date) => {
+                const value = isoDate(date);
+                const count = monthAppointments.filter((a) => a.date.slice(0, 10) === value).length;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`${date.getMonth() !== month.getMonth() ? 'outside ' : ''}${value === selectedDate ? 'selected ' : ''}${value === todayIso ? 'today' : ''}`}
+                    onClick={() => setSelectedDate(value)}
+                  >
+                    <span>{date.getDate()}</span>
+                    {count > 0 && <small>{count}</small>}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="calendar-legend">
+              <span>
+                <i /> Dia com consulta
+              </span>
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => {
+                  const now = new Date();
+                  setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+                  setSelectedDate(todayIso);
+                }}
+              >
+                Ir para hoje
+              </button>
+            </div>
+          </section>
+
+          <section className="panel day-panel">
+            <div className="panel-heading">
+              <div>
+                <span className="eyebrow">Agenda do dia</span>
+                <h3>
+                  {new Date(`${selectedDate}T12:00:00`).toLocaleDateString('pt-BR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                  })}
+                </h3>
+              </div>
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => showCreateAppointment(selectedDate)}
+                aria-label="Agendar neste dia"
+                title="Novo agendamento nesta data"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+
+            {selectedDateAppointments.length === 0 ? (
+              <div className="empty-state">
+                <CalendarDays size={32} />
+                <strong>Nenhuma consulta agendada neste dia</strong>
+                <p>Escolha outro dia no calendário ou adicione um novo horário.</p>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => showCreateAppointment(selectedDate)}
+                >
+                  <Plus size={17} /> Agendar consulta
+                </button>
+              </div>
+            ) : (
+              <div className="appointment-list">
+                {selectedDateAppointments.map((item) => (
+                  <article
+                    className={`appointment-card response-${item.patientResponse.toLowerCase()}`}
+                    key={item.id}
+                  >
+                    <div className="appointment-time">
+                      <strong title={`${item.time} às ${getEndTime(item.time, item.durationMinutes)}`}>
+                        {item.time} às {getEndTime(item.time, item.durationMinutes)}
+                      </strong>
+                      <small>{item.durationMinutes} min</small>
+                    </div>
+                    <div className="appointment-info">
+                      <strong>{item.patientName}</strong>
+                      <span>{item.type}</span>
+                      <small>
+                        {item.patientResponse === 'RESCHEDULE_REQUESTED'
+                          ? `Reagendamento: ${item.patientResponseNote}`
+                          : item.patientResponse === 'CONFIRMED'
+                          ? 'Paciente confirmou presença'
+                          : 'Aguardando confirmação do paciente'}
+                      </small>
+                    </div>
+
+                    <select
+                      className={`appointment-status status-${item.status.toLowerCase()}`}
+                      value={item.status}
+                      onChange={(e) => void updateAppointmentStatus(item, e.target.value as AppointmentStatus)}
+                    >
+                      {statusTransitions[item.status].map((value) => (
+                        <option key={value} value={value}>
+                          {statusLabels[value]}
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="appointment-actions">
+                      {item.patientResponse === 'RESCHEDULE_REQUESTED' && (
+                        <button
+                          type="button"
+                          className="secondary-button"
+                          onClick={() => showEditAppointment(item)}
+                        >
+                          Reagendar
+                        </button>
+                      )}
+                      {item.whatsapp && (
+                        <a
+                          className="icon-button"
+                          href={getWhatsAppLink(item)!}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Enviar lembrete e link no WhatsApp"
+                          style={{ color: '#16a34a' }}
+                        >
+                          <MessageCircle size={17} />
+                        </a>
+                      )}
+                      {item.meetingUrl && (
+                        <a
+                          className="icon-button"
+                          href={item.meetingUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Abrir sala externa"
+                        >
+                          <Video size={17} />
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        className="start-care"
+                        onClick={() => void handleStartAppointment(item)}
+                        title="Abrir prontuário e iniciar consulta"
+                      >
+                        Atender <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       ) : activeTab === 'in_progress' ? (
         filteredInProgress.length === 0 ? (
@@ -646,27 +1179,30 @@ function EncounterHub({
             <p>
               Quando você inicia uma consulta pela Agenda ou como encaixe, ela aparece aqui como rascunho até ser finalizada.
             </p>
-            <button type="button" className="secondary-button" onClick={() => navigate('/agenda')}>
-              <Calendar size={15} /> Ver Agenda de Consultas
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setActiveTab('calendar')}
+            >
+              <Calendar size={15} /> Ver Calendário de Consultas
             </button>
           </div>
         ) : (
           <>
-            {inProgressList.length > 1 && (
-              <div className="encounter-hub-toolbar">
-                <small style={{ color: 'var(--muted)' }}>
-                  Você possui <strong>{inProgressList.length}</strong> atendimento(s) em aberto.
-                </small>
-                <button
-                  type="button"
-                  className="encounter-hub-bulk-btn"
-                  onClick={() => void handleBulkCloseAll()}
-                  title="Encerrar e arquivar todos os rascunhos em aberto"
-                >
-                  <CheckCircle2 size={14} /> Encerrar todos os {inProgressList.length} rascunhos
-                </button>
-              </div>
-            )}
+            <div className="encounter-hub-in-progress-actions">
+              <span className="encounter-hub-in-progress-info">
+                Você possui <strong>{filteredInProgress.length}</strong> atendimento(s) em andamento.
+              </span>
+              <button
+                type="button"
+                className="secondary-button bulk-close-btn"
+                onClick={() => void handleBulkCloseAll()}
+                title="Encerrar e arquivar todos os rascunhos de uma só vez"
+              >
+                <Check size={14} /> Encerrar todos os {filteredInProgress.length} rascunhos
+              </button>
+            </div>
+
             <div className="encounter-hub-grid">
               {filteredInProgress.map((enc) => (
                 <article key={enc.id} className="encounter-hub-card">
@@ -674,26 +1210,29 @@ function EncounterHub({
                     <div className="encounter-hub-avatar">{enc.patientName.charAt(0)}</div>
                     <div className="encounter-hub-patient-info">
                       <strong>{enc.patientName}</strong>
-                      <small>{enc.patientEmail || enc.objective || 'Atendimento clínico'}</small>
+                      <small>{enc.appointmentType || enc.objective || 'Consulta Nutricional'}</small>
                     </div>
-                    <span className="encounter-hub-tag in_progress">Em Andamento</span>
+                    <span className="encounter-hub-tag in-progress">Em andamento</span>
                   </div>
 
                   <div className="encounter-hub-card-meta">
                     <div className="encounter-hub-card-meta-row">
                       <Clock size={13} />
-                      <span>Iniciado em: <strong>{new Date(enc.startedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</strong></span>
+                      <span>
+                        Iniciado em:{' '}
+                        <strong>
+                          {new Date(enc.startedAt).toLocaleDateString('pt-BR')} às{' '}
+                          {new Date(enc.startedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </strong>
+                      </span>
                     </div>
                     {enc.appointmentTime && (
                       <div className="encounter-hub-card-meta-row">
                         <Calendar size={13} />
-                        <span>Agendamento: <strong>{enc.appointmentTime} ({enc.durationMinutes || 60} min)</strong></span>
-                      </div>
-                    )}
-                    {enc.objective && (
-                      <div className="encounter-hub-card-meta-row">
-                        <Zap size={13} />
-                        <span>Objetivo: <strong>{enc.objective}</strong></span>
+                        <span>
+                          Horário agendado:{' '}
+                          <strong>{formatAppointmentSchedule(enc.appointmentTime, enc.durationMinutes || 60)}</strong>
+                        </span>
                       </div>
                     )}
                   </div>
@@ -703,7 +1242,6 @@ function EncounterHub({
                       type="button"
                       className="encounter-hub-action-btn danger"
                       onClick={() => void handleDeleteEncounter(enc.id, enc.patientName)}
-                      title="Excluir este rascunho de atendimento"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -711,7 +1249,6 @@ function EncounterHub({
                       type="button"
                       className="encounter-hub-action-btn secondary"
                       onClick={() => void handleQuickClose(enc.id, enc.patientName)}
-                      title="Encerrar e mover para o histórico de realizados"
                     >
                       <Check size={14} /> Encerrar
                     </button>
@@ -735,9 +1272,13 @@ function EncounterHub({
               <Calendar size={24} />
             </div>
             <h3>Nenhuma consulta agendada para hoje</h3>
-            <p>Abra a Agenda para verificar outros dias ou marcar novos atendimentos.</p>
-            <button type="button" className="primary-button" onClick={() => navigate('/agenda')}>
-              <Calendar size={15} /> Ir para a Agenda
+            <p>Abra o Calendário para verificar outros dias ou marcar novos atendimentos.</p>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => setActiveTab('calendar')}
+            >
+              <Calendar size={15} /> Ir para o Calendário
             </button>
           </div>
         ) : (
@@ -756,16 +1297,22 @@ function EncounterHub({
                 <div className="encounter-hub-card-meta">
                   <div className="encounter-hub-card-meta-row">
                     <Clock size={13} />
-                    <span>Horário: <strong>{formatAppointmentSchedule(app.time, app.durationMinutes || 60)}</strong></span>
+                    <span>
+                      Horário: <strong>{formatAppointmentSchedule(app.time, app.durationMinutes || 60)}</strong>
+                    </span>
                   </div>
                   {app.whatsapp && (
                     <div className="encounter-hub-card-meta-row">
-                      <span>WhatsApp: <strong>{app.whatsapp}</strong></span>
+                      <span>
+                        WhatsApp: <strong>{app.whatsapp}</strong>
+                      </span>
                     </div>
                   )}
                   {app.notes && (
                     <div className="encounter-hub-card-meta-row">
-                      <span>Notas: <strong>{app.notes}</strong></span>
+                      <span>
+                        Notas: <strong>{app.notes}</strong>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -808,12 +1355,21 @@ function EncounterHub({
                 <div className="encounter-hub-card-meta">
                   <div className="encounter-hub-card-meta-row">
                     <CheckCircle2 size={13} />
-                    <span>Finalizado em: <strong>{enc.completedAt ? new Date(enc.completedAt).toLocaleDateString('pt-BR') : new Date(enc.startedAt).toLocaleDateString('pt-BR')}</strong></span>
+                    <span>
+                      Finalizado em:{' '}
+                      <strong>
+                        {enc.completedAt
+                          ? new Date(enc.completedAt).toLocaleDateString('pt-BR')
+                          : new Date(enc.startedAt).toLocaleDateString('pt-BR')}
+                      </strong>
+                    </span>
                   </div>
                   {enc.objective && (
                     <div className="encounter-hub-card-meta-row">
                       <Zap size={13} />
-                      <span>Objetivo: <strong>{enc.objective}</strong></span>
+                      <span>
+                        Objetivo: <strong>{enc.objective}</strong>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -823,7 +1379,6 @@ function EncounterHub({
                     type="button"
                     className="encounter-hub-action-btn danger"
                     onClick={() => void handleDeleteEncounter(enc.id, enc.patientName)}
-                    title="Excluir registro permanentemente"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -841,12 +1396,235 @@ function EncounterHub({
         )
       )}
 
+      {appointmentModalOpen && (
+        <div
+          className="modal-backdrop"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setAppointmentModalOpen(false);
+          }}
+        >
+          <section className="modal" role="dialog" aria-modal="true" aria-labelledby="appointment-title">
+            <div className="modal-heading">
+              <div>
+                <span className="eyebrow">Agenda clínica</span>
+                <h2 id="appointment-title">
+                  {isRebooking
+                    ? 'Reagendar consulta'
+                    : editingAppointmentId
+                    ? 'Editar consulta'
+                    : 'Nova consulta'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setAppointmentModalOpen(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={saveAppointment}>
+              <div className="form-grid">
+                <label className="full">
+                  Paciente
+                  <select
+                    value={appointmentForm.patientId}
+                    onChange={(e) =>
+                      setAppointmentForm({ ...appointmentForm, patientId: e.target.value })
+                    }
+                    required
+                  >
+                    <option value="">Selecione um paciente</option>
+                    {patients.map((patient) => (
+                      <option value={patient.id} key={patient.id}>
+                        {patient.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Data
+                  <input
+                    type="date"
+                    min={!editingAppointmentId ? todayIso : undefined}
+                    value={appointmentForm.date}
+                    onChange={(e) =>
+                      setAppointmentForm({ ...appointmentForm, date: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+
+                <label>
+                  Horário
+                  <input
+                    type="time"
+                    value={appointmentForm.time}
+                    onChange={(e) =>
+                      setAppointmentForm({ ...appointmentForm, time: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+
+                <label>
+                  Tipo
+                  <select
+                    value={appointmentForm.type}
+                    onChange={(e) =>
+                      setAppointmentForm({ ...appointmentForm, type: e.target.value })
+                    }
+                  >
+                    {appointmentTypes.map((type) => (
+                      <option key={type}>{type}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Duração
+                  <select
+                    value={appointmentForm.durationMinutes}
+                    onChange={(e) =>
+                      setAppointmentForm({ ...appointmentForm, durationMinutes: e.target.value })
+                    }
+                  >
+                    <option value="30">30 minutos</option>
+                    <option value="45">45 minutos</option>
+                    <option value="60">60 minutos</option>
+                    <option value="90">90 minutos</option>
+                  </select>
+                </label>
+
+                <div
+                  style={{
+                    gridColumn: '1/-1',
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '10px',
+                    padding: '10px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '0.82rem',
+                    color: '#166534',
+                    fontWeight: 700,
+                  }}
+                >
+                  <Clock3 size={16} /> Horário agendado: {appointmentForm.time} às{' '}
+                  {getEndTime(appointmentForm.time, Number(appointmentForm.durationMinutes) || 60)} (
+                  {appointmentForm.durationMinutes} minutos)
+                </div>
+
+                <label>
+                  Valor (R$)
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={appointmentForm.price}
+                    onChange={(e) =>
+                      setAppointmentForm({ ...appointmentForm, price: e.target.value })
+                    }
+                  />
+                </label>
+
+                <label>
+                  Status
+                  <select
+                    value={appointmentForm.status}
+                    onChange={(e) =>
+                      setAppointmentForm({
+                        ...appointmentForm,
+                        status: e.target.value as AppointmentStatus,
+                      })
+                    }
+                  >
+                    {formStatuses.map((value) => (
+                      <option key={value} value={value}>
+                        {statusLabels[value]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {appointmentForm.type.toLowerCase().includes('online') && (
+                  <label className="full">
+                    Link da teleconsulta
+                    <div className="input-with-icon">
+                      <Video size={17} />
+                      <input
+                        type="url"
+                        value={appointmentForm.meetingUrl}
+                        onChange={(e) =>
+                          setAppointmentForm({ ...appointmentForm, meetingUrl: e.target.value })
+                        }
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </label>
+                )}
+
+                <label className="full">
+                  Observações
+                  <textarea
+                    rows={3}
+                    value={appointmentForm.notes}
+                    onChange={(e) =>
+                      setAppointmentForm({ ...appointmentForm, notes: e.target.value })
+                    }
+                    placeholder="Ex.: trazer exames laboratoriais recentes"
+                  />
+                </label>
+              </div>
+
+              {patients.length === 0 && (
+                <div className="inline-guidance">
+                  <UserRound size={18} />
+                  <span>Cadastre um paciente antes de criar a consulta.</span>
+                </div>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setAppointmentModalOpen(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="primary-button"
+                  disabled={savingAppointment || patients.length === 0}
+                >
+                  {savingAppointment ? (
+                    'Salvando...'
+                  ) : (
+                    <>
+                      <Clock3 size={17} />{' '}
+                      {isRebooking
+                        ? 'Confirmar reagendamento'
+                        : editingAppointmentId
+                        ? 'Salvar consulta'
+                        : 'Confirmar consulta'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+
       {walkInOpen && (
         <div className="modal-backdrop" onClick={() => setWalkInOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px' }}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ClipboardList size={20} color="var(--forest)" />
+                <Zap size={20} color="var(--forest)" />
                 <h3 style={{ margin: 0 }}>Atendimento Avulso (Encaixe)</h3>
               </div>
               <button type="button" className="icon-button" onClick={() => setWalkInOpen(false)}>
@@ -897,7 +1675,73 @@ function EncounterHub({
 }
 
 const checkinLabels:Record<string,string>={improvements:'O que melhorou',mainDifficulty:'Principal dificuldade',medicationChanges:'Mudanças de medicamentos',newSymptoms:'Sintomas novos',adherence:'Adesão percebida (0–10)',examsCompleted:'Exames realizados',discussionTopics:'Assuntos para a consulta'};
-function ClinicalSnapshot({encounter,reload}:{encounter:Encounter;reload:()=>void}){const anamnesis=encounter.sections.anamnesis?.data||{};const conduct=encounter.sections.conduct?.data||{};const exams=encounter.sections.exams?.data||{};const assessment=encounter.sections.assessment?.data||{};const pending=encounter.checkins?.filter(item=>item.status==='PENDING_REVIEW')||[];const cards=[['Objetivo',encounter.objective],['Alergias e intolerâncias',anamnesis.allergies],['Medicamentos em uso',anamnesis.medications],['Peso atual',assessment.weight?`${assessment.weight} kg`:null],['Próximo acompanhamento',conduct.followUp],['Exames pendentes',exams.pendingExams]].filter(([,value])=>String(value||'').trim());const[selected,setSelected]=useState<Record<string,string[]>>({});async function review(id:string){await api(`/api/encounters/${encounter.id}/checkins/${id}/review`,{method:'PATCH'});reload()}function toggle(id:string,key:string){setSelected(current=>{const fields=current[id]||[];return{...current,[id]:fields.includes(key)?fields.filter(x=>x!==key):[...fields,key]}})}async function incorporate(id:string){const fields=selected[id]||[];if(!fields.length)return;await api(`/api/encounters/${encounter.id}/import-clinical`,{method:'POST',body:JSON.stringify({sourceType:'CHECKIN',sourceId:id,fields})});await review(id)}return <section className="clinical-snapshot"><header><div><span className="eyebrow">Resumo clínico vivo</span><h3>Essencial para esta decisão</h3></div>{pending.length>0&&<strong>{pending.length} check-in{pending.length>1?'s':''} para revisar</strong>}</header><div className="snapshot-grid">{cards.length?cards.map(([label,value])=><article key={String(label)}><small>{label}</small><p>{String(value)}</p></article>):<p className="snapshot-empty">O resumo será formado conforme as etapas forem salvas.</p>}</div>{pending.map(item=><details className="checkin-review" key={item.id} open><summary>Check-in enviado em {new Date(item.submittedAt).toLocaleDateString('pt-BR')}</summary><div>{Object.entries(item.answers).filter(([,value])=>String(value||'').trim()).map(([key,value])=><article key={key}><label className="check"><input type="checkbox" checked={(selected[item.id]||[]).includes(key)} onChange={()=>toggle(item.id,key)}/><strong>{checkinLabels[key]||key}</strong></label><p>{String(value)}</p></article>)}</div><button className="primary-button" type="button" disabled={!(selected[item.id]||[]).length} onClick={()=>void incorporate(item.id)}><Check size={15}/> Incorporar selecionados à evolução</button><button className="secondary-button" type="button" onClick={()=>void review(item.id)}>Apenas marcar como revisado</button><small>Somente os itens selecionados entram nas Anotações, com registro de auditoria.</small></details>)}</section>}
+
+function ClinicalSnapshot({encounter,reload}:{encounter:Encounter;reload:()=>void}){
+  const anamnesis=encounter.sections.anamnesis?.data||{};
+  const conduct=encounter.sections.conduct?.data||{};
+  const exams=encounter.sections.exams?.data||{};
+  const assessment=encounter.sections.assessment?.data||{};
+  const pending=encounter.checkins?.filter(item=>item.status==='PENDING_REVIEW')||[];
+  const cards=[['Objetivo',encounter.objective],['Alergias e intolerâncias',anamnesis.allergies],['Medicamentos em uso',anamnesis.medications],['Peso atual',assessment.weight?`${assessment.weight} kg`:null],['Próximo acompanhamento',conduct.followUp],['Exames pendentes',exams.pendingExams]].filter(([,value])=>String(value||'').trim());
+  const[selected,setSelected]=useState<Record<string,string[]>>({});
+
+  async function review(id:string){
+    await api(`/api/encounters/${encounter.id}/checkins/${id}/review`,{method:'PATCH'});
+    reload();
+  }
+
+  function toggle(id:string,key:string){
+    setSelected(current=>{
+      const fields=current[id]||[];
+      return{...current,[id]:fields.includes(key)?fields.filter(x=>x!==key):[...fields,key]};
+    });
+  }
+
+  async function incorporate(id:string){
+    const fields=selected[id]||[];
+    if(!fields.length)return;
+    await api(`/api/encounters/${encounter.id}/import-clinical`,{method:'POST',body:JSON.stringify({sourceType:'CHECKIN',sourceId:id,fields})});
+    await review(id);
+  }
+
+  return (
+    <section className="clinical-snapshot">
+      <header>
+        <div>
+          <span className="eyebrow">Resumo clínico vivo</span>
+          <h3>Essencial para esta decisão</h3>
+        </div>
+        {pending.length>0&&<strong>{pending.length} check-in{pending.length>1?'s':''} para revisar</strong>}
+      </header>
+      <div className="snapshot-grid">
+        {cards.length?cards.map(([label,value])=><article key={String(label)}><small>{label}</small><p>{String(value)}</p></article>):<p className="snapshot-empty">O resumo será formado conforme as etapas forem salvas.</p>}
+      </div>
+      {pending.map(item=>(
+        <details className="checkin-review" key={item.id} open>
+          <summary>Check-in enviado em {new Date(item.submittedAt).toLocaleDateString('pt-BR')}</summary>
+          <div>
+            {Object.entries(item.answers).filter(([,value])=>String(value||'').trim()).map(([key,value])=>(
+              <article key={key}>
+                <label className="check">
+                  <input type="checkbox" checked={(selected[item.id]||[]).includes(key)} onChange={()=>toggle(item.id,key)}/>
+                  <strong>{checkinLabels[key]||key}</strong>
+                </label>
+                <p>{String(value)}</p>
+              </article>
+            ))}
+          </div>
+          <button className="primary-button" type="button" disabled={!(selected[item.id]||[]).length} onClick={()=>void incorporate(item.id)}>
+            <Check size={15}/> Incorporar selecionados à evolução
+          </button>
+          <button className="secondary-button" type="button" onClick={()=>void review(item.id)}>
+            Apenas marcar como revisado
+          </button>
+          <small>Somente os itens selecionados entram nas Anotações, com registro de auditoria.</small>
+        </details>
+      ))}
+    </section>
+  );
+}
 
 function EncounterPlan({encounterId,planId,onCreated}:{encounterId:string;planId:string;onCreated:()=>void}){const[creating,setCreating]=useState(false);const[error,setError]=useState('');async function open(){setCreating(true);setError('');try{await api('/api/nutrition/plans/for-encounter',{method:'POST',body:JSON.stringify({encounterId})});onCreated()}catch(c){setError(c instanceof Error?c.message:'Não foi possível preparar o plano.')}finally{setCreating(false)}}if(!planId)return <div className="encounter-plan-empty"><UtensilsCrossed size={34}/><h3>Plano alimentar deste atendimento</h3><p>Crie um rascunho vinculado ao paciente e use TACO e receitas sem sair da videochamada.</p>{error&&<div className="form-error">{error}</div>}<button className="primary-button" onClick={()=>void open()} disabled={creating}>{creating?'Preparando editor...':<><Plus size={17}/> Criar plano para este paciente</>}</button></div>;return <iframe className="embedded-plan-editor" src={`/embed/planos/${planId}`} title="Editor do plano alimentar"/>}
 
