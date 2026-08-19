@@ -249,25 +249,31 @@
             z-index: 5;
         }
 
-        /* ── ELEMENTOS DE VÍDEO (PADRÃO COVER ELEGANTE E SUAVE) ── */
+        /* ── ELEMENTOS DE VÍDEO (100% VISÍVEL E SEM CORTES POR PADRÃO) ── */
         .video-element {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Padrão moderno: preenche o enquadramento sem bordas pretas */
+            object-fit: contain; /* Padrão: 100% da pessoa visível sem cortar partes do rosto/corpo */
             background: #040805;
             transition: object-fit 0.2s ease;
             display: block;
         }
 
-        .stage-container.fit-contain .video-element {
-            object-fit: contain !important; /* Modo sem cortes quando ativado */
+        /* Na miniatura PiP própria, usar cover para preencher o cartão */
+        .mode-spotlight .local-video-wrap .video-element {
+            object-fit: cover;
+        }
+
+        /* Modo Preencher Tela (se o usuário clicar no botão de enquadramento) */
+        .stage-container.fit-cover .video-element {
+            object-fit: cover !important;
         }
 
         #localVideo {
             transform: scaleX(-1); /* espelha câmera própria */
         }
 
-        /* Se for compartilhamento de tela, nunca cortar texto */
+        /* Se for compartilhamento de tela, sempre manter 100% legível */
         .screen-sharing-active #remoteVideo,
         .screen-sharing-active #localVideo {
             object-fit: contain !important;
@@ -692,13 +698,13 @@
             const stage = document.getElementById('stageContainer');
             const btn = document.getElementById('btnFit');
             if (isCoverFit) {
-                stage.classList.add('fit-contain');
+                stage.classList.add('fit-cover');
                 if (btn) btn.classList.add('active');
-                showToast('Enquadramento: Sem Cortes (Proporção Original)');
+                showToast('Enquadramento: Preencher Tela (com Zoom)');
             } else {
-                stage.classList.remove('fit-contain');
+                stage.classList.remove('fit-cover');
                 if (btn) btn.classList.remove('active');
-                showToast('Enquadramento: Preenchimento Suave');
+                showToast('Enquadramento: 100% Visível (Sem Cortes)');
             }
         }
 
