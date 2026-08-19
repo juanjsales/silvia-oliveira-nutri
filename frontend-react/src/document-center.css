@@ -1,28 +1,26 @@
-/* ═════════════════════════════════════════════════════════════════════
-   CENTRAL DE DOCUMENTOS & EMISSÕES A4 — RESPONSIVE DESIGN
-   ═════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   CENTRAL DE DOCUMENTOS & EMISSÕES A4 — PADRÃO CLÍNICO PREMIUM
+   ═══════════════════════════════════════════════════════════════ */
 
 .documents-center-v2 {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .page-intro-v2 {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  align-items: center;
   flex-wrap: wrap;
+  gap: 16px;
 }
 
 .page-intro-v2 h2 {
   margin: 2px 0 4px;
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   color: #1e293b;
-  letter-spacing: -0.02em;
 }
 
 .page-intro-v2 p {
@@ -41,71 +39,80 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  font-size: 0.84rem;
+  background: #203528;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 12px;
   box-shadow: 0 4px 14px rgba(32, 53, 40, 0.2);
+  transition: all 0.15s ease;
 }
 
-/* ── LAYOUT EM 2 COLUNAS ── */
+.doc-print-btn:hover:not(:disabled) {
+  background: #16261d;
+  transform: translateY(-1px);
+}
+
 .documents-layout-v2 {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
 
-/* ── PAINEL DE CONTROLES ── */
+/* ── PAINEL LATERAL DE CONTROLES ── */
 .doc-controls-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 22px;
-  position: sticky;
-  top: 96px;
+  gap: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
 }
 
 .control-section-title {
-  font-size: 0.76rem;
+  display: block;
+  font-size: 0.72rem;
   font-weight: 800;
-  color: #0f172a;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-bottom: 4px;
 }
 
 .doc-type-selector {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
 .doc-type-btn {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   padding: 12px 14px;
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.18s ease;
-  color: #334155;
-}
-
-.doc-type-btn svg {
-  flex-shrink: 0;
-  color: #64748b;
+  transition: all 0.15s ease;
 }
 
 .doc-type-btn strong {
   display: block;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   color: #1e293b;
 }
 
 .doc-type-btn small {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: #64748b;
+  line-height: 1.2;
 }
 
 .doc-type-btn:hover {
@@ -120,7 +127,6 @@
   box-shadow: 0 4px 12px rgba(32, 53, 40, 0.15);
 }
 
-.doc-type-btn.active svg,
 .doc-type-btn.active strong,
 .doc-type-btn.active small {
   color: #ffffff;
@@ -129,26 +135,32 @@
 .doc-field-label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.76rem;
+  gap: 5px;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #334155;
 }
 
-.doc-field-label select,
 .doc-field-label input,
+.doc-field-label select,
 .doc-field-label textarea {
   width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #ffffff;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+}
+
+.doc-field-label textarea {
+  resize: vertical;
 }
 
 .doc-times-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.doc-times-grid .doc-field-label:first-child {
-  grid-column: 1 / -1;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
 }
 
 .doc-help-card {
@@ -157,481 +169,523 @@
   gap: 10px;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  border-radius: 12px;
-  padding: 12px 14px;
+  padding: 12px;
+  border-radius: 10px;
   color: #166534;
+  font-size: 0.74rem;
+  line-height: 1.4;
   margin-top: 4px;
 }
 
 .doc-help-card strong {
-  font-size: 0.78rem;
   display: block;
+  font-size: 0.78rem;
   margin-bottom: 2px;
 }
 
 .doc-help-card p {
   margin: 0;
-  font-size: 0.72rem;
-  line-height: 1.4;
-  color: #15803d;
 }
 
 /* ── ÁREA DE PRÉ-VISUALIZAÇÃO A4 ── */
 .doc-preview-wrapper {
+  background: #475569;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
-  background: #334155;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .preview-toolbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  background: #1e293b;
-  color: #e2e8f0;
-  border-bottom: 1px solid #475569;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  padding: 10px 18px;
+  background: #334155;
+  color: #ffffff;
+  border-bottom: 1px solid #1e293b;
 }
 
 .preview-tag {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #e2e8f0;
 }
 
 .zoom-controls {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #0f172a;
-  border-radius: 8px;
-  padding: 3px 6px;
 }
 
 .zoom-btn {
-  border: none;
-  background: transparent;
-  color: #94a3b8;
-  padding: 4px 6px;
-  border-radius: 4px;
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
   cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease;
 }
 
 .zoom-btn:hover {
-  background: #334155;
-  color: #ffffff;
-}
-
-.zoom-btn.reset {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 2px 8px;
+  background: #0f172a;
 }
 
 .zoom-value {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  color: #cbd5e1;
-  min-width: 36px;
+  color: #94a3b8;
+  min-width: 40px;
   text-align: center;
 }
 
 .sheet-scroll-container {
-  padding: 30px 20px;
+  padding: 36px 20px;
   overflow: auto;
-  max-height: 850px;
+  max-height: 900px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  background: #64748b;
 }
 
 .sheet-zoom-box {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── FOLHA OFICIAL A4 ── */
+/* ═══════════════════════════════════════════════════════════════
+   FOLHA A4 TIMBRADA OFICIAL (PADRÃO CLÍNICO ELEGANTE)
+   ═══════════════════════════════════════════════════════════════ */
 .official-sheet-v2 {
   width: 210mm;
   min-height: 297mm;
   background: #ffffff;
-  color: #1e293b;
-  padding: 16mm 18mm 14mm;
+  color: #0f172a;
+  padding: 20mm 22mm 18mm;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   border-radius: 2px;
   box-sizing: border-box;
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
 }
 
+/* Marca d'água discreta de autenticidade clínica */
+.official-sheet-v2::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 130mm;
+  height: 130mm;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' opacity='0.03'%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23203528' stroke-width='2'/%3E%3Cpath d='M 50 18 Q 72 40 50 82 Q 28 40 50 18 Z' fill='%23203528'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* CABEÇALHO TIMBRADO */
 .sheet-header-v2 {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding-bottom: 6mm;
+  align-items: flex-end;
+  padding-bottom: 5mm;
   border-bottom: 2px solid var(--doc-secondary, #8ca481);
+  position: relative;
+  z-index: 1;
 }
 
 .sheet-clinic-info {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.sheet-logo-svg {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
+  gap: 14px;
 }
 
 .sheet-logo-img {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
-  border-radius: 8px;
+}
+
+.sheet-logo-svg {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 }
 
 .sheet-prof-name {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 14pt;
+  font-size: 15pt;
   font-weight: 700;
   color: var(--doc-primary, #203528);
   display: block;
+  letter-spacing: 0.02em;
 }
 
 .sheet-prof-crn {
-  font-size: 7.5pt;
-  color: #64748b;
+  font-size: 8.5pt;
+  color: #475569;
   display: block;
+  margin-top: 1px;
+  font-weight: 500;
 }
 
 .sheet-category-badge {
   font-size: 7.5pt;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   font-weight: 800;
-  color: var(--doc-secondary, #8ca481);
+  color: var(--doc-primary, #203528);
   padding: 4px 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-bottom: 1.5px solid var(--doc-secondary, #8ca481);
 }
 
+/* CORPO DO DOCUMENTO */
 .sheet-body-v2 {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 12mm 0 6mm;
+  padding: 14mm 0 8mm;
+  position: relative;
+  z-index: 1;
 }
 
 .official-content-v2 {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
   height: 100%;
 }
 
-.official-emblem-badge {
-  color: var(--doc-secondary, #8ca481);
-  margin-bottom: 4mm;
-}
-
 .doc-subtitle-badge {
+  text-align: center;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 7.5pt;
-  font-weight: 800;
-  color: var(--doc-secondary, #8ca481);
+  letter-spacing: 3px;
+  font-size: 8pt;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 2mm;
 }
 
 .doc-main-title {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 21pt;
+  font-size: 19pt;
   color: var(--doc-primary, #203528);
-  margin: 3mm 0 12mm;
+  text-align: center;
+  margin: 0 0 14mm;
   font-weight: 700;
+  letter-spacing: 1px;
 }
 
-.official-text-box {
-  width: 100%;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-left: 5px solid var(--doc-primary, #203528);
-  border-radius: 12px;
-  padding: 9mm 10mm;
-  text-align: left;
-  box-sizing: border-box;
+/* TEXTO FORMAL CLÍNICO (SEM CAIXAS DE BLOG, FORMATAÇÃO MÉDICA PURA) */
+.official-body-paragraphs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7mm;
 }
 
-.official-text-box p {
-  font-size: 11pt;
-  line-height: 1.95;
+.official-body-paragraphs p {
+  font-size: 11.5pt;
+  line-height: 2.1;
   color: #1e293b;
   text-align: justify;
-  text-indent: 8mm;
-  margin: 0 0 5mm;
+  text-indent: 14mm;
+  margin: 0;
 }
 
-.official-text-box p:last-child {
-  margin-bottom: 0;
+.official-body-paragraphs strong {
+  color: #0f172a;
+  font-weight: 700;
 }
 
 .official-notes-aside {
   margin-top: 6mm;
-  padding-top: 5mm;
-  border-top: 1px dashed #cbd5e1;
+  padding: 4mm 6mm;
+  background: #f8fafc;
+  border-left: 3px solid var(--doc-secondary, #8ca481);
+  border-radius: 4px;
 }
 
 .official-notes-aside strong {
   font-size: 8.5pt;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--doc-primary, #203528);
   display: block;
-  margin-bottom: 2mm;
+  margin-bottom: 1.5mm;
 }
 
 .official-notes-aside p {
   font-size: 9.5pt;
-  line-height: 1.6;
+  line-height: 1.7;
   color: #475569;
   text-indent: 0;
+  text-align: left;
   margin: 0;
 }
 
-.sheet-signature-block {
-  margin-top: auto;
-  padding-top: 14mm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.signature-date {
-  font-size: 9pt;
-  color: #64748b;
-  margin-bottom: 14mm;
-}
-
-.signature-line {
-  width: 80mm;
-  border-top: 1.5px solid var(--doc-primary, #203528);
-  margin-bottom: 3mm;
-}
-
-.signature-name {
-  font-size: 10.5pt;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.signature-crn {
-  font-size: 8pt;
-  color: var(--doc-secondary, #8ca481);
-}
-
-/* ── SUPLEMENTAÇÃO ── */
+/* ── RECEITUÁRIO DE SUPLEMENTAÇÃO ── */
 .supplement-doc-v2 {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
+.prescription-rx-badge {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28pt;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--doc-secondary, #8ca481);
+  line-height: 1;
+  margin-bottom: 4mm;
+}
+
 .supplements-list-v2 {
   display: flex;
   flex-direction: column;
-  gap: 4mm;
-  width: 100%;
+  gap: 5mm;
+  margin: 2mm 0 8mm;
 }
 
 .supplement-card-item {
-  display: grid;
-  grid-template-columns: 12mm 1fr;
-  gap: 5mm;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-left: 4px solid var(--doc-primary, #203528);
-  border-radius: 10px;
-  padding: 5mm 6mm;
-  align-items: start;
+  display: flex;
+  align-items: flex-start;
+  gap: 4mm;
+  padding-bottom: 4mm;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .supplement-number {
-  width: 9mm;
-  height: 9mm;
-  border-radius: 50%;
-  background: #eef5f0;
-  color: var(--doc-primary, #203528);
-  font-size: 8pt;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 13pt;
+  font-weight: 700;
+  color: var(--doc-secondary, #8ca481);
+  min-width: 6mm;
+}
+
+.supplement-details {
+  flex: 1;
 }
 
 .supplement-details h2 {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #0f172a;
   margin: 0 0 1.5mm;
-  font-size: 12pt;
-  color: #1e293b;
 }
 
 .supplement-dosage {
-  font-size: 9pt;
-  color: var(--doc-secondary, #8ca481);
   display: block;
+  font-size: 9.5pt;
+  font-weight: 700;
+  color: var(--doc-primary, #203528);
+  margin-bottom: 1mm;
 }
 
 .supplement-posology {
-  margin: 2mm 0;
-  font-size: 9pt;
+  font-size: 9.5pt;
+  line-height: 1.5;
   color: #334155;
+  margin: 0 0 1mm;
 }
 
 .supplement-form {
   font-size: 8pt;
   color: #64748b;
+  font-style: italic;
   display: block;
 }
 
 .supplement-obs {
-  margin-top: 2mm;
-  padding: 2mm 3mm;
-  background: #f8fafc;
-  border-radius: 6px;
   font-size: 8pt;
-  color: #475569;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
 }
 
 .no-prescription-notice {
-  padding: 20px;
-  background: #f8fafc;
-  border-radius: 10px;
-  color: #64748b;
   text-align: center;
-  font-size: 9.5pt;
-}
-
-.sheet-footer-v2 {
-  border-top: 1px solid #e2e8f0;
-  padding-top: 4mm;
-}
-
-.sheet-footer-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 7.5pt;
-  color: #64748b;
-}
-
-.footer-title {
-  color: var(--doc-primary, #203528);
-}
-
-.document-preview-empty-v2 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 500px;
-  width: 210mm;
-  background: #1e293b;
   color: #94a3b8;
-  border-radius: 12px;
-  padding: 40px;
-  text-align: center;
+  font-size: 10pt;
+  padding: 20mm 0;
 }
 
-.empty-doc-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  display: grid;
-  place-items: center;
-  color: #cbd5e1;
-  margin-bottom: 14px;
-}
-
-.document-preview-empty-v2 strong {
-  font-size: 1.1rem;
-  color: #f1f5f9;
-  margin-bottom: 6px;
-}
-
-.document-preview-empty-v2 p {
-  font-size: 0.84rem;
-  max-width: 320px;
-  line-height: 1.5;
-}
-
-/* ── RESPONSIVIDADE EM TELAS MENORES ── */
-/* ── RECIBO DE PAGAMENTO & REEMBOLSO ── */
-.receipt-amount-highlight {
-  display: inline-flex;
+/* ── RECIBO & REEMBOLSO ── */
+.receipt-doc {
+  display: flex;
   flex-direction: column;
-  background: #f0fdf4;
-  border: 1.5px solid #8ca481;
-  border-radius: 8px;
-  padding: 10px 18px;
-  margin: 12px 0 16px;
+  height: 100%;
 }
 
-.receipt-tag {
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: #166534;
-  letter-spacing: 0.05em;
-}
-
-.receipt-val {
-  font-size: 1.5rem;
-  color: #14532d;
-  font-weight: 800;
-}
-
-.receipt-service-card {
+.receipt-amount-highlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-left: 4px solid var(--doc-primary, #203528);
   border-radius: 6px;
-  padding: 12px 16px;
-  margin: 14px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  padding: 4mm 7mm;
+  margin-bottom: 6mm;
 }
 
-.receipt-service-card strong {
-  font-size: 0.95rem;
-  color: #1e293b;
-}
-
-.receipt-service-card span {
-  font-size: 0.82rem;
+.receipt-tag {
+  font-size: 8pt;
+  font-weight: 800;
+  letter-spacing: 1px;
   color: #64748b;
 }
 
+.receipt-val {
+  font-size: 16pt;
+  font-weight: 800;
+  color: var(--doc-primary, #203528);
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.receipt-service-card {
+  background: #fafafa;
+  border: 1px solid #f1f5f9;
+  border-radius: 6px;
+  padding: 4mm 6mm;
+  margin: 3mm 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+}
+
+.receipt-service-card strong {
+  font-size: 10.5pt;
+  color: #0f172a;
+}
+
+.receipt-service-card span {
+  font-size: 9pt;
+  color: #64748b;
+}
+
+/* BLOCO DE ENCERRAMENTO & ASSINATURA */
+.sheet-signature-block {
+  margin-top: auto;
+  padding-top: 10mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.signature-date {
+  font-size: 9.5pt;
+  color: #475569;
+  margin-bottom: 12mm;
+}
+
+.signature-line {
+  width: 75mm;
+  border-top: 1.5px solid var(--doc-primary, #203528);
+  margin-bottom: 2mm;
+}
+
+.signature-name {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #0f172a;
+  display: block;
+}
+
+.signature-crn {
+  font-size: 8.5pt;
+  color: var(--doc-secondary, #8ca481);
+  display: block;
+  font-weight: 600;
+}
+
+/* RODAPÉ OFICIAL */
+.sheet-footer-v2 {
+  padding-top: 4mm;
+  border-top: 1px solid #e2e8f0;
+  position: relative;
+  z-index: 1;
+}
+
+.sheet-footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7.5pt;
+  color: #94a3b8;
+}
+
+.footer-title {
+  font-weight: 700;
+  color: #64748b;
+}
+
+.footer-contacts {
+  color: #94a3b8;
+}
+
+/* EMPTY STATE PREVIEW */
+.document-preview-empty-v2 {
+  width: 210mm;
+  min-height: 297mm;
+  background: #ffffff;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #94a3b8;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.empty-doc-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+}
+
+.document-preview-empty-v2 strong {
+  font-size: 1.1rem;
+  color: #334155;
+}
+
+.document-preview-empty-v2 p {
+  margin: 0;
+  font-size: 0.85rem;
+  max-width: 320px;
+  text-align: center;
+}
+
+/* ── RESPONSIVIDADE EM TELAS MENORES ── */
 @media (max-width: 1080px) {
   .documents-layout-v2 {
     grid-template-columns: 1fr;
-  }
-  .doc-controls-panel {
-    position: static;
-  }
-  .doc-type-selector {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -643,7 +697,7 @@
   .document-preview-empty-v2 {
     width: 100%;
     min-height: auto;
-    padding: 20px 16px;
+    padding: 16px 14px;
   }
   .sheet-scroll-container {
     padding: 14px 8px;
@@ -653,20 +707,20 @@
   }
 }
 
-/* ── IMPRESSÃO A4 LIMPA ── */
+/* ── IMPRESSÃO A4 LIMPA OFICIAL ── */
 @media print {
   body * {
-    visibility: hidden;
+    visibility: hidden !important;
   }
   .official-sheet-v2,
   .official-sheet-v2 * {
-    visibility: visible;
+    visibility: visible !important;
   }
   .official-sheet-v2 {
-    position: absolute;
-    inset: 0;
+    position: absolute !important;
+    inset: 0 !important;
     margin: 0 !important;
-    padding: 16mm 18mm 14mm !important;
+    padding: 18mm 20mm 14mm !important;
     width: 210mm !important;
     height: 297mm !important;
     min-height: 297mm !important;
@@ -675,4 +729,3 @@
     border-radius: 0 !important;
   }
 }
-

@@ -512,17 +512,14 @@ function OfficialDocument({
   return (
     <Sheet settings={settings} label={declaration ? 'Declaração' : 'Atestado Clínico'}>
       <section className="official-content-v2">
-        <div className="official-emblem-badge">
-          <BadgeCheck size={32} />
-        </div>
         <span className="doc-subtitle-badge">
-          {declaration ? 'Comprovante Oficial de Comparecimento' : 'Documento de Acompanhamento Nutricional'}
+          {declaration ? 'Comprovante Oficial de Comparecimento' : 'Atestado de Acompanhamento Nutricional'}
         </span>
         <h1 className="doc-main-title">
           {declaration ? 'Declaração de Comparecimento' : 'Atestado Nutricional'}
         </h1>
 
-        <div className="official-text-box">
+        <div className="official-body-paragraphs">
           {declaration ? (
             <p>
               Declaro, para os devidos fins a que se fizer necessário, que o(a) paciente{' '}
@@ -575,8 +572,9 @@ function SupplementDocument({
   encounter: Encounter;
 }) {
   return (
-    <Sheet settings={settings} label="Prescrição de Suplementos">
+    <Sheet settings={settings} label="Receituário Nutricional">
       <section className="supplement-doc-v2">
+        <div className="prescription-rx-badge">℞</div>
         <span className="doc-subtitle-badge">Prescrição Nutricional Individualizada</span>
         <h1 className="doc-main-title">{encounter.patientName}</h1>
 
@@ -584,7 +582,7 @@ function SupplementDocument({
           <div className="supplements-list-v2">
             {encounter.supplements.map((s, index) => (
               <article key={s.id} className="supplement-card-item">
-                <span className="supplement-number">{String(index + 1).padStart(2, '0')}</span>
+                <span className="supplement-number">{String(index + 1).padStart(2, '0')}.</span>
                 <div className="supplement-details">
                   <h2>{s.name}</h2>
                   <strong className="supplement-dosage">
@@ -594,10 +592,10 @@ function SupplementDocument({
                     {s.posology || 'Tomar conforme orientações em consulta.'}
                   </p>
                   {s.pharmaceuticalForm && (
-                    <small className="supplement-form">Forma: {s.pharmaceuticalForm}</small>
+                    <small className="supplement-form">Forma farmacêutica: {s.pharmaceuticalForm}</small>
                   )}
                   {s.observation && (
-                    <aside className="supplement-obs">{s.observation}</aside>
+                    <aside className="supplement-obs">Obs: {s.observation}</aside>
                   )}
                 </div>
               </article>
