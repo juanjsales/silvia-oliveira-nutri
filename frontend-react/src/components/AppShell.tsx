@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ClinicMark, useClinic } from '../contexts/ClinicContext';
+import { ProfessionalNotifications } from './ProfessionalNotifications';
 
 const navigation = [
   { to: '/painel', label: 'Visão geral', icon: LayoutDashboard }, { to: '/pacientes', label: 'Pacientes', icon: Users },
@@ -28,6 +29,19 @@ export function AppShell() {
       <div className="sidebar-profile"><div className="avatar">{(user?.name || user?.email || clinic.professionalName).charAt(0).toUpperCase()}</div><div><strong>{user?.name || clinic.professionalName}</strong><span>{user?.email || clinic.specialty}</span></div><button className="icon-button" onClick={handleLogout} aria-label="Sair"><LogOut size={18}/></button></div>
     </aside>
     {open && <button className="sidebar-backdrop" onClick={() => setOpen(false)} aria-label="Fechar menu" />}
-    <main className="main-area"><header className="topbar"><button className="icon-button menu-button" onClick={() => setOpen(true)} aria-label="Abrir menu"><Menu size={21}/></button><div><span className="eyebrow">Espaço profissional</span><h1>{title}</h1></div><button className="ghost-button" onClick={() => history.back()}><ChevronLeft size={17}/> Voltar</button></header><div className="content"><Outlet /></div></main>
+    <main className="main-area">
+      <header className="topbar">
+        <div className="topbar-left">
+          <button className="icon-button menu-button" onClick={() => setOpen(true)} aria-label="Abrir menu"><Menu size={21}/></button>
+          <div><span className="eyebrow">Espaço profissional</span><h1>{title}</h1></div>
+        </div>
+        <div className="topbar-actions">
+          <ProfessionalNotifications />
+          <button className="ghost-button" onClick={() => history.back()}><ChevronLeft size={17}/> Voltar</button>
+        </div>
+      </header>
+      <div className="content"><Outlet /></div>
+    </main>
   </div>;
 }
+
