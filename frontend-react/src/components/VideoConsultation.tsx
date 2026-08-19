@@ -1,4 +1,4 @@
-import { Check, Copy, ExternalLink, Maximize2, Minimize2, PhoneOff, Video, MessageCircle } from 'lucide-react';
+import { Check, Copy, ExternalLink, Maximize2, Minimize2, PhoneOff, Video, MessageCircle, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 
@@ -16,6 +16,8 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
   const [source, setSource] = useState('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
+  const [iframeKey, setIframeKey] = useState(1);
+  const [reconnecting, setReconnecting] = useState(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -52,6 +54,12 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
     }).catch(() => undefined);
   }
 
+  function handleReconnect() {
+    setReconnecting(true);
+    setIframeKey((prev) => prev + 1);
+    setTimeout(() => setReconnecting(false), 1200);
+  }
+
   return (
     <aside className={`video-consultation ${expanded ? 'expanded' : ''}`}>
       <header>
@@ -62,6 +70,15 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
         </div>
         <time>{elapsed}</time>
         <div className="video-header-btns">
+          <button
+            type="button"
+            className="icon-button video-reconnect"
+            onClick={handleReconnect}
+            disabled={reconnecting}
+            title="Reconectar vídeo e áudio"
+          >
+            <RefreshCw size={15} className={reconnecting ? 'spin' : ''} />
+          </button>
           <button 
             type="button"
             className="icon-button video-copy-link" 
@@ -90,6 +107,7 @@ export function VideoConsultation({ appointmentId, roomToken, patientName, onClo
           </div>
         ) : source ? (
           <iframe 
+            key={iframeKey}
             src={source} 
             title={`Teleconsulta com ${patientName}`} 
             allow="camera; microphone; fullscreen; display-capture; autoplay" 

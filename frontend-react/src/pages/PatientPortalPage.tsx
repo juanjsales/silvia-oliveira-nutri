@@ -166,6 +166,18 @@ export function PatientPortalPage() {
 
   const unreadNotifs = data.notifications?.filter((n: Any) => !n.readAt) || [];
 
+  const activeTeleconsultation = useMemo(() => {
+    if (!data?.appointments) return null;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return data.appointments.find(
+      (a: Any) =>
+        a.meetingUrl &&
+        (a.status === 'IN_PROGRESS' ||
+          a.status === 'WAITING' ||
+          (a.status === 'CONFIRMED' && String(a.appointmentDate).slice(0, 10) === todayStr)),
+    );
+  }, [data?.appointments]);
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
   const firstName = data.patient.name.split(' ')[0];
@@ -221,16 +233,16 @@ export function PatientPortalPage() {
                         </div>
                         {!n.readAt && (
                           <button
-                            className="secondary-button notif-read-btn"
-                            onClick={() => void markNotificationRead(n.id)}
+                            className="notif-read-btn ghost-button"
+                            onClick={() => markNotificationRead(n.id)}
                           >
-                            Lida
+                            Marcar lida
                           </button>
                         )}
                       </article>
                     ))
                   ) : (
-                    <div className="portal-notif-empty">Nenhuma notificação no momento.</div>
+                    <div className="portal-notif-empty">Nenhuma notificação nova</div>
                   )}
                 </div>
               </div>
@@ -251,6 +263,24 @@ export function PatientPortalPage() {
           </button>
         </div>
       </header>
+
+      {/* ── BANNER DE RETOMADA IMEDIATA DE TELECONSULTA ── */}
+      {activeTeleconsultation && (
+        <aside className="portal-active-teleconsult-bar">
+          <div className="active-teleconsult-info">
+            <span className="teleconsult-live-pill">
+              <span className="live-dot" /> AO VIVO
+            </span>
+            <div>
+              <strong>Teleconsulta pronta para atendimento!</strong>
+              <p>Sua sala virtual com a nutricionista está disponível. Clique para entrar ou reconectar.</p>
+            </div>
+          </div>
+          <Link to={activeTeleconsultation.meetingUrl} className="primary-button join-live-btn">
+            <Video size={16} /> Entrar na Sala
+          </Link>
+        </aside>
+      )}
 
       {/* ── HERO BANNER DE SAUDAÇÃO ── */}
       <section className="portal-hero-card">

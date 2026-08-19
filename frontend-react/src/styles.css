@@ -2249,6 +2249,545 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   }
 }
 
+/* =========================================================
+   PORTAL ACTIVE TELECONSULTATION BANNER
+   ========================================================= */
+.portal-active-teleconsult-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, #183b2b, #2b5a42);
+  color: #ffffff;
+  padding: 16px 22px;
+  border-radius: 16px;
+  margin: 18px 0;
+  box-shadow: 0 10px 25px rgba(24, 59, 43, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  animation: fadeInDown 0.3s ease;
+}
+.active-teleconsult-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.teleconsult-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #7ee0a4;
+  white-space: nowrap;
+}
+.teleconsult-live-pill .live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38c777;
+  box-shadow: 0 0 0 3px rgba(56, 199, 119, 0.4);
+}
+.active-teleconsult-info strong {
+  font-size: 0.92rem;
+  display: block;
+  color: #ffffff;
+}
+.active-teleconsult-info p {
+  margin: 2px 0 0;
+  font-size: 0.76rem;
+  color: #dce7dc;
+}
+.join-live-btn {
+  background: #f1e7ce !important;
+  color: #183b2b !important;
+  font-weight: 700;
+  font-size: 0.84rem;
+  padding: 9px 18px;
+  border-radius: 10px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.join-live-btn:hover {
+  background: #ffffff !important;
+  color: #183b2b !important;
+  transform: translateY(-1px);
+}
+@media (max-width: 768px) {
+  .portal-active-teleconsult-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+  .join-live-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* =========================================================
+   PATIENT VIDEO PAGE & INTERACTIVE CLINICAL SUPPORT GUIDE
+   ========================================================= */
+.patient-video-page {
+  min-height: 100vh;
+  background: #0f1612;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px;
+  gap: 12px;
+}
+.patient-video-page.in-call {
+  height: 100vh;
+  padding: 10px 14px 14px;
+}
+.patient-video-page > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #17241c;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.patient-video-page > header a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #e2ede5;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  transition: all 0.18s ease;
+}
+.patient-video-page > header a:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+.video-header-center-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.video-guide-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #203a2a;
+  color: #7ee0a4;
+  border: 1px solid #325841;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.video-guide-toggle-btn.active {
+  background: #7ee0a4;
+  color: #0d2116;
+  border-color: #7ee0a4;
+}
+.video-reconnect-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d2ded5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 6px 11px;
+  border-radius: 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.video-reconnect-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+.video-session-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #9eb6a7;
+  font-size: 0.72rem;
+}
+.video-session-badge svg {
+  width: 16px;
+  color: #38c777;
+}
+
+/* Call Workspace Layout */
+.video-call-workspace {
+  display: flex;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+.video-call-workspace.with-guide .video-stream-container {
+  flex: 1.35;
+}
+.video-call-workspace.full-video .video-stream-container {
+  flex: 1;
+}
+.video-stream-container {
+  display: flex;
+  flex-direction: column;
+  background: #080d0a;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+.video-stream-container iframe {
+  border: 0;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  background: #040805;
+}
+.video-stream-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: #111a14;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.72rem;
+  color: #8c9e93;
+}
+.video-stream-footer .ghost-button {
+  color: #7ee0a4 !important;
+  font-size: 0.72rem;
+  padding: 4px 8px;
+}
+
+/* Patient Guide Side Panel */
+.patient-guide-panel {
+  flex: 0.95;
+  max-width: 440px;
+  background: #ffffff;
+  color: #20352b;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+  animation: fadeInRight 0.25s ease;
+}
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(15px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.guide-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f4f7f4;
+  border-bottom: 1px solid #e2e8e2;
+}
+.guide-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.guide-sparkle-icon {
+  color: #23533c;
+  background: #e1efe4;
+  padding: 4px;
+  border-radius: 8px;
+  box-sizing: content-box;
+}
+.guide-title strong {
+  font-size: 0.86rem;
+  color: #183b2b;
+  display: block;
+}
+.guide-title small {
+  font-size: 0.68rem;
+  color: #63766a;
+}
+.guide-tabs {
+  display: flex;
+  background: #eef3ee;
+  padding: 4px;
+  gap: 3px;
+  border-bottom: 1px solid #e0e7e1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.guide-tabs button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  padding: 8px 6px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #55695c;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.guide-tabs button.active {
+  background: #ffffff;
+  color: #183b2b;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.guide-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.guide-content-section h4 {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  color: #183b2b;
+}
+.guide-lead {
+  margin: 0 0 14px;
+  font-size: 0.72rem;
+  color: #64756b;
+  line-height: 1.4;
+}
+
+/* Guide Measurement Cards */
+.guide-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.guide-measure-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 11px 13px;
+  background: #f9fbf9;
+  border: 1px solid #e5ebe5;
+  border-radius: 12px;
+}
+.guide-measure-card.tip {
+  background: #fef9ed;
+  border-color: #fae4be;
+}
+.measure-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #183b2b;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 0.74rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.guide-measure-card.tip .measure-badge {
+  background: #b58434;
+}
+.guide-measure-card strong {
+  font-size: 0.8rem;
+  color: #183b2b;
+  display: block;
+}
+.guide-measure-card p {
+  margin: 3px 0 0;
+  font-size: 0.72rem;
+  color: #55685d;
+  line-height: 1.35;
+}
+
+/* Satiety Scale List */
+.satiety-scale-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.scale-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e3eae4;
+  background: #ffffff;
+}
+.scale-item.level-extreme {
+  background: #fdf2f1;
+  border-color: #f7cecb;
+}
+.scale-item.level-ideal-hunger {
+  background: #f2f9f4;
+  border-color: #c9e8d2;
+}
+.scale-item.level-neutral {
+  background: #f8faf8;
+}
+.scale-item.level-ideal-full {
+  background: #eef7f0;
+  border-color: #b9dfc4;
+}
+.scale-item.level-too-full {
+  background: #fff8ee;
+  border-color: #fce1b8;
+}
+.scale-num {
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #183b2b;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.scale-item.level-extreme .scale-num { background: #b83d37; }
+.scale-item.level-ideal-hunger .scale-num,
+.scale-item.level-ideal-full .scale-num { background: #2e7345; }
+.scale-item strong {
+  font-size: 0.78rem;
+  color: #1a2f24;
+  display: block;
+}
+.scale-item p {
+  margin: 2px 0 0;
+  font-size: 0.7rem;
+  color: #596a60;
+  line-height: 1.3;
+}
+
+/* Plate Visual Box */
+.plate-visual-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f4f8f4;
+  border: 1.5px solid #dbe6dc;
+  border-radius: 14px;
+  padding: 14px;
+}
+.plate-half {
+  background: #d8ecdc;
+  border: 1px solid #b7dcbe;
+  border-radius: 10px;
+  padding: 12px;
+}
+.plate-half strong {
+  color: #245b37;
+  font-size: 0.82rem;
+  display: block;
+}
+.plate-half span {
+  font-size: 0.7rem;
+  color: #436650;
+}
+.plate-quarters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.plate-quarter {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid;
+}
+.plate-quarter.proteins {
+  background: #faebea;
+  border-color: #f3cecc;
+}
+.plate-quarter.proteins strong {
+  color: #9e3934;
+  font-size: 0.78rem;
+  display: block;
+}
+.plate-quarter.carbs {
+  background: #fdf5e5;
+  border-color: #f7e1b5;
+}
+.plate-quarter.carbs strong {
+  color: #91681f;
+  font-size: 0.78rem;
+  display: block;
+}
+.plate-quarter span {
+  font-size: 0.67rem;
+  color: #636b65;
+  line-height: 1.25;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Bristol Cards */
+.bristol-scale-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bristol-card {
+  padding: 11px 13px;
+  border-radius: 11px;
+  border: 1px solid;
+}
+.bristol-card.ideal {
+  background: #eef7f0;
+  border-color: #c0e3cb;
+}
+.bristol-card.alert {
+  background: #fff8f0;
+  border-color: #f8dfbf;
+}
+.bristol-card strong {
+  font-size: 0.78rem;
+  display: block;
+  margin-bottom: 2px;
+}
+.bristol-card.ideal strong { color: #28633b; }
+.bristol-card.alert strong { color: #8e581c; }
+.bristol-card p {
+  margin: 0;
+  font-size: 0.7rem;
+  color: #55675c;
+  line-height: 1.35;
+}
+
+/* Mobile Responsive for Video Call */
+@media (max-width: 900px) {
+  .video-call-workspace {
+    flex-direction: column;
+  }
+  .patient-guide-panel {
+    max-width: 100%;
+    max-height: 380px;
+  }
+  .patient-video-page.in-call {
+    height: auto;
+    min-height: 100vh;
+  }
+  .video-stream-container {
+    height: 48vh;
+    min-height: 280px;
+  }
+  .video-header-center-actions span {
+    display: none;
+  }
+  .video-header-center-actions button {
+    padding: 6px 8px;
+  }
+}
+
 
 
 
