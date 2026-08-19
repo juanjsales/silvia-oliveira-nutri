@@ -18,9 +18,15 @@ export async function encounterRoutes(app: FastifyInstance) {
   app.get('/', async request => {
     const { patientId } = z.object({ patientId: z.uuid().optional() }).parse(request.query);
     const result = await app.db.query(`SELECT e.id, e.patient_id AS "patientId", p.name AS "patientName",
-      e.appointment_id AS "appointmentId", e.status, e.started_at AS "startedAt", e.completed_at AS "completedAt"
-      FROM clinical_encounters e JOIN patients p ON p.id=e.patient_id
-      WHERE ($1::uuid IS NULL OR e.patient_id=$1) ORDER BY e.started_at DESC LIMIT 50`, [patientId ?? null]);
+      p.email AS "patientEmail", p.objective,
+      e.appointment_id AS "appointmentId", e.status, e.started_at AS "startedAt", e.completed_at AS "completedAt",
+      to_char(a.appointment_date, 'YYYY-MM-DD') AS "appointmentDate", to_char(a.appointment_time, 'HH24:MI') AS "appointmentTime",
+      a.duration_minutes AS "durationMinutes", a.appointment_type AS "appointmentType"
+      FROM clinical_encounters e
+      JOIN patients p ON p.id = e.patient_id
+      LEFT JOIN appointments a ON a.id = e.appointment_id
+      WHERE ($1::uuid IS NULL OR e.patient_id = $1)
+      ORDER BY e.started_at DESC LIMIT 100`, [patientId ?? null]);
     return { data: result.rows };
   });
 

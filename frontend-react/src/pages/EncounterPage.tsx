@@ -1,6 +1,40 @@
-import { Calculator, Check, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Edit3, ExternalLink, FileCheck2, FileText, HeartPulse, LockKeyhole, Mail, Pill, Plus, Printer, Save, Scale, Send, Sparkles, UserRound, UtensilsCrossed, Video, Zap } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  Calculator,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Clock,
+  Edit3,
+  ExternalLink,
+  Eye,
+  FileCheck2,
+  FileText,
+  HeartPulse,
+  LockKeyhole,
+  Mail,
+  Pill,
+  Play,
+  Plus,
+  Printer,
+  Save,
+  Scale,
+  Search,
+  Send,
+  Sparkles,
+  UserCheck,
+  UserRound,
+  Users,
+  UtensilsCrossed,
+  Video,
+  X,
+  Zap,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { VideoConsultation } from '../components/VideoConsultation';
 import { LabsList, SupplementsList, type Lab, type Supplement } from '../components/ClinicalLists';
 import { PatientHistory } from '../components/PatientHistory';
@@ -18,6 +52,35 @@ type Checkin={id:string;answers:Record<string,unknown>;status:'PENDING_REVIEW'|'
 type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;appointmentDate?:string|null;appointmentTime?:string|null;durationMinutes?:number|null;appointmentType?:string|null;status:'IN_PROGRESS'|'COMPLETED';startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
 type Field={key:string;label:string;type?:'text'|'textarea'|'number'|'select'|'date'|'time';placeholder?:string;options?:string[];suffix?:string;profiles?:string[]};
 type Step={key:SectionKey|'review';label:string;description:string;fields?:Field[]};
+
+type EncounterListItem = {
+  id: string;
+  patientId: string;
+  patientName: string;
+  patientEmail?: string | null;
+  objective?: string | null;
+  appointmentId?: string | null;
+  status: 'IN_PROGRESS' | 'COMPLETED';
+  startedAt: string;
+  completedAt?: string | null;
+  appointmentDate?: string | null;
+  appointmentTime?: string | null;
+  durationMinutes?: number | null;
+  appointmentType?: string | null;
+};
+
+type TodayAppointment = {
+  id: string;
+  patientId: string;
+  patientName: string;
+  whatsapp?: string | null;
+  date: string;
+  time: string;
+  durationMinutes: number;
+  type: string;
+  status: string;
+  notes?: string | null;
+};
 
 const yesNo=['Não','Sim'];
 const steps:Step[]=[
@@ -62,12 +125,11 @@ function missingClinicalCore(sections:Encounter['sections']){
 export function EncounterPage(){
   const { endCall } = useTeleconsultation();
   const[params,setParams]=useSearchParams();const patientParam=params.get('paciente')||'';const appointmentParam=params.get('agendamento')||'';const videoParam=params.get('video')==='true';
-  const[patients,setPatients]=useState<Patient[]>([]);const[patientId,setPatientId]=useState(patientParam);const[encounter,setEncounter]=useState<Encounter|null>(null);const[active,setActive]=useState(0);const[drafts,setDrafts]=useState<Partial<Record<SectionKey,SectionData>>>({});const[dirtyKeys,setDirtyKeys]=useState<Set<SectionKey>>(new Set());const[loading,setLoading]=useState(false);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[videoOpen,setVideoOpen]=useState(videoParam);const[calcOpen,setCalcOpen]=useState(false);
+  const[encounter,setEncounter]=useState<Encounter|null>(null);const[active,setActive]=useState(0);const[drafts,setDrafts]=useState<Partial<Record<SectionKey,SectionData>>>({});const[dirtyKeys,setDirtyKeys]=useState<Set<SectionKey>>(new Set());const[loading,setLoading]=useState(false);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[videoOpen,setVideoOpen]=useState(videoParam);const[calcOpen,setCalcOpen]=useState(false);
   const[finishModalOpen,setFinishModalOpen]=useState(false);
-  useEffect(()=>{api<{data:Patient[]}>('/api/patients').then(r=>setPatients(r.data)).catch(c=>setError(c instanceof Error?c.message:'Erro ao carregar pacientes.'))},[]);
   const loadEncounter=useCallback(async(id:string)=>{setLoading(true);try{const r=await api<{data:Encounter}>(`/api/encounters/${id}`);setEncounter(r.data);const loaded:Partial<Record<SectionKey,SectionData>>={};for(const key of steps.map(s=>s.key).filter(k=>k!=='review') as SectionKey[])loaded[key]=r.data.sections[key]?.data||{};setDrafts(loaded);setDirtyKeys(new Set())}catch(c){setError(c instanceof Error?c.message:'Erro ao abrir atendimento.')}finally{setLoading(false)}},[]);
   useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(dirtyKeys.size){event.preventDefault();event.returnValue=''}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirtyKeys]);
-  useEffect(()=>{const id=params.get('id');if(id)void loadEncounter(id)},[params,loadEncounter]);
+  useEffect(()=>{const id=params.get('id');if(id){void loadEncounter(id)}else{setEncounter(null)}},[params,loadEncounter]);
   useEffect(()=>{
    window.scrollTo({ top: 0, behavior: 'smooth' });
    const stepper = document.querySelector('.clinical-stepper') || document.querySelector('.encounter-page');
@@ -76,7 +138,7 @@ export function EncounterPage(){
    }
   },[active]);
   useEffect(()=>{if(!patientParam||!appointmentParam||params.get('id'))return;let cancelled=false;setLoading(true);api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId:patientParam,appointmentId:appointmentParam})}).then(r=>{if(!cancelled){setParams({id:r.data.id,...(videoParam?{video:'true'}:{})});void loadEncounter(r.data.id)}}).catch(c=>setError(c instanceof Error?c.message:'Erro ao iniciar atendimento.')).finally(()=>setLoading(false));return()=>{cancelled=true}},[patientParam,appointmentParam,videoParam,params,setParams,loadEncounter]);
-  async function start(){if(!patientId)return;setLoading(true);setError('');try{const r=await api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId})});setParams({id:r.data.id});await loadEncounter(r.data.id)}catch(c){setError(c instanceof Error?c.message:'Não foi possível iniciar.')}finally{setLoading(false)}}
+
   const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);
   function change(key:SectionKey,field:string,value:string){setDrafts(d=>({...d,[key]:{...(d[key]||{}),[field]:value}}));setDirtyKeys(keys=>new Set(keys).add(key));setNotice('')}
   async function saveSection(){if(!encounter||current.key==='review')return;setSaving(true);setError('');try{await api(`/api/encounters/${encounter.id}/sections/${current.key}`,{method:'PUT',body:JSON.stringify({data:drafts[current.key]||{},expectedSavedAt:encounter.sections[current.key]?.savedAt||null})});await loadEncounter(encounter.id);setNotice('Etapa salva com segurança.');if(active<steps.length-1)setActive(active+1)}catch(c){setError(c instanceof Error?c.message:'Não foi possível salvar a etapa.')}finally{setSaving(false)}}
@@ -116,7 +178,18 @@ export function EncounterPage(){
    }
   }
 
- if(!encounter)return <section className="panel encounter-start"><div className="encounter-start-icon"><ClipboardList size={30}/></div><span className="eyebrow">Atendimento privado</span><h2>Iniciar atendimento clínico</h2><p>Selecione o paciente. As informações serão salvas por etapas e poderão ser retomadas.</p>{error&&<div className="form-error">{error}</div>}<label>Paciente<select value={patientId} onChange={e=>setPatientId(e.target.value)}><option value="">Selecione um paciente</option>{patients.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label><button className="primary-button" onClick={()=>void start()} disabled={!patientId||loading}>{loading?'Abrindo...':'Começar atendimento'}</button><div className="privacy-note"><LockKeyhole size={15}/> Anamnese disponível apenas na área profissional autenticada.</div></section>;
+ if(!encounter) {
+   return (
+     <EncounterHub
+       onSelectEncounter={(id, openVideo) => {
+         setParams({ id, ...(openVideo ? { video: 'true' } : {}) });
+         void loadEncounter(id);
+         if (openVideo) setVideoOpen(true);
+       }}
+     />
+   );
+ }
+
  const key=current.key as SectionKey;const assessment=drafts.assessment||{};const profile=String(assessment.clinicalProfile||'Adulto');const weight=Number(assessment.weight);const height=Number(assessment.height);const age=Number(assessment.age);const bmi=weight>0&&height>0?(weight/(height/100)**2).toFixed(1):null;const whr=Number(assessment.waist)>0&&Number(assessment.hip)>0?(Number(assessment.waist)/Number(assessment.hip)).toFixed(2):null;const activityFactor=parseFloat(String(assessment.activityFactor||'1.375'))||1.375;const bmr=weight>0&&height>0&&age>0?10*weight+6.25*height-5*age+(assessment.sex==='Masculino'?5:-161):null;const totalEnergy=bmr?Math.round(bmr*activityFactor):null;const gestationalGain=profile==='Gestante'&&Number(assessment.prePregnancyWeight)>0?(weight-Number(assessment.prePregnancyWeight)).toFixed(1):null;
  const roomToken=encounter.videoRoomToken||encounter.id;
 
@@ -136,25 +209,584 @@ export function EncounterPage(){
     setNotice('Meta calórica e macronutrientes aplicados com sucesso à Avaliação e Conduta!');
   }
 
-  return <div className={`virtual-office ${videoOpen?'with-video':''}`}>{videoOpen&&<VideoConsultation encounterId={encounter.id} appointmentId={encounter.appointmentId} roomToken={roomToken} patientName={encounter.patientName} appointmentTime={encounter.appointmentTime} durationMinutes={encounter.durationMinutes} sections={drafts} onClose={()=>setVideoOpen(false)}/>}<div className="encounter-page"><section className="encounter-header"><div className="patient-avatar large">{encounter.patientName.charAt(0)}</div><div><span className="eyebrow">Atendimento em andamento</span><h2>{encounter.patientName}</h2><p>{encounter.objective||'Objetivo não informado'}{encounter.appointmentTime ? ` · Consulta: ${formatAppointmentSchedule(encounter.appointmentTime, encounter.durationMinutes || 60)}` : ` · iniciado em ${new Date(encounter.startedAt).toLocaleDateString('pt-BR')}`}</p></div><div className="encounter-header-actions"><button type="button" className="secondary-button" onClick={()=>setCalcOpen(true)} title="Calcular Gasto Energético (VET & TMB)"><Calculator size={16}/> Calculadora VET / TMB</button>{encounter.status!=='COMPLETED'&&<button className={`secondary-button video-toggle-btn ${videoOpen?'active':''}`} onClick={()=>setVideoOpen(v=>!v)}><Video size={17}/> {videoOpen?'Ocultar split':'Teleconsulta (Split)'}</button>}<span className={`encounter-state ${encounter.status==='COMPLETED'?'done':''}`}>{encounter.status==='COMPLETED'?<><CheckCircle2 size={15}/> Finalizado</>:'Em andamento'}</span></div></section>
- <nav className="clinical-stepper" aria-label="Etapas do atendimento">{steps.map((step,index)=><button key={step.key} type="button" className={`${active===index?'active ':''}${step.key!=='review'&&savedKeys.has(step.key)?'saved':''}`} onClick={()=>setActive(index)} title={`${step.label}: ${step.description}`}><span>{step.key!=='review'&&savedKeys.has(step.key)?<Check size={15}/>:index+1}</span><div><strong>{step.label}</strong><small>{step.description}</small></div></button>)}</nav>
- {error&&<div className="form-error">{error}</div>}{notice&&<div className="form-success"><CheckCircle2 size={17}/>{notice}</div>}
- <ClinicalSnapshot encounter={encounter} reload={()=>void loadEncounter(encounter.id)}/>
- <details className="history-drawer"><summary>Histórico e evolução do paciente</summary><PatientHistory patientId={encounter.patientId}/></details>
- <section className="panel clinical-workspace"><div className="clinical-title"><div><span className="eyebrow">Etapa {active+1} de {steps.length}</span><h2>{current.label}</h2><p>{current.description}</p></div>{current.key!=='review'&&<span className={`save-indicator ${savedKeys.has(current.key)&&!dirtyKeys.has(current.key)?'saved':''}`}>{dirtyKeys.has(current.key)?'Alterações não salvas':savedKeys.has(current.key)?<><Check size={14}/> Salvo</>:'Ainda não salvo'}</span>}</div>
- {current.key==='review'?<Review encounter={encounter} dirty={dirtyKeys.size>0} onFinalize={requestFinalize} saving={saving} onNavigateStep={(index)=>setActive(index)}/>:current.key==='plan'?<EncounterPlan encounterId={encounter.id} planId={String(encounter.sections.plan?.data.planId||'')} onCreated={()=>void loadEncounter(encounter.id)}/>:current.key==='exams'?<LabsList encounterId={encounter.id} initial={encounter.labs||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:current.key==='supplements'?<SupplementsList encounterId={encounter.id} initial={encounter.supplements||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>:<><div className="clinical-form">{current.fields?.filter(field=>!field.profiles||field.profiles.includes(profile)).map(field=><label key={field.key} className={field.type==='textarea'?'wide':''}>{field.label}<div className={field.suffix?'field-suffix':''}>{field.type==='textarea'?<textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>:field.type==='select'?<select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)}><option value="">Selecione</option>{field.options?.map(option=><option key={option}>{option}</option>)}</select>:<input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>} {field.suffix&&<span>{field.suffix}</span>}</div></label>)}</div>{current.key==='assessment'&&(bmi||whr||bmr)&&<div className="bmi-result assessment-results"><span>Indicadores calculados · {profile}</span><div>{bmi&&<strong>IMC {bmi}</strong>}{whr&&<strong>RCQ {whr}</strong>}{bmr&&<strong>TMB {Math.round(bmr)} kcal</strong>}{totalEnergy&&<strong>VET {totalEnergy} kcal</strong>}{gestationalGain&&<strong>Ganho gestacional {gestationalGain} kg</strong>}</div><small>Indicadores de apoio; a interpretação depende do perfil, idade e contexto clínico.</small></div>}</>}
- <div className="clinical-footer"><button className="secondary-button" onClick={()=>setActive(Math.max(0,active-1))} disabled={active===0}><ChevronLeft size={17}/> Anterior</button>{current.key!=='review'&&current.key!=='plan'&&<div><button className="ghost-button" onClick={()=>setActive(Math.min(steps.length-1,active+1))}>Avançar sem salvar</button><button className="primary-button" onClick={()=>void saveSection()} disabled={saving||encounter.status==='COMPLETED'}><Save size={17}/>{saving?'Salvando...':'Salvar e continuar'}<ChevronRight size={16}/></button></div>}</div></section></div>
- <EnergyCalculatorModal isOpen={calcOpen} onClose={()=>setCalcOpen(false)} initialWeight={weight||70} initialHeight={height||165} initialAge={age||30} initialGender={assessment.sex==='Masculino'?'MALE':'FEMALE'} onApplyResults={handleApplyEnergy}/>
- {finishModalOpen && encounter && (
-    <FinishEncounterModal
-      patientName={encounter.patientName}
-      patientEmail={encounter.patientEmail}
-      loading={saving}
-      onClose={()=>setFinishModalOpen(false)}
-      onConfirm={handleConfirmFinalize}
-    />
-  )}
- </div>;
+  return (
+    <div className={`virtual-office ${videoOpen?'with-video':''}`}>
+      {videoOpen && (
+        <VideoConsultation
+          encounterId={encounter.id}
+          appointmentId={encounter.appointmentId}
+          roomToken={roomToken}
+          patientName={encounter.patientName}
+          appointmentTime={encounter.appointmentTime}
+          durationMinutes={encounter.durationMinutes}
+          sections={drafts}
+          onClose={()=>setVideoOpen(false)}
+        />
+      )}
+      <div className="encounter-page">
+        <button
+          type="button"
+          className="encounter-return-link"
+          onClick={() => {
+            if (dirtyKeys.size > 0 && !window.confirm('Existem alterações não salvas nesta etapa. Deseja realmente voltar para a lista de atendimentos?')) {
+              return;
+            }
+            setParams({});
+            setEncounter(null);
+          }}
+        >
+          <ArrowLeft size={14} /> Voltar para a Central de Atendimentos
+        </button>
+
+        <section className="encounter-header">
+          <div className="patient-avatar large">{encounter.patientName.charAt(0)}</div>
+          <div>
+            <span className="eyebrow">Atendimento em andamento</span>
+            <h2>{encounter.patientName}</h2>
+            <p>{encounter.objective||'Objetivo não informado'}{encounter.appointmentTime ? ` · Consulta: ${formatAppointmentSchedule(encounter.appointmentTime, encounter.durationMinutes || 60)}` : ` · iniciado em ${new Date(encounter.startedAt).toLocaleDateString('pt-BR')}`}</p>
+          </div>
+          <div className="encounter-header-actions">
+            <button type="button" className="secondary-button" onClick={()=>setCalcOpen(true)} title="Calcular Gasto Energético (VET & TMB)">
+              <Calculator size={16}/> Calculadora VET / TMB
+            </button>
+            {encounter.status!=='COMPLETED'&& (
+              <button className={`secondary-button video-toggle-btn ${videoOpen?'active':''}`} onClick={()=>setVideoOpen(v=>!v)}>
+                <Video size={17}/> {videoOpen?'Ocultar split':'Teleconsulta (Split)'}
+              </button>
+            )}
+            <span className={`encounter-state ${encounter.status==='COMPLETED'?'done':''}`}>
+              {encounter.status==='COMPLETED'?<><CheckCircle2 size={15}/> Finalizado</>:'Em andamento'}
+            </span>
+          </div>
+        </section>
+
+        <nav className="clinical-stepper" aria-label="Etapas do atendimento">
+          {steps.map((step,index)=>(
+            <button
+              key={step.key}
+              type="button"
+              className={`${active===index?'active ':''}${step.key!=='review'&&savedKeys.has(step.key)?'saved':''}`}
+              onClick={()=>setActive(index)}
+              title={`${step.label}: ${step.description}`}
+            >
+              <span>{step.key!=='review'&&savedKeys.has(step.key)?<Check size={15}/>:index+1}</span>
+              <div>
+                <strong>{step.label}</strong>
+                <small>{step.description}</small>
+              </div>
+            </button>
+          ))}
+        </nav>
+
+        {error&&<div className="form-error">{error}</div>}
+        {notice&&<div className="form-success"><CheckCircle2 size={17}/>{notice}</div>}
+        
+        <ClinicalSnapshot encounter={encounter} reload={()=>void loadEncounter(encounter.id)}/>
+        <details className="history-drawer"><summary>Histórico e evolução do paciente</summary><PatientHistory patientId={encounter.patientId}/></details>
+        
+        <section className="panel clinical-workspace">
+          <div className="clinical-title">
+            <div>
+              <span className="eyebrow">Etapa {active+1} de {steps.length}</span>
+              <h2>{current.label}</h2>
+              <p>{current.description}</p>
+            </div>
+            {current.key!=='review'&& (
+              <span className={`save-indicator ${savedKeys.has(current.key)&&!dirtyKeys.has(current.key)?'saved':''}`}>
+                {dirtyKeys.has(current.key)?'Alterações não salvas':savedKeys.has(current.key)?<><Check size={14}/> Salvo</>:'Ainda não salvo'}
+              </span>
+            )}
+          </div>
+          
+          {current.key==='review' ? (
+            <Review encounter={encounter} dirty={dirtyKeys.size>0} onFinalize={requestFinalize} saving={saving} onNavigateStep={(index)=>setActive(index)}/>
+          ) : current.key==='plan' ? (
+            <EncounterPlan encounterId={encounter.id} planId={String(encounter.sections.plan?.data.planId||'')} onCreated={()=>void loadEncounter(encounter.id)}/>
+          ) : current.key==='exams' ? (
+            <LabsList encounterId={encounter.id} initial={encounter.labs||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>
+          ) : current.key==='supplements' ? (
+            <SupplementsList encounterId={encounter.id} initial={encounter.supplements||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>
+          ) : (
+            <>
+              <div className="clinical-form">
+                {current.fields?.filter(field=>!field.profiles||field.profiles.includes(profile)).map(field=>(
+                  <label key={field.key} className={field.type==='textarea'?'wide':''}>
+                    {field.label}
+                    <div className={field.suffix?'field-suffix':''}>
+                      {field.type==='textarea'? (
+                        <textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>
+                      ) : field.type==='select'? (
+                        <select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)}>
+                          <option value="">Selecione</option>
+                          {field.options?.map(option=><option key={option}>{option}</option>)}
+                        </select>
+                      ) : (
+                        <input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>
+                      )}
+                      {field.suffix&&<span>{field.suffix}</span>}
+                    </div>
+                  </label>
+                ))}
+              </div>
+              {current.key==='assessment'&&(bmi||whr||bmr)&& (
+                <div className="bmi-result assessment-results">
+                  <span>Indicadores calculados · {profile}</span>
+                  <div>
+                    {bmi&&<strong>IMC {bmi}</strong>}
+                    {whr&&<strong>RCQ {whr}</strong>}
+                    {bmr&&<strong>TMB {Math.round(bmr)} kcal</strong>}
+                    {totalEnergy&&<strong>VET {totalEnergy} kcal</strong>}
+                    {gestationalGain&&<strong>Ganho gestacional {gestationalGain} kg</strong>}
+                  </div>
+                  <small>Indicadores de apoio; a interpretação depende do perfil, idade e contexto clínico.</small>
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="clinical-footer">
+            <button className="secondary-button" onClick={()=>setActive(Math.max(0,active-1))} disabled={active===0}>
+              <ChevronLeft size={17}/> Anterior
+            </button>
+            {current.key!=='review'&&current.key!=='plan'&& (
+              <div>
+                <button className="ghost-button" onClick={()=>setActive(Math.min(steps.length-1,active+1))}>
+                  Avançar sem salvar
+                </button>
+                <button className="primary-button" onClick={()=>void saveSection()} disabled={saving||encounter.status==='COMPLETED'}>
+                  <Save size={17}/>{saving?'Salvando...':'Salvar e continuar'}<ChevronRight size={16}/>
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <EnergyCalculatorModal
+        isOpen={calcOpen}
+        onClose={()=>setCalcOpen(false)}
+        initialWeight={weight||70}
+        initialHeight={height||165}
+        initialAge={age||30}
+        initialGender={assessment.sex==='Masculino'?'MALE':'FEMALE'}
+        onApplyResults={handleApplyEnergy}
+      />
+
+      {finishModalOpen && encounter && (
+        <FinishEncounterModal
+          patientName={encounter.patientName}
+          patientEmail={encounter.patientEmail}
+          loading={saving}
+          onClose={()=>setFinishModalOpen(false)}
+          onConfirm={handleConfirmFinalize}
+        />
+      )}
+    </div>
+  );
+}
+
+function EncounterHub({
+  onSelectEncounter,
+}: {
+  onSelectEncounter: (id: string, openVideo?: boolean) => void;
+}) {
+  const navigate = useNavigate();
+  const [encounters, setEncounters] = useState<EncounterListItem[]>([]);
+  const [todayAppointments, setTodayAppointments] = useState<TodayAppointment[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [activeTab, setActiveTab] = useState<'in_progress' | 'today' | 'completed'>('in_progress');
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [walkInOpen, setWalkInOpen] = useState(false);
+  const [walkInPatientId, setWalkInPatientId] = useState('');
+  const [startingWalkIn, setStartingWalkIn] = useState(false);
+  const [error, setError] = useState('');
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const loadHubData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [encRes, appRes, patRes] = await Promise.all([
+        api<{ data: EncounterListItem[] }>('/api/encounters'),
+        api<{ data: TodayAppointment[] }>(`/api/appointments?from=${todayStr}&to=${todayStr}`),
+        api<{ data: Patient[] }>('/api/patients'),
+      ]);
+      setEncounters(encRes.data || []);
+      setTodayAppointments(appRes.data || []);
+      setPatients(patRes.data || []);
+
+      const inProg = encRes.data?.filter((e) => e.status === 'IN_PROGRESS') || [];
+      if (inProg.length > 0) {
+        setActiveTab('in_progress');
+      } else if (appRes.data?.length > 0) {
+        setActiveTab('today');
+      } else {
+        setActiveTab('completed');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar atendimentos.');
+    } finally {
+      setLoading(false);
+    }
+  }, [todayStr]);
+
+  useEffect(() => {
+    void loadHubData();
+  }, [loadHubData]);
+
+  async function handleStartAppointment(appointment: TodayAppointment) {
+    try {
+      const res = await api<{ data: { id: string } }>('/api/encounters', {
+        method: 'POST',
+        body: JSON.stringify({
+          patientId: appointment.patientId,
+          appointmentId: appointment.id,
+        }),
+      });
+      onSelectEncounter(res.data.id, true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível iniciar a consulta.');
+    }
+  }
+
+  async function handleStartWalkIn() {
+    if (!walkInPatientId) return;
+    setStartingWalkIn(true);
+    setError('');
+    try {
+      const res = await api<{ data: { id: string } }>('/api/encounters', {
+        method: 'POST',
+        body: JSON.stringify({ patientId: walkInPatientId }),
+      });
+      setWalkInOpen(false);
+      onSelectEncounter(res.data.id, false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível iniciar o atendimento avulso.');
+    } finally {
+      setStartingWalkIn(false);
+    }
+  }
+
+  const inProgressList = encounters.filter((e) => e.status === 'IN_PROGRESS');
+  const completedList = encounters.filter((e) => e.status === 'COMPLETED');
+
+  const filteredInProgress = inProgressList.filter((e) =>
+    e.patientName.toLowerCase().includes(search.toLowerCase()) ||
+    (e.objective && e.objective.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const filteredToday = todayAppointments.filter((a) =>
+    a.patientName.toLowerCase().includes(search.toLowerCase()) ||
+    a.type.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredCompleted = completedList.filter((e) =>
+    e.patientName.toLowerCase().includes(search.toLowerCase()) ||
+    (e.appointmentType && e.appointmentType.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  return (
+    <div className="encounter-hub">
+      <header className="encounter-hub-header">
+        <div className="encounter-hub-title">
+          <div className="encounter-hub-icon">
+            <ClipboardList size={26} />
+          </div>
+          <div>
+            <h1>Central de Atendimentos</h1>
+            <p>Acompanhe consultas do dia, retome rascunhos em andamento e consulte o histórico de prontuários.</p>
+          </div>
+        </div>
+
+        <div className="encounter-hub-header-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => navigate('/agenda')}
+            title="Abrir a agenda completa"
+          >
+            <Calendar size={16} /> Abrir Agenda
+          </button>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => setWalkInOpen(true)}
+            title="Iniciar atendimento sem agendamento prévio (Encaixe)"
+          >
+            <Plus size={16} /> Atendimento Avulso (Encaixe)
+          </button>
+        </div>
+      </header>
+
+      {error && <div className="form-error">{error}</div>}
+
+      <div className="encounter-hub-tabs-bar">
+        <div className="encounter-hub-tabs">
+          <button
+            type="button"
+            className={`encounter-hub-tab-btn ${activeTab === 'in_progress' ? 'active' : ''}`}
+            onClick={() => setActiveTab('in_progress')}
+          >
+            <Clock size={15} />
+            <span>Em Andamento / Rascunhos</span>
+            <span className="encounter-hub-tab-badge">{inProgressList.length}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`encounter-hub-tab-btn ${activeTab === 'today' ? 'active' : ''}`}
+            onClick={() => setActiveTab('today')}
+          >
+            <Calendar size={15} />
+            <span>Consultas de Hoje</span>
+            <span className="encounter-hub-tab-badge">{todayAppointments.length}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`encounter-hub-tab-btn ${activeTab === 'completed' ? 'active' : ''}`}
+            onClick={() => setActiveTab('completed')}
+          >
+            <CheckCircle2 size={15} />
+            <span>Histórico Realizado</span>
+            <span className="encounter-hub-tab-badge">{completedList.length}</span>
+          </button>
+        </div>
+
+        <div className="encounter-hub-search-box">
+          <Search size={15} />
+          <input
+            type="text"
+            placeholder="Buscar por paciente ou tipo..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="encounter-hub-empty">
+          <span className="spinner" />
+          <p>Carregando atendimentos...</p>
+        </div>
+      ) : activeTab === 'in_progress' ? (
+        filteredInProgress.length === 0 ? (
+          <div className="encounter-hub-empty">
+            <div className="encounter-hub-empty-icon">
+              <Clock size={24} />
+            </div>
+            <h3>Nenhum atendimento em andamento no momento</h3>
+            <p>
+              Quando você inicia uma consulta pela Agenda ou como encaixe, ela aparece aqui como rascunho até ser finalizada.
+            </p>
+            <button type="button" className="secondary-button" onClick={() => navigate('/agenda')}>
+              <Calendar size={15} /> Ver Agenda de Consultas
+            </button>
+          </div>
+        ) : (
+          <div className="encounter-hub-grid">
+            {filteredInProgress.map((enc) => (
+              <article key={enc.id} className="encounter-hub-card">
+                <div className="encounter-hub-card-header">
+                  <div className="encounter-hub-avatar">{enc.patientName.charAt(0)}</div>
+                  <div className="encounter-hub-patient-info">
+                    <strong>{enc.patientName}</strong>
+                    <small>{enc.patientEmail || enc.objective || 'Atendimento clínico'}</small>
+                  </div>
+                  <span className="encounter-hub-tag in_progress">Em Andamento</span>
+                </div>
+
+                <div className="encounter-hub-card-meta">
+                  <div className="encounter-hub-card-meta-row">
+                    <Clock size={13} />
+                    <span>Iniciado em: <strong>{new Date(enc.startedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</strong></span>
+                  </div>
+                  {enc.appointmentTime && (
+                    <div className="encounter-hub-card-meta-row">
+                      <Calendar size={13} />
+                      <span>Agendamento: <strong>{enc.appointmentTime} ({enc.durationMinutes || 60} min)</strong></span>
+                    </div>
+                  )}
+                  {enc.objective && (
+                    <div className="encounter-hub-card-meta-row">
+                      <Zap size={13} />
+                      <span>Objetivo: <strong>{enc.objective}</strong></span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="encounter-hub-card-footer">
+                  <button
+                    type="button"
+                    className="encounter-hub-action-btn primary"
+                    onClick={() => onSelectEncounter(enc.id, false)}
+                  >
+                    <Play size={14} /> Continuar Atendimento
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )
+      ) : activeTab === 'today' ? (
+        filteredToday.length === 0 ? (
+          <div className="encounter-hub-empty">
+            <div className="encounter-hub-empty-icon">
+              <Calendar size={24} />
+            </div>
+            <h3>Nenhuma consulta agendada para hoje</h3>
+            <p>Abra a Agenda para verificar outros dias ou marcar novos atendimentos.</p>
+            <button type="button" className="primary-button" onClick={() => navigate('/agenda')}>
+              <Calendar size={15} /> Ir para a Agenda
+            </button>
+          </div>
+        ) : (
+          <div className="encounter-hub-grid">
+            {filteredToday.map((app) => (
+              <article key={app.id} className="encounter-hub-card">
+                <div className="encounter-hub-card-header">
+                  <div className="encounter-hub-avatar">{app.patientName.charAt(0)}</div>
+                  <div className="encounter-hub-patient-info">
+                    <strong>{app.patientName}</strong>
+                    <small>{app.type || 'Consulta Nutricional'}</small>
+                  </div>
+                  <span className="encounter-hub-tag today">Hoje</span>
+                </div>
+
+                <div className="encounter-hub-card-meta">
+                  <div className="encounter-hub-card-meta-row">
+                    <Clock size={13} />
+                    <span>Horário: <strong>{formatAppointmentSchedule(app.time, app.durationMinutes || 60)}</strong></span>
+                  </div>
+                  {app.whatsapp && (
+                    <div className="encounter-hub-card-meta-row">
+                      <span>WhatsApp: <strong>{app.whatsapp}</strong></span>
+                    </div>
+                  )}
+                  {app.notes && (
+                    <div className="encounter-hub-card-meta-row">
+                      <span>Notas: <strong>{app.notes}</strong></span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="encounter-hub-card-footer">
+                  <button
+                    type="button"
+                    className="encounter-hub-action-btn primary"
+                    onClick={() => void handleStartAppointment(app)}
+                  >
+                    <Play size={14} /> Iniciar Consulta
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )
+      ) : (
+        filteredCompleted.length === 0 ? (
+          <div className="encounter-hub-empty">
+            <div className="encounter-hub-empty-icon">
+              <CheckCircle2 size={24} />
+            </div>
+            <h3>Nenhum prontuário finalizado encontrado</h3>
+            <p>Os atendimentos concluídos com envio de materiais e documentos serão arquivados aqui.</p>
+          </div>
+        ) : (
+          <div className="encounter-hub-grid">
+            {filteredCompleted.map((enc) => (
+              <article key={enc.id} className="encounter-hub-card">
+                <div className="encounter-hub-card-header">
+                  <div className="encounter-hub-avatar">{enc.patientName.charAt(0)}</div>
+                  <div className="encounter-hub-patient-info">
+                    <strong>{enc.patientName}</strong>
+                    <small>{enc.appointmentType || enc.objective || 'Atendimento concluído'}</small>
+                  </div>
+                  <span className="encounter-hub-tag completed">Concluído</span>
+                </div>
+
+                <div className="encounter-hub-card-meta">
+                  <div className="encounter-hub-card-meta-row">
+                    <CheckCircle2 size={13} />
+                    <span>Finalizado em: <strong>{enc.completedAt ? new Date(enc.completedAt).toLocaleDateString('pt-BR') : new Date(enc.startedAt).toLocaleDateString('pt-BR')}</strong></span>
+                  </div>
+                  {enc.objective && (
+                    <div className="encounter-hub-card-meta-row">
+                      <Zap size={13} />
+                      <span>Objetivo: <strong>{enc.objective}</strong></span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="encounter-hub-card-footer">
+                  <button
+                    type="button"
+                    className="encounter-hub-action-btn secondary"
+                    onClick={() => onSelectEncounter(enc.id, false)}
+                  >
+                    <Eye size={14} /> Ver Prontuário
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )
+      )}
+
+      {walkInOpen && (
+        <div className="modal-backdrop" onClick={() => setWalkInOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px' }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ClipboardList size={20} color="var(--forest)" />
+                <h3 style={{ margin: 0 }}>Atendimento Avulso (Encaixe)</h3>
+              </div>
+              <button type="button" className="icon-button" onClick={() => setWalkInOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>
+                Selecione o paciente cadastrado para abrir um atendimento clínico de emergência ou encaixe sem agendamento prévio.
+              </p>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
+                Paciente
+                <select
+                  value={walkInPatientId}
+                  onChange={(e) => setWalkInPatientId(e.target.value)}
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}
+                >
+                  <option value="">Selecione um paciente</option>
+                  {patients.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+              <button type="button" className="secondary-button" onClick={() => setWalkInOpen(false)}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => void handleStartWalkIn()}
+                disabled={!walkInPatientId || startingWalkIn}
+              >
+                {startingWalkIn ? 'Abrindo...' : 'Iniciar Atendimento'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const checkinLabels:Record<string,string>={improvements:'O que melhorou',mainDifficulty:'Principal dificuldade',medicationChanges:'Mudanças de medicamentos',newSymptoms:'Sintomas novos',adherence:'Adesão percebida (0–10)',examsCompleted:'Exames realizados',discussionTopics:'Assuntos para a consulta'};
