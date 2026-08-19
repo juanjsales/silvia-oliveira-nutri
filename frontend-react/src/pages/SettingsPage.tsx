@@ -1,12 +1,19 @@
 import {
   CheckCircle2,
+  Clock,
+  DollarSign,
+  FileText,
+  KeyRound,
   LockKeyhole,
+  Mail,
   MessageCircle,
   Palette,
   Save,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Stethoscope,
+  Wrench,
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../lib/api";
@@ -16,6 +23,8 @@ import { IncidentPanel } from "../components/IncidentPanel";
 import { PrivacyRequestsPanel } from "../components/PrivacyRequestsPanel";
 import { PasswordInput } from "../components/PasswordInput";
 import { SetupWizardModal } from "../components/SetupWizardModal";
+import { capitalizePersonName } from "../lib/formatters";
+
 type Settings = {
   clinicName: string;
   professionalName: string;
@@ -35,6 +44,7 @@ type Settings = {
   followupMessage: string;
   documentFooter: string;
 };
+
 const defaults: Settings = {
   clinicName: "",
   professionalName: "",
@@ -54,12 +64,18 @@ const defaults: Settings = {
   followupMessage: "",
   documentFooter: "",
 };
+
+type SettingsTab = "CLINIC" | "PRICING" | "MESSAGES" | "EMAIL" | "SECURITY" | "SUPPORT";
+
 export function SettingsPage() {
   const [form, setForm] = useState(defaults);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("CLINIC");
+
+  // Senha
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -73,8 +89,8 @@ export function SettingsPage() {
       .then((r) => setForm({ ...defaults, ...r.data }))
       .catch((c) =>
         setError(
-          c instanceof Error ? c.message : "Erro ao carregar configurações.",
-        ),
+          c instanceof Error ? c.message : "Erro ao carregar configurações."
+        )
       )
       .finally(() => setLoading(false));
   };
@@ -82,15 +98,20 @@ export function SettingsPage() {
   useEffect(() => {
     loadSettings();
   }, []);
+
   async function save(event: FormEvent) {
     event.preventDefault();
     setSaving(true);
     setError("");
+    setNotice("");
     try {
+      const profName = capitalizePersonName(form.professionalName);
       const result = await api<{ data: Settings }>("/api/settings", {
         method: "PUT",
         body: JSON.stringify({
           ...form,
+          professionalName: profName,
+          clinicName: form.clinicName || profName,
           phone: form.phone || undefined,
           email: form.email || undefined,
           address: form.address || undefined,
@@ -99,18 +120,22 @@ export function SettingsPage() {
         }),
       });
       setForm({ ...defaults, ...result.data });
-      setNotice("Configurações salvas e prontas para uso nos documentos.");
+      setNotice("Configurações salvas e atualizadas com sucesso!");
+      window.dispatchEvent(new CustomEvent("clinic-settings-updated"));
+      setTimeout(() => setNotice(""), 5000);
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "Não foi possível salvar.",
+        cause instanceof Error ? cause.message : "Não foi possível salvar."
       );
     } finally {
       setSaving(false);
     }
   }
+
   async function changePassword(event: FormEvent) {
     event.preventDefault();
     setError("");
+    setNotice("");
     if (newPassword !== confirm) {
       setError("A confirmação da nova senha não confere.");
       return;
@@ -125,16 +150,18 @@ export function SettingsPage() {
       setNewPassword("");
       setConfirm("");
       setNotice("Senha alterada com sucesso.");
+      setTimeout(() => setNotice(""), 5000);
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
-          : "Não foi possível alterar a senha.",
+          : "Não foi possível alterar a senha."
       );
     } finally {
       setSaving(false);
     }
   }
+
   if (loading)
     return (
       <section className="panel empty-state">
@@ -142,16 +169,9 @@ export function SettingsPage() {
         <strong>Carregando configurações...</strong>
       </section>
     );
+
   return (
     <div className="settings-page">
-      {error && <div className="form-error">{error}</div>}
-      {notice && (
-        <div className="form-success">
-          <CheckCircle2 size={17} />
-          {notice}
-        </div>
-      )}
-
       {/* BANNER DE ASSISTENTE DE CONFIGURAÇÃO RÁPIDA */}
       <div className="wizard-banner-card">
         <div className="wizard-banner-text">
@@ -159,8 +179,8 @@ export function SettingsPage() {
             <Sparkles size={22} />
           </div>
           <div>
-            <strong>Assistente de Configuração Rápida</strong>
-            <span>Configure a identidade, preços e e-mails do seu consultório em 3 passos simples.</span>
+            <strong>Assistente de Configuração do Consultório</strong>
+            <span>Preencha seus dados, valores e e-mails guiados passo a passo.</span>
           </div>
         </div>
         <button
@@ -181,242 +201,363 @@ export function SettingsPage() {
         }}
       />
 
-      <ReadinessPanel />
-      <IncidentPanel />
-      <PrivacyRequestsPanel />
-      <form onSubmit={save}>
-        <section className="panel settings-section">
-          <header>
-            <Stethoscope />
-            <div>
-              <h2>Identidade profissional</h2>
-              <p>Dados usados no portal, e-mails e documentos oficiais.</p>
-            </div>
-          </header>
-          <div className="settings-grid">
-            <label>
-              Nome do consultório
-              <input
-                value={form.clinicName}
-                onChange={(e) => set("clinicName", e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Nome profissional
-              <input
-                value={form.professionalName}
-                onChange={(e) => set("professionalName", e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              CRN
-              <input
-                value={form.crn}
-                onChange={(e) => set("crn", e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Especialidade
-              <input
-                value={form.specialty}
-                onChange={(e) => set("specialty", e.target.value)}
-              />
-            </label>
-            <label>
-              WhatsApp
-              <input
-                value={form.phone}
-                onChange={(e) => set("phone", e.target.value)}
-              />
-            </label>
-            <label>
-              E-mail do consultório
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-              />
-            </label>
-            <label className="wide">
-              Endereço
-              <input
-                value={form.address}
-                onChange={(e) => set("address", e.target.value)}
-              />
-            </label>
-            <label>
-              Cidade
-              <input
-                value={form.city}
-                onChange={(e) => set("city", e.target.value)}
-              />
-            </label>
-            <label>
-              URL do logotipo
-              <input
-                type="url"
-                value={form.logoUrl}
-                onChange={(e) => set("logoUrl", e.target.value)}
-              />
-            </label>
-          </div>
-        </section>
-        <section className="panel settings-section">
-          <header>
-            <Palette />
-            <div>
-              <h2>Consultas e documentos</h2>
-              <p>Padrões aplicados à agenda e à identidade A4.</p>
-            </div>
-          </header>
-          <div className="settings-grid">
-            <label>
-              Consulta presencial (R$)
-              <input
-                type="number"
-                min="0"
-                value={form.inPersonPrice}
-                onChange={(e) => set("inPersonPrice", Number(e.target.value))}
-              />
-            </label>
-            <label>
-              Consulta online (R$)
-              <input
-                type="number"
-                min="0"
-                value={form.onlinePrice}
-                onChange={(e) => set("onlinePrice", Number(e.target.value))}
-              />
-            </label>
-            <label>
-              Duração padrão (min)
-              <input
-                type="number"
-                min="15"
-                value={form.defaultDurationMinutes}
-                onChange={(e) =>
-                  set("defaultDurationMinutes", Number(e.target.value))
-                }
-              />
-            </label>
-            <label>
-              Cor principal
-              <div className="color-input">
-                <input
-                  type="color"
-                  value={form.primaryColor}
-                  onChange={(e) => set("primaryColor", e.target.value)}
-                />
-                <input
-                  value={form.primaryColor}
-                  onChange={(e) => set("primaryColor", e.target.value)}
-                />
-              </div>
-            </label>
-            <label>
-              Cor secundária
-              <div className="color-input">
-                <input
-                  type="color"
-                  value={form.secondaryColor}
-                  onChange={(e) => set("secondaryColor", e.target.value)}
-                />
-                <input
-                  value={form.secondaryColor}
-                  onChange={(e) => set("secondaryColor", e.target.value)}
-                />
-              </div>
-            </label>
-            <label className="wide">
-              Rodapé dos documentos
-              <input
-                value={form.documentFooter}
-                onChange={(e) => set("documentFooter", e.target.value)}
-              />
-            </label>
-          </div>
-        </section>
-        <section className="panel settings-section">
-          <header>
-            <MessageCircle />
-            <div>
-              <h2>Mensagens</h2>
-              <p>
-                Use as variáveis {"{NOME}"}, {"{DATA}"} e {"{HORA}"}.
-              </p>
-            </div>
-          </header>
-          <div className="settings-grid">
-            <label className="wide">
-              Lembrete da consulta
-              <textarea
-                rows={4}
-                value={form.reminderMessage}
-                onChange={(e) => set("reminderMessage", e.target.value)}
-              />
-            </label>
-            <label className="wide">
-              Mensagem pós-consulta
-              <textarea
-                rows={4}
-                value={form.followupMessage}
-                onChange={(e) => set("followupMessage", e.target.value)}
-              />
-            </label>
-          </div>
-        </section>
-        <button className="primary-button settings-save" disabled={saving}>
-          <Save size={18} />
-          {saving ? "Salvando..." : "Salvar configurações"}
-        </button>
-      </form>
-      <SmtpSettings />
-      <form
-        className="panel settings-section security-form"
-        onSubmit={changePassword}
-      >
-        <header>
-          <ShieldCheck />
-          <div>
-            <h2>Acesso e segurança</h2>
-            <p>A nova senha deve ter pelo menos 12 caracteres.</p>
-          </div>
-        </header>
-        <div className="settings-grid">
-          <label>
-            Senha atual
-            <PasswordInput
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Nova senha
-            <PasswordInput
-              minLength={12}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Confirmar nova senha
-            <PasswordInput
-              minLength={12}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-            />
-          </label>
+      {error && <div className="form-error">{error}</div>}
+      {notice && (
+        <div className="form-success">
+          <CheckCircle2 size={17} />
+          {notice}
         </div>
-        <button className="secondary-button">
-          <LockKeyhole size={17} /> Alterar senha
+      )}
+
+      {/* ABAS DE NAVEGAÇÃO DE CONFIGURAÇÕES */}
+      <div className="settings-nav-tabs">
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === "CLINIC" ? "active" : ""}`}
+          onClick={() => setActiveTab("CLINIC")}
+        >
+          <Stethoscope size={16} />
+          <span>Meu Consultório</span>
         </button>
-      </form>
+
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === "PRICING" ? "active" : ""}`}
+          onClick={() => setActiveTab("PRICING")}
+        >
+          <DollarSign size={16} />
+          <span>Valores & Sessões</span>
+        </button>
+
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === "MESSAGES" ? "active" : ""}`}
+          onClick={() => setActiveTab("MESSAGES")}
+        >
+          <MessageCircle size={16} />
+          <span>Mensagens WhatsApp</span>
+        </button>
+
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === "EMAIL" ? "active" : ""}`}
+          onClick={() => setActiveTab("EMAIL")}
+        >
+          <Mail size={16} />
+          <span>E-mails (Gmail)</span>
+        </button>
+
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === "SECURITY" ? "active" : ""}`}
+          onClick={() => setActiveTab("SECURITY")}
+        >
+          <LockKeyhole size={16} />
+          <span>Minha Senha</span>
+        </button>
+
+        <button
+          type="button"
+          className={`settings-tab-btn support-tab ${activeTab === "SUPPORT" ? "active" : ""}`}
+          onClick={() => setActiveTab("SUPPORT")}
+          title="Painel de Infraestrutura e Diagnóstico Técnico"
+        >
+          <Wrench size={16} />
+          <span>Suporte Técnico</span>
+        </button>
+      </div>
+
+      {/* ── ABA 1: IDENTIDADE PROFISSIONAL ── */}
+      {activeTab === "CLINIC" && (
+        <form onSubmit={save}>
+          <section className="panel settings-section">
+            <header>
+              <Stethoscope />
+              <div>
+                <h2>Identidade do Consultório</h2>
+                <p>Dados que aparecem nos planos alimentares, laudos em PDF e no Portal do Paciente.</p>
+              </div>
+            </header>
+            <div className="settings-grid">
+              <label>
+                Nome Completo da Nutricionista *
+                <input
+                  value={form.professionalName}
+                  onChange={(e) => set("professionalName", e.target.value)}
+                  onBlur={() => set("professionalName", capitalizePersonName(form.professionalName))}
+                  required
+                />
+              </label>
+              <label>
+                Registro Profissional (CRN) *
+                <input
+                  value={form.crn}
+                  onChange={(e) => set("crn", e.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                Nome da Clínica / Consultório
+                <input
+                  value={form.clinicName}
+                  onChange={(e) => set("clinicName", e.target.value)}
+                />
+              </label>
+              <label>
+                Especialidade Principal
+                <input
+                  value={form.specialty}
+                  onChange={(e) => set("specialty", e.target.value)}
+                  placeholder="Ex: Nutrição Esportiva e Clínica"
+                />
+              </label>
+              <label>
+                WhatsApp de Atendimento
+                <input
+                  value={form.phone}
+                  onChange={(e) => set("phone", e.target.value)}
+                  placeholder="(11) 99999-8888"
+                />
+              </label>
+              <label>
+                E-mail de Contato
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => set("email", e.target.value)}
+                  placeholder="contato@consultorio.com"
+                />
+              </label>
+              <label className="wide">
+                Endereço do Consultório
+                <input
+                  value={form.address}
+                  onChange={(e) => set("address", e.target.value)}
+                  placeholder="Av. Paulista, 1000 - Sala 42"
+                />
+              </label>
+              <label>
+                Cidade / Estado
+                <input
+                  value={form.city}
+                  onChange={(e) => set("city", e.target.value)}
+                  placeholder="São Paulo - SP"
+                />
+              </label>
+              <label>
+                URL do Logotipo (Opcional)
+                <input
+                  type="url"
+                  value={form.logoUrl}
+                  onChange={(e) => set("logoUrl", e.target.value)}
+                  placeholder="https://..."
+                />
+              </label>
+            </div>
+          </section>
+
+          <button className="primary-button settings-save" disabled={saving}>
+            <Save size={18} />
+            {saving ? "Salvando..." : "Salvar Alterações"}
+          </button>
+        </form>
+      )}
+
+      {/* ── ABA 2: CONSULTAS & VALORES ── */}
+      {activeTab === "PRICING" && (
+        <form onSubmit={save}>
+          <section className="panel settings-section">
+            <header>
+              <Palette />
+              <div>
+                <h2>Valores e Padrões de Atendimento</h2>
+                <p>Valores padrão sugeridos ao agendar novas consultas e rodapés oficiais.</p>
+              </div>
+            </header>
+            <div className="settings-grid">
+              <label>
+                Valor Consulta Presencial (R$)
+                <input
+                  type="number"
+                  min="0"
+                  value={form.inPersonPrice}
+                  onChange={(e) => set("inPersonPrice", Number(e.target.value))}
+                />
+              </label>
+              <label>
+                Valor Consulta Online / Teleconsulta (R$)
+                <input
+                  type="number"
+                  min="0"
+                  value={form.onlinePrice}
+                  onChange={(e) => set("onlinePrice", Number(e.target.value))}
+                />
+              </label>
+              <label>
+                Duração Padrão da Consulta (minutos)
+                <input
+                  type="number"
+                  min="15"
+                  value={form.defaultDurationMinutes}
+                  onChange={(e) =>
+                    set("defaultDurationMinutes", Number(e.target.value))
+                  }
+                />
+              </label>
+              <label>
+                Cor Principal do Sistema
+                <div className="color-input">
+                  <input
+                    type="color"
+                    value={form.primaryColor}
+                    onChange={(e) => set("primaryColor", e.target.value)}
+                  />
+                  <input
+                    value={form.primaryColor}
+                    onChange={(e) => set("primaryColor", e.target.value)}
+                  />
+                </div>
+              </label>
+              <label>
+                Cor Secundária
+                <div className="color-input">
+                  <input
+                    type="color"
+                    value={form.secondaryColor}
+                    onChange={(e) => set("secondaryColor", e.target.value)}
+                  />
+                  <input
+                    value={form.secondaryColor}
+                    onChange={(e) => set("secondaryColor", e.target.value)}
+                  />
+                </div>
+              </label>
+              <label className="wide">
+                Texto do Rodapé nos Laudos & Prescrições A4
+                <input
+                  value={form.documentFooter}
+                  onChange={(e) => set("documentFooter", e.target.value)}
+                  placeholder="Ex: Documento emitido eletronicamente. Telefone: (11) 99999-8888"
+                />
+              </label>
+            </div>
+          </section>
+
+          <button className="primary-button settings-save" disabled={saving}>
+            <Save size={18} />
+            {saving ? "Salvando..." : "Salvar Alterações"}
+          </button>
+        </form>
+      )}
+
+      {/* ── ABA 3: MENSAGENS WHATSAPP ── */}
+      {activeTab === "MESSAGES" && (
+        <form onSubmit={save}>
+          <section className="panel settings-section">
+            <header>
+              <MessageCircle />
+              <div>
+                <h2>Modelos de Mensagem</h2>
+                <p>
+                  Textos rápidos pré-formatados. Use as variáveis <strong>{"{NOME}"}</strong>, <strong>{"{DATA}"}</strong> e <strong>{"{HORA}"}</strong>.
+                </p>
+              </div>
+            </header>
+            <div className="settings-grid">
+              <label className="wide">
+                Lembrete / Confirmação de Consulta
+                <textarea
+                  rows={4}
+                  value={form.reminderMessage}
+                  onChange={(e) => set("reminderMessage", e.target.value)}
+                  placeholder="Olá {NOME}, passando para confirmar sua consulta no dia {DATA} às {HORA}..."
+                />
+              </label>
+              <label className="wide">
+                Mensagem de Envio do Plano Alimentar (Pós-Consulta)
+                <textarea
+                  rows={4}
+                  value={form.followupMessage}
+                  onChange={(e) => set("followupMessage", e.target.value)}
+                  placeholder="Olá {NOME}, seu plano alimentar e orientações já estão disponíveis no Portal do Paciente!"
+                />
+              </label>
+            </div>
+          </section>
+
+          <button className="primary-button settings-save" disabled={saving}>
+            <Save size={18} />
+            {saving ? "Salvando..." : "Salvar Mensagens"}
+          </button>
+        </form>
+      )}
+
+      {/* ── ABA 4: E-MAILS & SMTP ── */}
+      {activeTab === "EMAIL" && <SmtpSettings />}
+
+      {/* ── ABA 5: MINHA SENHA ── */}
+      {activeTab === "SECURITY" && (
+        <form
+          className="panel settings-section security-form"
+          onSubmit={changePassword}
+        >
+          <header>
+            <ShieldCheck />
+            <div>
+              <h2>Alterar Senha de Acesso</h2>
+              <p>Escolha uma nova senha com pelo menos 12 caracteres.</p>
+            </div>
+          </header>
+          <div className="settings-grid">
+            <label>
+              Senha Atual
+              <PasswordInput
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Nova Senha
+              <PasswordInput
+                minLength={12}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Confirmar Nova Senha
+              <PasswordInput
+                minLength={12}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                required
+              />
+            </label>
+          </div>
+          <button className="secondary-button" style={{ marginTop: 16 }}>
+            <LockKeyhole size={17} /> Salvar Nova Senha
+          </button>
+        </form>
+      )}
+
+      {/* ── ABA 6: SUPORTE TÉCNICO & DIAGNÓSTICO (ÁREA TÉCNICA) ── */}
+      {activeTab === "SUPPORT" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="support-info-banner">
+            <Wrench size={20} />
+            <div>
+              <strong>Área de Suporte & Diagnóstico de Infraestrutura</strong>
+              <p>Esta área contém métricas de banco de dados, auditoria LGPD e logs operacionais para manutenção do sistema.</p>
+            </div>
+          </div>
+
+          <ReadinessPanel />
+          <IncidentPanel />
+          <PrivacyRequestsPanel />
+        </div>
+      )}
     </div>
   );
 }

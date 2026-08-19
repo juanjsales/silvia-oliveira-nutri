@@ -65,6 +65,24 @@ export async function smtpSettingsRoutes(app: FastifyInstance) {
     return { message: 'Configuração SMTP salva com sucesso.' };
   });
 
+  app.delete('/', async (request) => {
+    await app.db.query(
+      `UPDATE clinic_settings
+       SET smtp_host=NULL, smtp_port=587, smtp_secure=false, smtp_user=NULL,
+           smtp_password_encrypted=NULL, smtp_from=NULL, smtp_enabled=false,
+           updated_at=now(), updated_by=$1
+       WHERE singleton=true`,
+      [request.auth!.userId]
+    );
+
+    await audit(app.db, 'SMTP_SETTINGS_REMOVED', 'clinic_settings', {
+      actorUserId: request.auth!.userId,
+      entityId: 'singleton'
+    });
+
+    return { message: 'Configurações de e-mail e credenciais removidas com sucesso.' };
+  });
+
   app.post('/test', async (request, reply) => {
     const { to } = z.object({ to: z.string().trim().email() }).parse(request.body);
     const config = await loadSmtpConfig(app.db, app.env);
