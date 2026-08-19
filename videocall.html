@@ -139,7 +139,9 @@
             display: flex;
             align-items: center;
             gap: 6px;
-          /* ── VIDEO STAGE ── */
+        }
+
+        /* ── VIDEO STAGE ── */
         .stage-container {
             flex: 1;
             position: relative;
@@ -148,6 +150,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 100%;
+            height: 100%;
         }
 
         /* ── CONTAINER PRINCIPAL DOS VÍDEOS ── */
@@ -160,6 +164,13 @@
         }
 
         /* MODO 1: DESTAQUE (Principal + Miniatura PiP) */
+        .videos-layout-grid.mode-spotlight {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
         .videos-layout-grid.mode-spotlight .remote-video-wrap {
             width: 100%;
             height: 100%;
@@ -169,42 +180,49 @@
             align-items: center;
             justify-content: center;
             background: #040805;
+            z-index: 1;
         }
 
         .videos-layout-grid.mode-spotlight .local-video-wrap {
             position: absolute;
             bottom: 84px;
             right: 20px;
-            width: 200px;
-            height: 140px;
+            width: clamp(140px, 22vw, 220px);
+            aspect-ratio: 16 / 9;
+            height: auto;
             border-radius: 14px;
             overflow: hidden;
-            border: 2px solid rgba(140, 164, 129, 0.45);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.85);
+            border: 2px solid rgba(140, 164, 129, 0.5);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85);
             background: #0d1710;
             z-index: 25;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
         }
 
-        /* MODO 2: LADO A LADO (Grid 50% / 50% sem cortes) */
+        .videos-layout-grid.mode-spotlight .local-video-wrap:hover {
+            transform: scale(1.04);
+            border-color: var(--sage-glow);
+        }
+
+        /* MODO 2: LADO A LADO / GRID (Proporções Perfeitas) */
         .videos-layout-grid.mode-grid {
-            display: flex;
-            flex-direction: row;
-            gap: 10px;
-            padding: 10px;
-            padding-bottom: 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 12px;
+            padding-bottom: 82px;
             width: 100%;
             height: 100%;
+            align-items: stretch;
         }
 
         .videos-layout-grid.mode-grid .remote-video-wrap,
         .videos-layout-grid.mode-grid .local-video-wrap {
             position: relative;
-            flex: 1;
-            width: 50%;
+            width: 100%;
             height: 100%;
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
             background: #08120a;
             border: 1.5px solid rgba(140, 164, 129, 0.3);
@@ -213,6 +231,7 @@
             justify-content: center;
             bottom: auto;
             right: auto;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }
 
         /* MODO 3: PRÉVIA LOCAL (Enquanto aguarda a outra pessoa) */
@@ -230,21 +249,45 @@
             z-index: 5;
         }
 
-        /* ── ELEMENTOS DE VÍDEO (SEM CORTES) ── */
+        /* ── ELEMENTOS DE VÍDEO (PADRÃO COVER ELEGANTE E SUAVE) ── */
         .video-element {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Padrão sem cortes: 100% da pessoa visível */
+            object-fit: cover; /* Padrão moderno: preenche o enquadramento sem bordas pretas */
             background: #040805;
             transition: object-fit 0.2s ease;
+            display: block;
         }
 
-        .fit-cover .video-element {
-            object-fit: cover !important;
+        .stage-container.fit-contain .video-element {
+            object-fit: contain !important; /* Modo sem cortes quando ativado */
         }
 
         #localVideo {
             transform: scaleX(-1); /* espelha câmera própria */
+        }
+
+        /* Se for compartilhamento de tela, nunca cortar texto */
+        .screen-sharing-active #remoteVideo,
+        .screen-sharing-active #localVideo {
+            object-fit: contain !important;
+            transform: none !important;
+        }
+
+        @media (max-width: 720px), (max-aspect-ratio: 1/1) {
+            .videos-layout-grid.mode-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+                gap: 8px;
+                padding: 8px;
+                padding-bottom: 76px;
+            }
+
+            .videos-layout-grid.mode-spotlight .local-video-wrap {
+                bottom: 74px;
+                right: 12px;
+                width: 130px;
+            }
         }
 
         .waiting-status-banner {
@@ -649,13 +692,13 @@
             const stage = document.getElementById('stageContainer');
             const btn = document.getElementById('btnFit');
             if (isCoverFit) {
-                stage.classList.add('fit-cover');
+                stage.classList.add('fit-contain');
                 if (btn) btn.classList.add('active');
-                showToast('Enquadramento: Preencher Tela (com zoom)');
-            } else {
-                stage.classList.remove('fit-cover');
-                if (btn) btn.classList.remove('active');
                 showToast('Enquadramento: Sem Cortes (Proporção Original)');
+            } else {
+                stage.classList.remove('fit-contain');
+                if (btn) btn.classList.remove('active');
+                showToast('Enquadramento: Preenchimento Suave');
             }
         }
 
@@ -671,7 +714,7 @@
                 currentLayout = 'grid';
                 if (layout) layout.className = 'videos-layout-grid mode-grid';
                 if (btn) btn.classList.add('active');
-                showToast('Layout: Lado a Lado (50% / 50%)');
+                showToast('Layout: Lado a Lado (Proporções Iguais)');
             }
         }
 

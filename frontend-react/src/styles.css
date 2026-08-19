@@ -2955,10 +2955,21 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 }
 
 /* =========================================================
-   GLOBAL PERSISTENT VIDEO HOST (SEAMLESS PIP & FULL SCREEN)
+   GLOBAL PERSISTENT VIDEO HOST (PORTAL DOCKED & CLEAN PIP)
    ========================================================= */
-.global-video-host {
+.persistent-video-container {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.persistent-video-container.docked-in-page {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #040805;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .persistent-video-frame {
@@ -2966,6 +2977,7 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   height: 100%;
   position: relative;
   background: #000000;
+  flex: 1;
 }
 
 .persistent-video-frame iframe {
@@ -2975,39 +2987,13 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   display: block;
 }
 
-/* Modo 1: Encaixado na tela cheia da teleconsulta do paciente */
-.global-video-host.docked-patient-mode {
-  position: fixed;
-  top: 56px;
-  left: 0;
-  right: 400px;
-  bottom: 0;
-  z-index: 40;
-  background: #000000;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-/* Modo 2: Encaixado no Split View de Atendimento da Nutricionista */
-.global-video-host.docked-encounter-mode {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  width: 440px;
-  bottom: 0;
-  z-index: 40;
-  background: #000000;
-  border-right: 1px solid #d4dfd6;
-  box-shadow: none;
-}
-
-/* Modo 3: Miniplayer Flutuante (Picture-in-Picture) */
-.global-video-host.pip-mode {
+/* Modo Miniplayer Flutuante (Picture-in-Picture) */
+.persistent-video-container.pip-mode {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 330px;
-  height: 235px;
+  width: 340px;
+  height: 240px;
   background: #152b20;
   border-radius: 16px;
   overflow: hidden;
@@ -3018,7 +3004,7 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   animation: slideInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.global-video-host.pip-mode.collapsed {
+.persistent-video-container.pip-mode.collapsed {
   height: 48px;
   width: 280px;
 }

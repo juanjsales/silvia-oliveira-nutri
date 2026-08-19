@@ -8,6 +8,7 @@ import {
   Video,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 
@@ -18,6 +19,7 @@ export function FloatingCallWidget() {
   const [reconnecting, setReconnecting] = useState(false);
   const [iframeKey, setIframeKey] = useState(1);
   const [collapsed, setCollapsed] = useState(false);
+  const [dockSlot, setDockSlot] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!activeCall) return;
@@ -30,15 +32,28 @@ export function FloatingCallWidget() {
     return () => window.clearInterval(timer);
   }, [activeCall]);
 
+  const isPatientVideoRoute = location.pathname.startsWith('/portal/video');
+  const isEncounterRoute = location.pathname.startsWith('/atendimentos');
+  const isDockedPatient = !isMinimized && isPatientVideoRoute && activeCall?.role === 'PATIENT';
+  const isDockedEncounter = !isMinimized && isEncounterRoute && activeCall?.role === 'ADMIN';
+
+  useEffect(() => {
+    if (isDockedPatient) {
+      const el = document.getElementById('patient-video-slot');
+      setDockSlot(el);
+    } else if (isDockedEncounter) {
+      const el = document.getElementById('encounter-video-slot');
+      setDockSlot(el);
+    } else {
+      setDockSlot(null);
+    }
+  }, [isDockedPatient, isDockedEncounter, location.pathname, isMinimized]);
+
   if (!activeCall) {
     return null;
   }
 
-  const isPatientVideoRoute = location.pathname.startsWith('/portal/video');
-  const isEncounterRoute = location.pathname.startsWith('/atendimentos');
-  const isDockedPatient = !isMinimized && isPatientVideoRoute && activeCall.role === 'PATIENT';
-  const isDockedEncounter = !isMinimized && isEncounterRoute && activeCall.role === 'ADMIN';
-  const isPip = !isDockedPatient && !isDockedEncounter;
+  const isPip = !dockSlot;
 
   function handleReconnect() {
     setReconnecting(true);
@@ -52,14 +67,10 @@ export function FloatingCallWidget() {
     }
   }
 
-  return (
+  const videoElement = (
     <aside
-      className={`global-video-host ${
-        isDockedPatient
-          ? 'docked-patient-mode'
-          : isDockedEncounter
-          ? 'docked-encounter-mode'
-          : 'pip-mode'
+      className={`persistent-video-container ${
+        dockSlot ? 'docked-in-page' : 'pip-mode'
       } ${collapsed && isPip ? 'collapsed' : ''}`}
     >
       {isPip && (
@@ -128,5 +139,12 @@ export function FloatingCallWidget() {
       </div>
     </aside>
   );
+
+  if (dockSlot) {
+    return createPortal(videoElement, dockSlot);
+  }
+
+  return videoElement;
 }
+
 
