@@ -36,11 +36,15 @@ export function FloatingCallWidget() {
   }
 
   const isPatientVideoRoute = location.pathname.startsWith('/portal/video');
-  const isEncounterRoute = location.pathname.startsWith('/atendimentos');
+  const searchParams = new URLSearchParams(location.search);
+  const currentId = searchParams.get('id');
+  const isEncounterWithActiveId =
+    location.pathname === '/atendimentos' &&
+    Boolean(currentId && activeCall.returnPath.includes(`id=${currentId}`));
 
-  // Se estiver na tela nativa com o vídeo aberto (atendimentos ou portal/video),
+  // Se estiver na tela nativa com a consulta ativa aberta com o vídeo,
   // não renderiza o miniplayer flutuante para evitar duplicidade de vídeo e áudio.
-  if (isEncounterRoute || isPatientVideoRoute) {
+  if (isEncounterWithActiveId || isPatientVideoRoute) {
     return null;
   }
 

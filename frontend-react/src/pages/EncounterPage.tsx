@@ -141,7 +141,8 @@ export function EncounterPage(){
      stepper.scrollIntoView({ behavior: 'smooth', block: 'start' });
    }
   },[active]);
-  useEffect(()=>{if(!patientParam||!appointmentParam||params.get('id'))return;let cancelled=false;setLoading(true);api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId:patientParam,appointmentId:appointmentParam})}).then(r=>{if(!cancelled){setParams({id:r.data.id,...(videoParam?{video:'true'}:{})});void loadEncounter(r.data.id)}}).catch(c=>setError(c instanceof Error?c.message:'Erro ao iniciar atendimento.')).finally(()=>setLoading(false));return()=>{cancelled=true}},[patientParam,appointmentParam,videoParam,params,setParams,loadEncounter]);
+  useEffect(()=>{if(videoParam)setVideoOpen(true)},[videoParam]);
+  useEffect(()=>{if(!patientParam||params.get('id'))return;let cancelled=false;setLoading(true);api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId:patientParam,...(appointmentParam?{appointmentId:appointmentParam}:{})})}).then(r=>{if(!cancelled){setParams({id:r.data.id,...(videoParam?{video:'true'}:{})});void loadEncounter(r.data.id)}}).catch(c=>setError(c instanceof Error?c.message:'Erro ao iniciar atendimento.')).finally(()=>setLoading(false));return()=>{cancelled=true}},[patientParam,appointmentParam,videoParam,params,setParams,loadEncounter]);
 
   const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);
   function change(key:SectionKey,field:string,value:string){setDrafts(d=>({...d,[key]:{...(d[key]||{}),[field]:value}}));setDirtyKeys(keys=>new Set(keys).add(key));setNotice('')}

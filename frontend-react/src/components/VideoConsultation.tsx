@@ -83,9 +83,9 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
   useEffect(() => {
     if (source) {
       const returnTarget = encounterId
-        ? `/atendimentos?id=${encodeURIComponent(encounterId)}`
+        ? `/atendimentos?id=${encodeURIComponent(encounterId)}&video=true`
         : appointmentId
-        ? `/atendimentos?agendamento=${encodeURIComponent(appointmentId)}`
+        ? `/atendimentos?agendamento=${encodeURIComponent(appointmentId)}&video=true`
         : '/atendimentos';
 
       startCall({
