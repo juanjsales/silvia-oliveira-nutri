@@ -13,6 +13,7 @@ import './branding.css';
 import './home.css';
 import './portal-v2.css';
 import './portal-polish.css';
+import './portal-premium.css';
 import './nutrition-enhancements.css';
 import './document-professional.css';
 import './messages.css';
