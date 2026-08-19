@@ -3,153 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teleconsulta · Dra. Silvia Oliveira Lemos</title>
+    <title>Teleconsulta Nutricional · Dra. Silvia Oliveira Lemos</title>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <script src='https://meet.jit.si/external_api.js'></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
+        :root {
+            --bg-main: #0a130d;
+            --bg-card: #122117;
+            --bg-header: #15261b;
+            --forest-deep: #1b3324;
+            --sage-accent: #8ca481;
+            --sage-glow: #34d399;
+            --text-title: #ffffff;
+            --text-body: #e4ebe1;
+            --text-muted: #8ca481;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         html, body {
             height: 100%;
             width: 100%;
             overflow: hidden;
-            background-color: #0e1a12;
+            background-color: var(--bg-main);
             font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #eef4e5;
+            color: var(--text-body);
             display: flex;
             flex-direction: column;
         }
+
+        /* ── HEADER ── */
         .call-header {
-            background: #182a1f;
-            border-bottom: 1px solid rgba(140,164,129,0.25);
-            padding: 10px 20px;
+            background: var(--bg-header);
+            border-bottom: 1px solid rgba(140, 164, 129, 0.2);
+            padding: 8px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 54px;
+            height: 52px;
             flex-shrink: 0;
-            z-index: 100;
+            z-index: 50;
         }
+
         .call-brand {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         .call-title {
             font-family: 'Playfair Display', serif;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: #ffffff;
+            line-height: 1.1;
         }
+
         .call-status {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(52,211,153,0.15);
-            border: 1px solid rgba(52,211,153,0.3);
-            color: #34d399;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
             padding: 3px 10px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 700;
+            transition: all 0.3s ease;
         }
+
+        .call-status.connected {
+            background: rgba(52, 211, 153, 0.15);
+            border-color: rgba(52, 211, 153, 0.4);
+            color: #34d399;
+        }
+
         .call-timer {
             font-family: monospace;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 800;
-            color: #8ca481;
-            background: rgba(140,164,129,0.15);
-            padding: 4px 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(140,164,129,0.25);
+            color: var(--sage-accent);
+            background: rgba(140, 164, 129, 0.12);
+            padding: 3px 9px;
+            border-radius: 6px;
+            border: 1px solid rgba(140, 164, 129, 0.25);
         }
-        .btn-hangup {
-            background: #f87171;
-            color: #1a0808;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-weight: 800;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-family: inherit;
-        }
-        .btn-hangup:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-        #jitsi-container {
+
+        /* ── VIDEO STAGE ── */
+        .stage-container {
             flex: 1;
-            width: 100%;
-            height: calc(100% - 54px);
-            background: #0a120c;
+            position: relative;
+            background: #060b08;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .empty-call {
+
+        .remote-video-wrap {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #060b08;
+        }
+
+        #remoteVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #060b08;
+        }
+
+        .waiting-overlay {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            gap: 14px;
+            gap: 16px;
+            background: radial-gradient(circle at center, #122117 0%, #060b08 100%);
+            z-index: 10;
+            padding: 20px;
             text-align: center;
-            padding: 24px;
-            color: #a0b399;
         }
 
-        /* ===== MOBILE-FIRST MEDIA QUERIES ===== */
+        .pulse-avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            background: rgba(140, 164, 129, 0.15);
+            border: 2px solid var(--sage-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(52, 211, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+
+        /* ── LOCAL VIDEO (PiP) ── */
+        .local-video-wrap {
+            position: absolute;
+            bottom: 80px;
+            right: 18px;
+            width: 170px;
+            height: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(140, 164, 129, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+            background: #111a13;
+            z-index: 20;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .local-video-wrap:hover {
+            transform: scale(1.03);
+            border-color: var(--sage-glow);
+        }
+
+        #localVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* espelha câmera local */
+        }
+
+        .video-label {
+            position: absolute;
+            bottom: 6px;
+            left: 8px;
+            background: rgba(0,0,0,0.65);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #fff;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+        }
+
+        /* ── FLOATING CONTROLS ── */
+        .controls-bar {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(18, 33, 23, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(140, 164, 129, 0.3);
+            padding: 8px 16px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            z-index: 30;
+        }
+
+        .ctrl-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(140, 164, 129, 0.3);
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(140, 164, 129, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .ctrl-btn.off {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.6);
+            color: #f87171;
+        }
+
+        .ctrl-btn.btn-hangup {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: #ffffff;
+            width: 48px;
+            height: 48px;
+        }
+
+        .ctrl-btn.btn-hangup:hover {
+            background: #dc2626;
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        /* ── TOAST NOTIFICATIONS ── */
+        .toast-msg {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(18, 33, 23, 0.9);
+            border: 1px solid var(--sage-accent);
+            color: #e4ebe1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            z-index: 40;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            display: none;
+            backdrop-filter: blur(8px);
+        }
+
         @media (max-width: 600px) {
-          .call-header {
-            padding: 8px 12px;
-            height: 50px;
-          }
-          .call-title { font-size: 0.88rem; }
-          .call-timer { font-size: 0.78rem; padding: 3px 8px; }
-          .btn-hangup { padding: 5px 10px; font-size: 0.75rem; }
-          .call-status { display: none; } /* esconde no mobile — economiza espaço */
-          #jitsi-container { height: calc(100% - 50px); }
-        }
-
-        @media (max-width: 380px) {
-          .call-brand > div > .call-title { font-size: 0.8rem; }
-          .call-timer { display: none; } /* timer some em telas muito pequenas */
+            .call-header { padding: 6px 12px; height: 46px; }
+            .call-title { font-size: 0.85rem; }
+            .local-video-wrap { width: 110px; height: 80px; bottom: 76px; right: 12px; }
+            .controls-bar { gap: 8px; padding: 6px 12px; bottom: 12px; }
+            .ctrl-btn { width: 38px; height: 38px; font-size: 0.95rem; }
+            .ctrl-btn.btn-hangup { width: 42px; height: 42px; }
         }
     </style>
-<link rel="stylesheet" href="assets/css/mobile-base.css">
 </head>
 <body>
-    <header class="call-header">
+
+    <!-- CABEÇALHO -->
+    <header class="call-header" id="callHeader">
         <div class="call-brand">
             <span style="font-size:1.2rem">🌿</span>
             <div>
-                <div class="call-title" id="callHeaderTitle">Teleconsulta Nutricional</div>
-                <div style="font-size:0.7rem; color:#a0b399" id="callHeaderSub">Dra. Silvia Oliveira Lemos</div>
+                <div class="call-title" id="headerTitle">Teleconsulta Nutricional</div>
+                <div style="font-size:0.7rem; color:var(--text-muted)" id="headerSub">Dra. Silvia Oliveira Lemos</div>
             </div>
         </div>
-        <div style="display:flex; align-items:center; gap:14px">
-            <span class="call-status" id="callStatus">🔴 Conectando...</span>
+        <div style="display:flex; align-items:center; gap:10px">
+            <span class="call-status" id="callStatus">🟡 Conectando...</span>
             <div class="call-timer" id="callTimer">⏱️ 00:00</div>
-            <button class="btn-hangup" onclick="encerrarChamada()">❌ Encerrar</button>
         </div>
     </header>
 
-    <div id="jitsi-container"></div>
+    <!-- PALCO DE VÍDEO -->
+    <main class="stage-container">
+        <div id="toastMsg" class="toast-msg"></div>
+
+        <!-- VÍDEO REMOTO (OUTRA PESSOA) -->
+        <div class="remote-video-wrap">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <div class="video-label" id="remoteLabel">Paciente</div>
+        </div>
+
+        <!-- TELA DE ESPERA -->
+        <div class="waiting-overlay" id="waitingOverlay">
+            <div class="pulse-avatar">👩‍⚕️</div>
+            <div style="max-width: 320px;">
+                <h3 style="font-size:1.1rem; color:#fff; font-family:'Playfair Display',serif; margin-bottom:4px;" id="waitingTitle">Aguardando Conexão...</h3>
+                <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4;" id="waitingDesc">Assim que a outra pessoa entrar, a transmissão de alta definição iniciará automaticamente.</p>
+            </div>
+        </div>
+
+        <!-- MINIATURA LOCAL (SUA CÂMERA) -->
+        <div class="local-video-wrap" id="localVideoBox" title="Sua câmera">
+            <video id="localVideo" autoplay playsinline muted></video>
+            <div class="video-label" id="localLabel">Você</div>
+        </div>
+
+        <!-- CONTROLES FLUTUANTES -->
+        <div class="controls-bar">
+            <button class="ctrl-btn" id="btnMic" onclick="toggleAudio()" title="Ligar/Desligar Microfone">🎙️</button>
+            <button class="ctrl-btn" id="btnCam" onclick="toggleVideo()" title="Ligar/Desligar Câmera">📹</button>
+            <button class="ctrl-btn" id="btnScreen" onclick="toggleScreenShare()" title="Compartilhar Tela" style="display:none">🖥️</button>
+            <button class="ctrl-btn btn-hangup" onclick="encerrarChamada()" title="Encerrar Chamada">✕</button>
+        </div>
+    </main>
 
     <script>
-        let api = null;
+        // ── ESTADO DA SALA WEBRTC ──
+        let localStream = null;
+        let remoteStream = null;
+        let peer = null;
+        let currentCall = null;
         let timerInterval = null;
         let secondsElapsed = 0;
+        let isAudioMuted = false;
+        let isVideoMuted = false;
+        let isScreenSharing = false;
+        let isModerator = false;
+        let myPeerId = '';
+        let targetPeerId = '';
+        let connectRetryTimer = null;
+
+        // ── UTILITÁRIOS & TOAST ──
+        function showToast(msg, duration = 3000) {
+            const toast = document.getElementById('toastMsg');
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, duration);
+        }
+
+        function setStatus(text, isConnected = false) {
+            const statusEl = document.getElementById('callStatus');
+            if (!statusEl) return;
+            statusEl.textContent = text;
+            if (isConnected) {
+                statusEl.classList.add('connected');
+            } else {
+                statusEl.classList.remove('connected');
+            }
+        }
 
         function startTimer() {
             if (timerInterval) return;
             timerInterval = setInterval(() => {
                 secondsElapsed++;
-                const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
-                const secs = String(secondsElapsed % 60).padStart(2, '0');
-                document.getElementById('callTimer').textContent = `⏱️ ${mins}:${secs}`;
+                const m = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+                const s = String(secondsElapsed % 60).padStart(2, '0');
+                document.getElementById('callTimer').textContent = `⏱️ ${m}:${s}`;
             }, 1000);
         }
 
@@ -160,117 +390,230 @@
             }
         }
 
-        function encerrarChamada() {
-            if (api) {
-                try { api.executeCommand('hangup'); } catch(e){}
-            }
-            if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ type: 'JITSI_LEFT' }, '*');
-            } else {
-                window.location.href = 'index.html';
+        // ── INICIALIZAÇÃO DE MÍDIA NATIVA ──
+        async function initLocalStream() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+                });
+                const localVideo = document.getElementById('localVideo');
+                localVideo.srcObject = localStream;
+                return true;
+            } catch (err) {
+                console.error('Erro ao obter câmera/microfone:', err);
+                showToast('⚠️ Permita o acesso à câmera e microfone para continuar.', 6000);
+                setStatus('🔴 Câmera bloqueada');
+                return false;
             }
         }
 
-        window.onload = async () => {
-            const params = new URLSearchParams(window.location.search);
-            const roomName = params.get('room');
-            const userName = params.get('name') || params.get('user') || 'Convidado';
-            const isMinimal = params.get('minimal') === 'true';
+        // ── CONTROLE DE MÍDIA (MUTE / CAM / SCREEN) ──
+        function toggleAudio() {
+            if (!localStream) return;
+            isAudioMuted = !isAudioMuted;
+            localStream.getAudioTracks().forEach(t => t.enabled = !isAudioMuted);
+            const btn = document.getElementById('btnMic');
+            btn.innerHTML = isAudioMuted ? '🔇' : '🎙️';
+            btn.classList.toggle('off', isAudioMuted);
+            showToast(isAudioMuted ? 'Microfone desativado' : 'Microfone ativado');
+        }
 
-            if (isMinimal) {
-                const hdr = document.querySelector('.call-header');
-                if (hdr) hdr.style.display = 'none';
-                const container = document.getElementById('jitsi-container');
-                if (container) container.style.height = '100%';
-            } else if (userName && userName !== 'Convidado') {
-                document.getElementById('callHeaderSub').textContent = `Participante: ${userName}`;
+        function toggleVideo() {
+            if (!localStream) return;
+            isVideoMuted = !isVideoMuted;
+            localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
+            const btn = document.getElementById('btnCam');
+            btn.innerHTML = isVideoMuted ? '📷' : '📹';
+            btn.classList.toggle('off', isVideoMuted);
+            showToast(isVideoMuted ? 'Câmera desativada' : 'Câmera ativada');
+        }
+
+        async function toggleScreenShare() {
+            if (!navigator.mediaDevices.getDisplayMedia) {
+                showToast('Compartilhamento de tela não suportado neste dispositivo.');
+                return;
+            }
+            try {
+                if (!isScreenSharing) {
+                    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    const screenTrack = screenStream.getVideoTracks()[0];
+
+                    if (currentCall && currentCall.peerConnection) {
+                        const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                        if (sender) sender.replaceTrack(screenTrack);
+                    }
+                    document.getElementById('localVideo').srcObject = screenStream;
+                    isScreenSharing = true;
+                    document.getElementById('btnScreen').classList.add('off');
+                    showToast('Compartilhando sua tela');
+
+                    screenTrack.onended = () => {
+                        stopScreenShare();
+                    };
+                } else {
+                    stopScreenShare();
+                }
+            } catch (e) {
+                console.log('Cancelou compartilhamento de tela');
+            }
+        }
+
+        function stopScreenShare() {
+            if (!localStream) return;
+            const camTrack = localStream.getVideoTracks()[0];
+            if (currentCall && currentCall.peerConnection && camTrack) {
+                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) sender.replaceTrack(camTrack);
+            }
+            document.getElementById('localVideo').srcObject = localStream;
+            isScreenSharing = false;
+            document.getElementById('btnScreen').classList.remove('off');
+            showToast('Retornou para a câmera');
+        }
+
+        // ── MANIPULAÇÃO DA CHAMADA REMOTA ──
+        function handleCallConnected(call, remoteStreamObj) {
+            currentCall = call;
+            remoteStream = remoteStreamObj;
+
+            const remoteVideo = document.getElementById('remoteVideo');
+            remoteVideo.srcObject = remoteStreamObj;
+
+            document.getElementById('waitingOverlay').style.display = 'none';
+            setStatus('🟢 Conectado em HD', true);
+            startTimer();
+            showToast('✅ Chamada conectada em tempo real!', 4000);
+
+            if (connectRetryTimer) {
+                clearInterval(connectRetryTimer);
+                connectRetryTimer = null;
             }
 
-            if (roomName) {
-                const domain = params.get('domain') || 'meet.jit.si';
+            call.on('close', () => {
+                handleCallDisconnected();
+            });
+        }
 
-                if (typeof JitsiMeetExternalAPI === 'undefined') {
-                    await new Promise((resolve) => {
-                        const script = document.createElement('script');
-                        script.src = `https://${domain}/external_api.js`;
-                        script.onload = resolve;
-                        script.onerror = resolve;
-                        document.head.appendChild(script);
-                    });
-                }
-                const roleParam = params.get('role');
-                const isModerator = roleParam === 'moderator' || (userName && userName.toLowerCase().includes('silvia'));
+        function handleCallDisconnected() {
+            document.getElementById('waitingOverlay').style.display = 'flex';
+            document.getElementById('waitingTitle').textContent = 'Participante Desconectou';
+            document.getElementById('waitingDesc').textContent = 'Aguardando o retorno ou reconexão da outra pessoa...';
+            setStatus('🟡 Aguardando reconexão...');
+            stopTimer();
+            showToast('Chamada finalizada pelo outro participante');
+        }
 
-                const options = {
-                    roomName: roomName,
-                    width: '100%',
-                    height: '100%',
-                    parentNode: document.querySelector('#jitsi-container'),
-                    userInfo: {
-                        displayName: userName,
-                        role: isModerator ? 'moderator' : 'participant'
-                    },
-                    configOverwrite: {
-                        prejoinPageEnabled: false,
-                        prejoinConfig: {
-                            enabled: false
-                        },
-                        startWithVideoMuted: false,
-                        startWithAudioMuted: false,
-                        disableDeepLinking: true,
-                        requireDisplayName: false,
-                        disableRemoteMute: !isModerator,
-                        remoteVideoMenu: {
-                            disableKick: !isModerator,
-                            disableGrantModerator: !isModerator,
-                            disablePrivateChat: false
-                        }
-                    },
-                    interfaceConfigOverwrite: {
-                        SHOW_JITSI_WATERMARK: false,
-                        SHOW_WATERMARK_FOR_GUESTS: false,
-                        TOOLBAR_BUTTONS: isModerator ? [
-                            'microphone', 'camera', 'desktop', 'fullscreen',
-                            'fodeviceselection', 'hangup', 'chat', 'recording',
-                            'livestreaming', 'settings', 'raisehand', 'videoquality',
-                            'filmstrip', 'invite', 'tileview', 'select-background',
-                            'mute-everyone', 'mute-video-everyone', 'security'
-                        ] : [
-                            'microphone', 'camera', 'fullscreen', 'hangup', 'chat', 'raisehand', 'tileview'
-                        ]
-                    }
-                };
+        function encerrarChamada() {
+            if (currentCall) {
+                try { currentCall.close(); } catch(e){}
+            }
+            if (peer) {
+                try { peer.destroy(); } catch(e){}
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+            }
 
-                api = new JitsiMeetExternalAPI(domain, options);
-                
-                api.addEventListener('videoConferenceJoined', () => {
-                    const statusEl = document.getElementById('callStatus');
-                    if (statusEl) statusEl.textContent = '🟢 Em Chamada';
-                    startTimer();
-                });
-
-                api.addEventListener('participantJoined', (participant) => {
-                    console.log('Participante entrou:', participant);
-                });
-
-                api.addEventListener('videoConferenceLeft', () => {
-                    const statusEl = document.getElementById('callStatus');
-                    if (statusEl) statusEl.textContent = '🔴 Chamada Encerrada';
-                    stopTimer();
-                    if (window.parent && window.parent !== window) {
-                        window.parent.postMessage({ type: 'JITSI_LEFT' }, '*');
-                    }
-                });
-
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'JITSI_LEFT', action: 'CLOSED' }, '*');
             } else {
-                document.getElementById('jitsi-container').innerHTML = `
-                    <div class="empty-call">
-                        <div style="font-size:3rem">📹</div>
-                        <h2 style="color:#ffffff; font-family:'Playfair Display',serif">Sala não especificada</h2>
-                        <p>Por favor, utilize um link válido para acessar a teleconsulta.</p>
-                        <button class="btn-hangup" style="background:#8ca481; color:#0a120c; margin-top:12px" onclick="window.close()">Fechar</button>
-                    </div>
-                `;
+                window.close();
+                setTimeout(() => { window.location.href = 'index.html'; }, 300);
+            }
+        }
+
+        // ── INICIALIZAÇÃO PRINCIPAL WEBRTC (PEER-TO-PEER) ──
+        window.onload = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const rawRoom = params.get('room') || 'geral';
+            const cleanRoom = rawRoom.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const userName = params.get('name') || params.get('user') || 'Participante';
+            const roleParam = params.get('role');
+            const isMinimal = params.get('minimal') === 'true';
+
+            isModerator = roleParam === 'moderator' || (userName && userName.toLowerCase().includes('silvia'));
+
+            if (isMinimal) {
+                const hdr = document.getElementById('callHeader');
+                if (hdr) hdr.style.display = 'none';
+            }
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                document.getElementById('btnScreen').style.display = 'flex';
+            }
+
+            // Define identificadores determinísticos para Nutricionista e Paciente se conectarem
+            if (isModerator) {
+                myPeerId = `nutri_${cleanRoom}`;
+                targetPeerId = `pac_${cleanRoom}`;
+                document.getElementById('remoteLabel').textContent = 'Paciente';
+                document.getElementById('localLabel').textContent = 'Dra. Silvia (Você)';
+            } else {
+                myPeerId = `pac_${cleanRoom}`;
+                targetPeerId = `nutri_${cleanRoom}`;
+                document.getElementById('remoteLabel').textContent = 'Dra. Silvia Oliveira Lemos';
+                document.getElementById('localLabel').textContent = `${userName} (Você)`;
+            }
+
+            // Inicializa câmera local
+            const hasMedia = await initLocalStream();
+            if (!hasMedia) return;
+
+            setStatus('🟡 Conectando à sala...');
+
+            // Conexão PeerJS com servidores STUN mundiais gratuitos do Google
+            peer = new Peer(myPeerId, {
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
+                    ]
+                }
+            });
+
+            peer.on('open', (id) => {
+                console.log('PeerJS Conectado com ID:', id);
+                setStatus('🟡 Aguardando ' + (isModerator ? 'Paciente...' : 'Nutricionista...'));
+
+                // Se for o paciente, tenta discar para a Nutricionista imediatamente
+                if (!isModerator) {
+                    tentarLigarParaNutri();
+                    connectRetryTimer = setInterval(tentarLigarParaNutri, 3500);
+                }
+            });
+
+            // Escuta chamada recebida (Nutri atende Paciente ou vice-versa)
+            peer.on('call', (call) => {
+                console.log('Recebendo chamada de:', call.peer);
+                call.answer(localStream);
+                call.on('stream', (remoteStreamObj) => {
+                    handleCallConnected(call, remoteStreamObj);
+                });
+            });
+
+            peer.on('error', (err) => {
+                console.warn('Peer status/info:', err.type);
+                // Se o ID já estiver ocupado (ex: refresh rápido), tenta discar direto
+                if (err.type === 'unavailable-id') {
+                    if (isModerator) {
+                        myPeerId = `nutri_${cleanRoom}_alt`;
+                    }
+                }
+            });
+
+            function tentarLigarParaNutri() {
+                if (currentCall && currentCall.open) return;
+                try {
+                    const call = peer.call(targetPeerId, localStream);
+                    if (call) {
+                        call.on('stream', (remoteStreamObj) => {
+                            handleCallConnected(call, remoteStreamObj);
+                        });
+                        call.on('error', () => {});
+                    }
+                } catch(e){}
             }
         };
     </script>
