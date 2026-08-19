@@ -13,6 +13,7 @@ import { SmtpSettings } from "../components/SmtpSettings";
 import { ReadinessPanel } from "../components/ReadinessPanel";
 import { IncidentPanel } from "../components/IncidentPanel";
 import { PrivacyRequestsPanel } from "../components/PrivacyRequestsPanel";
+import { PasswordInput } from "../components/PasswordInput";
 type Settings = {
   clinicName: string;
   professionalName: string;
@@ -348,8 +349,7 @@ export function SettingsPage() {
         <div className="settings-grid">
           <label>
             Senha atual
-            <input
-              type="password"
+            <PasswordInput
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
@@ -357,8 +357,7 @@ export function SettingsPage() {
           </label>
           <label>
             Nova senha
-            <input
-              type="password"
+            <PasswordInput
               minLength={12}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -367,8 +366,7 @@ export function SettingsPage() {
           </label>
           <label>
             Confirmar nova senha
-            <input
-              type="password"
+            <PasswordInput
               minLength={12}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
