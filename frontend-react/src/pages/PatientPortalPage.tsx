@@ -952,7 +952,7 @@ function Requests({ rows, submit }: { rows: Any[]; submit: any }) {
       >
         <label>
           Data preferida
-          <input name="date" type="date" required />
+          <input name="date" type="date" min={new Date().toISOString().split('T')[0]} required />
         </label>
         <label>
           Período
