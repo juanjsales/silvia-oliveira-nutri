@@ -4419,14 +4419,199 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   background: rgba(45, 106, 79, 0.15);
 }
 
+/* =========================================================
+   ENCOUNTER HEADER & SPLIT MODE RESPONSIVENESS
+   ========================================================= */
+.encounter-header {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid var(--line, #e2ece9);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 10px rgba(24, 59, 43, 0.04);
+}
 
+.encounter-header-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 300px;
+}
 
+.encounter-patient-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
 
+.encounter-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
+.encounter-patient-meta h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: var(--ink, #183b2b);
+  white-space: normal;
+  line-height: 1.25;
+  word-break: break-word;
+}
 
+.encounter-patient-meta p {
+  margin: 0;
+  color: var(--muted, #637a6c);
+  font-size: 0.78rem;
+}
 
+.walkin-pill-tag {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
 
+.encounter-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
 
+.encounter-header-actions .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 10px;
+  white-space: nowrap;
+}
 
+/* ── WALKIN NOTIFICATION BANNER ── */
+.walkin-notification-banner {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1.5px solid #a7f3d0;
+  border-radius: 14px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  box-shadow: 0 3px 12px rgba(16, 185, 129, 0.08);
+  animation: fadeInDown 0.25s ease;
+}
 
+.walkin-banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 340px;
+}
 
+.walkin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #065f46;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.walkin-banner-info p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #047857;
+  line-height: 1.45;
+}
+
+.walkin-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.walkin-copy-btn {
+  background: #ffffff;
+  color: #065f46;
+  border: 1.5px solid #6ee7b7;
+  border-radius: 9px;
+  padding: 7px 13px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.walkin-copy-btn:hover {
+  background: #ecfdf5;
+  border-color: #059669;
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   LÂMINAS MODAL RESPONSIVENESS & STYLING
+   ========================================================= */
+.laminas-modal-backdrop {
+  z-index: 9999 !important;
+}
+
+.laminas-interactive-modal {
+  background: #ffffff !important;
+  color: var(--ink, #183b2b) !important;
+}
+
+@media (max-width: 900px) {
+  .laminas-mobile-tab-switch {
+    display: flex !important;
+    gap: 4px;
+    background: #e2ece9;
+    padding: 3px;
+    border-radius: 10px;
+  }
+
+  .laminas-mobile-tab-switch button {
+    border: none;
+    background: transparent;
+    padding: 5px 10px;
+    border-radius: 7px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #455a4e;
+    cursor: pointer;
+  }
+
+  .laminas-mobile-tab-switch button.active {
+    background: #ffffff;
+    color: #1b4332;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .laminas-modal-body {
+    grid-template-columns: 1fr !important;
+  }
+}

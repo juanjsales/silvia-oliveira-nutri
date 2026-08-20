@@ -224,7 +224,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
       </header>
 
       {/* ── BARRA DE COMANDO DA APRESENTAÇÃO AO PACIENTE ── */}
-      {appointmentId && (
+      {(appointmentId || encounterId) && (
         <div className="video-broadcast-bar">
           <div className="broadcast-bar-head">
             <span className="broadcast-tag">

@@ -11,6 +11,7 @@ import {
   ClipboardList,
   Clock,
   Clock3,
+  Copy,
   Edit3,
   ExternalLink,
   Eye,
@@ -251,7 +252,33 @@ export function EncounterPage(){
    }
   }
 
- if(!encounter) {
+ if (loading && !encounter) {
+    return (
+      <div
+        className="panel empty-state"
+        style={{
+          minHeight: '420px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+          background: '#ffffff',
+          borderRadius: '16px',
+        }}
+      >
+        <span className="spinner" style={{ width: '38px', height: '38px', borderWidth: '3.5px' }} />
+        <strong style={{ fontSize: '1.05rem', color: 'var(--forest)' }}>
+          Carregando atendimento clínico...
+        </strong>
+        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0 }}>
+          Sincronizando prontuário, etapas e dados da teleconsulta.
+        </p>
+      </div>
+    );
+  }
+
+  if(!encounter) {
    return (
      <EncounterHub
        onSelectEncounter={(id, openVideo) => {
@@ -312,29 +339,65 @@ export function EncounterPage(){
         </button>
 
         <section className="encounter-header">
-          <div className="patient-avatar large">{encounter.patientName.charAt(0)}</div>
-          <div>
-            <span className="eyebrow">Atendimento em andamento</span>
-            <h2>{encounter.patientName}</h2>
-            <p>{encounter.objective||'Objetivo não informado'}{encounter.appointmentTime ? ` · Consulta: ${formatAppointmentSchedule(encounter.appointmentTime, encounter.durationMinutes || 60)}` : ` · iniciado em ${new Date(encounter.startedAt).toLocaleDateString('pt-BR')}`}</p>
+          <div className="encounter-header-main">
+            <div className="patient-avatar large">{encounter.patientName.charAt(0)}</div>
+            <div className="encounter-patient-meta">
+              <div className="encounter-title-row">
+                <span className="eyebrow">Atendimento Clínico</span>
+                <span className={`encounter-state ${encounter.status==='COMPLETED'?'done':''}`}>
+                  {encounter.status==='COMPLETED'?<><CheckCircle2 size={13}/> Finalizado</>:'Em andamento'}
+                </span>
+                {!encounter.appointmentId && (
+                  <span className="walkin-pill-tag">Consulta Avulsa / Imediata</span>
+                )}
+              </div>
+              <h2>{encounter.patientName}</h2>
+              <p>{encounter.objective||'Objetivo não informado'}{encounter.appointmentTime ? ` · Consulta: ${formatAppointmentSchedule(encounter.appointmentTime, encounter.durationMinutes || 60)}` : ` · Iniciado em ${new Date(encounter.startedAt).toLocaleDateString('pt-BR')}`}</p>
+            </div>
           </div>
+
           <div className="encounter-header-actions">
             <button type="button" className="secondary-button" onClick={()=>setLaminasOpen(true)} title="Abrir Lâminas Educativas A4 para o paciente">
-              <BookOpen size={16}/> Lâminas Educativas A4
+              <BookOpen size={15}/> <span>Lâminas A4</span>
             </button>
             <button type="button" className="secondary-button" onClick={()=>setCalcOpen(true)} title="Calcular Gasto Energético (VET & TMB)">
-              <Calculator size={16}/> Calculadora VET / TMB
+              <Calculator size={15}/> <span>VET / TMB</span>
             </button>
             {encounter.status!=='COMPLETED'&& (
-              <button className={`secondary-button video-toggle-btn ${videoOpen?'active':''}`} onClick={()=>setVideoOpen(v=>!v)}>
-                <Video size={17}/> {videoOpen?'Ocultar split':'Teleconsulta (Split)'}
+              <button className={`secondary-button video-toggle-btn ${videoOpen?'active':''}`} onClick={()=>setVideoOpen(v=>!v)} title={videoOpen ? 'Recolher teleconsulta lado a lado' : 'Abrir teleconsulta lado a lado'}>
+                <Video size={15}/> <span>{videoOpen?'Ocultar split':'Teleconsulta (Split)'}</span>
               </button>
             )}
-            <span className={`encounter-state ${encounter.status==='COMPLETED'?'done':''}`}>
-              {encounter.status==='COMPLETED'?<><CheckCircle2 size={15}/> Finalizado</>:'Em andamento'}
-            </span>
           </div>
         </section>
+
+        {/* ── BANNER DE NOTIFICAÇÃO: ATENDIMENTO SEM CONSULTA AGENDADA ── */}
+        {!encounter.appointmentId && (
+          <div className="walkin-notification-banner">
+            <div className="walkin-banner-info">
+              <div className="walkin-badge">
+                <Sparkles size={14} /> Atendimento sem agendamento prévio
+              </div>
+              <p>
+                Este atendimento foi iniciado de forma direta para <strong>{encounter.patientName}</strong>. A sala de teleconsulta, transmissão de lâminas e o prontuário clínico estão sincronizados em tempo real.
+              </p>
+            </div>
+            <div className="walkin-banner-actions">
+              <button
+                type="button"
+                className="walkin-copy-btn"
+                onClick={() => {
+                  const directLink = `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(encounter.patientName)}&role=participant`;
+                  navigator.clipboard.writeText(directLink).then(() => {
+                    setNotice('Link da teleconsulta copiado! Você pode enviar no WhatsApp do paciente.');
+                  });
+                }}
+              >
+                <Copy size={14} /> Copiar link de teleconsulta
+              </button>
+            </div>
+          </div>
+        )}
 
         <nav className="clinical-stepper" aria-label="Etapas do atendimento">
           {steps.map((step,index)=>(

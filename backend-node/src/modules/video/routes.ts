@@ -43,7 +43,7 @@ export async function videoRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.authenticate);
 
   app.post('/appointments/:id/access', async (request, reply) => {
-    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const { id } = z.object({ id: z.string().min(1) }).parse(request.params);
     let patientId = '';
     let patientName = '';
     let status = '';
@@ -163,7 +163,7 @@ export async function videoRoutes(app: FastifyInstance) {
     if (request.auth!.role !== 'ADMIN') {
       return reply.code(403).send({ error: 'Apenas a nutricionista pode comandar a apresentação do paciente.' });
     }
-    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const { id } = z.object({ id: z.string().min(1) }).parse(request.params);
     const body = z
       .object({
         activeTab: z.enum(['medidas', 'fome', 'prato', 'bristol', 'metas', 'avaliacao', 'conduta', 'lamina']),
@@ -225,7 +225,7 @@ export async function videoRoutes(app: FastifyInstance) {
 
   // Obter o estado atual de apresentação ao vivo para o paciente/nutricionista
   app.get('/appointments/:id/broadcast', async (request, reply) => {
-    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const { id } = z.object({ id: z.string().min(1) }).parse(request.params);
     let state = liveBroadcasts.get(id) || null;
 
     if (!state) {

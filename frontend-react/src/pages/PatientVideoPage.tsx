@@ -27,6 +27,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
+import { LaminaVisualInfographic } from '../components/LaminaVisualInfographic';
 import { api } from '../lib/api';
 
 type Access = { roomUrl: string; expiresAt: string };
@@ -714,6 +715,9 @@ export function PatientVideoPage() {
                         >
                           {broadcast.laminaData.summary}
                         </div>
+
+                        {/* Infográfico Visual Ilustrado */}
+                        <LaminaVisualInfographic laminaId={broadcast.laminaData.id} />
 
                         <div>
                           <strong
