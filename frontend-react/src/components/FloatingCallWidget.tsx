@@ -32,6 +32,33 @@ export function FloatingCallWidget() {
     return () => window.clearInterval(timer);
   }, [activeCall]);
 
+  // Monitora se o atendimento foi finalizado ou descartado para fechar o miniplayer na hora
+  useEffect(() => {
+    if (!activeCall) return;
+    const targetId = activeCall.appointmentId || activeCall.roomToken;
+    if (!targetId) return;
+
+    const checkInterval = window.setInterval(async () => {
+      try {
+        if (activeCall.role === 'PATIENT') {
+          await api(`/api/video/appointments/${targetId}/access`, { method: 'POST' });
+        } else {
+          const res = await api<{ data: { activeEncounter: any } }>('/api/encounters/live-status');
+          if (!res.data.activeEncounter) {
+            endCall();
+          }
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : '';
+        if (msg.includes('finalizada') || msg.includes('cancelada') || msg.includes('não encontrada') || msg.includes('aguarde') || msg.includes('Aguarde') || msg.includes('iniciar')) {
+          endCall();
+        }
+      }
+    }, 2500);
+
+    return () => window.clearInterval(checkInterval);
+  }, [activeCall, endCall]);
+
   if (!activeCall) {
     return null;
   }

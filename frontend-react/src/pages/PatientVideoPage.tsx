@@ -68,7 +68,7 @@ export function PatientVideoPage() {
     return sessionStorage.getItem(`in_call_${id}`) === 'true';
   });
   const [error, setError] = useState('');
-  const [showGuide, setShowGuide] = useState(true);
+  const [showGuide, setShowGuide] = useState(false);
   const [guideTab, setGuideTab] = useState<GuideTab>('medidas');
   const [iframeKey, setIframeKey] = useState(1);
   const [reconnecting, setReconnecting] = useState(false);
@@ -88,9 +88,9 @@ export function PatientVideoPage() {
         .catch((cause) => {
           const msg = cause instanceof Error ? cause.message : 'Não foi possível entrar na sala.';
           setError(msg);
-          // Se o paciente está na sala de espera aguardando a nutri iniciar, retentar a cada 2s
+          // Se o paciente está na sala de espera aguardando a nutri iniciar, retentar a cada 1.5s
           if (msg.includes('iniciar') || msg.includes('aguarde') || msg.includes('Aguarde')) {
-            timer = window.setTimeout(checkAccess, 2000);
+            timer = window.setTimeout(checkAccess, 1500);
           }
         });
     };
@@ -125,21 +125,21 @@ export function PatientVideoPage() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [entered]);
 
-  // Monitora se o atendimento foi encerrado pela nutricionista durante a chamada
+  // Monitora instantaneamente (a cada 1.5s) se o atendimento foi encerrado ou descartado pela nutricionista
   useEffect(() => {
     if (!id || !entered) return;
     const interval = window.setInterval(() => {
       api<{ data: Access }>(`/api/video/appointments/${id}/access`, { method: 'POST' })
         .catch((err) => {
           const msg = err instanceof Error ? err.message : '';
-          if (msg.includes('finalizada') || msg.includes('cancelada')) {
+          if (msg.includes('finalizada') || msg.includes('cancelada') || msg.includes('não encontrada') || msg.includes('aguarde') || msg.includes('Aguarde') || msg.includes('iniciar')) {
             sessionStorage.removeItem(`in_call_${id}`);
             setEntered(false);
             endCall();
-            setError(msg || 'Esta consulta foi finalizada pela nutricionista.');
+            setError(msg.includes('finalizada') ? 'Esta consulta foi finalizada pela Dra. Silvia.' : 'A teleconsulta foi encerrada pela nutricionista.');
           }
         });
-    }, 5000);
+    }, 1500);
     return () => window.clearInterval(interval);
   }, [id, entered, endCall]);
 
@@ -153,7 +153,7 @@ export function PatientVideoPage() {
             setBroadcast(res.data);
             setLastSyncedUpdate(res.data.updatedAt);
             setGuideTab(res.data.activeTab);
-            setShowGuide(true);
+            setShowGuide(true); // Abre o apoio somente quando houver transmissão ativa da nutricionista
 
             const tabLabels: Record<string, string> = {
               medidas: 'Medidas & Antropometria',
@@ -176,7 +176,7 @@ export function PatientVideoPage() {
         .catch(() => {});
     };
     fetchBroadcast();
-    const interval = window.setInterval(fetchBroadcast, 2500);
+    const interval = window.setInterval(fetchBroadcast, 2000);
     return () => window.clearInterval(interval);
   }, [id, entered, lastSyncedUpdate, showToast]);
 
@@ -211,15 +211,17 @@ export function PatientVideoPage() {
 
         {entered && (
           <div className="video-header-center-actions">
-            <button
-              type="button"
-              className={`video-guide-toggle-btn ${showGuide ? 'active' : ''}`}
-              onClick={() => setShowGuide(!showGuide)}
-              title="Abrir guia de apoio e medidas"
-            >
-              <BookOpen size={16} />
-              <span>{showGuide ? 'Ocultar Apoio' : 'Painel de Apoio'}</span>
-            </button>
+            {broadcast && (
+              <button
+                type="button"
+                className={`video-guide-toggle-btn ${showGuide ? 'active' : ''}`}
+                onClick={() => setShowGuide(!showGuide)}
+                title="Abrir guia de apoio e materiais transmitidos"
+              >
+                <BookOpen size={16} />
+                <span>{showGuide ? 'Ocultar Material' : 'Ver Material'}</span>
+              </button>
+            )}
 
             <button
               type="button"
