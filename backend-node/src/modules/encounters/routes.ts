@@ -64,15 +64,35 @@ export async function encounterRoutes(app: FastifyInstance) {
       const appointment = await app.db.query('SELECT id FROM appointments WHERE id=$1 AND patient_id=$2', [body.appointmentId, body.patientId]);
       if (!appointment.rows[0]) return reply.code(400).send({ error: 'Consulta não pertence ao paciente informado.' });
       const existing = await app.db.query<{id:string}>('SELECT id FROM clinical_encounters WHERE appointment_id=$1', [body.appointmentId]);
-      if (existing.rows[0]) return reply.send({ data: { id: existing.rows[0].id, resumed: true } });
+      if (existing.rows[0]) {
+        await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
+        await app.db.query(
+          `INSERT INTO patient_notifications(patient_id, title, body, kind)
+           VALUES ($1, '🎥 Teleconsulta iniciada pela nutricionista', 'Sua nutricionista iniciou o seu atendimento. Clique no portal para entrar na sala virtual.', 'APPOINTMENT')`,
+          [body.patientId]
+        ).catch(() => {});
+        return reply.send({ data: { id: existing.rows[0].id, resumed: true } });
+      }
     } else {
       const existingDirect = await app.db.query<{id:string}>("SELECT id FROM clinical_encounters WHERE patient_id=$1 AND status='IN_PROGRESS' ORDER BY started_at DESC LIMIT 1", [body.patientId]);
-      if (existingDirect.rows[0]) return reply.send({ data: { id: existingDirect.rows[0].id, resumed: true } });
+      if (existingDirect.rows[0]) {
+        await app.db.query(
+          `INSERT INTO patient_notifications(patient_id, title, body, kind)
+           VALUES ($1, '🎥 Teleconsulta iniciada pela nutricionista', 'Sua nutricionista iniciou o seu atendimento. Clique no portal para entrar na sala virtual.', 'APPOINTMENT')`,
+          [body.patientId]
+        ).catch(() => {});
+        return reply.send({ data: { id: existingDirect.rows[0].id, resumed: true } });
+      }
     }
     const result = await app.db.query<{id:string}>(`INSERT INTO clinical_encounters(patient_id, appointment_id, opened_by, video_room_token)
       VALUES ($1,$2,$3, encode(gen_random_bytes(18), 'hex')) RETURNING id`, [body.patientId, body.appointmentId ?? null, request.auth!.userId]);
     const id = result.rows[0]!.id;
     if (body.appointmentId) await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
+    await app.db.query(
+      `INSERT INTO patient_notifications(patient_id, title, body, kind)
+       VALUES ($1, '🎥 Teleconsulta iniciada pela nutricionista', 'Sua nutricionista iniciou o seu atendimento. Clique no portal para entrar na sala virtual.', 'APPOINTMENT')`,
+      [body.patientId]
+    ).catch(() => {});
     await audit(app.db, 'ENCOUNTER_STARTED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id, metadata: { patientId: body.patientId } });
     return reply.code(201).send({ data: { id, resumed: false } });
   });

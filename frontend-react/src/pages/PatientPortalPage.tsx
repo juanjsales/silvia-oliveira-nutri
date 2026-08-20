@@ -81,6 +81,10 @@ export function PatientPortalPage() {
 
   useEffect(() => {
     void load();
+    const interval = window.setInterval(() => {
+      void load();
+    }, 4000);
+    return () => window.clearInterval(interval);
   }, [load]);
 
   useEffect(() => {
@@ -154,11 +158,12 @@ export function PatientPortalPage() {
   }
 
   const activeTeleconsultation = useMemo(() => {
+    if (data?.activeConsultation) return data.activeConsultation;
     if (!data?.appointments) return null;
     return data.appointments.find(
       (a: Any) => a.meetingUrl && a.status === 'IN_PROGRESS',
     );
-  }, [data?.appointments]);
+  }, [data?.activeConsultation, data?.appointments]);
 
   if (error && !data)
     return (
