@@ -31,13 +31,15 @@ import { MessagesPage } from '../pages/MessagesPage';
 import { FollowUpPage } from '../pages/FollowUpPage';
 import { PatientExamsPage } from '../pages/PatientExamsPage';
 import { TeleconsultationProvider } from '../contexts/TeleconsultationContext';
+import { ToastProvider } from '../components/ToastNotification';
 import { FloatingCallWidget } from '../components/FloatingCallWidget';
 
 export function App() {
   return (
-    <TeleconsultationProvider>
-      <FloatingCallWidget />
-      <Routes>
+    <ToastProvider>
+      <TeleconsultationProvider>
+        <FloatingCallWidget />
+        <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
@@ -95,6 +97,7 @@ export function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </TeleconsultationProvider>
+    </ToastProvider>
   );
 }
 

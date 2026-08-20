@@ -27,6 +27,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
+import { useToast } from '../components/ToastNotification';
 import { LaminaVisualInfographic } from '../components/LaminaVisualInfographic';
 import { api } from '../lib/api';
 
@@ -61,6 +62,7 @@ export function PatientVideoPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const { startCall, minimizeCall, endCall } = useTeleconsultation();
+  const { showToast } = useToast();
   const [access, setAccess] = useState<Access | null>(null);
   const [entered, setEntered] = useState(() => {
     return sessionStorage.getItem(`in_call_${id}`) === 'true';
@@ -134,6 +136,23 @@ export function PatientVideoPage() {
             setLastSyncedUpdate(res.data.updatedAt);
             setGuideTab(res.data.activeTab);
             setShowGuide(true);
+
+            const tabLabels: Record<string, string> = {
+              medidas: 'Medidas & Antropometria',
+              fome: 'Escala de Fome & Saciedade',
+              prato: 'Composição do Prato Saudável',
+              bristol: 'Escala de Bristol (Saúde Intestinal)',
+              metas: 'Metas & Hábitos',
+              avaliacao: 'Avaliação da Alimentação',
+              lamina: res.data.customTitle || 'Lâmina Educativa A4',
+            };
+
+            showToast({
+              title: '✨ Material Transmitido!',
+              message: `Dra. Silvia compartilhou: ${tabLabels[res.data.activeTab] || 'Novo conteúdo'}.`,
+              type: 'success',
+              duration: 5000,
+            });
           }
         })
         .catch(() => {});
@@ -141,7 +160,7 @@ export function PatientVideoPage() {
     fetchBroadcast();
     const interval = window.setInterval(fetchBroadcast, 2500);
     return () => window.clearInterval(interval);
-  }, [id, entered, lastSyncedUpdate]);
+  }, [id, entered, lastSyncedUpdate, showToast]);
 
   function handleReconnect() {
     setReconnecting(true);

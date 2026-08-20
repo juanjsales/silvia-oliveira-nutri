@@ -37,16 +37,16 @@ import { PortalWaterTracker } from '../components/portal/PortalWaterTracker';
 import { PortalCurrentMealCard } from '../components/portal/PortalCurrentMealCard';
 import { PortalMealPlanView } from '../components/portal/PortalMealPlanView';
 import { PortalLaminasView } from '../components/portal/PortalLaminasView';
+import { useToast } from '../components/ToastNotification';
 import { formatAppointmentSchedule } from '../lib/formatters';
 import '../portal-premium.css';
 
 type Any = Record<string, any>;
 type Tab = PortalTab;
 
-const tabs: [Tab, string, typeof UserRound][] = [
-  ['inicio', 'Início', UserRound],
-  ['checkin', 'Preparar consulta', ClipboardList],
-  ['jornada', 'Jornada', ClipboardList],
+const tabs: [Tab, string, React.ComponentType<{ size?: number } | Any>][] = [
+  ['inicio', 'Início', Sparkles],
+  ['plano', 'Meu Plano', Utensils],
   ['diario', 'Diário', Salad],
   ['laminas', 'Lâminas & Guias', BookOpen],
   ['exames', 'Exames', FlaskConical],
@@ -68,15 +68,51 @@ export function PatientPortalPage() {
   const [fontScale, setFontScale] = useState(() => Number(localStorage.getItem('portal-font-scale') || 1));
   const [contrast, setContrast] = useState(() => localStorage.getItem('portal-contrast') === 'true');
   const notifRef = useRef<HTMLDivElement>(null);
+  const prevActiveCallRef = useRef<string | null>(null);
+  const prevNotifCountRef = useRef<number | null>(null);
   const { logout } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const load = useCallback(
     () =>
       api<{ data: Any }>('/api/portal/home')
-        .then((r) => setData(r.data))
+        .then((r) => {
+          const res = r.data;
+          // Dispara alerta em tempo real se a nutricionista acabou de iniciar a chamada
+          const activeEnc = res.activeConsultation;
+          const currentCallId = activeEnc?.id || null;
+          if (currentCallId && currentCallId !== prevActiveCallRef.current) {
+            showToast({
+              title: '🎥 Teleconsulta Iniciada!',
+              message: 'Dra. Silvia iniciou o seu atendimento. Clique para entrar na sala.',
+              type: 'call',
+              actionLabel: 'Entrar na Sala',
+              onAction: () => navigate(activeEnc.meetingUrl || `/portal/video/${currentCallId}`),
+              duration: 12000,
+            });
+          }
+          prevActiveCallRef.current = currentCallId;
+
+          // Dispara alerta se chegaram novas notificações
+          const unreadCount = res.notifications?.filter((n: Any) => !n.readAt).length || 0;
+          if (prevNotifCountRef.current !== null && unreadCount > prevNotifCountRef.current) {
+            const latest = res.notifications?.[0];
+            if (latest) {
+              showToast({
+                title: latest.title,
+                message: latest.body,
+                type: latest.kind === 'MESSAGE' ? 'message' : 'info',
+                duration: 7000,
+              });
+            }
+          }
+          prevNotifCountRef.current = unreadCount;
+
+          setData(res);
+        })
         .catch((c) => setError(c instanceof Error ? c.message : 'Erro ao abrir portal.')),
-    [],
+    [showToast, navigate],
   );
 
   useEffect(() => {

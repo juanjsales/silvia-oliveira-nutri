@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useToast } from './ToastNotification';
 import { api } from '../lib/api';
 
 type NotificationItem = {
@@ -28,7 +29,9 @@ export function ProfessionalNotifications() {
   const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const prevCountRef = useRef<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const loadNotifications = useCallback(async () => {
@@ -98,17 +101,34 @@ export function ProfessionalNotifications() {
 
       // Ordena por data mais recente
       notifs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      // Dispara toast para o profissional se houver novos check-ins ou alertas
+      if (prevCountRef.current !== null && notifs.length > prevCountRef.current) {
+        const latest = notifs[0];
+        if (latest) {
+          showToast({
+            title: latest.title,
+            message: latest.detail,
+            type: latest.type === 'APPOINTMENT' ? 'call' : 'info',
+            actionLabel: latest.actionText,
+            onAction: () => navigate(latest.link),
+            duration: 8000,
+          });
+        }
+      }
+      prevCountRef.current = notifs.length;
+
       setItems(notifs);
     } catch {
       // Ignora falhas de conexão suavemente
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast, navigate]);
 
   useEffect(() => {
     void loadNotifications();
-    const interval = setInterval(() => void loadNotifications(), 60000); // atualiza a cada minuto
+    const interval = setInterval(() => void loadNotifications(), 8000); // Polling inteligente a cada 8s
     return () => clearInterval(interval);
   }, [loadNotifications]);
 
