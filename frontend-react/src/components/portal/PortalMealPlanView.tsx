@@ -90,11 +90,11 @@ export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
 
       {/* LISTA DE REFEIÇÕES EM CARDS ELEGANTES */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {meals.map((meal, index) => {
-          const mealName = meal.name || meal.nome || `Refeição ${index + 1}`;
+        {meals.map((meal: any, index: number) => {
+          const mealName = meal.title || meal.titulo || meal.name || meal.nome || `Refeição ${index + 1}`;
           const mealTime = meal.time || meal.horario;
-          const items = meal.items || meal.alimentosList || [];
-          const notes = meal.notes || meal.observacoes;
+          const items = meal.items || meal.alimentosList || meal.foods || [];
+          const notes = meal.notes || meal.obs || meal.observacoes;
 
           return (
             <article
@@ -125,12 +125,14 @@ export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
 
               {/* LISTA DE ALIMENTOS */}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {items.map((it, itIdx) => {
+                {items.map((it: any, itIdx: number) => {
                   const name = it.name || it.nome;
-                  const amt = it.amount || it.quantidade;
-                  const unit = it.unit || it.unidade;
-                  const portion = [amt, unit].filter(Boolean).join(" ");
-                  const subs = it.substitutions || it.substituicoes || [];
+                  let portion = it.amountText || "";
+                  if (!portion) {
+                    if (typeof it.qtd === "string" && it.qtd.trim()) portion = it.qtd;
+                    else if (it.amount ?? it.qtd) portion = `${it.amount ?? it.qtd} ${it.unit || it.unidade || "g"}`.trim();
+                    else if (it.quantidade) portion = `${it.quantidade} ${it.unit || it.unidade || ""}`.trim();
+                  }
 
                   return (
                     <div

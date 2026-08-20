@@ -336,8 +336,10 @@ function PortalContent({
   reload: () => Promise<void> | void;
   addQuickWater: (l: number) => Promise<void>;
 }) {
+  const activePlan = data.plans?.find((p: Any) => p.status === 'PUBLISHED') || data.plans?.[0] || null;
+
   if (tab === 'inicio') return <PortalHome data={data} setTab={setTab} reload={reload} addQuickWater={addQuickWater} />;
-  if (tab === 'plano') return <PortalMealPlanView plan={data.plans[0]} />;
+  if (tab === 'plano') return <PortalMealPlanView plan={activePlan} />;
   if (tab === 'checkin') return <PreCheckin appointments={data.appointments} />;
   if (tab === 'perfil') return <Profile data={data.patient} submit={submit} />;
   if (tab === 'diario') return <Diary rows={data.diary} submit={submit} />;
@@ -375,7 +377,7 @@ function PortalHome({
   );
   const unread = data.notifications.filter((n: Any) => !n.readAt);
   const activeGoals = data.goals.filter((g: Any) => g.status !== 'COMPLETED');
-  const latestPlan = data.plans[0];
+  const latestPlan = data.plans?.find((p: Any) => p.status === 'PUBLISHED') || data.plans?.[0] || null;
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayDiary = data.diary?.find((d: Any) => String(d.entryDate).slice(0, 10) === todayStr);
