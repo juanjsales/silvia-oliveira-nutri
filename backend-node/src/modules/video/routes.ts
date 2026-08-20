@@ -146,7 +146,7 @@ export async function videoRoutes(app: FastifyInstance) {
     const moderator = request.auth!.role === 'ADMIN';
     const userName = moderator ? 'Dra. Silvia Oliveira Lemos' : patientName;
     const role = moderator ? 'moderator' : 'participant';
-    const roomUrl = `/videocall.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}&role=${role}&minimal=true`;
+    const roomUrl = `/videocall.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}&role=${role}&minimal=true&embedded=true&v=4.0`;
     const provider = 'P2P_WEBRTC';
 
     await audit(app.db, 'VIDEO_ACCESS_GRANTED', 'appointment', {

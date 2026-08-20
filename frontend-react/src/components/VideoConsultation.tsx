@@ -65,7 +65,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
     const durParam = durationMinutes ? `&duration=${encodeURIComponent(durationMinutes)}` : '';
 
     if (!appointmentId) {
-      const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true${timeParam}${durParam}`;
+      const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true&embedded=true&v=4.0${timeParam}${durParam}`;
       setSource(url);
       return;
     }
@@ -73,10 +73,10 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
       .then((response) => {
         const base = response.data.roomUrl;
         const separator = base.includes('?') ? '&' : '?';
-        setSource(`${base}${separator}time=${encodeURIComponent(appointmentTime || '')}&duration=${encodeURIComponent(durationMinutes || 60)}`);
+        setSource(`${base}${separator}time=${encodeURIComponent(appointmentTime || '')}&duration=${encodeURIComponent(durationMinutes || 60)}&embedded=true&v=4.0`);
       })
       .catch(() => {
-        const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true${timeParam}${durParam}`;
+        const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true&embedded=true&v=4.0${timeParam}${durParam}`;
         setSource(url);
       });
   }, [appointmentId, roomToken, appointmentTime, durationMinutes]);

@@ -472,6 +472,34 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
+        /* ── MODO EMBEDDED (SPLIT NO PRONTUÁRIO OU MINIPLAYER) ── */
+        body.is-embedded .call-header {
+            display: none !important;
+        }
+        body.is-embedded .controls-bar {
+            bottom: 12px !important;
+            padding: 5px 10px !important;
+            gap: 6px !important;
+        }
+        body.is-embedded .ctrl-btn {
+            width: 36px !important;
+            height: 36px !important;
+        }
+        body.is-embedded .ctrl-btn svg {
+            width: 15px !important;
+            height: 15px !important;
+        }
+        body.is-embedded .waiting-status-banner {
+            top: 10px !important;
+            padding: 5px 12px !important;
+        }
+        body.is-embedded .waiting-status-banner strong {
+            font-size: 0.74rem !important;
+        }
+        body.is-embedded .waiting-status-banner small {
+            display: none !important;
+        }
+
         @media (max-width: 600px) {
             .videos-layout-grid.mode-grid {
                 flex-direction: column;
@@ -495,7 +523,7 @@
         }
     </style>
 </head>
-<body>
+<body class="is-embedded">
 
     <!-- CABEÇALHO -->
     <header class="call-header" id="callHeader">

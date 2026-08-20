@@ -36,14 +36,17 @@ export function FloatingCallWidget() {
     return null;
   }
 
-  const isPatientVideoRoute = location.pathname.startsWith('/portal/video');
-  const searchParams = new URLSearchParams(location.search);
-  const isEncounterSplitOpen = location.pathname === '/atendimentos' && searchParams.get('video') === 'true';
+  // 1. Para a Nutricionista (ADMIN):
+  // O miniplayer NUNCA renderiza na tela de atendimento (/atendimentos), pois lá ela usa a visualização integrada/split.
+  // O miniplayer SÓ ativa quando ela sai de /atendimentos para navegar no restante do site (/pacientes, /agenda, /financeiro, etc.).
+  if (activeCall.role === 'ADMIN' && location.pathname === '/atendimentos') {
+    return null;
+  }
 
-  // Se estiver na tela nativa de vídeo (em tela cheia no portal ou no split lateral aberto no prontuário),
-  // não renderiza o miniplayer flutuante para evitar duplicidade de vídeo e áudio.
-  // Em qualquer outro caso (split fechado ou navegando em outras páginas), renderiza o miniplayer!
-  if ((activeCall.role === 'PATIENT' && isPatientVideoRoute && !isMinimized) || (activeCall.role === 'ADMIN' && isEncounterSplitOpen)) {
+  // 2. Para o Paciente (PATIENT):
+  // O miniplayer não renderiza na página de teleconsulta em tela cheia (/portal/video).
+  // O miniplayer SÓ ativa quando o paciente sai para navegar no portal (/portal).
+  if (activeCall.role === 'PATIENT' && location.pathname.startsWith('/portal/video')) {
     return null;
   }
 
