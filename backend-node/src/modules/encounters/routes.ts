@@ -30,6 +30,57 @@ export async function encounterRoutes(app: FastifyInstance) {
     return { data: result.rows };
   });
 
+  app.get('/live-status', async () => {
+    // 1. Atendimento clínico em andamento
+    const activeEncounter = await app.db.query<{
+      id: string;
+      patientId: string;
+      patientName: string;
+      startedAt: Date;
+      appointmentId: string | null;
+      appointmentType: string | null;
+      videoRoomToken: string;
+    }>(`SELECT e.id, e.patient_id AS "patientId", p.name AS "patientName", e.started_at AS "startedAt",
+        e.appointment_id AS "appointmentId", a.appointment_type AS "appointmentType",
+        COALESCE(a.video_room_token, e.video_room_token) AS "videoRoomToken"
+        FROM clinical_encounters e
+        JOIN patients p ON p.id = e.patient_id
+        LEFT JOIN appointments a ON a.id = e.appointment_id
+        WHERE e.status = 'IN_PROGRESS'
+        ORDER BY e.started_at DESC LIMIT 1`);
+
+    // 2. Consulta de hoje prestes a acontecer ou no horário atual
+    const todayAppointments = await app.db.query<{
+      id: string;
+      patientId: string;
+      patientName: string;
+      appointmentDate: string;
+      appointmentTime: string;
+      durationMinutes: number;
+      appointmentType: string;
+      status: string;
+    }>(`SELECT a.id, a.patient_id AS "patientId", p.name AS "patientName",
+        to_char(a.appointment_date, 'YYYY-MM-DD') AS "appointmentDate",
+        to_char(a.appointment_time, 'HH24:MI') AS "appointmentTime",
+        a.duration_minutes AS "durationMinutes",
+        a.appointment_type AS "appointmentType",
+        a.status
+        FROM appointments a
+        JOIN patients p ON p.id = a.patient_id
+        LEFT JOIN clinical_encounters e ON e.appointment_id = a.id AND e.status = 'COMPLETED'
+        WHERE a.appointment_date = current_date
+          AND a.status IN ('CONFIRMED', 'WAITING', 'IN_PROGRESS')
+          AND (e.id IS NULL)
+        ORDER BY a.appointment_time ASC LIMIT 10`);
+
+    return {
+      data: {
+        activeEncounter: activeEncounter.rows[0] || null,
+        todayAppointments: todayAppointments.rows,
+      },
+    };
+  });
+
   app.get('/checkins/pending', async () => {
     const result = await app.db.query(`SELECT c.id,c.patient_id AS "patientId",p.name AS "patientName",
       c.appointment_id AS "appointmentId",c.answers,c.submitted_at AS "submittedAt",

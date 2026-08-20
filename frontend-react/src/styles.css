@@ -4756,3 +4756,132 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   }
 }
 
+/* =========================================================
+   PROFESSIONAL LIVE TOP ALERT BAR (ONGOING & UPCOMING)
+   ========================================================= */
+.pro-live-top-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 20px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  animation: slideInDown 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.pro-live-top-banner.in-progress-banner {
+  background: linear-gradient(135deg, #153e28, #1e5236);
+  border: 1px solid rgba(126, 224, 164, 0.4);
+  color: #ffffff;
+}
+
+.pro-live-top-banner.imminent-banner {
+  background: linear-gradient(135deg, #422a08, #613e0e);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  color: #ffffff;
+}
+
+.pro-live-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pro-live-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #38c777;
+  box-shadow: 0 0 0 4px rgba(56, 199, 119, 0.35);
+  animation: pulse-dot 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.pro-imminent-clock-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: pulse-dot 1.8s infinite;
+}
+
+.pro-live-info strong {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.pro-live-info span {
+  font-size: 0.75rem;
+  color: #d2e4d6;
+}
+
+.imminent-banner .pro-live-info span {
+  color: #fef08a;
+}
+
+.pro-live-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pro-live-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.pro-live-action-btn.primary {
+  background: #38c777;
+  color: #07170e;
+}
+
+.pro-live-action-btn.primary:hover {
+  background: #4ade80;
+  transform: translateY(-1px);
+}
+
+.pro-live-action-btn.gold {
+  background: #f59e0b;
+  color: #2b1802;
+}
+
+.pro-live-action-btn.gold:hover {
+  background: #fbbf24;
+  transform: translateY(-1px);
+}
+
+.pro-live-close-btn {
+  background: transparent;
+  border: none;
+  color: #fde68a;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pro-live-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+

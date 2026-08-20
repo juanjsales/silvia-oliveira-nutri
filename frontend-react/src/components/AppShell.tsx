@@ -4,6 +4,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ClinicMark, useClinic } from '../contexts/ClinicContext';
 import { ProfessionalNotifications } from './ProfessionalNotifications';
+import { ProfessionalLiveAlerts } from './ProfessionalLiveAlerts';
 
 const navigation = [
   { to: '/painel', label: 'Visão geral', icon: LayoutDashboard },
@@ -40,7 +41,10 @@ export function AppShell() {
           <button className="ghost-button" onClick={() => history.back()}><ChevronLeft size={17}/> Voltar</button>
         </div>
       </header>
-      <div className="content"><Outlet /></div>
+      <div className="content">
+        <ProfessionalLiveAlerts />
+        <Outlet />
+      </div>
     </main>
   </div>;
 }
