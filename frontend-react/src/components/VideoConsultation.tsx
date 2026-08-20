@@ -97,9 +97,11 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
         returnPath: returnTarget,
       });
     }
-  }, [source, encounterId, appointmentId, roomToken, patientName]);
+  }, [source, encounterId, appointmentId, roomToken, patientName, startCall]);
 
-  const directRoomUrl = source || `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant`;
+  const timeParam = appointmentTime ? `&time=${encodeURIComponent(appointmentTime)}` : '';
+  const durParam = durationMinutes ? `&duration=${encodeURIComponent(durationMinutes)}` : '';
+  const directRoomUrl = `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant${timeParam}${durParam}`;
 
   function copyPatientLink() {
     navigator.clipboard.writeText(directRoomUrl).then(() => {

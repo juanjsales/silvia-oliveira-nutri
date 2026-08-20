@@ -75,9 +75,9 @@ export function PatientVideoPage() {
         .catch((cause) => {
           const msg = cause instanceof Error ? cause.message : 'Não foi possível entrar na sala.';
           setError(msg);
-          // Se o paciente está na sala de espera aguardando a nutri iniciar, retentar a cada 4s
+          // Se o paciente está na sala de espera aguardando a nutri iniciar, retentar a cada 2s
           if (msg.includes('iniciar') || msg.includes('aguarde') || msg.includes('Aguarde')) {
-            timer = window.setTimeout(checkAccess, 4000);
+            timer = window.setTimeout(checkAccess, 2000);
           }
         });
     };

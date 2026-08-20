@@ -992,7 +992,7 @@
 
             tentarChamar();
             if (!connectRetryTimer) {
-                connectRetryTimer = setInterval(tentarChamar, 3000);
+                connectRetryTimer = setInterval(tentarChamar, 1200);
             }
         }
 
@@ -1021,7 +1021,7 @@
             }
         }
 
-        // ── INICIALIZAÇÃO PRINCIPAL WEBRTC (PEER-TO-PEER) ──
+        // ── INICIALIZAÇÃO PRINCIPAL WEBRTC ULTRA-RÁPIDA (PEER-TO-PEER) ──
         window.onload = async () => {
             const params = new URLSearchParams(window.location.search);
             const rawRoom = params.get('room') || 'geral';
@@ -1061,57 +1061,80 @@
 
             setStatus('Conectando à sala...');
 
-            try {
-                peer = new Peer(myPeerId, {
-                    config: {
-                        iceServers: [
-                            { urls: 'stun:stun.l.google.com:19302' },
-                            { urls: 'stun:stun1.l.google.com:19302' },
-                            { urls: 'stun:stun2.l.google.com:19302' },
-                            { urls: 'stun:stun3.l.google.com:19302' },
-                            { urls: 'stun:stun4.l.google.com:19302' }
-                        ]
-                    },
-                    debug: 1
-                });
-
-                peer.on('open', (id) => {
-                    console.log('PeerJS Conectado. Meu ID:', id);
-                    setStatus('Aguardando outro participante...');
-
-                    if (isModerator) {
-                        iniciarTentativaDeChamada();
-                    } else {
-                        iniciarTentativaDeChamada();
+            const rtcConfig = {
+                iceServers: [
+                    { urls: 'stun:stun.cloudflare.com:3478' },
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    {
+                        urls: [
+                            'turn:openrelay.metered.ca:80',
+                            'turn:openrelay.metered.ca:443',
+                            'turn:openrelay.metered.ca:443?transport=tcp'
+                        ],
+                        username: 'openrelay',
+                        credential: 'openrelay'
                     }
-                });
+                ],
+                iceCandidatePoolSize: 10,
+                bundlePolicy: 'max-bundle',
+                rtcpMuxPolicy: 'require',
+                sdpSemantics: 'unified-plan'
+            };
 
-                peer.on('call', (incomingCall) => {
-                    console.log('Recebendo chamada de:', incomingCall.peer);
-                    incomingCall.answer(localStream);
-
-                    incomingCall.on('stream', (remoteStreamObj) => {
-                        handleCallConnected(incomingCall, remoteStreamObj);
+            function initPeer(peerId) {
+                try {
+                    peer = new Peer(peerId, {
+                        config: rtcConfig,
+                        debug: 1
                     });
 
-                    incomingCall.on('close', () => {
-                        handleCallDisconnected();
+                    peer.on('open', (id) => {
+                        console.log('PeerJS Conectado com sucesso. ID:', id);
+                        setStatus('Sala conectada. Pronto.');
+
+                        if (isModerator) {
+                            iniciarTentativaDeChamada();
+                        } else {
+                            // Paciente notifica que está pronto e pode ligar se o moderador já estiver ativo
+                            iniciarTentativaDeChamada();
+                        }
                     });
-                });
 
-                peer.on('error', (err) => {
-                    console.warn('Alerta na conexão P2P:', err.type, err);
-                    if (err.type === 'peer-unavailable') {
-                        // O outro participante ainda não entrou
-                    } else if (err.type === 'unavailable-id') {
-                        showToast('Reconectando sala de atendimento...');
-                    }
-                });
+                    peer.on('call', (incomingCall) => {
+                        console.log('Recebendo chamada WebRTC de:', incomingCall.peer);
+                        incomingCall.answer(localStream);
 
-            } catch (err) {
-                console.error('Falha ao inicializar WebRTC:', err);
-                setStatus('Erro ao conectar');
+                        incomingCall.on('stream', (remoteStreamObj) => {
+                            handleCallConnected(incomingCall, remoteStreamObj);
+                        });
+
+                        incomingCall.on('close', () => {
+                            handleCallDisconnected();
+                        });
+                    });
+
+                    peer.on('error', (err) => {
+                        console.warn('Alerta na conexão P2P:', err.type, err);
+                        if (err.type === 'peer-unavailable') {
+                            // Participante ainda conectando
+                        } else if (err.type === 'unavailable-id') {
+                            console.log('ID temporariamente ocupado, restabelecendo sessão...');
+                            setTimeout(() => {
+                                try { peer.destroy(); } catch(e){}
+                                initPeer(`${peerId}_${Date.now().toString().slice(-4)}`);
+                            }, 500);
+                        }
+                    });
+
+                } catch (err) {
+                    console.error('Falha ao inicializar WebRTC:', err);
+                    setStatus('Erro ao conectar');
+                }
             }
+
+            initPeer(myPeerId);
         };
 
         window.addEventListener('beforeunload', () => {
