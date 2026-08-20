@@ -10,6 +10,11 @@
   margin: 0 auto;
 }
 
+/* Messaging consistency layer. */
+.conv-preview-text,.conv-time,.chat-timestamp,.chat-sender-name,.thread-user-badge,.suggestions-title,.quick-chip-btn,.thread-action-link{font-size:.75rem;line-height:1.45}
+.conversation-item-card,.conversation-search-box,.thread-header-v2,.thread-reply-form{border-radius:12px}.chat-bubble{border-radius:16px}.quick-chip-btn,.thread-action-link,.mobile-back-btn,.send-msg-btn,.clear-search-btn{min-height:40px}.mobile-back-btn,.send-msg-btn,.clear-search-btn{min-width:40px}
+@media(max-width:640px){.quick-chip-btn,.thread-action-link,.mobile-back-btn,.send-msg-btn,.clear-search-btn{min-height:44px}.mobile-back-btn,.send-msg-btn,.clear-search-btn{min-width:44px}.thread-header-v2{padding-inline:12px}}
+
 /* ── WORKSPACE EM 2 COLUNAS ── */
 .messages-workspace-v2 {
   display: grid;

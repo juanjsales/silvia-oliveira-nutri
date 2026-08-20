@@ -7,6 +7,11 @@
   gap: 20px;
 }
 
+/* Clinical dashboard consistency layer. */
+.clinical-overview .clinical-tag,.clinical-overview .clinical-row small,.clinical-overview .snapshot-card small,.clinical-overview .lab-result small,.clinical-overview .clinical-counts span,.clinical-overview .text-button{font-size:.75rem;line-height:1.45}
+.clinical-card,.snapshot-card,.clinical-dialog{border-radius:16px}.clinical-tag,.back-link,.text-button,.complete-button,.save-clinical{min-height:40px}.back-link,.text-button{display:inline-flex;align-items:center}
+@media(max-width:640px){.clinical-tag,.back-link,.text-button,.complete-button,.save-clinical{min-height:44px}.clinical-grid,.clinical-snapshot-grid{gap:12px}}
+
 .clinical-top-bar {
   display: flex;
   align-items: center;
@@ -460,4 +465,3 @@
     align-items: flex-start;
   }
 }
-

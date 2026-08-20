@@ -42,3 +42,5 @@
 @media print{
  :root{--a4-screen-scale:1!important}.document-viewer .a4-page,.document-preview-shell .official-sheet,.issued-document-view .official-sheet,.patient-plan>article{zoom:1!important;transform:none!important;margin:0!important}
 }
+@media screen{.document-toolbar{font-size:.8125rem;min-height:56px;height:auto}.document-toolbar a,.document-toolbar button{min-height:42px;border-radius:10px}.document-preview-shell{border-radius:16px}}
+@media screen and (max-width:640px){.document-toolbar a,.document-toolbar button{min-height:44px;min-width:44px;font-size:.75rem}}

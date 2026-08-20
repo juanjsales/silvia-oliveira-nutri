@@ -729,3 +729,9 @@
     border-radius: 0 !important;
   }
 }
+@media screen{
+  .doc-subtitle-badge,.doc-type-btn,.control-section-title,.doc-field-label,.preview-tag,.zoom-value,.doc-help-card,.document-preview-empty-v2 p{font-size:.75rem;line-height:1.45}
+  .doc-type-btn,.doc-print-btn,.zoom-btn,.doc-header-actions button{min-height:42px}
+  .zoom-btn{min-width:42px}.doc-controls-panel,.doc-preview-wrapper{border-radius:16px}.doc-help-card{border-radius:12px}
+}
+@media screen and (max-width:640px){.doc-type-btn,.doc-print-btn,.zoom-btn,.doc-header-actions button{min-height:44px}.documents-center-v2{gap:16px}}

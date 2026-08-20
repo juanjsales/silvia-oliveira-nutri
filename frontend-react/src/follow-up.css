@@ -9,6 +9,11 @@
   box-sizing: border-box;
 }
 
+/* Follow-up consistency layer. */
+.follow-up-page .badge,.follow-up-page .adherence-badge,.follow-up-page .calorie-label,.follow-up-page .macro-tag,.follow-up-page .target-badge,.follow-up-page .entry-metrics,.follow-up-page small,.follow-up-page label{font-size:.75rem;line-height:1.45}
+.follow-up-page .panel,.follow-up-page .calorie-main-card,.follow-up-page .macro-breakdown-card,.follow-up-page .goal-card,.follow-up-page .diary-entry{border-radius:16px}.follow-up-page button,.follow-up-page select,.follow-up-page input{min-height:40px}
+@media(max-width:640px){.follow-up-page button,.follow-up-page select,.follow-up-page input{min-height:44px}.follow-up-grid{gap:12px}}
+
 .follow-up-intro {
   display: flex;
   align-items: center;

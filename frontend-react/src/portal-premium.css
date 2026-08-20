@@ -11,6 +11,12 @@
   flex-direction: column;
   gap: 20px;
   box-sizing: border-box;
+  --portal-primary: var(--brand-primary, #203528);
+  --portal-surface: #ffffff;
+  --portal-surface-muted: #f4f7f3;
+  --portal-text: #203028;
+  --portal-text-muted: var(--muted, #55665b);
+  --portal-border: var(--line, #dfe6df);
 }
 
 /* ── CABEÇALHO DO PORTAL ── */
@@ -71,8 +77,8 @@
 }
 
 .portal-icon-btn {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -238,13 +244,14 @@
   background: transparent;
   border: none;
   color: #64748b;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border-radius: 10px;
   transition: all 0.15s ease;
-  min-width: 55px;
+  min-width: 60px;
+  min-height: 48px;
 }
 
 .bottom-nav-item.active {
@@ -296,8 +303,8 @@
 }
 
 .water-icon-badge {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   background: #eff6ff;
   color: #2563eb;
@@ -368,6 +375,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
+  min-height: 44px;
 }
 
 .water-btn-add:hover {
@@ -451,6 +459,7 @@
   border-radius: 10px;
   text-decoration: none;
   transition: all 0.15s ease;
+  min-height: 44px;
 }
 
 .see-full-plan-btn:hover {
@@ -555,8 +564,8 @@
 }
 
 .action-icon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   display: grid;
   place-items: center;
@@ -856,6 +865,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
+  min-height: 44px;
 }
 
 .portal-view-btn:hover {
@@ -875,6 +885,7 @@
   gap: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
+  min-height: 44px;
 }
 
 .portal-print-btn:hover {
@@ -968,3 +979,61 @@
   gap: 10px;
 }
 
+/* Typography and interaction normalization across premium portal modules. */
+.portal-brand-text small,
+.hero-greeting-tag,
+.water-card-title small,
+.meal-badge-time,
+.appt-details small,
+.quick-action-card small,
+.more-menu-btn small,
+.portal-lamina-tag,
+.portal-lamina-tips-box,
+.portal-print-btn,
+.portal-faq-question small,
+.portal-empty-state small {
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.portal-logout-btn,
+.portal-nav-pill,
+.water-btn-add,
+.see-full-plan-btn,
+.appt-video-btn,
+.portal-cat-pill,
+.portal-view-btn,
+.portal-print-btn,
+.quick-action-card,
+.more-menu-btn {
+  min-height: 44px;
+}
+
+.portal-header-v2,
+.water-tracker-card,
+.current-meal-card,
+.portal-next-appointment-card,
+.portal-laminas-header,
+.portal-lamina-card {
+  border-color: var(--portal-border);
+  box-shadow: 0 4px 16px rgb(32 53 40 / 5%);
+}
+
+.portal-nav-pill.active,
+.see-full-plan-btn {
+  background: var(--portal-primary);
+  border-color: var(--portal-primary);
+}
+
+.portal-nav-pill.active:hover,
+.see-full-plan-btn:hover { background: color-mix(in srgb, var(--portal-primary) 88%, #000); }
+
+@media (max-width: 640px) {
+  .patient-portal-v2 { padding-inline: 12px; }
+  .portal-header-v2 { padding: 12px; border-radius: 16px; }
+  .portal-brand-text small { display: none; }
+  .portal-hero-card { padding: 20px 18px; border-radius: 20px; }
+  .portal-more-menu-grid { grid-template-columns: 1fr; }
+  .water-tracker-card, .current-meal-card { padding: 18px; border-radius: 16px; }
+  .water-ring-layout { align-items: flex-start; }
+}

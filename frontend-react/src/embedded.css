@@ -3,3 +3,6 @@
 .embedded-plan-editor{width:100%;height:720px;border:1px solid var(--line);border-radius:13px;background:var(--cream)}
 .embedded-route{min-height:100vh;padding:22px;background:var(--cream)}
 @media(max-width:800px){.embedded-plan-editor{height:760px}.embedded-route{padding:12px}}
+.encounter-plan-empty p{font-size:.875rem;color:var(--muted)}
+.embedded-plan-editor{border-radius:12px;background:var(--paper)}
+@media(max-width:640px){.embedded-route{padding:12px 8px}.encounter-plan-empty{min-height:320px;padding:24px}}
