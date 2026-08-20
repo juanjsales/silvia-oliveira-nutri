@@ -125,6 +125,24 @@ export function PatientVideoPage() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [entered]);
 
+  // Monitora se o atendimento foi encerrado pela nutricionista durante a chamada
+  useEffect(() => {
+    if (!id || !entered) return;
+    const interval = window.setInterval(() => {
+      api<{ data: Access }>(`/api/video/appointments/${id}/access`, { method: 'POST' })
+        .catch((err) => {
+          const msg = err instanceof Error ? err.message : '';
+          if (msg.includes('finalizada') || msg.includes('cancelada')) {
+            sessionStorage.removeItem(`in_call_${id}`);
+            setEntered(false);
+            endCall();
+            setError(msg || 'Esta consulta foi finalizada pela nutricionista.');
+          }
+        });
+    }, 5000);
+    return () => window.clearInterval(interval);
+  }, [id, entered, endCall]);
+
   // Sincronização em tempo real do que a nutricionista está transmitindo
   useEffect(() => {
     if (!id || !entered) return;

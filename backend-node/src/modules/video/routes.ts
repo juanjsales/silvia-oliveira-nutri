@@ -125,11 +125,10 @@ export async function videoRoutes(app: FastifyInstance) {
       return reply.code(409).send({ error: 'Esta consulta foi cancelada.' });
     }
 
-    if (!['CONFIRMED', 'WAITING', 'IN_PROGRESS'].includes(status) && encounterStatus !== 'IN_PROGRESS') {
-      return reply.code(409).send({ error: 'Esta consulta não permite acesso à videochamada.' });
-    }
-
-    if (request.auth!.role === 'PATIENT' && status !== 'IN_PROGRESS' && encounterStatus !== 'IN_PROGRESS') {
+    // Regra Rígida de Teleconsulta:
+    // O paciente (PATIENT) SÓ pode entrar na sala de vídeo se a nutricionista estiver com o atendimento ATIVO (clinical_encounters status = 'IN_PROGRESS').
+    // Se o atendimento não foi aberto pela nutricionista, o paciente é bloqueado e direcionado para a Sala de Espera Virtual.
+    if (request.auth!.role === 'PATIENT' && encounterStatus !== 'IN_PROGRESS') {
       return reply.code(403).send({ error: 'Aguarde a nutricionista iniciar o atendimento. A sala será liberada em seguida.' });
     }
 
