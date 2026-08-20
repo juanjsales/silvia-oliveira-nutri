@@ -714,11 +714,16 @@
         let myPeerId = '';
         let targetPeerId = '';
         let connectRetryTimer = null;
+        let connectRetryCount = 0;
+        let sessionId = '';
+        let joinToken = '';
+        let heartbeatTimer = null;
+        const parentOrigin = window.location.origin;
 
         // ── LEITURA DE PARÂMETROS DE AGENDAMENTO (HORÁRIO E DURAÇÃO) ──
         const urlParams = new URLSearchParams(window.location.search);
-        const scheduledTime = urlParams.get('time') || '';
-        const durationMinutes = parseInt(urlParams.get('duration') || '60', 10);
+        let scheduledTime = '';
+        let durationMinutes = 60;
 
         function computeEndTime(startStr, dur) {
             if (!startStr || !startStr.includes(':')) return '';
@@ -1013,9 +1018,10 @@
             setStatus('Conectado em HD', true);
             startTimer();
             showToast('Teleconsulta conectada com sucesso!', 4000);
+            void sendHeartbeat('CONNECTED');
 
             if (connectRetryTimer) {
-                clearInterval(connectRetryTimer);
+                clearTimeout(connectRetryTimer);
                 connectRetryTimer = null;
             }
 
@@ -1025,6 +1031,7 @@
         }
 
         function handleCallDisconnected() {
+            void sendHeartbeat('RECONNECTING');
             const banner = document.getElementById('waitingBanner');
             if (banner) {
                 banner.style.display = 'flex';
@@ -1043,41 +1050,14 @@
             const remoteVideo = document.getElementById('remoteVideo');
             if (remoteVideo) remoteVideo.srcObject = null;
 
-            if (isModerator && !connectRetryTimer) {
-                iniciarTentativaDeChamada();
-            }
-        }
-
-        function iniciarTentativaDeChamada() {
-            if (!localStream || !peer || currentCall?.open) return;
-
-            function tentarChamar() {
-                if (currentCall && currentCall.open) return;
-                try {
-                    const call = peer.call(targetPeerId, localStream);
-                    if (call) {
-                        call.on('stream', (stream) => {
-                            handleCallConnected(call, stream);
-                        });
-                        call.on('error', (e) => {
-                            console.log('Tentativa de chamada pendente...', e);
-                        });
-                    }
-                } catch(err) {
-                    console.log('Aguardando paciente estar online...');
-                }
-            }
-
-            tentarChamar();
-            if (!connectRetryTimer) {
-                connectRetryTimer = setInterval(tentarChamar, 1200);
-            }
+            connectRetryCount = 0;
+            if (isModerator) scheduleConnectionAttempt();
         }
 
         function encerrarChamada() {
             stopTimer();
             if (connectRetryTimer) {
-                clearInterval(connectRetryTimer);
+                clearTimeout(connectRetryTimer);
                 connectRetryTimer = null;
             }
             if (currentCall) {
@@ -1091,24 +1071,85 @@
             }
 
             if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ type: 'CALL_ENDED', action: 'CLOSED' }, '*');
-                window.parent.postMessage({ type: 'JITSI_LEFT', action: 'CLOSED' }, '*');
+                window.parent.postMessage({ type: 'TELECONSULT_CALL_ENDED', version: 1, sessionId }, parentOrigin);
             } else {
                 window.close();
                 setTimeout(() => { window.location.href = 'index.html'; }, 300);
             }
         }
 
-        // ── INICIALIZAÇÃO PRINCIPAL WEBRTC ULTRA-RÁPIDA (PEER-TO-PEER) ──
-        window.onload = async () => {
-            const params = new URLSearchParams(window.location.search);
-            const rawRoom = params.get('room') || 'geral';
-            const cleanRoom = rawRoom.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const userName = params.get('name') || params.get('user') || 'Participante';
-            const roleParam = params.get('role');
-            const isMinimal = params.get('minimal') === 'true';
+        async function joinAuthorizedSession() {
+            const fragment = new URLSearchParams(window.location.hash.slice(1));
+            sessionId = fragment.get('sessionId') || '';
+            joinToken = fragment.get('joinToken') || '';
+            history.replaceState(null, '', `${location.pathname}${location.search}`);
+            if (!sessionId || !joinToken || !/^[a-zA-Z0-9_-]{8,}$/.test(sessionId)) {
+                throw new Error('Link de acesso inválido ou incompleto. Solicite um novo acesso pelo portal.');
+            }
+            const response = await fetch(`/api/video/sessions/${encodeURIComponent(sessionId)}/join`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ joinToken })
+            });
+            joinToken = '';
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || !payload?.data) {
+                throw new Error(payload?.message || 'Não foi possível validar esta teleconsulta.');
+            }
+            const data = payload.data;
+            if (!data.roomKey || !['PROFESSIONAL', 'PATIENT'].includes(data.participantRole)) {
+                throw new Error('O servidor retornou uma sessão inválida.');
+            }
+            return data;
+        }
 
-            isModerator = roleParam === 'moderator' || (userName && userName.toLowerCase().includes('silvia'));
+        async function sendHeartbeat(state) {
+            if (!sessionId) return;
+            try {
+                await fetch(`/api/video/sessions/${encodeURIComponent(sessionId)}/heartbeat`, {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify(state ? { state } : {})
+                });
+            } catch (_) {}
+        }
+
+        function scheduleConnectionAttempt() {
+            if (!isModerator || !localStream || !peer || currentCall?.open || connectRetryTimer) return;
+            const delays = [800, 1500, 3000, 5000, 8000, 12000];
+            const attempt = () => {
+                connectRetryTimer = null;
+                if (currentCall?.open || connectRetryCount >= delays.length) {
+                    if (!currentCall?.open) setStatus('Não foi possível conectar. Use Reconectar.');
+                    return;
+                }
+                connectRetryCount += 1;
+                try {
+                    const call = peer.call(targetPeerId, localStream);
+                    if (call) call.on('stream', stream => handleCallConnected(call, stream));
+                } catch (_) {}
+                connectRetryTimer = setTimeout(attempt, delays[connectRetryCount - 1]);
+            };
+            attempt();
+        }
+
+        // ── INICIALIZAÇÃO PRINCIPAL AUTORIZADA PELO SERVIDOR ──
+        window.onload = async () => {
+            let authorized;
+            try {
+                setStatus('Validando acesso seguro...');
+                authorized = await joinAuthorizedSession();
+            } catch (error) {
+                setStatus('Acesso não autorizado');
+                showToast(error instanceof Error ? error.message : 'Falha ao validar acesso.', 8000);
+                return;
+            }
+            const cleanRoom = String(authorized.roomKey).replace(/[^a-zA-Z0-9_-]/g, '');
+            isModerator = authorized.participantRole === 'PROFESSIONAL';
+            const isMinimal = urlParams.get('minimal') === 'true';
+            void sendHeartbeat();
+            heartbeatTimer = setInterval(() => void sendHeartbeat(), 12000);
 
             if (isMinimal) {
                 const header = document.getElementById('callHeader');
@@ -1119,7 +1160,7 @@
                 myPeerId = `nutri_${cleanRoom}`;
                 targetPeerId = `pac_${cleanRoom}`;
                 document.getElementById('localNameText').textContent = 'Dra. Silvia';
-                document.getElementById('remoteNameText').textContent = userName.includes('Silvia') ? 'Paciente' : userName;
+                document.getElementById('remoteNameText').textContent = 'Paciente';
                 document.getElementById('waitingTitle').textContent = 'Aguardando o Paciente...';
                 document.getElementById('waitingDesc').textContent = 'Assim que o paciente acessar o portal, a teleconsulta iniciará imediatamente.';
                 const btnScreen = document.getElementById('btnScreen');
@@ -1127,7 +1168,7 @@
             } else {
                 myPeerId = `pac_${cleanRoom}`;
                 targetPeerId = `nutri_${cleanRoom}`;
-                document.getElementById('localNameText').textContent = userName || 'Você';
+                document.getElementById('localNameText').textContent = 'Você';
                 document.getElementById('remoteNameText').textContent = 'Dra. Silvia Oliveira Lemos';
                 document.getElementById('waitingTitle').textContent = 'Aguardando a Nutricionista...';
                 document.getElementById('waitingDesc').textContent = 'Dra. Silvia já está conectando seu prontuário para iniciar o atendimento.';
@@ -1139,45 +1180,41 @@
 
             setStatus('Conectando à sala...');
 
+            const fallbackIceServers = [
+                { urls: 'stun:stun.cloudflare.com:3478' },
+                { urls: 'stun:stun.l.google.com:19302' }
+            ];
+            const serverIceServers = Array.isArray(authorized.iceServers)
+                ? authorized.iceServers.filter(server => {
+                    const urls = Array.isArray(server?.urls) ? server.urls : [server?.urls];
+                    return urls.length > 0 && urls.every(url => typeof url === 'string' && /^(stun|turn|turns):/i.test(url));
+                })
+                : [];
             const rtcConfig = {
-                iceServers: [
-                    { urls: 'stun:stun.cloudflare.com:3478' },
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'stun:stun2.l.google.com:19302' },
-                    {
-                        urls: [
-                            'turn:openrelay.metered.ca:80',
-                            'turn:openrelay.metered.ca:443',
-                            'turn:openrelay.metered.ca:443?transport=tcp'
-                        ],
-                        username: 'openrelay',
-                        credential: 'openrelay'
-                    }
-                ],
+                iceServers: serverIceServers.length ? serverIceServers : fallbackIceServers,
                 iceCandidatePoolSize: 10,
                 bundlePolicy: 'max-bundle',
                 rtcpMuxPolicy: 'require',
                 sdpSemantics: 'unified-plan'
             };
 
+            const peerOptions = { config: rtcConfig, debug: 1 };
+            if (authorized.signaling?.mode === 'configured' && typeof authorized.signaling.host === 'string') {
+                peerOptions.host = authorized.signaling.host;
+                peerOptions.port = Number(authorized.signaling.port) || (authorized.signaling.secure === false ? 80 : 443);
+                peerOptions.path = typeof authorized.signaling.path === 'string' ? authorized.signaling.path : '/';
+                peerOptions.secure = authorized.signaling.secure !== false;
+            }
+
             function initPeer(peerId) {
                 try {
-                    peer = new Peer(peerId, {
-                        config: rtcConfig,
-                        debug: 1
-                    });
+                    peer = new Peer(peerId, peerOptions);
 
                     peer.on('open', (id) => {
                         console.log('PeerJS Conectado com sucesso. ID:', id);
                         setStatus('Sala conectada. Pronto.');
 
-                        if (isModerator) {
-                            iniciarTentativaDeChamada();
-                        } else {
-                            // Paciente notifica que está pronto e pode ligar se o moderador já estiver ativo
-                            iniciarTentativaDeChamada();
-                        }
+                        if (isModerator) scheduleConnectionAttempt();
                     });
 
                     peer.on('call', (incomingCall) => {
@@ -1198,11 +1235,8 @@
                         if (err.type === 'peer-unavailable') {
                             // Participante ainda conectando
                         } else if (err.type === 'unavailable-id') {
-                            console.log('ID temporariamente ocupado, restabelecendo sessão...');
-                            setTimeout(() => {
-                                try { peer.destroy(); } catch(e){}
-                                initPeer(`${peerId}_${Date.now().toString().slice(-4)}`);
-                            }, 500);
+                            setStatus('Esta sessão já está aberta em outra aba.');
+                            showToast('Feche a outra aba da teleconsulta e tente novamente.', 8000);
                         }
                     });
 
@@ -1216,7 +1250,11 @@
         };
 
         window.addEventListener('beforeunload', () => {
-            encerrarChamada();
+            stopTimer();
+            if (connectRetryTimer) clearTimeout(connectRetryTimer);
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            if (peer) try { peer.destroy(); } catch (_) {}
+            if (localStream) localStream.getTracks().forEach(track => track.stop());
         });
     </script>
 </body>

@@ -37,7 +37,27 @@ type Patient = {
   active: boolean;
   createdAt: string;
   hasPortalAccess?: boolean;
+  profiles?: PatientProfile[];
+  profileNotes?: string | null;
 };
+
+type PatientProfile = "CHILD" | "ADOLESCENT_YOUNG" | "ADULT_MAN" | "ADULT_WOMAN" | "PREGNANT" | "POSTPARTUM_BREASTFEEDING" | "OLDER_ADULT" | "ATHLETE" | "VEGETARIAN_VEGAN" | "BARIATRIC_CARE" | "OTHER";
+
+const patientProfileOptions: { value: PatientProfile; label: string }[] = [
+  { value: "CHILD", label: "Criança" },
+  { value: "ADOLESCENT_YOUNG", label: "Adolescente / jovem" },
+  { value: "ADULT_MAN", label: "Homem adulto" },
+  { value: "ADULT_WOMAN", label: "Mulher adulta" },
+  { value: "PREGNANT", label: "Gestante" },
+  { value: "POSTPARTUM_BREASTFEEDING", label: "Pós-parto / lactante" },
+  { value: "OLDER_ADULT", label: "Idoso / idosa" },
+  { value: "ATHLETE", label: "Atleta / alta performance" },
+  { value: "VEGETARIAN_VEGAN", label: "Vegetariano / vegano" },
+  { value: "BARIATRIC_CARE", label: "Acompanhamento bariátrico" },
+  { value: "OTHER", label: "Outro perfil" },
+];
+
+const patientProfileLabel = new Map(patientProfileOptions.map((item) => [item.value, item.label]));
 
 type PatientForm = {
   name: string;
@@ -46,6 +66,8 @@ type PatientForm = {
   whatsapp: string;
   birthDate: string;
   objective: string;
+  profiles: PatientProfile[];
+  profileNotes: string;
 };
 
 const emptyForm: PatientForm = {
@@ -55,6 +77,8 @@ const emptyForm: PatientForm = {
   whatsapp: "",
   birthDate: "",
   objective: "",
+  profiles: [],
+  profileNotes: "",
 };
 
 const objectiveOptions = [
@@ -143,6 +167,8 @@ export function PatientsPage() {
       whatsapp: p.whatsapp || "",
       birthDate: p.birthDate?.slice(0, 10) || "",
       objective: p.objective || "",
+      profiles: p.profiles || [],
+      profileNotes: p.profileNotes || "",
     });
     setObjectiveChoice(
       objectiveOptions.some((option) => option === p.objective)
@@ -158,12 +184,16 @@ export function PatientsPage() {
     e.preventDefault();
     setSaving(true);
     setError("");
-    const body = Object.fromEntries(
-      Object.entries(form).map(([k, v]) => [k, v.trim() || undefined])
-    );
-    if (body.name) {
-      body.name = capitalizePersonName(body.name);
-    }
+    const body = {
+      name: capitalizePersonName(form.name.trim()),
+      cpf: form.cpf.trim() || undefined,
+      email: form.email.trim() || undefined,
+      whatsapp: form.whatsapp.trim() || undefined,
+      birthDate: form.birthDate.trim() || undefined,
+      objective: form.objective.trim() || undefined,
+      profiles: form.profiles,
+      profileNotes: form.profileNotes.trim(),
+    };
     try {
       await api(editing ? `/api/patients/${editing.id}` : "/api/patients", {
         method: editing ? "PATCH" : "POST",
@@ -367,10 +397,18 @@ export function PatientsPage() {
                       <h3 className="patient-card-name" title={p.name}>
                         {p.name}
                       </h3>
-                      <div className="patient-objective-tag" title={p.objective || "Objetivo não informado"}>
+                    <div className="patient-objective-tag" title={p.objective || "Objetivo não informado"}>
                         <Sparkles size={12} />
                         <span>{p.objective || "Objetivo não informado"}</span>
                       </div>
+                      {Boolean(p.profiles?.length) && (
+                        <div className="patient-profile-tags" aria-label="Perfis do paciente">
+                          {p.profiles!.slice(0, 3).map((profile) => (
+                            <span key={profile}>{patientProfileLabel.get(profile) || profile}</span>
+                          ))}
+                          {p.profiles!.length > 3 && <span>+{p.profiles!.length - 3}</span>}
+                        </div>
+                      )}
                     </div>
 
                     <div className="card-top-actions">
@@ -638,6 +676,41 @@ export function PatientsPage() {
                       onChange={(e) => setForm({ ...form, objective: e.target.value })}
                       placeholder="Ex: Alívio de refluxo, preparação para maratona, melhora da ferritina..."
                       rows={3}
+                      maxLength={500}
+                    />
+                  </label>
+                )}
+
+                <fieldset className="full patient-profile-fieldset">
+                  <legend>Perfis para personalizar o acompanhamento</legend>
+                  <p className="field-hint">Selecione somente os perfis informados pelo paciente. É possível marcar mais de um.</p>
+                  <div className="patient-profile-options">
+                    {patientProfileOptions.map((option) => (
+                      <label key={option.value} className={form.profiles.includes(option.value) ? "selected" : ""}>
+                        <input
+                          type="checkbox"
+                          checked={form.profiles.includes(option.value)}
+                          onChange={(event) => setForm((current) => ({
+                            ...current,
+                            profiles: event.target.checked
+                              ? [...current.profiles, option.value]
+                              : current.profiles.filter((profile) => profile !== option.value),
+                          }))}
+                        />
+                        {option.label}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                {(form.profiles.includes("OTHER") || form.profileNotes) && (
+                  <label className="full">
+                    Detalhes adicionais do perfil
+                    <textarea
+                      value={form.profileNotes}
+                      onChange={(e) => setForm({ ...form, profileNotes: e.target.value })}
+                      placeholder="Descreva o contexto relevante informado pelo paciente."
+                      rows={2}
                       maxLength={500}
                     />
                   </label>

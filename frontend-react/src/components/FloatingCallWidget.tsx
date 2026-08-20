@@ -6,7 +6,7 @@ import {
   RefreshCw,
   Sparkles,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { LaminasModal } from './LaminasModal';
@@ -20,6 +20,35 @@ export function FloatingCallWidget() {
   const [iframeKey, setIframeKey] = useState(1);
   const [collapsed, setCollapsed] = useState(false);
   const [laminasOpen, setLaminasOpen] = useState(false);
+  const [frameSource, setFrameSource] = useState('');
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    if (!activeCall?.appointmentId) {
+      setFrameSource(activeCall?.roomUrl || '');
+      return;
+    }
+    setFrameSource('');
+    api<{ data: { roomUrl: string } }>(`/api/video/appointments/${activeCall.appointmentId}/access`, { method: 'POST' })
+      .then((response) => setFrameSource(response.data.roomUrl))
+      .catch(() => setFrameSource(''));
+  }, [activeCall?.appointmentId, iframeKey]);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin || event.source !== iframeRef.current?.contentWindow) return;
+      if (!event.data || event.data.type !== 'TELECONSULT_CALL_ENDED' || event.data.version !== 1) return;
+      if (activeCall?.role === 'ADMIN' && activeCall.sessionId) {
+        void api(`/api/video/sessions/${activeCall.sessionId}/end`, {
+          method: 'POST', body: JSON.stringify({ reason: 'COMPLETED' }),
+        }).finally(endCall);
+      } else {
+        endCall();
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [activeCall?.role, activeCall?.sessionId, endCall]);
 
   useEffect(() => {
     if (!activeCall) return;
@@ -84,8 +113,19 @@ export function FloatingCallWidget() {
   }
 
   function handleHangup() {
-    if (window.confirm('Deseja realmente encerrar a teleconsulta?')) {
-      endCall();
+    if (!activeCall) return;
+    const call = activeCall;
+    const prompt = call.role === 'ADMIN'
+      ? 'Encerrar a sala para todos os participantes? O prontuário continuará aberto.'
+      : 'Deseja sair da teleconsulta? A consulta continuará disponível enquanto a nutricionista estiver na sala.';
+    if (window.confirm(prompt)) {
+      if (call.role === 'ADMIN' && call.sessionId) {
+        void api(`/api/video/sessions/${call.sessionId}/end`, {
+          method: 'POST', body: JSON.stringify({ reason: 'COMPLETED' }),
+        }).finally(endCall);
+      } else {
+        endCall();
+      }
     }
   }
 
@@ -148,7 +188,7 @@ export function FloatingCallWidget() {
               type="button"
               className="pip-icon-btn hangup-btn"
               onClick={handleHangup}
-              title="Encerrar chamada"
+              title={activeCall.role === 'ADMIN' ? 'Encerrar sala para todos' : 'Sair da chamada'}
             >
               <PhoneOff size={14} />
             </button>
@@ -156,12 +196,13 @@ export function FloatingCallWidget() {
         </header>
 
         <div className="persistent-video-frame">
-          <iframe
+          {frameSource ? <iframe
+            ref={iframeRef}
             key={iframeKey}
-            src={activeCall.roomUrl}
+            src={frameSource}
             title="Teleconsulta Nutricional"
             allow="camera; microphone; fullscreen; display-capture; autoplay"
-          />
+          /> : <div className="video-frame-status" role="status">Revalidando acesso seguro...</div>}
           {!collapsed && (
             <button type="button" className="pip-overlay-hint" onClick={restoreCall} title="Voltar para a tela do atendimento">
               <Sparkles size={13} />
@@ -201,5 +242,3 @@ export function FloatingCallWidget() {
     </>
   );
 }
-
-

@@ -28,6 +28,7 @@ type Measurement = {
   weight?: number;
   bodyFat?: number;
   waist?: number;
+  neck?: number;
   visibleToPatient: boolean;
 };
 type ActivePlan = {
@@ -199,6 +200,7 @@ export function FollowUpPage() {
           weight: optionalNumber(f.get('weight')),
           bodyFat: optionalNumber(f.get('bodyFat')),
           waist: optionalNumber(f.get('waist')),
+          neck: optionalNumber(f.get('neck')),
           notes: f.get('notes') || undefined,
           visibleToPatient: f.get('visibleToPatient') === 'on',
         }),
@@ -447,6 +449,7 @@ export function FollowUpPage() {
                   <input name="weight" type="number" step="0.01" min="0" placeholder="Peso (kg)" />
                   <input name="bodyFat" type="number" step="0.01" min="0" max="100" placeholder="Gordura (%)" />
                   <input name="waist" type="number" step="0.01" min="0" placeholder="Cintura (cm)" />
+                  <input name="neck" type="number" step="0.01" min="0" max="200" placeholder="Pescoço (cm)" />
                   <input name="notes" maxLength={1000} placeholder="Observações da medida" />
                   <label className="check">
                     <input name="visibleToPatient" type="checkbox" defaultChecked /> Visível no portal do paciente
@@ -465,6 +468,7 @@ export function FollowUpPage() {
                             m.weight != null && `${m.weight} kg`,
                             m.bodyFat != null && `${m.bodyFat}% gordura`,
                             m.waist != null && `${m.waist} cm cintura`,
+                            m.neck != null && `${m.neck} cm pescoço`,
                           ]
                             .filter(Boolean)
                             .join(' · ')}

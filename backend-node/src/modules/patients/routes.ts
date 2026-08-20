@@ -5,13 +5,21 @@ import { createOpaqueToken, hashPassword, hashToken } from '../../shared/crypto.
 import { sendPatientInvitationEmail } from '../../integrations/email.js';
 import { capitalizePersonName } from '../../shared/formatters.js';
 
+const patientProfile = z.enum([
+  'CHILD', 'ADOLESCENT_YOUNG', 'ADULT_MAN', 'ADULT_WOMAN', 'PREGNANT',
+  'POSTPARTUM_BREASTFEEDING', 'OLDER_ADULT', 'ATHLETE', 'VEGETARIAN_VEGAN',
+  'BARIATRIC_CARE', 'OTHER'
+]);
+
 const patientSchema = z.object({
   name: z.string().trim().min(2).max(160).transform(capitalizePersonName),
   cpf: z.string().transform(v => v.replace(/\D/g, '')).refine(v => !v || v.length === 11, 'CPF inválido').optional(),
   email: z.string().trim().toLowerCase().email().optional(),
   whatsapp: z.string().transform(v => v.replace(/\D/g, '')).optional(),
   birthDate: z.iso.date().optional(),
-  objective: z.string().trim().max(500).optional()
+  objective: z.string().trim().max(500).optional(),
+  profiles: z.array(patientProfile).max(11).default([]),
+  profileNotes: z.string().trim().max(500).optional()
 });
 
 export async function patientRoutes(app: FastifyInstance) {
@@ -22,7 +30,7 @@ export async function patientRoutes(app: FastifyInstance) {
     const term = query.q ? `%${query.q.toLowerCase()}%` : null;
     const result = await app.db.query(
       `SELECT p.id, p.cpf, p.name, COALESCE(u.email, p.email) AS email, p.whatsapp, p.birth_date AS "birthDate",
-              p.objective, p.active, p.created_at AS "createdAt", (p.user_id IS NOT NULL AND u.active) AS "hasPortalAccess"
+              p.objective, p.profiles, p.profile_notes AS "profileNotes", p.active, p.created_at AS "createdAt", (p.user_id IS NOT NULL AND u.active) AS "hasPortalAccess"
        FROM patients p LEFT JOIN users u ON u.id = p.user_id
        WHERE ($1::text IS NULL OR lower(p.name) LIKE $1 OR p.cpf LIKE $1)
        ORDER BY p.name LIMIT 100`,
@@ -35,7 +43,7 @@ export async function patientRoutes(app: FastifyInstance) {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
     const result = await app.db.query(
       `SELECT p.id, p.cpf, p.name, COALESCE(u.email, p.email) AS email, p.whatsapp, p.birth_date AS "birthDate",
-              p.objective, p.active, p.created_at AS "createdAt"
+              p.objective, p.profiles, p.profile_notes AS "profileNotes", p.active, p.created_at AS "createdAt"
        FROM patients p LEFT JOIN users u ON u.id = p.user_id WHERE p.id = $1`, [id]
     );
     return result.rows[0] ? { data: result.rows[0] } : reply.code(404).send({ error: 'Paciente não encontrado.' });
@@ -44,9 +52,9 @@ export async function patientRoutes(app: FastifyInstance) {
   app.post('/', async (request, reply) => {
     const body = patientSchema.parse(request.body);
     const result = await app.db.query<{ id: string }>(
-      `INSERT INTO patients(cpf, name, email, whatsapp, birth_date, objective)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-      [body.cpf || null, body.name, body.email || null, body.whatsapp || null, body.birthDate || null, body.objective || null]
+      `INSERT INTO patients(cpf, name, email, whatsapp, birth_date, objective, profiles, profile_notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+      [body.cpf || null, body.name, body.email || null, body.whatsapp || null, body.birthDate || null, body.objective || null, body.profiles, body.profileNotes || null]
     );
     const id = result.rows[0]!.id;
     await audit(app.db, 'PATIENT_CREATED', 'patient', { actorUserId: request.auth!.userId, entityId: id });
@@ -61,8 +69,9 @@ export async function patientRoutes(app: FastifyInstance) {
     const p = { ...current.rows[0], ...body };
     await app.db.query(
       `UPDATE patients SET cpf=$1, name=$2, email=$3, whatsapp=$4, birth_date=$5, objective=$6,
-       updated_at=now() WHERE id=$7`,
-      [p.cpf || null, p.name, p.email || null, p.whatsapp || null, p.birthDate ?? p.birth_date ?? null, p.objective || null, id]
+       profiles=$7, profile_notes=$8, updated_at=now() WHERE id=$9`,
+      [p.cpf || null, p.name, p.email || null, p.whatsapp || null, p.birthDate ?? p.birth_date ?? null, p.objective || null,
+       p.profiles ?? [], body.profileNotes !== undefined ? body.profileNotes || null : p.profile_notes ?? null, id]
     );
     await audit(app.db, 'PATIENT_UPDATED', 'patient', { actorUserId: request.auth!.userId, entityId: id, metadata: { fields: Object.keys(body) } });
     return { data: { id } };

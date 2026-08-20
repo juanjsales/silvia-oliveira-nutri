@@ -23,7 +23,7 @@ import {
   UserRound,
   Video,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
@@ -31,7 +31,7 @@ import { useToast } from '../components/ToastNotification';
 import { LaminaVisualInfographic } from '../components/LaminaVisualInfographic';
 import { api } from '../lib/api';
 
-type Access = { roomUrl: string; expiresAt: string };
+type Access = { roomUrl: string; expiresAt: string; sessionId?: string; state?: string };
 type GuideTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta' | 'lamina';
 
 type BroadcastData = {
@@ -74,6 +74,8 @@ export function PatientVideoPage() {
   const [reconnecting, setReconnecting] = useState(false);
   const [broadcast, setBroadcast] = useState<BroadcastData | null>(null);
   const [lastSyncedUpdate, setLastSyncedUpdate] = useState<string>('');
+  const [mediaCheck, setMediaCheck] = useState<'idle' | 'checking' | 'ready' | 'blocked'>('idle');
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     if (!id || access) return;
@@ -106,6 +108,7 @@ export function PatientVideoPage() {
       sessionStorage.setItem(`in_call_${id}`, 'true');
       startCall({
         appointmentId: id,
+        sessionId: access.sessionId,
         roomToken: id,
         patientName: user?.name || 'Paciente',
         roomUrl: access.roomUrl,
@@ -129,7 +132,19 @@ export function PatientVideoPage() {
   useEffect(() => {
     if (!id || !entered) return;
     const interval = window.setInterval(() => {
-      api<{ data: Access }>(`/api/video/appointments/${id}/access`, { method: 'POST' })
+      const request = access?.sessionId
+        ? api<{ data: { state: string } }>(`/api/video/sessions/${access.sessionId}`)
+        : api<{ data: Access }>(`/api/video/appointments/${id}/access`, { method: 'POST' });
+      request
+        .then((response) => {
+          const state = response.data?.state;
+          if (state && ['ENDED', 'FAILED', 'EXPIRED'].includes(state)) {
+            sessionStorage.removeItem(`in_call_${id}`);
+            setEntered(false);
+            endCall();
+            setError(state === 'ENDED' ? 'Esta consulta foi finalizada pela nutricionista.' : 'A sessão foi encerrada. Solicite um novo acesso.');
+          }
+        })
         .catch((err) => {
           const msg = err instanceof Error ? err.message : '';
           if (msg.includes('finalizada') || msg.includes('cancelada') || msg.includes('não encontrada') || msg.includes('aguarde') || msg.includes('Aguarde') || msg.includes('iniciar')) {
@@ -141,7 +156,20 @@ export function PatientVideoPage() {
         });
     }, 1500);
     return () => window.clearInterval(interval);
-  }, [id, entered, endCall]);
+  }, [id, entered, endCall, access?.sessionId]);
+
+  useEffect(() => {
+    if (!entered) return;
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin || event.source !== iframeRef.current?.contentWindow) return;
+      if (!event.data || event.data.type !== 'TELECONSULT_CALL_ENDED' || event.data.version !== 1) return;
+      sessionStorage.removeItem(`in_call_${id}`);
+      setEntered(false);
+      endCall();
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [entered, endCall, id]);
 
   // Sincronização em tempo real do que a nutricionista está transmitindo
   useEffect(() => {
@@ -180,13 +208,37 @@ export function PatientVideoPage() {
     return () => window.clearInterval(interval);
   }, [id, entered, lastSyncedUpdate, showToast]);
 
-  function handleReconnect() {
+  async function handleReconnect() {
     setReconnecting(true);
-    setIframeKey((prev) => prev + 1);
-    setTimeout(() => setReconnecting(false), 1200);
+    try {
+      const response = await api<{ data: Access }>(`/api/video/appointments/${id}/access`, { method: 'POST' });
+      setAccess(response.data);
+      setIframeKey((prev) => prev + 1);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível reconectar com segurança.');
+    } finally {
+      setReconnecting(false);
+    }
   }
 
-  function handleExitCall() {
+  async function checkMediaAndEnter() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMediaCheck('blocked');
+      setError('Este navegador não oferece acesso seguro à câmera e ao microfone.');
+      return;
+    }
+    setMediaCheck('checking');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      stream.getTracks().forEach((track) => track.stop());
+      setMediaCheck('ready');
+      setEntered(true);
+    } catch {
+      setMediaCheck('blocked');
+    }
+  }
+
+  async function handleExitCall() {
     if (window.confirm('Deseja realmente encerrar a teleconsulta?')) {
       sessionStorage.removeItem(`in_call_${id}`);
       setEntered(false);
@@ -337,8 +389,11 @@ export function PatientVideoPage() {
             <strong>Permissão bloqueada?</strong>
             <span>Clique no ícone de cadeado ou câmera ao lado do endereço do site (barra de navegação) e ative microfone e câmera.</span>
           </aside>
-          <button className="primary-button video-enter-button" onClick={() => setEntered(true)}>
-            <Video /> Entrar na Consulta Agora
+          {mediaCheck === 'blocked' && (
+            <div className="form-error" role="alert">Câmera ou microfone bloqueado. Libere as permissões no navegador e teste novamente.</div>
+          )}
+          <button className="primary-button video-enter-button" onClick={() => void checkMediaAndEnter()} disabled={mediaCheck === 'checking'}>
+            <Video /> {mediaCheck === 'checking' ? 'Testando câmera e microfone...' : mediaCheck === 'blocked' ? 'Testar novamente' : 'Testar e entrar na consulta'}
           </button>
           <small>Se a conexão oscilar ou você recarregar a página, seu acesso permanecerá salvo nesta mesma sala.</small>
         </section>
@@ -346,6 +401,7 @@ export function PatientVideoPage() {
         <div className={`video-call-workspace ${showGuide ? 'with-guide' : 'full-video'}`}>
           <div className="video-stream-container" id="patient-video-slot">
             <iframe
+              ref={iframeRef}
               key={iframeKey}
               src={access.roomUrl}
               title="Sala de Teleconsulta"
@@ -850,5 +906,3 @@ export function PatientVideoPage() {
     </main>
   );
 }
-
-

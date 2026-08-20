@@ -24,12 +24,18 @@ import {
 export function LaminaVisualInfographic({ laminaId }: { laminaId: string }) {
   switch (laminaId) {
     case 'prato-ideal':
+    case 'fibras-no-dia':
+    case 'lanche-equilibrado':
       return <PratoIdealIllustration />;
     case 'rotulos-alimentos':
+    case 'acucar-bebidas':
+    case 'sodio-rotulos':
       return <RotulosIllustration />;
     case 'fome-saciedade':
+    case 'comer-com-atencao':
       return <FomeSaciedadeIllustration />;
     case 'hidratacao-correta':
+    case 'hidratacao-rotina':
       return <HidratacaoIllustration />;
     case 'substituicoes-praticas':
       return <SubstituicoesIllustration />;
@@ -38,9 +44,11 @@ export function LaminaVisualInfographic({ laminaId }: { laminaId: string }) {
     case 'gorduras-boas':
       return <GordurasBoasIllustration />;
     case 'meal-prep-marmitas':
+    case 'planejamento-compras':
+    case 'conservacao-sobras':
       return <MealPrepIllustration />;
     default:
-      return <PratoIdealIllustration />;
+      return null;
   }
 }
 

@@ -1096,6 +1096,73 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   text-overflow: ellipsis;
 }
 
+.patient-profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.patient-profile-tags span {
+  border: 1px solid var(--color-border, #d9e2dc);
+  border-radius: 999px;
+  background: var(--color-surface-muted, #f5f8f5);
+  color: var(--color-text-muted, #52645a);
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 4px 8px;
+}
+
+.patient-profile-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.patient-profile-fieldset legend {
+  margin-bottom: 4px;
+  color: var(--color-text, #203528);
+  font-size: .84rem;
+  font-weight: 700;
+}
+
+.patient-profile-fieldset > .field-hint { margin: 0 0 10px; }
+
+.patient-profile-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.patient-profile-options label {
+  display: inline-flex;
+  min-height: 38px;
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid var(--color-border, #d9e2dc);
+  border-radius: 999px;
+  background: var(--color-surface, #fff);
+  cursor: pointer;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.patient-profile-options label.selected {
+  border-color: var(--color-primary, #285640);
+  background: #edf6f0;
+  color: var(--color-primary, #285640);
+}
+
+.patient-profile-options input { width: 16px; height: 16px; margin: 0; }
+
+@media (max-width: 640px) {
+  .patient-profile-options label { min-height: 44px; }
+}
+
 .card-top-actions {
   display: flex;
   gap: 4px;

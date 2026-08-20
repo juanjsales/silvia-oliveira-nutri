@@ -107,6 +107,7 @@ const clinicalFieldLabels: Record<string, string> = {
   bodyWater: 'Água corporal total',
   metabolicAge: 'Idade metabólica',
   arm: 'Circunferência do braço',
+  neck: 'Circunferência do pescoço',
   chest: 'Circunferência do tórax',
   waist: 'Circunferência da cintura',
   abdomen: 'Circunferência do abdômen',
@@ -149,7 +150,7 @@ function formatValue(key: string, value: any): string {
   if (key === 'weight' || key === 'prePregnancyWeight' || key === 'birthWeight' || key === 'leanMass' || key === 'muscleMass') {
     return isNaN(Number(str)) ? str : `${str} kg`;
   }
-  if (key === 'height' || key === 'headCircumference' || key === 'arm' || key === 'chest' || key === 'waist' || key === 'abdomen' || key === 'hip' || key === 'calf') {
+  if (key === 'height' || key === 'headCircumference' || key === 'neck' || key === 'arm' || key === 'chest' || key === 'waist' || key === 'abdomen' || key === 'hip' || key === 'calf') {
     return isNaN(Number(str)) ? str : `${str} cm`;
   }
   if (key === 'bodyFat' || key === 'bodyWater' || key === 'planAdherence') {
@@ -340,4 +341,3 @@ function Signature({ doc }: { doc: Doc }) {
     </div>
   );
 }
-

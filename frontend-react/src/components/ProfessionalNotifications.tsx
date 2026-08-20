@@ -16,7 +16,7 @@ import { api } from '../lib/api';
 
 type NotificationItem = {
   id: string;
-  type: 'APPOINTMENT' | 'CHECKIN' | 'EXAM' | 'MESSAGE' | 'FINANCE';
+  type: 'APPOINTMENT' | 'APPOINTMENT_REQUEST' | 'CHECKIN' | 'EXAM' | 'MESSAGE' | 'FINANCE';
   title: string;
   detail: string;
   timestamp: string;
@@ -29,7 +29,7 @@ export function ProfessionalNotifications() {
   const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const prevCountRef = useRef<number | null>(null);
+  const knownIdsRef = useRef<Set<string> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -39,7 +39,34 @@ export function ProfessionalNotifications() {
     try {
       const notifs: NotificationItem[] = [];
 
-      // 1. Check-ins pendentes
+      // 1. Pedidos de consulta enviados pelo Portal do Paciente.
+      // Reutiliza a mesma fonte exibida na Agenda para não manter alertas paralelos.
+      try {
+        const requestsRes = await api<{ data: any[] }>('/api/appointments/requests');
+        if (Array.isArray(requestsRes.data)) {
+          requestsRes.data.forEach((request) => {
+            const period = {
+              MORNING: 'manhã',
+              AFTERNOON: 'tarde',
+              EVENING: 'noite',
+            }[request.preferredPeriod as 'MORNING' | 'AFTERNOON' | 'EVENING'] || 'período a combinar';
+            const preferredDate = new Date(`${request.preferredDate}T12:00:00`).toLocaleDateString('pt-BR');
+
+            notifs.push({
+              id: `appointment-request-${request.id}`,
+              type: 'APPOINTMENT_REQUEST',
+              title: `Novo pedido de consulta: ${request.patientName}`,
+              detail: `${preferredDate} · ${period} · ${request.appointmentType || 'Consulta'}`,
+              timestamp: request.createdAt || new Date().toISOString(),
+              link: '/atendimentos',
+              actionText: 'Revisar pedido',
+              read: false,
+            });
+          });
+        }
+      } catch {}
+
+      // 2. Check-ins pendentes
       try {
         const checkinsRes = await api<{ data: any[] }>('/api/clinical/checkins/pending');
         if (Array.isArray(checkinsRes.data)) {
@@ -60,7 +87,7 @@ export function ProfessionalNotifications() {
         }
       } catch {}
 
-      // 2. Consultas do dia
+      // 3. Consultas do dia
       try {
         const todayStr = new Date().toISOString().slice(0, 10);
         const apptsRes = await api<{ data: any[] }>(`/api/appointments?from=${todayStr}&to=${todayStr}`);
@@ -82,7 +109,7 @@ export function ProfessionalNotifications() {
         }
       } catch {}
 
-      // 3. Indicadores Financeiros de cobranças vencidas
+      // 4. Indicadores Financeiros de cobranças vencidas
       try {
         const finRes = await api<{ data: any }>('/api/finance/summary');
         if (finRes.data?.overdue && Number(finRes.data.overdue) > 0) {
@@ -102,21 +129,23 @@ export function ProfessionalNotifications() {
       // Ordena por data mais recente
       notifs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-      // Dispara toast para o profissional se houver novos check-ins ou alertas
-      if (prevCountRef.current !== null && notifs.length > prevCountRef.current) {
-        const latest = notifs[0];
+      // A identidade do item, e não a contagem total, evita repetir toast quando
+      // outro alerta some ou a ordem muda durante o polling.
+      const currentIds = new Set(notifs.map((item) => item.id));
+      if (knownIdsRef.current !== null) {
+        const latest = notifs.find((item) => !knownIdsRef.current!.has(item.id));
         if (latest) {
           showToast({
             title: latest.title,
             message: latest.detail,
-            type: latest.type === 'APPOINTMENT' ? 'call' : 'info',
+            type: ['APPOINTMENT', 'APPOINTMENT_REQUEST'].includes(latest.type) ? 'call' : 'info',
             actionLabel: latest.actionText,
             onAction: () => navigate(latest.link),
             duration: 8000,
           });
         }
       }
-      prevCountRef.current = notifs.length;
+      knownIdsRef.current = currentIds;
 
       setItems(notifs);
     } catch {
@@ -162,6 +191,7 @@ export function ProfessionalNotifications() {
 
   const iconMap = {
     APPOINTMENT: <CalendarDays size={17} className="notif-icon green" />,
+    APPOINTMENT_REQUEST: <CalendarDays size={17} className="notif-icon gold" />,
     CHECKIN: <ClipboardCheck size={17} className="notif-icon gold" />,
     EXAM: <FileSearch size={17} className="notif-icon blue" />,
     MESSAGE: <MessageCircle size={17} className="notif-icon rose" />,

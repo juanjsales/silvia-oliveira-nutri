@@ -25,7 +25,23 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().min(1),
   APP_ENCRYPTION_KEY: z.string().min(32).optional(),
-  CRON_SECRET: z.string().min(32).optional()
+  CRON_SECRET: z.string().min(32).optional(),
+  WEBRTC_STUN_URLS: z.string().min(1).optional(),
+  WEBRTC_TURN_URL: z.string().regex(/^turns?:/).optional(),
+  WEBRTC_TURN_USERNAME: z.string().min(1).optional(),
+  WEBRTC_TURN_CREDENTIAL: z.string().min(12).optional(),
+  WEBRTC_SIGNALING_HOST: z.string().min(1).optional(),
+  WEBRTC_SIGNALING_PORT: z.coerce.number().int().min(1).max(65535).optional(),
+  WEBRTC_SIGNALING_PATH: z.string().regex(/^\//).optional(),
+  WEBRTC_SIGNALING_SECURE: z.union([z.boolean(), z.enum(['true', 'false']).transform(value => value === 'true')]).optional()
+}).superRefine((env, context) => {
+  const turnValues = [env.WEBRTC_TURN_URL, env.WEBRTC_TURN_USERNAME, env.WEBRTC_TURN_CREDENTIAL];
+  if (turnValues.some(Boolean) && !turnValues.every(Boolean)) {
+    context.addIssue({ code: 'custom', path: ['WEBRTC_TURN_URL'], message: 'TURN exige URL, usuário e credencial em conjunto.' });
+  }
+  if (!env.WEBRTC_SIGNALING_HOST && (env.WEBRTC_SIGNALING_PORT || env.WEBRTC_SIGNALING_PATH || env.WEBRTC_SIGNALING_SECURE !== undefined)) {
+    context.addIssue({ code: 'custom', path: ['WEBRTC_SIGNALING_HOST'], message: 'Host de signaling é obrigatório quando suas opções são configuradas.' });
+  }
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

@@ -121,4 +121,44 @@ export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
     ],
     icon: 'Boxes',
   },
+  {
+    id: 'fibras-no-dia', title: 'Fibras no Dia a Dia', category: 'PRATICA', categoryLabel: 'Saúde Intestinal',
+    summary: 'Estratégias simples para aumentar fibras com variedade e adaptação gradual.',
+    tips: ['Inclua frutas inteiras, legumes e verduras ao longo do dia.', 'Alterne feijão, lentilha, ervilha e grão-de-bico nas refeições.', 'Aumente as fibras aos poucos para favorecer a adaptação intestinal.', 'Associe o consumo de fibras a uma hidratação adequada.'], icon: 'Salad',
+  },
+  {
+    id: 'acucar-bebidas', title: 'Açúcar nas Bebidas', category: 'ROTULOS', categoryLabel: 'Escolhas Conscientes',
+    summary: 'Identifique açúcares adicionados e reduza bebidas adoçadas de forma progressiva.',
+    tips: ['Confira açúcares adicionados e a porção informada no rótulo.', 'Observe nomes como sacarose, glicose, xaropes e maltodextrina.', 'Prefira água e bebidas sem açúcar na rotina.', 'Reduza gradualmente o açúcar de cafés, chás e preparações caseiras.'], icon: 'Tags',
+  },
+  {
+    id: 'sodio-rotulos', title: 'Sódio: Onde Ele se Esconde', category: 'ROTULOS', categoryLabel: 'Saúde Cardiovascular',
+    summary: 'Compare produtos e reconheça fontes frequentes de sódio além do saleiro.',
+    tips: ['Compare o sódio por porção entre produtos semelhantes.', 'Atenção a embutidos, temperos prontos, molhos e macarrão instantâneo.', 'Use ervas, especiarias, alho, cebola e limão para realçar o sabor.', 'Considere também quantas porções serão realmente consumidas.'], icon: 'HeartPulse',
+  },
+  {
+    id: 'lanche-equilibrado', title: 'Como Montar um Lanche Equilibrado', category: 'PRATICA', categoryLabel: 'Alimentação Prática',
+    summary: 'Combine grupos alimentares para criar lanches práticos, variados e satisfatórios.',
+    tips: ['Escolha uma fonte de carboidrato, como fruta, pão ou aveia.', 'Acrescente proteína, como iogurte, queijo, ovo ou pasta de leguminosas.', 'Inclua fibras ou gorduras boas com sementes, castanhas ou vegetais.', 'A quantidade deve respeitar sua fome, rotina e plano individual.'], icon: 'Boxes',
+  },
+  {
+    id: 'comer-com-atencao', title: 'Comer com Atenção Plena', category: 'COMPORTAMENTO', categoryLabel: 'Comportamento Alimentar',
+    summary: 'Crie pausas para perceber fome, sabor, satisfação e saciedade durante a refeição.',
+    tips: ['Sempre que possível, sente-se e reduza distrações durante a refeição.', 'Observe aroma, textura e sabor antes de repetir automaticamente.', 'Faça uma pausa no meio da refeição para perceber sua saciedade.', 'Evite julgamentos: use a percepção como informação, não como cobrança.'], icon: 'Brain',
+  },
+  {
+    id: 'planejamento-compras', title: 'Lista de Compras Inteligente', category: 'PRATICA', categoryLabel: 'Organização',
+    summary: 'Planeje compras mais objetivas, econômicas e alinhadas às refeições da semana.',
+    tips: ['Confira geladeira, freezer e despensa antes de criar a lista.', 'Planeje as principais refeições e anote apenas o necessário.', 'Organize a lista por setores para reduzir compras por impulso.', 'Priorize alimentos da estação e aproveitamento integral quando possível.'], icon: 'Boxes',
+  },
+  {
+    id: 'conservacao-sobras', title: 'Conservação Segura de Sobras', category: 'HIGIENE', categoryLabel: 'Segurança Alimentar',
+    summary: 'Cuidados essenciais para resfriar, armazenar e reaquecer preparações com segurança.',
+    tips: ['Guarde as sobras em recipientes limpos, rasos e bem fechados.', 'Evite deixar preparações perecíveis por longos períodos em temperatura ambiente.', 'Identifique os potes com conteúdo e data de preparo.', 'Reaqueça apenas a porção que será consumida e descarte alimentos com sinais de alteração.'], icon: 'Sparkles',
+  },
+  {
+    id: 'hidratacao-rotina', title: 'Hidratação na Rotina Corrida', category: 'HIDRATACAO', categoryLabel: 'Hidratação',
+    summary: 'Use lembretes e pontos de apoio para distribuir líquidos ao longo do dia.',
+    tips: ['Mantenha uma garrafa visível e acessível nos locais onde permanece mais tempo.', 'Associe pequenos goles a momentos da rotina, como acordar e fazer pausas.', 'Leve água em deslocamentos, atividades físicas e dias quentes.', 'Necessidades variam; siga a orientação individual quando houver restrição clínica.'], icon: 'Droplets',
+  },
 ];

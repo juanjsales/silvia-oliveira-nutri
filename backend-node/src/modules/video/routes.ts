@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { createHash, randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 
@@ -42,6 +43,61 @@ type BroadcastTarget = {
   patientId: string;
 };
 
+const sessionIdSchema = z.object({ sessionId: z.string().uuid() });
+const HEARTBEAT_WINDOW_SECONDS = 35;
+
+type SessionSnapshot = {
+  sessionId: string;
+  patientId: string;
+  state: string;
+  professionalPresent: boolean;
+  patientPresent: boolean;
+  lastActivityAt: Date;
+  endedAt: Date | null;
+  endReason: string | null;
+  expiresAt: Date;
+};
+
+const tokenHash = (token: string) => createHash('sha256').update(token, 'utf8').digest('hex');
+
+async function expireStaleSessions(app: FastifyInstance) {
+  await app.db.query(
+    `WITH expired AS (
+       UPDATE teleconsultation_sessions
+          SET state='EXPIRED', ended_at=COALESCE(ended_at, now()), end_reason=COALESCE(end_reason, 'EXPIRED'), updated_at=now()
+        WHERE ended_at IS NULL AND expires_at <= now()
+        RETURNING id
+     )
+     INSERT INTO teleconsultation_events(session_id, type)
+     SELECT id, 'session.expired' FROM expired`,
+  );
+  await app.db.query(`DELETE FROM teleconsultation_join_tokens WHERE expires_at <= now()`);
+}
+
+async function sessionSnapshot(app: FastifyInstance, sessionId: string): Promise<SessionSnapshot | null> {
+  const result = await app.db.query<SessionSnapshot>(
+    `SELECT id AS "sessionId", patient_id AS "patientId", state,
+            professional_last_seen_at > now() - ($2 * interval '1 second') AS "professionalPresent",
+            patient_last_seen_at > now() - ($2 * interval '1 second') AS "patientPresent",
+            last_activity_at AS "lastActivityAt", ended_at AS "endedAt", end_reason AS "endReason",
+            expires_at AS "expiresAt"
+       FROM teleconsultation_sessions WHERE id=$1`,
+    [sessionId, HEARTBEAT_WINDOW_SECONDS],
+  );
+  return result.rows[0] || null;
+}
+
+function canReadSession(auth: { role: 'ADMIN' | 'PATIENT'; patientId: string | null }, session: SessionSnapshot) {
+  return auth.role === 'ADMIN' || (auth.role === 'PATIENT' && auth.patientId === session.patientId);
+}
+
+async function appendEvent(app: FastifyInstance, sessionId: string, type: string, payload: object = {}) {
+  await app.db.query(
+    `INSERT INTO teleconsultation_events(session_id, type, payload) VALUES($1,$2,$3::jsonb)`,
+    [sessionId, type, JSON.stringify(payload)],
+  );
+}
+
 async function resolveBroadcastTarget(app: FastifyInstance, id: string): Promise<BroadcastTarget | null> {
   const result = await app.db.query<BroadcastTarget>(
     `SELECT COALESCE(a.id, e.id) AS "broadcastId",
@@ -58,7 +114,7 @@ async function resolveBroadcastTarget(app: FastifyInstance, id: string): Promise
 export async function videoRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.authenticate);
 
-  app.post('/appointments/:id/access', async (request, reply) => {
+  app.post('/appointments/:id/access', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request, reply) => {
     const { id } = z.object({ id: z.string().min(1) }).parse(request.params);
     let patientId = '';
     let patientName = '';
@@ -157,11 +213,28 @@ export async function videoRoutes(app: FastifyInstance) {
         .send({ error: 'A sala estará disponível 30 minutos antes da consulta e será encerrada 30 minutos depois.' });
     }
 
-    const room = `nutri-${videoRoomToken}`;
-    const moderator = request.auth!.role === 'ADMIN';
-    const userName = moderator ? 'Dra. Silvia Oliveira Lemos' : patientName;
-    const role = moderator ? 'moderator' : 'participant';
-    const roomUrl = `/videocall.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}&role=${role}&minimal=true&embedded=true&v=4.0`;
+    await expireStaleSessions(app);
+    const roomKey = randomBytes(24).toString('base64url');
+    const sessionResult = await app.db.query<{ sessionId: string; state: string; expiresAt: Date }>(
+      `INSERT INTO teleconsultation_sessions(source_id, patient_id, room_key, state, expires_at)
+       VALUES($1,$2,$3,$4,$5)
+       ON CONFLICT(source_id) DO UPDATE SET updated_at=now()
+       RETURNING id AS "sessionId", state, expires_at AS "expiresAt"`,
+      [id, patientId, roomKey, request.auth!.role === 'ADMIN' ? 'WAITING_PATIENT' : 'WAITING_PROFESSIONAL', new Date(closes)],
+    );
+    const session = sessionResult.rows[0];
+    if (!session) return reply.code(503).send({ error: 'Não foi possível preparar a teleconsulta.' });
+
+    const joinToken = randomBytes(32).toString('base64url');
+    const participantRole = request.auth!.role === 'ADMIN' ? 'PROFESSIONAL' : 'PATIENT';
+    await app.db.query(
+      `INSERT INTO teleconsultation_join_tokens(token_hash, session_id, actor_user_id, participant_role, expires_at)
+       VALUES($1,$2,$3,$4,$5)`,
+      [tokenHash(joinToken), session.sessionId, request.auth!.userId, participantRole, session.expiresAt],
+    );
+    await appendEvent(app, session.sessionId, 'access.granted', { participantRole });
+
+    const roomUrl = `/videocall.html#sessionId=${encodeURIComponent(session.sessionId)}&joinToken=${encodeURIComponent(joinToken)}`;
     const provider = 'P2P_WEBRTC';
 
     await audit(app.db, 'VIDEO_ACCESS_GRANTED', 'appointment', {
@@ -170,7 +243,128 @@ export async function videoRoutes(app: FastifyInstance) {
       metadata: { role: request.auth!.role, provider },
     });
 
-    return { data: { roomUrl, expiresAt: new Date(closes).toISOString(), appointmentId: id, provider } };
+    return {
+      data: {
+        sessionId: session.sessionId,
+        joinToken,
+        roomUrl,
+        expiresAt: new Date(session.expiresAt).toISOString(),
+        appointmentId: id,
+        provider,
+        state: session.state,
+      },
+    };
+  });
+
+  app.post('/sessions/:sessionId/join', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request, reply) => {
+    const { sessionId } = sessionIdSchema.parse(request.params);
+    const { joinToken } = z.object({ joinToken: z.string().min(32).max(256) }).parse(request.body);
+    await expireStaleSessions(app);
+    const result = await app.db.query<{ participantRole: 'PROFESSIONAL' | 'PATIENT'; roomKey: string; state: string; expiresAt: Date }>(
+      `UPDATE teleconsultation_join_tokens t
+          SET redeemed_at=COALESCE(t.redeemed_at, now())
+         FROM teleconsultation_sessions s
+        WHERE t.token_hash=$1 AND t.session_id=$2 AND t.actor_user_id=$3
+          AND t.expires_at > now() AND s.id=t.session_id AND s.ended_at IS NULL
+        RETURNING t.participant_role AS "participantRole", s.room_key AS "roomKey",
+                  s.state, s.expires_at AS "expiresAt"`,
+      [tokenHash(joinToken), sessionId, request.auth!.userId],
+    );
+    const joined = result.rows[0];
+    if (!joined) return reply.code(401).send({ error: 'Convite de teleconsulta inválido ou expirado.' });
+    await appendEvent(app, sessionId, joined.participantRole === 'PROFESSIONAL' ? 'professional.joined' : 'patient.joined');
+    const iceServers: Array<{ urls: string[]; username?: string; credential?: string }> = [
+      { urls: (app.env.WEBRTC_STUN_URLS || 'stun:stun.l.google.com:19302').split(',').map(value => value.trim()).filter(Boolean) },
+    ];
+    if (app.env.WEBRTC_TURN_URL && app.env.WEBRTC_TURN_USERNAME && app.env.WEBRTC_TURN_CREDENTIAL) {
+      iceServers.push({ urls: [app.env.WEBRTC_TURN_URL], username: app.env.WEBRTC_TURN_USERNAME, credential: app.env.WEBRTC_TURN_CREDENTIAL });
+    }
+    const signaling = app.env.WEBRTC_SIGNALING_HOST
+      ? {
+          mode: 'configured' as const,
+          host: app.env.WEBRTC_SIGNALING_HOST,
+          port: app.env.WEBRTC_SIGNALING_PORT || (app.env.WEBRTC_SIGNALING_SECURE === false ? 80 : 443),
+          path: app.env.WEBRTC_SIGNALING_PATH || '/',
+          secure: app.env.WEBRTC_SIGNALING_SECURE !== false,
+        }
+      : { mode: 'peerjs-cloud-fallback' as const };
+    return { data: { sessionId, ...joined, expiresAt: new Date(joined.expiresAt).toISOString(), iceServers, signaling } };
+  });
+
+  app.get('/sessions/:sessionId', async (request, reply) => {
+    const { sessionId } = sessionIdSchema.parse(request.params);
+    await expireStaleSessions(app);
+    const session = await sessionSnapshot(app, sessionId);
+    if (!session || !canReadSession(request.auth!, session)) return reply.code(404).send({ error: 'Teleconsulta não encontrada.' });
+    return { data: session };
+  });
+
+  app.post('/sessions/:sessionId/heartbeat', { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } }, async (request, reply) => {
+    const { sessionId } = sessionIdSchema.parse(request.params);
+    const body = z.object({ state: z.enum(['READY', 'CONNECTING', 'CONNECTED', 'RECONNECTING']).optional() }).parse(request.body || {});
+    await expireStaleSessions(app);
+    const current = await sessionSnapshot(app, sessionId);
+    if (!current || !canReadSession(request.auth!, current)) return reply.code(404).send({ error: 'Teleconsulta não encontrada.' });
+    if (current.endedAt) return reply.code(409).send({ error: 'A teleconsulta já foi encerrada.', data: current });
+
+    const allowedTransitions: Record<string, string[]> = {
+      READY: ['READY', 'CONNECTING', 'CONNECTED'],
+      CONNECTING: ['CONNECTING', 'CONNECTED', 'RECONNECTING'],
+      CONNECTED: ['CONNECTED', 'RECONNECTING'],
+      RECONNECTING: ['RECONNECTING', 'CONNECTED'],
+    };
+    if (body.state && !(allowedTransitions[current.state] || []).includes(body.state)) {
+      return reply.code(409).send({ error: `Transição inválida de ${current.state} para ${body.state}.`, data: current });
+    }
+
+    const seenColumn = request.auth!.role === 'ADMIN' ? 'professional_last_seen_at' : 'patient_last_seen_at';
+    await app.db.query(
+      `UPDATE teleconsultation_sessions
+          SET ${seenColumn}=now(), last_activity_at=now(), updated_at=now(),
+              state=CASE
+                WHEN $2::text IS NOT NULL THEN $2
+                WHEN ($3::text='ADMIN' AND patient_last_seen_at > now() - interval '35 seconds')
+                  OR ($3::text='PATIENT' AND professional_last_seen_at > now() - interval '35 seconds') THEN 'READY'
+                WHEN $3::text = 'ADMIN' THEN 'WAITING_PATIENT'
+                ELSE 'WAITING_PROFESSIONAL'
+              END
+        WHERE id=$1 AND ended_at IS NULL`,
+      [sessionId, body.state || null, request.auth!.role],
+    );
+    await appendEvent(app, sessionId, 'presence.heartbeat', { participantRole: request.auth!.role === 'ADMIN' ? 'PROFESSIONAL' : 'PATIENT', state: body.state });
+    return { data: await sessionSnapshot(app, sessionId) };
+  });
+
+  app.post('/sessions/:sessionId/end', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
+    if (request.auth!.role !== 'ADMIN') return reply.code(403).send({ error: 'Apenas a nutricionista pode encerrar a teleconsulta.' });
+    const { sessionId } = sessionIdSchema.parse(request.params);
+    const { reason } = z.object({ reason: z.enum(['COMPLETED', 'CANCELLED', 'TECHNICAL_FAILURE', 'ABANDONED']).default('COMPLETED') }).parse(request.body || {});
+    const result = await app.db.query<{ sessionId: string }>(
+      `UPDATE teleconsultation_sessions SET state='ENDED', ended_at=COALESCE(ended_at,now()),
+              end_reason=COALESCE(end_reason,$2), last_activity_at=now(), updated_at=now()
+        WHERE id=$1 AND ended_at IS NULL RETURNING id AS "sessionId"`,
+      [sessionId, reason],
+    );
+    const session = await sessionSnapshot(app, sessionId);
+    if (!session) return reply.code(404).send({ error: 'Teleconsulta não encontrada.' });
+    if (result.rows[0]) {
+      await appendEvent(app, sessionId, 'session.ended', { reason });
+      await audit(app.db, 'VIDEO_SESSION_ENDED', 'teleconsultation_session', { actorUserId: request.auth!.userId, entityId: sessionId, metadata: { reason } });
+    }
+    return { data: session };
+  });
+
+  app.get('/sessions/:sessionId/events', async (request, reply) => {
+    const { sessionId } = sessionIdSchema.parse(request.params);
+    const { after, limit } = z.object({ after: z.coerce.number().int().nonnegative().default(0), limit: z.coerce.number().int().min(1).max(100).default(50) }).parse(request.query);
+    const session = await sessionSnapshot(app, sessionId);
+    if (!session || !canReadSession(request.auth!, session)) return reply.code(404).send({ error: 'Teleconsulta não encontrada.' });
+    const events = await app.db.query<{ sequence: string; type: string; payload: object; createdAt: Date }>(
+      `SELECT sequence::text, type, payload, created_at AS "createdAt"
+         FROM teleconsultation_events WHERE session_id=$1 AND sequence>$2 ORDER BY sequence ASC LIMIT $3`,
+      [sessionId, after, limit],
+    );
+    return { data: { events: events.rows, nextCursor: events.rows.at(-1)?.sequence || String(after) } };
   });
 
   // Salvar o estado de apresentação ao vivo (controlado pela nutricionista)

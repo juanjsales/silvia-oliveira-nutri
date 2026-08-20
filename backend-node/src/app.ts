@@ -31,7 +31,7 @@ import { followUpRoutes } from './modules/follow-up/routes.js';
 import { patientExamRoutes } from './modules/patient-exams/routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
-  const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token'] } });
+  const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
   app.decorate('env', env);
   app.decorate('db', db);
   await app.register(helmet);

@@ -1,7 +1,6 @@
 import {
   BookOpen,
   Check,
-  Copy,
   ExternalLink,
   Layers,
   Maximize2,
@@ -17,7 +16,7 @@ import {
   Target,
   Video,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { LaminasModal } from './LaminasModal';
 import { type NutritionalLamina } from '../lib/nutritionalLaminas';
@@ -42,7 +41,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
   const [startedAt] = useState(Date.now());
   const [elapsed, setElapsed] = useState('00:00');
   const [source, setSource] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [sessionId, setSessionId] = useState('');
   const [error, setError] = useState('');
   const [iframeKey, setIframeKey] = useState(1);
   const [reconnecting, setReconnecting] = useState(false);
@@ -50,6 +49,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
   const [broadcastingNotice, setBroadcastingNotice] = useState('');
   const [showBroadcastMenu, setShowBroadcastMenu] = useState(true);
   const [laminasOpen, setLaminasOpen] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -61,25 +61,23 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
 
   useEffect(() => {
     setError('');
-    const timeParam = appointmentTime ? `&time=${encodeURIComponent(appointmentTime)}` : '';
-    const durParam = durationMinutes ? `&duration=${encodeURIComponent(durationMinutes)}` : '';
-
-    if (!appointmentId) {
-      const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true&embedded=true&v=4.0${timeParam}${durParam}`;
-      setSource(url);
+    setSource('');
+    const accessTargetId = appointmentId || encounterId;
+    if (!accessTargetId) {
+      setSource('');
+      setError('Não foi possível identificar o atendimento para abrir a sala segura.');
       return;
     }
-    api<{ data: { roomUrl: string } }>(`/api/video/appointments/${appointmentId}/access`, { method: 'POST' })
+    api<{ data: { roomUrl: string; sessionId?: string } }>(`/api/video/appointments/${accessTargetId}/access`, { method: 'POST' })
       .then((response) => {
-        const base = response.data.roomUrl;
-        const separator = base.includes('?') ? '&' : '?';
-        setSource(`${base}${separator}time=${encodeURIComponent(appointmentTime || '')}&duration=${encodeURIComponent(durationMinutes || 60)}&embedded=true&v=4.0`);
+        setSource(response.data.roomUrl);
+        setSessionId(response.data.sessionId || '');
       })
-      .catch(() => {
-        const url = `/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent('Dra. Silvia Oliveira Lemos')}&role=moderator&minimal=true&embedded=true&v=4.0${timeParam}${durParam}`;
-        setSource(url);
+      .catch((cause) => {
+        setSource('');
+        setError(cause instanceof Error ? cause.message : 'Não foi possível autorizar a sala. Tente novamente.');
       });
-  }, [appointmentId, roomToken, appointmentTime, durationMinutes]);
+  }, [appointmentId, encounterId, roomToken, appointmentTime, durationMinutes, iframeKey]);
 
   useEffect(() => {
     if (source) {
@@ -90,7 +88,8 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
         : '/atendimentos';
 
       startCall({
-        appointmentId,
+        appointmentId: appointmentId || encounterId,
+        sessionId,
         roomToken,
         patientName,
         roomUrl: source,
@@ -98,18 +97,28 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
         returnPath: returnTarget,
       });
     }
-  }, [source, encounterId, appointmentId, roomToken, patientName, startCall]);
+  }, [source, sessionId, encounterId, appointmentId, roomToken, patientName, startCall]);
 
-  const timeParam = appointmentTime ? `&time=${encodeURIComponent(appointmentTime)}` : '';
-  const durParam = durationMinutes ? `&duration=${encodeURIComponent(durationMinutes)}` : '';
-  const directRoomUrl = `${window.location.origin}/videocall.html?room=${encodeURIComponent('nutri-' + roomToken)}&name=${encodeURIComponent(patientName)}&role=participant${timeParam}${durParam}`;
-
-  function copyPatientLink() {
-    navigator.clipboard.writeText(directRoomUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }).catch(() => undefined);
+  async function finishForEveryone() {
+    if (sessionId) {
+      await api(`/api/video/sessions/${sessionId}/end`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: 'COMPLETED' }),
+      }).catch(() => undefined);
+    }
+    endCall();
+    onClose();
   }
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin || event.source !== iframeRef.current?.contentWindow) return;
+      if (!event.data || event.data.type !== 'TELECONSULT_CALL_ENDED' || event.data.version !== 1) return;
+      void finishForEveryone();
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [sessionId, endCall, onClose]);
 
   function handleReconnect() {
     setReconnecting(true);
@@ -202,14 +211,6 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
             title="Reconectar vídeo e áudio"
           >
             <RefreshCw size={15} className={reconnecting ? 'spin' : ''} />
-          </button>
-          <button 
-            type="button"
-            className="icon-button video-copy-link" 
-            onClick={copyPatientLink} 
-            title="Copiar link da sala para enviar ao paciente"
-          >
-            {copied ? <Check size={16} color="#38c777" /> : <Copy size={16} />}
           </button>
           <button 
             type="button"
@@ -327,6 +328,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
           </div>
         ) : (
           <iframe
+            ref={iframeRef}
             key={iframeKey}
             src={source}
             title="Teleconsulta Nutricional"
@@ -338,11 +340,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
 
       <footer>
         <div className="video-footer-info">
-          {copied ? (
-            <span className="copied-badge"><Check size={13} /> Link copiado!</span>
-          ) : (
-            <small>Sala moderada com acesso criptografado</small>
-          )}
+          <small>Sala individual com acesso validado pelo portal</small>
         </div>
         <div className="video-footer-actions">
           {source && (
@@ -374,14 +372,13 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
             className="hangup"
             onClick={() => {
               if (window.confirm('Deseja realmente encerrar a teleconsulta?')) {
-                endCall();
-                onClose();
+                void finishForEveryone();
               }
             }}
-            title="Encerrar teleconsulta definitivamente"
+            title="Encerrar a sala para todos os participantes"
           >
             <PhoneOff size={15} />
-            <span>Encerrar</span>
+            <span>Encerrar para todos</span>
           </button>
         </div>
       </footer>
@@ -397,4 +394,3 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
     </aside>
   );
 }
-

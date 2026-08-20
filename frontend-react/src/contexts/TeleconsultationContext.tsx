@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 export type ActiveCall = {
   appointmentId?: string | null;
+  sessionId?: string | null;
   roomToken: string;
   patientName: string;
   roomUrl: string;
@@ -24,12 +25,9 @@ const TeleconsultationContext = createContext<TeleconsultationContextType | null
 
 export function TeleconsultationProvider({ children }: { children: ReactNode }) {
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(() => {
-    try {
-      const saved = sessionStorage.getItem('global_active_call');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
+    // Tokens de entrada são efêmeros e nunca devem sobreviver a uma recarga.
+    sessionStorage.removeItem('global_active_call');
+    return null;
   });
 
   const [isMinimized, setIsMinimized] = useState<boolean>(() => {
@@ -41,7 +39,6 @@ export function TeleconsultationProvider({ children }: { children: ReactNode }) 
 
   useEffect(() => {
     if (activeCall) {
-      sessionStorage.setItem('global_active_call', JSON.stringify(activeCall));
       sessionStorage.setItem('global_call_minimized', String(isMinimized));
     } else {
       sessionStorage.removeItem('global_active_call');

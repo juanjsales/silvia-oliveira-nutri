@@ -7,15 +7,17 @@ type Measurement = {
   weight?: number | null;
   bodyFat?: number | null;
   waist?: number | null;
+  neck?: number | null;
   notes?: string | null;
 };
 
-type MetricType = "weight" | "bodyFat" | "waist";
+type MetricType = "weight" | "bodyFat" | "waist" | "neck";
 
 const metricConfig: Record<MetricType, { label: string; unit: string; color: string; icon: any }> = {
   weight: { label: "Peso Corporal", unit: "kg", color: "#16a34a", icon: Scale },
   bodyFat: { label: "% de Gordura", unit: "%", color: "#ea580c", icon: Flame },
   waist: { label: "Circunferência da Cintura", unit: "cm", color: "#2563eb", icon: Activity },
+  neck: { label: "Circunferência do Pescoço", unit: "cm", color: "#7c3aed", icon: Activity },
 };
 
 export function BodyEvolutionChart({ rows }: { rows: Measurement[] }) {
