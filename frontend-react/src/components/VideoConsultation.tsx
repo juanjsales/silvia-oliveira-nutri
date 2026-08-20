@@ -353,12 +353,35 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
               rel="noreferrer" 
               title="Abrir em nova aba / janela flutuante"
             >
-              <ExternalLink size={16} />
+              <ExternalLink size={15} />
             </a>
           )}
-          <button type="button" className="hangup" onClick={() => { endCall(); onClose(); }} title="Ocultar split de vídeo">
-            <PhoneOff size={16} />
-            <span>Fechar split</span>
+          <button
+            type="button"
+            className="video-minimize-btn secondary-button"
+            onClick={() => {
+              minimizeCall();
+              onClose();
+            }}
+            title="Recolher para o miniplayer flutuante (continua ouvindo e vendo o paciente)"
+            style={{ fontSize: '0.72rem', padding: '6px 10px', gap: '5px', display: 'inline-flex', alignItems: 'center' }}
+          >
+            <Minimize2 size={14} />
+            <span>Minimizar</span>
+          </button>
+          <button
+            type="button"
+            className="hangup"
+            onClick={() => {
+              if (window.confirm('Deseja realmente encerrar a teleconsulta?')) {
+                endCall();
+                onClose();
+              }
+            }}
+            title="Encerrar teleconsulta definitivamente"
+          >
+            <PhoneOff size={15} />
+            <span>Encerrar</span>
           </button>
         </div>
       </footer>

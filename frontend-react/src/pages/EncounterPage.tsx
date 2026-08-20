@@ -363,9 +363,25 @@ export function EncounterPage(){
             <button type="button" className="secondary-button" onClick={()=>setCalcOpen(true)} title="Calcular Gasto Energético (VET & TMB)">
               <Calculator size={15}/> <span>VET / TMB</span>
             </button>
-            {encounter.status!=='COMPLETED'&& (
-              <button className={`secondary-button video-toggle-btn ${videoOpen?'active':''}`} onClick={()=>setVideoOpen(v=>!v)} title={videoOpen ? 'Recolher teleconsulta lado a lado' : 'Abrir teleconsulta lado a lado'}>
-                <Video size={15}/> <span>{videoOpen?'Ocultar split':'Teleconsulta (Split)'}</span>
+            {encounter.status !== 'COMPLETED' && (
+              <button
+                className={`secondary-button video-toggle-btn ${videoOpen ? 'active' : ''}`}
+                onClick={() => {
+                  const next = !videoOpen;
+                  setVideoOpen(next);
+                  setParams((prev) => {
+                    const updated = new URLSearchParams(prev);
+                    if (next) {
+                      updated.set('video', 'true');
+                    } else {
+                      updated.delete('video');
+                    }
+                    return updated;
+                  });
+                }}
+                title={videoOpen ? 'Recolher para miniplayer flutuante' : 'Abrir teleconsulta lado a lado'}
+              >
+                <Video size={15} /> <span>{videoOpen ? 'Minimizar (Split)' : 'Teleconsulta (Split)'}</span>
               </button>
             )}
           </div>

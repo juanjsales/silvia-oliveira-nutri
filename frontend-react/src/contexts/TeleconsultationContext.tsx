@@ -55,17 +55,14 @@ export function TeleconsultationProvider({ children }: { children: ReactNode }) 
 
     const isPatientVideoRoute = location.pathname.startsWith('/portal/video');
     const searchParams = new URLSearchParams(location.search);
-    const currentId = searchParams.get('id');
-    const isEncounterWithActiveId =
-      location.pathname === '/atendimentos' &&
-      Boolean(currentId && activeCall.returnPath.includes(`id=${currentId}`));
+    const isEncounterSplitOpen = location.pathname === '/atendimentos' && searchParams.get('video') === 'true';
 
     if (activeCall.role === 'PATIENT' && isPatientVideoRoute) {
       setIsMinimized(false);
-    } else if (activeCall.role === 'ADMIN' && isEncounterWithActiveId) {
+    } else if (activeCall.role === 'ADMIN' && isEncounterSplitOpen) {
       setIsMinimized(false);
     } else {
-      // Se saiu da consulta ativa específica, minimiza automaticamente para o miniplayer
+      // Se saiu da consulta ativa específica ou fechou o split lateral, minimiza automaticamente para o miniplayer flutuante
       setIsMinimized(true);
     }
   }, [location.pathname, location.search, activeCall]);
