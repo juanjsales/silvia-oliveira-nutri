@@ -11,6 +11,8 @@ import {
   Mic,
   PhoneOff,
   PieChart,
+  Printer,
+  Radio,
   RefreshCw,
   Ruler,
   Scale,
@@ -28,12 +30,20 @@ import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { api } from '../lib/api';
 
 type Access = { roomUrl: string; expiresAt: string };
-type GuideTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
+type GuideTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta' | 'lamina';
 
 type BroadcastData = {
   activeTab: GuideTab;
   customTitle?: string;
   customNote?: string;
+  laminaData?: {
+    id: string;
+    title: string;
+    summary: string;
+    tips: string[];
+    categoryLabel: string;
+    icon?: string;
+  };
   clinicalData?: {
     weight?: string;
     height?: string;
@@ -333,13 +343,27 @@ export function PatientVideoPage() {
               </div>
 
               {broadcast && (
-                <div className="broadcast-live-banner">
-                  <Sparkles size={14} />
-                  <span>A nutricionista está apresentando este tópico com você</span>
+                <div className="broadcast-live-banner" style={{ background: broadcast.activeTab === 'lamina' ? 'linear-gradient(135deg, #1b4332, #2d6a4f)' : undefined, color: '#ffffff' }}>
+                  {broadcast.activeTab === 'lamina' ? <Radio size={15} style={{ animation: 'pulse 1.5s infinite' }} /> : <Sparkles size={14} />}
+                  <span>
+                    {broadcast.activeTab === 'lamina' && broadcast.laminaData
+                      ? `Apresentando Lâmina: ${broadcast.laminaData.title}`
+                      : 'A nutricionista está apresentando este tópico com você'}
+                  </span>
                 </div>
               )}
 
               <nav className="guide-tabs">
+                {broadcast?.laminaData && (
+                  <button
+                    type="button"
+                    className={guideTab === 'lamina' ? 'active' : ''}
+                    onClick={() => setGuideTab('lamina')}
+                    style={{ background: guideTab === 'lamina' ? '#2d6a4f' : 'rgba(45,106,79,0.12)', color: guideTab === 'lamina' ? '#ffffff' : '#2d6a4f', fontWeight: 800 }}
+                  >
+                    <BookOpen size={15} /> Lâmina A4
+                  </button>
+                )}
                 <button
                   type="button"
                   className={guideTab === 'medidas' ? 'active' : ''}
@@ -622,6 +646,155 @@ export function PatientVideoPage() {
                     {!broadcast?.clinicalData?.weight && !broadcast?.clinicalData?.bmi && (
                       <div className="live-clinical-card empty">
                         <p>A nutricionista preencherá e calculará seus dados durante a etapa de avaliação corporal.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {guideTab === 'lamina' && (
+                  <div className="guide-content-section">
+                    {broadcast?.laminaData ? (
+                      <div
+                        style={{
+                          background: '#ffffff',
+                          border: '2px solid rgba(45, 106, 79, 0.25)',
+                          borderRadius: '14px',
+                          padding: '20px 22px',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '14px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            borderBottom: '2px solid #e2ece9',
+                            paddingBottom: '12px',
+                          }}
+                        >
+                          <div>
+                            <span
+                              style={{
+                                background: '#e8f5e9',
+                                color: '#1b4332',
+                                fontSize: '0.72rem',
+                                fontWeight: 800,
+                                padding: '3px 10px',
+                                borderRadius: '16px',
+                                textTransform: 'uppercase',
+                                border: '1px solid #b7e4c7',
+                                display: 'inline-block',
+                                marginBottom: '6px',
+                              }}
+                            >
+                              {broadcast.laminaData.categoryLabel}
+                            </span>
+                            <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', color: '#1b4332', fontWeight: 800 }}>
+                              🍃 {broadcast.laminaData.title}
+                            </h3>
+                            <p style={{ margin: 0, fontSize: '0.78rem', color: '#52b788', fontWeight: 700, textTransform: 'uppercase' }}>
+                              Dra. Silvia Oliveira Lemos · Nutrição Clínica
+                            </p>
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            background: '#f0fdf4',
+                            border: '1px solid #bbf7d0',
+                            borderRadius: '10px',
+                            padding: '14px 16px',
+                            fontSize: '0.9rem',
+                            color: '#166534',
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          {broadcast.laminaData.summary}
+                        </div>
+
+                        <div>
+                          <strong
+                            style={{
+                              display: 'block',
+                              fontSize: '0.85rem',
+                              color: '#1b4332',
+                              textTransform: 'uppercase',
+                              marginBottom: '10px',
+                              letterSpacing: '0.5px',
+                            }}
+                          >
+                            ✨ Orientações & Passo a Passo:
+                          </strong>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
+                            {broadcast.laminaData.tips.map((tip, idx) => (
+                              <div
+                                key={idx}
+                                style={{
+                                  background: '#f8fafc',
+                                  border: '1px solid #e2ece9',
+                                  borderLeft: '4px solid #2d6a4f',
+                                  borderRadius: '8px',
+                                  padding: '10px 14px',
+                                  fontSize: '0.86rem',
+                                  color: '#212529',
+                                  lineHeight: 1.5,
+                                  display: 'flex',
+                                  gap: '10px',
+                                  alignItems: 'flex-start',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    background: '#2d6a4f',
+                                    color: '#ffffff',
+                                    fontWeight: 800,
+                                    fontSize: '0.74rem',
+                                    minWidth: '20px',
+                                    height: '20px',
+                                    borderRadius: '50%',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginTop: '2px',
+                                  }}
+                                >
+                                  {idx + 1}
+                                </span>
+                                <div style={{ flex: 1 }}>{tip}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            borderTop: '1px dashed #b7e4c7',
+                            paddingTop: '10px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            fontSize: '0.76rem',
+                            color: '#74c69d',
+                          }}
+                        >
+                          <span>Material transmitido na teleconsulta</span>
+                          <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={() => window.print()}
+                            style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                          >
+                            <Printer size={13} /> Imprimir Lâmina
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="live-clinical-card empty">
+                        <BookOpen size={24} style={{ margin: '0 auto 8px', color: '#2d6a4f' }} />
+                        <p>A nutricionista pode transmitir lâminas e materiais educativos durante a consulta para visualização nesta área.</p>
                       </div>
                     )}
                   </div>

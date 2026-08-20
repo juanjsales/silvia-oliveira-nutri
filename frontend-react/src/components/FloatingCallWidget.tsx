@@ -148,17 +148,28 @@ export function FloatingCallWidget() {
         isOpen={laminasOpen}
         onClose={() => setLaminasOpen(false)}
         patientName={activeCall.patientName}
-        onBroadcast={activeCall.appointmentId ? async (laminaId, laminaTitle) => {
+        onBroadcast={async (lamina) => {
+          const targetId = activeCall.appointmentId || activeCall.roomToken;
+          if (!targetId) return;
           try {
-            await api(`/api/video/appointments/${activeCall.appointmentId}/broadcast`, {
+            await api(`/api/video/appointments/${targetId}/broadcast`, {
               method: 'POST',
               body: JSON.stringify({
-                activeTab: laminaId === 'prato-ideal' ? 'prato' : laminaId === 'fome-saciedade' ? 'fome' : 'medidas',
-                customTitle: laminaTitle,
+                activeTab: 'lamina',
+                customTitle: lamina.title,
+                customNote: lamina.summary,
+                laminaData: {
+                  id: lamina.id,
+                  title: lamina.title,
+                  summary: lamina.summary,
+                  tips: lamina.tips,
+                  categoryLabel: lamina.categoryLabel,
+                  icon: lamina.icon,
+                },
               }),
             });
           } catch {}
-        } : undefined}
+        }}
       />
     </>
   );

@@ -20,9 +20,10 @@ import {
 import { useEffect, useState } from 'react';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { LaminasModal } from './LaminasModal';
+import { type NutritionalLamina } from '../lib/nutritionalLaminas';
 import { api } from '../lib/api';
 
-type BroadcastTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
+type BroadcastTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta' | 'lamina';
 
 type Props = {
   encounterId?: string | null;
@@ -116,8 +117,10 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
     setTimeout(() => setReconnecting(false), 1200);
   }
 
+  const targetBroadcastId = appointmentId || encounterId;
+
   async function broadcastToPatient(tab: BroadcastTab, label: string) {
-    if (!appointmentId) return;
+    if (!targetBroadcastId) return;
     setActiveBroadcast(tab);
 
     const assessment = sections?.assessment || {};
@@ -139,7 +142,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
     };
 
     try {
-      await api(`/api/video/appointments/${appointmentId}/broadcast`, {
+      await api(`/api/video/appointments/${targetBroadcastId}/broadcast`, {
         method: 'POST',
         body: JSON.stringify({
           activeTab: tab,
@@ -147,9 +150,37 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
         }),
       });
       setBroadcastingNotice(`Transmitindo: ${label}`);
-      setTimeout(() => setBroadcastingNotice(''), 3000);
+      setTimeout(() => setBroadcastingNotice(''), 3500);
     } catch {
       // Ignora falhas de broadcast silenciosamente
+    }
+  }
+
+  async function broadcastLaminaToPatient(lamina: NutritionalLamina) {
+    if (!targetBroadcastId) return;
+    setActiveBroadcast('lamina');
+
+    try {
+      await api(`/api/video/appointments/${targetBroadcastId}/broadcast`, {
+        method: 'POST',
+        body: JSON.stringify({
+          activeTab: 'lamina',
+          customTitle: lamina.title,
+          customNote: lamina.summary,
+          laminaData: {
+            id: lamina.id,
+            title: lamina.title,
+            summary: lamina.summary,
+            tips: lamina.tips,
+            categoryLabel: lamina.categoryLabel,
+            icon: lamina.icon,
+          },
+        }),
+      });
+      setBroadcastingNotice(`Transmitindo Lâmina: ${lamina.title}`);
+      setTimeout(() => setBroadcastingNotice(''), 3500);
+    } catch {
+      // Ignora
     }
   }
 
@@ -336,9 +367,8 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
         isOpen={laminasOpen}
         onClose={() => setLaminasOpen(false)}
         patientName={patientName}
-        onBroadcast={(laminaId, laminaTitle) => {
-          const mappedTab: BroadcastTab = laminaId === 'prato-ideal' ? 'prato' : laminaId === 'fome-saciedade' ? 'fome' : 'medidas';
-          void broadcastToPatient(mappedTab, laminaTitle);
+        onBroadcast={(lamina) => {
+          void broadcastLaminaToPatient(lamina);
         }}
       />
     </aside>

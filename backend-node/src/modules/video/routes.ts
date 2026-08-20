@@ -11,10 +11,20 @@ type Appointment = {
   videoRoomToken: string;
 };
 
+type LaminaData = {
+  id: string;
+  title: string;
+  summary: string;
+  tips: string[];
+  categoryLabel: string;
+  icon?: string | undefined;
+};
+
 type BroadcastState = {
-  activeTab: 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta';
+  activeTab: 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta' | 'lamina';
   customTitle?: string | undefined;
   customNote?: string | undefined;
+  laminaData?: LaminaData | undefined;
   clinicalData?: {
     weight?: string | undefined;
     height?: string | undefined;
@@ -156,9 +166,19 @@ export async function videoRoutes(app: FastifyInstance) {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
     const body = z
       .object({
-        activeTab: z.enum(['medidas', 'fome', 'prato', 'bristol', 'metas', 'avaliacao', 'conduta']),
+        activeTab: z.enum(['medidas', 'fome', 'prato', 'bristol', 'metas', 'avaliacao', 'conduta', 'lamina']),
         customTitle: z.string().max(200).optional(),
         customNote: z.string().max(1000).optional(),
+        laminaData: z
+          .object({
+            id: z.string(),
+            title: z.string(),
+            summary: z.string(),
+            tips: z.array(z.string()),
+            categoryLabel: z.string(),
+            icon: z.string().optional(),
+          })
+          .optional(),
         clinicalData: z
           .object({
             weight: z.string().optional(),
@@ -177,14 +197,57 @@ export async function videoRoutes(app: FastifyInstance) {
       ...body,
       updatedAt: new Date().toISOString(),
     };
+
+    // Armazena com o ID passado
     liveBroadcasts.set(id, broadcastState);
+
+    // Também sincroniza com o ID cruzado (se passou appointmentId, salva no encounterId e vice-versa)
+    try {
+      const crossRes = await app.db.query<{ appointmentId: string | null; encounterId: string | null }>(
+        `SELECT a.id AS "appointmentId", e.id AS "encounterId"
+         FROM clinical_encounters e
+         FULL OUTER JOIN appointments a ON a.id = e.appointment_id
+         WHERE a.id = $1 OR e.id = $1
+         LIMIT 1`,
+        [id],
+      );
+      if (crossRes.rows[0]) {
+        const { appointmentId, encounterId } = crossRes.rows[0];
+        if (appointmentId && appointmentId !== id) liveBroadcasts.set(appointmentId, broadcastState);
+        if (encounterId && encounterId !== id) liveBroadcasts.set(encounterId, broadcastState);
+      }
+    } catch {
+      // Ignora erro de resolução cruzada
+    }
+
     return { message: 'Apresentação transmitida ao paciente com sucesso.', data: broadcastState };
   });
 
   // Obter o estado atual de apresentação ao vivo para o paciente/nutricionista
   app.get('/appointments/:id/broadcast', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const state = liveBroadcasts.get(id) || null;
+    let state = liveBroadcasts.get(id) || null;
+
+    if (!state) {
+      try {
+        const crossRes = await app.db.query<{ appointmentId: string | null; encounterId: string | null }>(
+          `SELECT a.id AS "appointmentId", e.id AS "encounterId"
+           FROM clinical_encounters e
+           FULL OUTER JOIN appointments a ON a.id = e.appointment_id
+           WHERE a.id = $1 OR e.id = $1
+           LIMIT 1`,
+          [id],
+        );
+        if (crossRes.rows[0]) {
+          const { appointmentId, encounterId } = crossRes.rows[0];
+          if (appointmentId && liveBroadcasts.has(appointmentId)) state = liveBroadcasts.get(appointmentId)!;
+          else if (encounterId && liveBroadcasts.has(encounterId)) state = liveBroadcasts.get(encounterId)!;
+        }
+      } catch {
+        // Ignora
+      }
+    }
+
     return { data: state };
   });
 }

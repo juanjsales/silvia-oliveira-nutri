@@ -452,16 +452,26 @@ export function EncounterPage(){
         isOpen={laminasOpen}
         onClose={()=>setLaminasOpen(false)}
         patientName={encounter?.patientName}
-        onBroadcast={encounter?.appointmentId ? async (laminaId, laminaTitle) => {
+        onBroadcast={encounter ? async (lamina) => {
+          const targetId = encounter.appointmentId || encounter.id;
           try {
-            await api(`/api/video/appointments/${encounter.appointmentId}/broadcast`, {
+            await api(`/api/video/appointments/${targetId}/broadcast`, {
               method: 'POST',
               body: JSON.stringify({
-                activeTab: laminaId === 'prato-ideal' ? 'prato' : laminaId === 'fome-saciedade' ? 'fome' : 'medidas',
-                customTitle: laminaTitle,
+                activeTab: 'lamina',
+                customTitle: lamina.title,
+                customNote: lamina.summary,
+                laminaData: {
+                  id: lamina.id,
+                  title: lamina.title,
+                  summary: lamina.summary,
+                  tips: lamina.tips,
+                  categoryLabel: lamina.categoryLabel,
+                  icon: lamina.icon,
+                },
               }),
             });
-            setNotice(`Lâmina "${laminaTitle}" transmitida na teleconsulta!`);
+            setNotice(`Lâmina "${lamina.title}" transmitida na tela do paciente!`);
           } catch {}
         } : undefined}
       />
