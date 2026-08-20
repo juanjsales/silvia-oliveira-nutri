@@ -60,7 +60,7 @@ export function ProfessionalNotifications() {
       // 2. Consultas do dia
       try {
         const todayStr = new Date().toISOString().slice(0, 10);
-        const apptsRes = await api<{ data: any[] }>(`/api/appointments?date=${todayStr}`);
+        const apptsRes = await api<{ data: any[] }>(`/api/appointments?from=${todayStr}&to=${todayStr}`);
         if (Array.isArray(apptsRes.data)) {
           apptsRes.data
             .filter((a) => ['CONFIRMED', 'WAITING'].includes(a.status))

@@ -24,8 +24,14 @@ export async function appointmentRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAdmin);
 
   app.get('/', async request => {
-    const query = z.object({ from: z.iso.date(), to: z.iso.date() }).parse(request.query);
-    const result = await app.db.query(`${appointmentSelect} WHERE a.appointment_date BETWEEN $1 AND $2 ORDER BY a.appointment_date, a.appointment_time`, [query.from, query.to]);
+    const query = z.object({
+      from: z.iso.date().optional(),
+      to: z.iso.date().optional(),
+      date: z.iso.date().optional(),
+    }).parse(request.query);
+    const from = query.from || query.date || new Date().toISOString().slice(0, 10);
+    const to = query.to || query.date || from;
+    const result = await app.db.query(`${appointmentSelect} WHERE a.appointment_date BETWEEN $1 AND $2 ORDER BY a.appointment_date, a.appointment_time`, [from, to]);
     return { data: result.rows };
   });
 

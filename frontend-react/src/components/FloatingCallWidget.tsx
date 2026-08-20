@@ -19,6 +19,7 @@ export function FloatingCallWidget() {
   const [reconnecting, setReconnecting] = useState(false);
   const [iframeKey, setIframeKey] = useState(1);
   const [collapsed, setCollapsed] = useState(false);
+  const [laminasOpen, setLaminasOpen] = useState(false);
 
   useEffect(() => {
     if (!activeCall) return;
@@ -59,8 +60,6 @@ export function FloatingCallWidget() {
       endCall();
     }
   }
-
-  const [laminasOpen, setLaminasOpen] = useState(false);
 
   return (
     <>
