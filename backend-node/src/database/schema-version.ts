@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '027_remove_daily_video_provider.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '028_persistent_video_broadcasts.sql';
 
 export async function schemaStatus(db: Database) {
   try {

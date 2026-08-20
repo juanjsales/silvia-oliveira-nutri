@@ -37,7 +37,23 @@ type BroadcastState = {
   updatedAt: string;
 };
 
-const liveBroadcasts = new Map<string, BroadcastState>();
+type BroadcastTarget = {
+  broadcastId: string;
+  patientId: string;
+};
+
+async function resolveBroadcastTarget(app: FastifyInstance, id: string): Promise<BroadcastTarget | null> {
+  const result = await app.db.query<BroadcastTarget>(
+    `SELECT COALESCE(a.id, e.id) AS "broadcastId",
+            COALESCE(a.patient_id, e.patient_id) AS "patientId"
+       FROM clinical_encounters e
+       FULL OUTER JOIN appointments a ON a.id = e.appointment_id
+      WHERE a.id = $1 OR e.id = $1
+      LIMIT 1`,
+    [id],
+  );
+  return result.rows[0] || null;
+}
 
 export async function videoRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.authenticate);
@@ -197,27 +213,20 @@ export async function videoRoutes(app: FastifyInstance) {
       updatedAt: new Date().toISOString(),
     };
 
-    // Armazena com o ID passado
-    liveBroadcasts.set(id, broadcastState);
+    const target = await resolveBroadcastTarget(app, id);
+    if (!target) return reply.code(404).send({ error: 'Consulta não encontrada.' });
 
-    // Também sincroniza com o ID cruzado (se passou appointmentId, salva no encounterId e vice-versa)
-    try {
-      const crossRes = await app.db.query<{ appointmentId: string | null; encounterId: string | null }>(
-        `SELECT a.id AS "appointmentId", e.id AS "encounterId"
-         FROM clinical_encounters e
-         FULL OUTER JOIN appointments a ON a.id = e.appointment_id
-         WHERE a.id = $1 OR e.id = $1
-         LIMIT 1`,
-        [id],
-      );
-      if (crossRes.rows[0]) {
-        const { appointmentId, encounterId } = crossRes.rows[0];
-        if (appointmentId && appointmentId !== id) liveBroadcasts.set(appointmentId, broadcastState);
-        if (encounterId && encounterId !== id) liveBroadcasts.set(encounterId, broadcastState);
-      }
-    } catch {
-      // Ignora erro de resolução cruzada
-    }
+    await app.db.query(
+      `INSERT INTO video_broadcasts(broadcast_id, patient_id, state, expires_at)
+       VALUES($1, $2, $3::jsonb, now() + interval '4 hours')
+       ON CONFLICT(broadcast_id) DO UPDATE SET
+         patient_id=excluded.patient_id,
+         state=excluded.state,
+         updated_at=now(),
+         expires_at=excluded.expires_at`,
+      [target.broadcastId, target.patientId, JSON.stringify(broadcastState)],
+    );
+    await app.db.query(`DELETE FROM video_broadcasts WHERE expires_at <= now()`);
 
     return { message: 'Apresentação transmitida ao paciente com sucesso.', data: broadcastState };
   });
@@ -225,29 +234,18 @@ export async function videoRoutes(app: FastifyInstance) {
   // Obter o estado atual de apresentação ao vivo para o paciente/nutricionista
   app.get('/appointments/:id/broadcast', async (request, reply) => {
     const { id } = z.object({ id: z.string().min(1) }).parse(request.params);
-    let state = liveBroadcasts.get(id) || null;
-
-    if (!state) {
-      try {
-        const crossRes = await app.db.query<{ appointmentId: string | null; encounterId: string | null }>(
-          `SELECT a.id AS "appointmentId", e.id AS "encounterId"
-           FROM clinical_encounters e
-           FULL OUTER JOIN appointments a ON a.id = e.appointment_id
-           WHERE a.id = $1 OR e.id = $1
-           LIMIT 1`,
-          [id],
-        );
-        if (crossRes.rows[0]) {
-          const { appointmentId, encounterId } = crossRes.rows[0];
-          if (appointmentId && liveBroadcasts.has(appointmentId)) state = liveBroadcasts.get(appointmentId)!;
-          else if (encounterId && liveBroadcasts.has(encounterId)) state = liveBroadcasts.get(encounterId)!;
-        }
-      } catch {
-        // Ignora
-      }
+    const target = await resolveBroadcastTarget(app, id);
+    if (!target) return reply.code(404).send({ error: 'Consulta não encontrada.' });
+    if (request.auth!.role === 'PATIENT' && target.patientId !== request.auth!.patientId) {
+      return reply.code(404).send({ error: 'Consulta não encontrada.' });
     }
+
+    const result = await app.db.query<{ state: BroadcastState }>(
+      `SELECT state FROM video_broadcasts WHERE broadcast_id=$1 AND expires_at > now()`,
+      [target.broadcastId],
+    );
+    const state = result.rows[0]?.state || null;
 
     return { data: state };
   });
 }
-

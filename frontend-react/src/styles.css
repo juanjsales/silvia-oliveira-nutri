@@ -4884,4 +4884,4 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   background: rgba(255, 255, 255, 0.15);
 }
 
-
+.route-loading{min-height:100vh;display:grid;place-items:center;padding:32px;color:var(--muted);font-weight:600;background:var(--background,#f7f7f3)}
