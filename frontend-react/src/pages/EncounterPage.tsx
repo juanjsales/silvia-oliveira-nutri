@@ -195,6 +195,7 @@ function missingClinicalCore(sections:Encounter['sections']){
 }
 
 export function EncounterPage(){
+  const navigate = useNavigate();
   const { endCall, minimizeCall, restoreCall, activeCall } = useTeleconsultation();
   const[params,setParams]=useSearchParams();const patientParam=params.get('paciente')||'';const appointmentParam=params.get('agendamento')||'';const videoParam=params.get('video')==='true';
   const[encounter,setEncounter]=useState<Encounter|null>(null);const[active,setActive]=useState(0);const[drafts,setDrafts]=useState<Partial<Record<SectionKey,SectionData>>>({});const[dirtyKeys,setDirtyKeys]=useState<Set<SectionKey>>(new Set());const[loading,setLoading]=useState(false);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[videoOpen,setVideoOpen]=useState(videoParam);const[calcOpen,setCalcOpen]=useState(false);
@@ -218,40 +219,77 @@ export function EncounterPage(){
   const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);
   function change(key:SectionKey,field:string,value:string){setDrafts(d=>({...d,[key]:{...(d[key]||{}),[field]:value}}));setDirtyKeys(keys=>new Set(keys).add(key));setNotice('')}
   async function saveSection(){if(!encounter||current.key==='review')return;setSaving(true);setError('');try{await api(`/api/encounters/${encounter.id}/sections/${current.key}`,{method:'PUT',body:JSON.stringify({data:drafts[current.key]||{},expectedSavedAt:encounter.sections[current.key]?.savedAt||null})});await loadEncounter(encounter.id);setNotice('Etapa salva com segurança.');if(active<steps.length-1)setActive(active+1)}catch(c){setError(c instanceof Error?c.message:'Não foi possível salvar a etapa.')}finally{setSaving(false)}}
-  
-  function requestFinalize(){
-   if(!encounter)return;
-   if(dirtyKeys.size){setError('Salve todas as alterações antes de finalizar o atendimento.');return}
-   const missing=missingClinicalCore(encounter.sections);
-   if(missing.length){setError(`Preencha e salve os requisitos obrigatórios: ${missing.join(', ')}.`);return}
-   setFinishModalOpen(true);
+  function requestFinalize() {
+    if (!encounter) return;
+    setFinishModalOpen(true);
   }
 
-  async function handleConfirmFinalize(data: FinishEncounterData){
-   if(!encounter)return;
-   setSaving(true);
-   setError('');
-   try{
-     const response = await api<{data:{id:string;emailSent?:boolean}}>(`/api/encounters/${encounter.id}/finalize`,{
-       method:'POST',
-       body:JSON.stringify(data)
-     });
-     endCall();
-     setVideoOpen(false);
-     sessionStorage.removeItem(`in_call_${encounter.id}`);
-     if (encounter.appointmentId) sessionStorage.removeItem(`in_call_${encounter.appointmentId}`);
-     await loadEncounter(encounter.id);
-     setFinishModalOpen(false);
-     if(response.data.emailSent){
-       setNotice('✨ Atendimento finalizado com sucesso! E-mail com orientações, plano alimentar e lâminas nutricionais enviado ao paciente.');
-     } else {
-       setNotice('Atendimento finalizado com sucesso.');
-     }
-   }catch(c){
-     setError(c instanceof Error?c.message:'Não foi possível finalizar o atendimento.');
-   }finally{
-     setSaving(false);
-   }
+  async function handleDiscardEncounter() {
+    if (!encounter) return;
+    if (window.confirm('Deseja realmente cancelar/descartar este atendimento? O status em andamento será cancelado e a sala de vídeo será fechada imediatamente.')) {
+      setSaving(true);
+      setError('');
+      try {
+        await api(`/api/encounters/${encounter.id}`, { method: 'DELETE' });
+        endCall();
+        setVideoOpen(false);
+        sessionStorage.removeItem(`in_call_${encounter.id}`);
+        if (encounter.appointmentId) sessionStorage.removeItem(`in_call_${encounter.appointmentId}`);
+        navigate('/agenda');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Não foi possível descartar o atendimento.');
+      } finally {
+        setSaving(false);
+      }
+    }
+  }
+
+  async function handleQuickClose() {
+    if (!encounter) return;
+    if (window.confirm('Deseja encerrar este atendimento agora? Ele será marcado como concluído imediatamente.')) {
+      setSaving(true);
+      setError('');
+      try {
+        await api(`/api/encounters/${encounter.id}/quick-close`, { method: 'PATCH' });
+        endCall();
+        setVideoOpen(false);
+        sessionStorage.removeItem(`in_call_${encounter.id}`);
+        if (encounter.appointmentId) sessionStorage.removeItem(`in_call_${encounter.appointmentId}`);
+        await loadEncounter(encounter.id);
+        setNotice('Atendimento concluído com sucesso.');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao encerrar atendimento.');
+      } finally {
+        setSaving(false);
+      }
+    }
+  }
+
+  async function handleConfirmFinalize(data: FinishEncounterData) {
+    if (!encounter) return;
+    setSaving(true);
+    setError('');
+    try {
+      const response = await api<{ data: { id: string; emailSent?: boolean } }>(`/api/encounters/${encounter.id}/finalize`, {
+        method: 'POST',
+        body: JSON.stringify({ ...data, force: true }),
+      });
+      endCall();
+      setVideoOpen(false);
+      sessionStorage.removeItem(`in_call_${encounter.id}`);
+      if (encounter.appointmentId) sessionStorage.removeItem(`in_call_${encounter.appointmentId}`);
+      await loadEncounter(encounter.id);
+      setFinishModalOpen(false);
+      if (response.data.emailSent) {
+        setNotice('✨ Atendimento finalizado com sucesso! E-mail com orientações, plano alimentar e lâminas nutricionais enviado ao paciente.');
+      } else {
+        setNotice('Atendimento finalizado com sucesso.');
+      }
+    } catch (c) {
+      setError(c instanceof Error ? c.message : 'Não foi possível finalizar o atendimento.');
+    } finally {
+      setSaving(false);
+    }
   }
 
  if (loading && !encounter) {
@@ -390,6 +428,32 @@ export function EncounterPage(){
               >
                 <Video size={15} /> <span>{videoOpen ? 'Minimizar (Split)' : 'Teleconsulta (Split)'}</span>
               </button>
+            )}
+            {encounter.status !== 'COMPLETED' ? (
+              <>
+                <button
+                  type="button"
+                  className="primary-button finish-top-btn"
+                  onClick={requestFinalize}
+                  title="Concluir este atendimento clínico e liberar orientações"
+                  style={{ background: '#1b4332', color: '#ffffff' }}
+                >
+                  <CheckCircle2 size={15} /> <span>Encerrar Atendimento</span>
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button discard-top-btn"
+                  onClick={handleDiscardEncounter}
+                  title="Cancelar ou descartar este atendimento"
+                  style={{ color: '#dc2626', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                >
+                  <Trash2 size={15} /> <span>Descartar</span>
+                </button>
+              </>
+            ) : (
+              <span className="encounter-state done" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <CheckCircle2 size={14} /> Atendimento Concluído
+              </span>
             )}
           </div>
         </section>

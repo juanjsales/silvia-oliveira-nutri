@@ -207,11 +207,12 @@ export async function encounterRoutes(app: FastifyInstance) {
       includeSummary: z.boolean().optional(),
       selectedLaminas: z.array(z.string()).optional(),
       customMessage: z.string().max(2000).optional(),
+      force: z.boolean().optional(),
     }).parse(request.body || {});
 
     const saved = await app.db.query<{section_key:string}>('SELECT section_key FROM clinical_sections WHERE encounter_id=$1', [id]);
     const missing=missingClinicalCore(saved.rows.map(row=>row.section_key));
-    if(missing.length)return reply.code(400).send({error:`Complete o registro clínico antes de finalizar: ${missing.join(', ')}.`});
+    if(missing.length && body.force === false)return reply.code(400).send({error:`Complete o registro clínico antes de finalizar: ${missing.join(', ')}.`});
     
     let financeCreated = false;
     let emailSent = false;
