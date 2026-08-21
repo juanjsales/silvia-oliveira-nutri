@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nutri-portal-v4';
+const CACHE_NAME = 'nutri-portal-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/portal',
@@ -6,6 +6,11 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => Promise.all(
+      ASSETS_TO_CACHE.map((asset) => cache.add(asset).catch(() => undefined))
+    ))
+  );
   self.skipWaiting();
 });
 
@@ -25,6 +30,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const requestUrl = new URL(event.request.url);
+
   // Ignora requisições de API, chamadas não-GET e esquemas não suportados (ex: chrome-extension://)
   if (
     !event.request.url.startsWith('http:') &&
@@ -34,6 +41,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (event.request.url.includes('/api/') || event.request.method !== 'GET') {
+    return;
+  }
+
+  // Recursos externos devem respeitar diretamente a política do navegador/CSP.
+  if (requestUrl.origin !== self.location.origin) {
     return;
   }
 
@@ -49,15 +61,20 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => {
+      .catch(async () => {
         // Se estiver offline, retorna do cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          if (event.request.headers.get('accept')?.includes('text/html')) {
-            return caches.match('/portal') || caches.match('/');
-          }
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) return cachedResponse;
+
+        if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
+          const appShell = await caches.match('/') || await caches.match('/portal');
+          if (appShell) return appShell;
+        }
+
+        return new Response('Sem conexão. Tente novamente quando a rede estiver disponível.', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
         });
       })
   );

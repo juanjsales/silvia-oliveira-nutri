@@ -15,6 +15,18 @@ const supplementSchema=z.object({name:z.string().trim().min(1).max(200),dosage:z
 export async function encounterRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAdmin);
 
+  async function notifyPatientCall(patientId:string, encounterId:string, appointmentId?:string) {
+    try {
+      await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key)
+        VALUES($1,'Teleconsulta iniciada','Sua nutricionista iniciou o atendimento. Entre na sala virtual.','VIDEO','URGENT','clinical_encounter',$2,'/portal/video/'||COALESCE($3,$2),'teleconsultation:'||$2)
+        ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE'
+        DO UPDATE SET read_at=NULL,created_at=now(),action_url=EXCLUDED.action_url`,[patientId,encounterId,appointmentId??null]);
+    } catch (error) {
+      const errorCode=typeof error==='object'&&error!==null&&'code'in error?String(error.code).slice(0,80):undefined;
+      app.log.error({encounterId,patientId,errorCode},'Atendimento iniciado, mas a notificacao do paciente falhou');
+    }
+  }
+
   app.get('/', async request => {
     const { patientId } = z.object({ patientId: z.uuid().optional() }).parse(request.query);
     const result = await app.db.query(`SELECT e.id, e.patient_id AS "patientId", p.name AS "patientName",
@@ -117,17 +129,13 @@ export async function encounterRoutes(app: FastifyInstance) {
       const existing = await app.db.query<{id:string}>('SELECT id FROM clinical_encounters WHERE appointment_id=$1', [body.appointmentId]);
       if (existing.rows[0]) {
         await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
-        await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key)
-          VALUES($1,'Teleconsulta iniciada','Sua nutricionista iniciou o atendimento. Entre na sala virtual.','VIDEO','URGENT','clinical_encounter',$2,'/portal/video/'||$3,'teleconsultation:'||$2)
-          ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO UPDATE SET read_at=NULL,created_at=now(),action_url=EXCLUDED.action_url`,[body.patientId,existing.rows[0].id,body.appointmentId]);
+        await notifyPatientCall(body.patientId,existing.rows[0].id,body.appointmentId);
         return reply.send({ data: { id: existing.rows[0].id, resumed: true } });
       }
     } else {
       const existingDirect = await app.db.query<{id:string}>("SELECT id FROM clinical_encounters WHERE patient_id=$1 AND status='IN_PROGRESS' ORDER BY started_at DESC LIMIT 1", [body.patientId]);
       if (existingDirect.rows[0]) {
-        await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key)
-          VALUES($1,'Teleconsulta iniciada','Sua nutricionista iniciou o atendimento. Entre na sala virtual.','VIDEO','URGENT','clinical_encounter',$2,'/portal/video/'||$2,'teleconsultation:'||$2)
-          ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO UPDATE SET read_at=NULL,created_at=now()`,[body.patientId,existingDirect.rows[0].id]);
+        await notifyPatientCall(body.patientId,existingDirect.rows[0].id);
         return reply.send({ data: { id: existingDirect.rows[0].id, resumed: true } });
       }
     }
@@ -135,9 +143,7 @@ export async function encounterRoutes(app: FastifyInstance) {
       VALUES ($1,$2,$3, encode(gen_random_bytes(18), 'hex')) RETURNING id`, [body.patientId, body.appointmentId ?? null, request.auth!.userId]);
     const id = result.rows[0]!.id;
     if (body.appointmentId) await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
-    await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key)
-      VALUES($1,'Teleconsulta iniciada','Sua nutricionista iniciou o atendimento. Entre na sala virtual.','VIDEO','URGENT','clinical_encounter',$2,'/portal/video/'||COALESCE($3,$2),'teleconsultation:'||$2)
-      ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO UPDATE SET read_at=NULL,created_at=now(),action_url=EXCLUDED.action_url`,[body.patientId,id,body.appointmentId??null]);
+    await notifyPatientCall(body.patientId,id,body.appointmentId);
     await audit(app.db, 'ENCOUNTER_STARTED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id, metadata: { patientId: body.patientId } });
     return reply.code(201).send({ data: { id, resumed: false } });
   });

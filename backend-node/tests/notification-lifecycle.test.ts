@@ -45,3 +45,41 @@ test('video end resolves its patient call notification',async()=>{
   assert.equal(resolved,true);
   await app.close();
 });
+
+test('notification failure does not prevent resuming an active encounter',async()=>{
+  const patientId='00000000-0000-4000-8000-000000000002';
+  const encounterId='00000000-0000-4000-8000-000000000003';
+  const db={query:async(sql:string)=>{
+    if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]};
+    if(sql.includes('FROM patients WHERE id='))return{rows:[{id:patientId}]};
+    if(sql.includes("FROM clinical_encounters WHERE patient_id=$1 AND status='IN_PROGRESS'"))return{rows:[{id:encounterId}]};
+    if(sql.includes('INSERT INTO patient_notifications')){
+      const error=Object.assign(new Error('notification schema unavailable'),{code:'42703'});
+      throw error;
+    }
+    return{rows:[]};
+  },connect:async()=>{throw new Error('unused')},end:async()=>{}};
+  const app=await buildApp(env,db as never);
+  const response=await app.inject({method:'POST',url:'/api/encounters',cookies:{nutri_session:'token'},payload:{patientId}});
+  assert.equal(response.statusCode,200);
+  assert.deepEqual(response.json(),{data:{id:encounterId,resumed:true}});
+  await app.close();
+});
+
+test('notification failure does not roll back a newly started encounter response',async()=>{
+  const patientId='00000000-0000-4000-8000-000000000002';
+  const encounterId='00000000-0000-4000-8000-000000000003';
+  const db={query:async(sql:string)=>{
+    if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]};
+    if(sql.includes('FROM patients WHERE id='))return{rows:[{id:patientId}]};
+    if(sql.includes("FROM clinical_encounters WHERE patient_id=$1 AND status='IN_PROGRESS'"))return{rows:[]};
+    if(sql.includes('INSERT INTO clinical_encounters'))return{rows:[{id:encounterId}]};
+    if(sql.includes('INSERT INTO patient_notifications'))throw Object.assign(new Error('notification unavailable'),{code:'42703'});
+    return{rows:[]};
+  },connect:async()=>{throw new Error('unused')},end:async()=>{}};
+  const app=await buildApp(env,db as never);
+  const response=await app.inject({method:'POST',url:'/api/encounters',cookies:{nutri_session:'token'},payload:{patientId}});
+  assert.equal(response.statusCode,201);
+  assert.deepEqual(response.json(),{data:{id:encounterId,resumed:false}});
+  await app.close();
+});
