@@ -31,7 +31,7 @@ const iconMap: Record<string, any> = {
 
 export interface FinishEncounterData {
   sendEmail: boolean;
-  emailRecipient: string;
+  emailRecipient?: string;
   includePlan: boolean;
   includeShoppingList: boolean;
   includeSummary: boolean;
@@ -82,9 +82,10 @@ export function FinishEncounterModal({
   }
 
   async function handleFinalize(withEmail: boolean) {
+    const recipient = emailRecipient.trim();
     await onConfirm({
       sendEmail: withEmail,
-      emailRecipient: emailRecipient.trim(),
+      ...(withEmail && recipient ? { emailRecipient: recipient } : {}),
       includePlan,
       includeShoppingList,
       includeSummary,

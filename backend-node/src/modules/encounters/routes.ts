@@ -205,7 +205,10 @@ export async function encounterRoutes(app: FastifyInstance) {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
     const body = z.object({
       sendEmail: z.boolean().optional(),
-      emailRecipient: z.string().email().optional(),
+      emailRecipient: z.preprocess(
+        (value) => typeof value === 'string' && value.trim() === '' ? undefined : value,
+        z.string().email().optional(),
+      ),
       includePlan: z.boolean().optional(),
       includeShoppingList: z.boolean().optional(),
       includeSummary: z.boolean().optional(),
