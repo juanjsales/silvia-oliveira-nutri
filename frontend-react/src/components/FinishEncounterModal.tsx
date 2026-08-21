@@ -288,15 +288,17 @@ export function FinishEncounterModal({
             Cancelar
           </button>
 
-          <button
-            type="button"
-            className="outline-button"
-            onClick={() => handleFinalize(false)}
-            disabled={loading}
-            title="Finalizar prontuário sem disparar e-mail"
-          >
-            Finalizar sem Enviar
-          </button>
+          {sendEmail && (
+            <button
+              type="button"
+              className="finish-without-email-btn"
+              onClick={() => handleFinalize(false)}
+              disabled={loading}
+              title="Concluir o prontuário sem enviar e-mail"
+            >
+              <CheckCircle2 size={17} /> Concluir sem e-mail
+            </button>
+          )}
 
           <button
             type="button"
@@ -310,7 +312,7 @@ export function FinishEncounterModal({
               </>
             ) : (
               <>
-                <Send size={16} /> Finalizar e Enviar E-mail
+                {sendEmail ? <><Send size={16} /> Concluir e enviar e-mail</> : <><CheckCircle2 size={17} /> Concluir atendimento</>}
               </>
             )}
           </button>

@@ -246,14 +246,28 @@ export async function encounterRoutes(app: FastifyInstance) {
       }
       if(result.rows[0].appointment_id){
         await client.query("UPDATE appointments SET status='COMPLETED',updated_at=now() WHERE id=$1",[result.rows[0].appointment_id]);
-        const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);
-        financeCreated=finance.created;
+        await client.query('SAVEPOINT finalize_finance');
+        try {
+          const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);
+          financeCreated=finance.created;
+          await client.query('RELEASE SAVEPOINT finalize_finance');
+        } catch (error) {
+          await client.query('ROLLBACK TO SAVEPOINT finalize_finance');
+          app.log.error({err:error,encounterId:id},'Atendimento concluído, mas o lançamento financeiro falhou');
+        }
       }
-      await client.query(`UPDATE teleconsultation_sessions SET state='ENDED',ended_at=COALESCE(ended_at,now()),end_reason=COALESCE(end_reason,'COMPLETED'),updated_at=now() WHERE ended_at IS NULL AND source_id IN ($1,$2)`,[id,result.rows[0].appointment_id]);
-      await client.query(`UPDATE patient_notifications SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now()) WHERE patient_id=$1 AND dedupe_key=$2 AND status='ACTIVE'`,[encounterInfo.rows[0].patientId,`teleconsultation:${id}`]);
-      await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,dedupe_key)
-        VALUES($1,'Atendimento concluído','Seu atendimento foi concluído. As orientações disponíveis podem ser consultadas no portal.','APPOINTMENT','NORMAL','clinical_encounter',$2,'encounter-completed:'||$2)
-        ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO NOTHING`,[encounterInfo.rows[0].patientId,id]);
+      await client.query('SAVEPOINT finalize_notifications');
+      try {
+        await client.query(`UPDATE teleconsultation_sessions SET state='ENDED',ended_at=COALESCE(ended_at,now()),end_reason=COALESCE(end_reason,'COMPLETED'),updated_at=now() WHERE ended_at IS NULL AND source_id IN ($1,$2)`,[id,result.rows[0].appointment_id]);
+        await client.query(`UPDATE patient_notifications SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now()) WHERE patient_id=$1 AND dedupe_key=$2 AND status='ACTIVE'`,[encounterInfo.rows[0].patientId,`teleconsultation:${id}`]);
+        await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,dedupe_key)
+          VALUES($1,'Atendimento concluído','Seu atendimento foi concluído. As orientações disponíveis podem ser consultadas no portal.','APPOINTMENT','NORMAL','clinical_encounter',$2,'encounter-completed:'||$2)
+          ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO NOTHING`,[encounterInfo.rows[0].patientId,id]);
+        await client.query('RELEASE SAVEPOINT finalize_notifications');
+      } catch (error) {
+        await client.query('ROLLBACK TO SAVEPOINT finalize_notifications');
+        app.log.error({err:error,encounterId:id},'Atendimento concluído, mas a sincronização de notificações falhou');
+      }
       await audit(client,'ENCOUNTER_COMPLETED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{financeCreated, emailSent: !!body.sendEmail}});
       await client.query('COMMIT');
     }catch(error){

@@ -128,3 +128,29 @@ test('finalizing without email accepts an empty recipient from an older client',
   assert.equal(committed,true);
   await app.close();
 });
+
+test('a notification schema failure does not prevent encounter completion',async()=>{
+  const patientId='00000000-0000-4000-8000-000000000002';
+  const encounterId='00000000-0000-4000-8000-000000000003';
+  let recoveredNotificationSavepoint=false;
+  let committed=false;
+  const client={query:async(sql:string)=>{
+    if(sql.includes("UPDATE clinical_encounters SET status='COMPLETED'"))return{rows:[{appointment_id:null}]};
+    if(sql.includes('UPDATE patient_notifications'))throw Object.assign(new Error('old notification schema'),{code:'42703'});
+    if(sql==='ROLLBACK TO SAVEPOINT finalize_notifications')recoveredNotificationSavepoint=true;
+    if(sql==='COMMIT')committed=true;
+    return{rows:[]};
+  },release:()=>{}};
+  const db={query:async(sql:string)=>{
+    if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]};
+    if(sql.includes('SELECT section_key FROM clinical_sections'))return{rows:[]};
+    if(sql.includes('FROM clinical_encounters e JOIN patients'))return{rows:[{patientId,patientName:'Paciente Teste',patientEmail:null,appointmentId:null,startedAt:new Date('2026-08-21T12:00:00Z')}]};
+    return{rows:[]};
+  },connect:async()=>client,end:async()=>{}};
+  const app=await buildApp(env,db as never);
+  const response=await app.inject({method:'POST',url:`/api/encounters/${encounterId}/finalize`,cookies:{nutri_session:'token'},payload:{sendEmail:false,force:true}});
+  assert.equal(response.statusCode,200);
+  assert.equal(recoveredNotificationSavepoint,true);
+  assert.equal(committed,true);
+  await app.close();
+});
