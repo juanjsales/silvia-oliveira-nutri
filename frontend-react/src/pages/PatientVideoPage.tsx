@@ -406,7 +406,6 @@ export function PatientVideoPage() {
               src={access.roomUrl}
               title="Sala de Teleconsulta"
               allow="camera; microphone; display-capture; autoplay; fullscreen"
-              allowFullScreen
             />
             <footer className="video-stream-footer">
               <small>Acesso seguro ativo até {new Date(access.expiresAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.</small>

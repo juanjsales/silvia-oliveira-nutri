@@ -450,6 +450,17 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 .portal-notif-dropdown{width:min(430px,calc(100vw - 24px))}.portal-notif-items{max-height:min(520px,65vh)}
 @media(max-width:600px){.portal-notif-head{align-items:flex-start;flex-wrap:wrap;gap:8px}.portal-notif-head .icon-button{position:absolute;right:8px;top:8px}.portal-notif-head{padding-right:54px}.portal-notif-actions button{min-height:44px;flex:1}.portal-notif-row{padding:14px}}
 
+/* Split clínico: nenhuma ferramenta pode ampliar a página além da área útil. */
+.virtual-office.with-video{grid-template-columns:minmax(360px,.82fr) minmax(0,1.18fr);max-width:100%;min-width:0}
+.virtual-office.with-video>.encounter-page{width:100%;max-width:100%;min-width:0;overflow-x:clip}
+.virtual-office.with-video .encounter-header{min-width:0}
+.virtual-office.with-video .encounter-header-main{flex-basis:100%}
+.virtual-office.with-video .encounter-header-actions{flex:1 1 100%;width:100%;min-width:0;justify-content:flex-start}
+.virtual-office.with-video .encounter-header-actions>*{max-width:100%}
+.virtual-office.with-video .clinical-stepper{max-width:100%}
+@media(max-width:1250px) and (min-width:981px){.virtual-office.with-video{grid-template-columns:minmax(320px,.72fr) minmax(0,1.28fr)}.virtual-office.with-video .encounter-header-actions .secondary-button,.virtual-office.with-video .encounter-header-actions .primary-button{flex:1 1 auto;justify-content:center}}
+@media(max-width:980px){.virtual-office.with-video{display:flex;max-width:100%}.virtual-office.with-video .encounter-header-actions>*{flex:1 1 180px;justify-content:center}}
+
 @media (max-width: 480px) {
   .topbar-left h1 {
     font-size: 1.05rem;

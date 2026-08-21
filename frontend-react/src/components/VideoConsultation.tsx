@@ -333,7 +333,6 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
             src={source}
             title="Teleconsulta Nutricional"
             allow="camera; microphone; display-capture; autoplay; fullscreen"
-            allowFullScreen
           />
         )}
       </div>
