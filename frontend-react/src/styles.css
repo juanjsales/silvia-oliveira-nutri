@@ -573,6 +573,92 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   .patient-video-page.prejoin .video-permission-help{flex-direction:row;gap:5px}
 }
 
+/* Cards de consulta orientados pelo estado do fluxo clínico. */
+.appointment-list{gap:12px}
+.appointment-card{
+  position:relative;
+  grid-template-columns:minmax(112px,auto) minmax(180px,1fr) auto;
+  grid-template-areas:"time info status" "time info actions";
+  gap:7px 16px;
+  padding:15px 16px 15px 18px;
+  overflow:hidden;
+  background:#fff;
+  border:1px solid #dde5df;
+  border-radius:16px;
+  box-shadow:0 4px 14px rgba(25,54,40,.045);
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.appointment-card::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:#90a69a}
+.appointment-card:hover{transform:translateY(-1px);border-color:#c6d6cb;box-shadow:0 9px 24px rgba(25,54,40,.08)}
+.appointment-time{grid-area:time;align-self:stretch;justify-content:center;gap:3px;padding-right:16px;border-right:1px solid #e1e8e3}
+.appointment-time strong{font:700 .92rem/1.25 var(--font-body);color:#193c2c;white-space:nowrap}
+.appointment-time small{font-size:.7rem;color:#718278}
+.appointment-info{grid-area:info;align-self:center;gap:3px}
+.appointment-info strong{font-size:.9rem;color:#1b3529}
+.appointment-info span{font-size:.73rem;color:#66786d}
+.appointment-info small{font-size:.68rem;color:#87958d}
+.appointment-status{
+  grid-area:status;
+  justify-self:end;
+  width:auto;
+  min-width:116px;
+  min-height:30px;
+  padding:5px 28px 5px 10px;
+  border:1px solid transparent;
+  border-radius:999px;
+  background-position:right 9px center;
+  font-size:.65rem;
+  font-weight:800;
+  text-align:center;
+  text-transform:uppercase;
+  letter-spacing:.035em;
+}
+.appointment-actions{grid-area:actions;justify-self:end;gap:7px;min-width:0}
+.appointment-actions .icon-button{width:36px;height:36px;min-height:36px;border-radius:10px;background:#f7f9f7;border:1px solid #e0e7e2}
+.start-care{
+  min-height:36px;
+  padding:8px 12px;
+  justify-content:center;
+  gap:5px;
+  border:0;
+  border-radius:10px;
+  background:#173f2e;
+  color:#fff;
+  font-size:.72rem;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.start-care:hover{background:#0f3324;color:#fff}
+.appointment-card:has(.status-confirmed)::before{background:#3f9661}
+.appointment-card:has(.status-waiting)::before{background:#d09a36}
+.appointment-card:has(.status-in_progress){background:#f6fbf7;border-color:#bcd9c5;box-shadow:0 7px 22px rgba(35,111,65,.09)}
+.appointment-card:has(.status-in_progress)::before{background:#2c9c58;box-shadow:0 0 12px rgba(44,156,88,.55)}
+.appointment-card:has(.status-in_progress) .start-care{background:#237a43}
+.appointment-card:has(.status-completed){background:#fafbfa;box-shadow:none}
+.appointment-card:has(.status-completed)::before{background:#8a9a91}
+.appointment-card:has(.status-completed) .start-care{background:#edf2ee;color:#315343;border:1px solid #d5e0d8}
+.appointment-card:has(.status-cancelled),.appointment-card:has(.status-no_show){opacity:.72;background:#fafafa;box-shadow:none}
+.appointment-card:has(.status-cancelled)::before,.appointment-card:has(.status-no_show)::before{background:#b76862}
+/* A Agenda ainda usa o mesmo componente textual; os rótulos abaixo acompanham o estado real. */
+.appointment-card:has(.status-in_progress) .start-care,.appointment-card:has(.status-completed) .start-care{font-size:0}
+.appointment-card:has(.status-in_progress) .start-care::before{content:"Continuar";font-size:.72rem}
+.appointment-card:has(.status-completed) .start-care::before{content:"Ver prontuário";font-size:.72rem}
+.appointment-card:has(.status-in_progress) .start-care svg,.appointment-card:has(.status-completed) .start-care svg{width:16px;height:16px}
+.appointment-card.response-confirmed .appointment-info small{color:#2f7e4b;font-weight:700}
+.appointment-card.response-reschedule_requested{border-color:#e9c889}
+@media(max-width:760px){
+  .appointment-card{grid-template-columns:86px minmax(0,1fr);grid-template-areas:"time info" "status status" "actions actions";gap:10px 12px;padding:14px 14px 14px 17px}
+  .appointment-time{justify-content:flex-start;padding-right:12px}
+  .appointment-status{justify-self:start;min-width:0}
+  .appointment-actions{justify-self:stretch;justify-content:flex-start;flex-wrap:wrap}
+  .appointment-actions .start-care{flex:1 1 150px}
+}
+@media(max-width:420px){
+  .appointment-card{grid-template-columns:1fr;grid-template-areas:"time" "info" "status" "actions"}
+  .appointment-time{padding:0 0 8px;border-right:0;border-bottom:1px solid #e1e8e3;flex-direction:row;align-items:center;justify-content:space-between}
+  .appointment-info strong,.appointment-info span,.appointment-info small{white-space:normal}
+}
+
 /* ── SETUP WIZARD MODAL ── */
 .setup-wizard-backdrop {
   position: fixed;

@@ -17,8 +17,10 @@ const appointmentSelect = `SELECT a.id, a.patient_id AS "patientId", p.name AS "
   a.appointment_date AS date, to_char(a.appointment_time, 'HH24:MI') AS time,
   a.duration_minutes AS "durationMinutes", a.appointment_type AS type, a.price::float8 AS price,
   a.patient_response AS "patientResponse", a.patient_response_note AS "patientResponseNote",
-  a.status, a.notes, a.meeting_url AS "meetingUrl", a.created_at AS "createdAt"
-  FROM appointments a JOIN patients p ON p.id = a.patient_id`;
+  a.status, a.notes, a.meeting_url AS "meetingUrl", a.created_at AS "createdAt",
+  e.id AS "encounterId", e.status AS "encounterStatus"
+  FROM appointments a JOIN patients p ON p.id = a.patient_id
+  LEFT JOIN clinical_encounters e ON e.appointment_id=a.id`;
 
 export async function appointmentRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAdmin);

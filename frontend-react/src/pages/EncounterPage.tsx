@@ -94,6 +94,8 @@ type CalendarAppointment = {
   meetingUrl?: string | null;
   patientResponse: 'PENDING' | 'CONFIRMED' | 'RESCHEDULE_REQUESTED';
   patientResponseNote?: string | null;
+  encounterId?: string | null;
+  encounterStatus?: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | null;
 };
 
 type AppointmentFormState = {
@@ -1240,7 +1242,7 @@ function EncounterHub({
               <div className="appointment-list">
                 {selectedDateAppointments.map((item) => (
                   <article
-                    className={`appointment-card response-${item.patientResponse.toLowerCase()}`}
+                    className={`appointment-card appointment-card--${item.status.toLowerCase()} response-${item.patientResponse.toLowerCase()}`}
                     key={item.id}
                   >
                     <div className="appointment-time">
@@ -1306,14 +1308,18 @@ function EncounterHub({
                           <Video size={17} />
                         </a>
                       )}
-                      <button
-                        type="button"
-                        className="start-care"
-                        onClick={() => void handleStartAppointment(item)}
-                        title="Abrir prontuário e iniciar consulta"
-                      >
-                        Atender <ChevronRight size={16} />
-                      </button>
+                      {!['CANCELLED','NO_SHOW'].includes(item.status) && (
+                        <button
+                          type="button"
+                          className={`start-care ${item.status==='IN_PROGRESS'?'is-live':item.status==='COMPLETED'?'is-complete':''}`}
+                          onClick={() => item.encounterId
+                            ? onSelectEncounter(item.encounterId, item.status==='IN_PROGRESS' && item.type.toLowerCase().includes('online'))
+                            : void handleStartAppointment(item)}
+                          title={item.status==='IN_PROGRESS'?'Continuar atendimento em andamento':item.status==='COMPLETED'?'Consultar prontuário finalizado':'Iniciar atendimento'}
+                        >
+                          {item.status==='IN_PROGRESS'?'Continuar':item.status==='COMPLETED'?'Ver prontuário':'Iniciar atendimento'} <ChevronRight size={16} />
+                        </button>
+                      )}
                     </div>
                   </article>
                 ))}

@@ -128,10 +128,12 @@ export async function encounterRoutes(app: FastifyInstance) {
     if (body.appointmentId) {
       const appointment = await app.db.query('SELECT id FROM appointments WHERE id=$1 AND patient_id=$2', [body.appointmentId, body.patientId]);
       if (!appointment.rows[0]) return reply.code(400).send({ error: 'Consulta não pertence ao paciente informado.' });
-      const existing = await app.db.query<{id:string}>('SELECT id FROM clinical_encounters WHERE appointment_id=$1', [body.appointmentId]);
+      const existing = await app.db.query<{id:string;status:string}>('SELECT id,status FROM clinical_encounters WHERE appointment_id=$1', [body.appointmentId]);
       if (existing.rows[0]) {
-        await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
-        await notifyPatientCall(body.patientId,existing.rows[0].id,body.appointmentId);
+        if(existing.rows[0].status==='IN_PROGRESS'){
+          await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
+          await notifyPatientCall(body.patientId,existing.rows[0].id,body.appointmentId);
+        }
         return reply.send({ data: { id: existing.rows[0].id, resumed: true } });
       }
     } else {

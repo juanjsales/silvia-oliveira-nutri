@@ -83,3 +83,25 @@ test('notification failure does not roll back a newly started encounter response
   assert.deepEqual(response.json(),{data:{id:encounterId,resumed:false}});
   await app.close();
 });
+
+test('opening a completed appointment never reactivates it',async()=>{
+  const patientId='00000000-0000-4000-8000-000000000002';
+  const appointmentId='00000000-0000-4000-8000-000000000005';
+  const encounterId='00000000-0000-4000-8000-000000000003';
+  const statements:string[]=[];
+  const db={query:async(sql:string)=>{
+    statements.push(sql);
+    if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]};
+    if(sql.includes('FROM patients WHERE id='))return{rows:[{id:patientId}]};
+    if(sql.includes('FROM appointments WHERE id='))return{rows:[{id:appointmentId}]};
+    if(sql.includes('FROM clinical_encounters WHERE appointment_id='))return{rows:[{id:encounterId,status:'COMPLETED'}]};
+    return{rows:[]};
+  },connect:async()=>{throw new Error('unused')},end:async()=>{}};
+  const app=await buildApp(env,db as never);
+  const response=await app.inject({method:'POST',url:'/api/encounters',cookies:{nutri_session:'token'},payload:{patientId,appointmentId}});
+  assert.equal(response.statusCode,200);
+  assert.deepEqual(response.json(),{data:{id:encounterId,resumed:true}});
+  assert.equal(statements.some(sql=>sql.includes("UPDATE appointments SET status='IN_PROGRESS'")),false);
+  assert.equal(statements.some(sql=>sql.includes('INSERT INTO patient_notifications')),false);
+  await app.close();
+});
