@@ -1192,7 +1192,7 @@
             joinToken = '';
             const payload = await response.json().catch(() => ({}));
             if (!response.ok || !payload?.data) {
-                throw new Error(payload?.message || 'Não foi possível validar esta teleconsulta.');
+                throw new Error(payload?.error || payload?.message || 'Não foi possível validar esta teleconsulta.');
             }
             const data = payload.data;
             if (!data.roomKey || !['PROFESSIONAL', 'PATIENT'].includes(data.participantRole)) {

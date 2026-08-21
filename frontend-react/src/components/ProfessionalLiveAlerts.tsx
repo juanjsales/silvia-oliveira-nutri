@@ -54,6 +54,7 @@ export function ProfessionalLiveAlerts() {
         const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
 
         res.data.todayAppointments.forEach((appt) => {
+          if (res.data.activeEncounter?.appointmentId === appt.id) return;
           const [h, m] = String(appt.appointmentTime).slice(0, 5).split(':').map(Number);
           if (isNaN(h) || isNaN(m)) return;
           const apptTotalMinutes = h * 60 + m;
@@ -139,6 +140,7 @@ export function ProfessionalLiveAlerts() {
 
   const imminent = data.todayAppointments.find((appt) => {
     if (appt.id === dismissedApptId) return false;
+    if (data.activeEncounter?.appointmentId === appt.id) return false;
     const [h, m] = String(appt.appointmentTime).slice(0, 5).split(':').map(Number);
     if (isNaN(h) || isNaN(m)) return false;
     const apptTotalMinutes = h * 60 + m;

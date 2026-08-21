@@ -54,3 +54,22 @@ test('access issues an opaque fragment token without leaking role, name or canon
   assert.doesNotMatch(data.roomUrl, /secret|role=|name=/);
   await app.close();
 });
+
+test('access rotates stale session credentials before issuing a new join token', async () => {
+  const statements:string[]=[];
+  const now=new Date();
+  const database={query:async(sql:string)=>{
+    statements.push(sql);
+    if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'PATIENT',patient_id:patientId}]};
+    if(sql.includes('FROM appointments a'))return{rows:[{patientId,patientName:'Paciente',status:'CONFIRMED',encounterStatus:'IN_PROGRESS',startsAt:new Date(now.getTime()-60000),endsAt:new Date(now.getTime()+3600000),videoRoomToken:'secret'}]};
+    if(sql.includes('INSERT INTO teleconsultation_sessions'))return{rows:[{sessionId,state:'WAITING_PROFESSIONAL',expiresAt:new Date(now.getTime()+3600000),roomRotated:true}]};
+    return{rows:[]};
+  },connect:async()=>{throw new Error('unused')},end:async()=>{}};
+  const app=await buildApp(env,database as never);
+  assert.equal((await inject(app)).statusCode,200);
+  const deleteIndex=statements.findIndex(sql=>sql.includes('DELETE FROM teleconsultation_join_tokens WHERE session_id'));
+  const insertIndex=statements.findIndex(sql=>sql.includes('INSERT INTO teleconsultation_join_tokens'));
+  assert.ok(deleteIndex>=0&&insertIndex>deleteIndex,'credenciais antigas devem ser removidas antes do novo convite');
+  assert.ok(statements.some(sql=>sql.includes('ended_at=CASE')&&sql.includes('GREATEST(teleconsultation_sessions.expires_at')));
+  await app.close();
+});

@@ -32,6 +32,33 @@ async function mockAccess(page: Page) {
 }
 
 test.describe('jornada do paciente na teleconsulta', () => {
+  test('pré-entrada permanece íntegra e sem rolagem em diferentes telas', async ({ page }) => {
+    await mockPatientIdentity(page);
+    await mockAccess(page);
+
+    for (const viewport of [{ width: 360, height: 640 }, { width: 390, height: 844 }, { width: 1366, height: 768 }]) {
+      await page.setViewportSize(viewport);
+      await page.goto(`/portal/video/${appointmentId}`);
+
+      const card = page.locator('.video-prejoin-card');
+      const enterButton = page.getByRole('button', { name: 'Testar e entrar na consulta' });
+      await expect(card).toBeVisible();
+      await expect(enterButton).toBeVisible();
+
+      const [cardBox, buttonBox, dimensions] = await Promise.all([
+        card.boundingBox(),
+        enterButton.boundingBox(),
+        page.evaluate(() => ({ scrollHeight: document.documentElement.scrollHeight, innerHeight: window.innerHeight })),
+      ]);
+      expect(cardBox).not.toBeNull();
+      expect(buttonBox).not.toBeNull();
+      expect(cardBox!.y).toBeGreaterThanOrEqual(0);
+      expect(cardBox!.y + cardBox!.height).toBeLessThanOrEqual(viewport.height + 1);
+      expect(buttonBox!.y + buttonBox!.height).toBeLessThanOrEqual(viewport.height + 1);
+      expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.innerHeight + 1);
+    }
+  });
+
   test('mantém o paciente na pré-checagem quando câmera ou microfone estão bloqueados', async ({ page }) => {
     await mockPatientIdentity(page);
     await mockAccess(page);
@@ -88,9 +115,8 @@ test.describe('jornada do paciente na teleconsulta', () => {
     await expect(page.locator('iframe[title="Sala de Teleconsulta"]')).toBeVisible();
 
     await expect.poll(() => sessionChecks, { timeout: 7_000 }).toBeGreaterThan(0);
-    await expect(page.getByRole('heading', { name: 'Consulta Concluída' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Consulta concluída/i })).toBeVisible();
     await expect(page.locator('iframe[title="Sala de Teleconsulta"]')).toHaveCount(0);
     await expect.poll(() => page.evaluate(id => sessionStorage.getItem(`in_call_${id}`), appointmentId)).toBeNull();
   });
 });
-

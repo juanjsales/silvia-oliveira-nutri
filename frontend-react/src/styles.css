@@ -493,6 +493,86 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   }
 }
 
+/* Entrada da teleconsulta: composição integral, sem rolagem da página. */
+.patient-video-page.prejoin{
+  box-sizing:border-box;
+  height:100vh;
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
+  padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+}
+.patient-video-page.prejoin>header{flex:0 0 auto;min-height:48px}
+.patient-video-page.prejoin .video-prejoin-card{
+  width:min(780px,100%);
+  max-height:calc(100dvh - 84px);
+  margin:auto;
+  padding:clamp(18px,3.5vh,34px);
+  overflow:hidden;
+}
+.patient-video-page.prejoin .video-prejoin-heading h1{font-size:clamp(1.65rem,4vw,2.45rem)}
+.patient-video-page.prejoin .video-patient-identity{margin:clamp(12px,2.2vh,20px) 0 12px;padding:11px 14px}
+.patient-video-page.prejoin .video-prejoin-steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.patient-video-page.prejoin .video-prejoin-steps li{
+  grid-template-columns:26px minmax(0,1fr);
+  align-content:start;
+  padding:11px;
+}
+.patient-video-page.prejoin .video-prejoin-steps li>svg:last-child{display:none}
+.patient-video-page.prejoin .video-prejoin-steps strong{font-size:.76rem;line-height:1.25}
+.patient-video-page.prejoin .video-prejoin-steps span{font-size:.7rem;line-height:1.35}
+.patient-video-page.prejoin .video-permission-help{margin:10px 0;padding:10px 13px}
+.patient-video-page.prejoin .video-enter-button{min-height:46px;padding:10px 15px}
+.video-access-error{
+  box-sizing:border-box;
+  width:min(520px,100%);
+  padding:clamp(24px,5vw,42px);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:24px;
+  background:#f8faf7;
+  color:#183b2b;
+  box-shadow:0 24px 70px rgba(0,0,0,.28);
+}
+.video-access-error>svg{color:#6c7e72}
+.video-access-error .eyebrow{display:block;margin:12px 0 5px;color:#557063}
+.video-access-error h2{margin:0;font:700 clamp(1.55rem,4vw,2.1rem)/1.12 var(--font-display);color:#183b2b}
+.video-access-error p{max-width:430px;margin:12px auto 0;color:#5d6f64;font-size:.84rem;line-height:1.6}
+.video-access-error.waiting{border-color:#cddfd3}
+.video-waiting-indicator{display:grid;width:54px;height:54px;margin:0 auto;place-items:center;border-radius:16px;background:#e7f1e9;color:#23623b}
+.video-waiting-indicator .spinner{width:25px;height:25px;border-color:#b9d6c1;border-top-color:#23623b}
+.video-access-actions{display:flex;justify-content:center;margin-top:20px}
+.video-access-error.concluded{border-color:#c6e2ce}
+.video-access-error.concluded>svg{width:48px;height:48px;color:#27844b}
+@media(max-width:700px){
+  .patient-video-page.prejoin{gap:8px;padding-inline:max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-left))}
+  .patient-video-page.prejoin>header{min-height:44px;padding:6px 10px}
+  .patient-video-page.prejoin>header a{padding:6px 8px}
+  .patient-video-page.prejoin .video-session-badge span{display:none}
+  .patient-video-page.prejoin .video-prejoin-card{max-height:calc(100dvh - 68px);padding:14px;border-radius:17px}
+  .patient-video-page.prejoin .video-prejoin-heading{gap:10px}
+  .patient-video-page.prejoin .video-prejoin-icon{width:40px;height:40px;border-radius:12px}
+  .patient-video-page.prejoin .video-prejoin-heading h1{margin:2px 0 5px;font-size:1.45rem}
+  .patient-video-page.prejoin .video-prejoin-heading p{font-size:.72rem;line-height:1.35}
+  .patient-video-page.prejoin .video-patient-identity{margin:9px 0;padding:8px 11px}
+  .patient-video-page.prejoin .video-prejoin-steps{grid-template-columns:1fr;gap:5px}
+  .patient-video-page.prejoin .video-prejoin-steps li{min-height:0;padding:7px 9px;gap:8px}
+  .patient-video-page.prejoin .video-prejoin-steps li>svg:first-child{width:19px;height:19px}
+  .patient-video-page.prejoin .video-prejoin-steps div{gap:0}
+  .patient-video-page.prejoin .video-prejoin-steps span{font-size:.66rem}
+  .patient-video-page.prejoin .video-permission-help{margin:7px 0;padding:7px 10px;font-size:.68rem;line-height:1.3}
+  .patient-video-page.prejoin .video-enter-button{min-height:44px;font-size:.84rem}
+  .patient-video-page.prejoin .video-prejoin-card>small{margin-top:6px;font-size:.62rem;line-height:1.3}
+  .video-access-error{padding:24px 18px;border-radius:18px}
+}
+@media(max-height:650px) and (max-width:700px){
+  .patient-video-page.prejoin .video-prejoin-heading p,
+  .patient-video-page.prejoin .video-prejoin-steps span,
+  .patient-video-page.prejoin .video-prejoin-card>small{display:none}
+  .patient-video-page.prejoin .video-prejoin-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .patient-video-page.prejoin .video-prejoin-steps li{grid-template-columns:20px minmax(0,1fr)}
+  .patient-video-page.prejoin .video-permission-help{flex-direction:row;gap:5px}
+}
+
 /* ── SETUP WIZARD MODAL ── */
 .setup-wizard-backdrop {
   position: fixed;

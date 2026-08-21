@@ -79,10 +79,12 @@ export async function encounterRoutes(app: FastifyInstance) {
         a.status
         FROM appointments a
         JOIN patients p ON p.id = a.patient_id
-        LEFT JOIN clinical_encounters e ON e.appointment_id = a.id AND e.status = 'COMPLETED'
         WHERE a.appointment_date = current_date
           AND a.status IN ('CONFIRMED', 'WAITING', 'IN_PROGRESS')
-          AND (e.id IS NULL)
+          AND NOT EXISTS (
+            SELECT 1 FROM clinical_encounters e
+            WHERE e.appointment_id=a.id AND e.status IN ('IN_PROGRESS','COMPLETED')
+          )
         ORDER BY a.appointment_time ASC LIMIT 10`);
 
     return {

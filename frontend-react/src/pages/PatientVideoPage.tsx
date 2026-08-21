@@ -306,23 +306,25 @@ export function PatientVideoPage() {
 
       {error ? (
         error.includes('iniciar') || error.includes('aguarde') || error.includes('Aguarde') ? (
-          <section className="video-access-error" style={{ borderColor: '#3b82f6', background: 'rgba(59, 130, 246, 0.04)' }}>
-            <span className="spinner" style={{ width: 36, height: 36, borderTopColor: '#3b82f6' }} />
-            <h2 style={{ color: '#1e40af' }}>Sala de Espera Virtual</h2>
-            <p style={{ maxWidth: 440 }}>A Dra. Silvia Oliveira Lemos está preparando seu atendimento. Esta tela liberará sua entrada automaticamente assim que a chamada começar.</p>
-            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+          <section className="video-access-error waiting" role="status" aria-live="polite">
+            <span className="video-waiting-indicator"><span className="spinner" /></span>
+            <span className="eyebrow">Atendimento protegido</span>
+            <h2>Sua sala estará disponível em instantes</h2>
+            <p>A Dra. Silvia está preparando a consulta. Você não precisa atualizar a página: a entrada será liberada automaticamente.</p>
+            <div className="video-access-actions">
               <Link className="secondary-button" to="/portal">
-                Aguardar no Portal
+                Aguardar pelo portal
               </Link>
             </div>
           </section>
         ) : error.includes('finalizada') || error.includes('concluída') ? (
-          <section className="video-access-error" style={{ borderColor: '#10b981', background: 'rgba(16, 185, 129, 0.04)' }}>
-            <CheckCircle2 size={40} style={{ color: '#10b981' }} />
-            <h2 style={{ color: '#065f46' }}>Consulta Concluída</h2>
-            <p style={{ maxWidth: 440 }}>Este atendimento já foi finalizado pela Dra. Silvia. Seus novos planos, orientações e documentos já estão salvos e atualizados no seu portal.</p>
+          <section className="video-access-error concluded" role="status">
+            <CheckCircle2 />
+            <span className="eyebrow">Atendimento encerrado</span>
+            <h2>Consulta concluída</h2>
+            <p>As orientações e os documentos disponibilizados pela Dra. Silvia podem ser consultados no seu portal.</p>
             <Link className="primary-button" to="/portal">
-              Acessar Meu Portal
+              Acessar meu portal
             </Link>
           </section>
         ) : (

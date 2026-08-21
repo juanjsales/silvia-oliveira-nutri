@@ -215,11 +215,20 @@ export async function videoRoutes(app: FastifyInstance) {
 
     await expireStaleSessions(app);
     const roomKey = randomBytes(24).toString('base64url');
-    const sessionResult = await app.db.query<{ sessionId: string; state: string; expiresAt: Date }>(
+    const sessionResult = await app.db.query<{ sessionId: string; state: string; expiresAt: Date; roomRotated: boolean }>(
       `INSERT INTO teleconsultation_sessions(source_id, patient_id, room_key, state, expires_at)
        VALUES($1,$2,$3,$4,$5)
-       ON CONFLICT(source_id) DO UPDATE SET updated_at=now()
-       RETURNING id AS "sessionId", state, expires_at AS "expiresAt"`,
+       ON CONFLICT(source_id) DO UPDATE SET
+         room_key=CASE WHEN teleconsultation_sessions.ended_at IS NOT NULL OR teleconsultation_sessions.expires_at<=now() THEN EXCLUDED.room_key ELSE teleconsultation_sessions.room_key END,
+         state=CASE WHEN teleconsultation_sessions.ended_at IS NOT NULL OR teleconsultation_sessions.expires_at<=now() THEN EXCLUDED.state ELSE teleconsultation_sessions.state END,
+         professional_last_seen_at=CASE WHEN teleconsultation_sessions.ended_at IS NOT NULL OR teleconsultation_sessions.expires_at<=now() THEN NULL ELSE teleconsultation_sessions.professional_last_seen_at END,
+         patient_last_seen_at=CASE WHEN teleconsultation_sessions.ended_at IS NOT NULL OR teleconsultation_sessions.expires_at<=now() THEN NULL ELSE teleconsultation_sessions.patient_last_seen_at END,
+         last_activity_at=CASE WHEN teleconsultation_sessions.ended_at IS NOT NULL OR teleconsultation_sessions.expires_at<=now() THEN now() ELSE teleconsultation_sessions.last_activity_at END,
+         ended_at=CASE WHEN teleconsultation_sessions.ended_at IS NOT NULL OR teleconsultation_sessions.expires_at<=now() THEN NULL ELSE teleconsultation_sessions.ended_at END,
+         end_reason=CASE WHEN teleconsultation_sessions.ended_at IS NOT NULL OR teleconsultation_sessions.expires_at<=now() THEN NULL ELSE teleconsultation_sessions.end_reason END,
+         expires_at=CASE WHEN teleconsultation_sessions.ended_at IS NOT NULL OR teleconsultation_sessions.expires_at<=now() THEN EXCLUDED.expires_at ELSE GREATEST(teleconsultation_sessions.expires_at,EXCLUDED.expires_at) END,
+         updated_at=now()
+       RETURNING id AS "sessionId", state, expires_at AS "expiresAt", room_key=$3 AS "roomRotated"`,
       [id, patientId, roomKey, request.auth!.role === 'ADMIN' ? 'WAITING_PATIENT' : 'WAITING_PROFESSIONAL', new Date(closes)],
     );
     const session = sessionResult.rows[0];
@@ -227,6 +236,9 @@ export async function videoRoutes(app: FastifyInstance) {
 
     const joinToken = randomBytes(32).toString('base64url');
     const participantRole = request.auth!.role === 'ADMIN' ? 'PROFESSIONAL' : 'PATIENT';
+    if (session.roomRotated) {
+      await app.db.query('DELETE FROM teleconsultation_join_tokens WHERE session_id=$1', [session.sessionId]);
+    }
     await app.db.query(
       `INSERT INTO teleconsultation_join_tokens(token_hash, session_id, actor_user_id, participant_role, expires_at)
        VALUES($1,$2,$3,$4,$5)`,
