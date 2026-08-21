@@ -3136,6 +3136,80 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 /* =========================================================
    GLOBAL PERSISTENT VIDEO HOST (PORTAL DOCKED & CLEAN PIP)
    ========================================================= */
+/* No tablet/mobile o split continua no fluxo da página; ele não deve simular um segundo PiP. */
+@media (max-width: 980px) {
+  .virtual-office.with-video {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .video-consultation:not(.expanded) {
+    position: relative;
+    inset: auto;
+    z-index: 12;
+    width: 100%;
+    height: min(72dvh, 680px);
+    min-height: 480px;
+    margin: 0 0 18px;
+    border: 1px solid #ffffff22;
+    box-shadow: 0 12px 30px #13291f2b;
+  }
+}
+
+@media (max-width: 520px) {
+  .virtual-office.with-video {
+    width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .video-consultation:not(.expanded) {
+    right: auto;
+    bottom: auto;
+    width: min(100%, calc(100vw - 20px));
+    max-width: calc(100vw - 20px);
+    min-width: 0;
+    align-self: center;
+    height: min(72dvh, 560px);
+    min-height: 440px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+  }
+
+  .video-consultation > * {
+    min-width: 0;
+  }
+
+  .video-consultation header {
+    min-width: 0;
+    padding-inline: 10px;
+  }
+
+  .video-consultation header > div:first-child {
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .video-consultation header > div:first-child strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .video-consultation time,
+  .video-header-btns {
+    flex: 0 0 auto;
+  }
+
+  .video-consultation header small {
+    display: none;
+  }
+
+  .video-broadcast-bar {
+    min-width: 0;
+    overflow: hidden;
+  }
+}
+
 .persistent-video-container {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -3337,10 +3411,15 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 }
 
 @media (max-width: 600px) {
-  .global-video-host.pip-mode {
-    bottom: 12px;
+  .persistent-video-container.pip-mode {
+    bottom: max(12px, env(safe-area-inset-bottom));
     right: 12px;
     left: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .persistent-video-container.pip-mode.collapsed {
     width: auto;
   }
 }

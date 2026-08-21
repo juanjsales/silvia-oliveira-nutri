@@ -259,7 +259,13 @@
             height: 100%;
             border-radius: 0;
             border: none;
-              /* ── ELEMENTOS DE VÍDEO (ENQUADRAMENTO PROFISSIONAL CENTRADO NO ROSTO) ── */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #040805;
+        }
+
+        /* ── ELEMENTOS DE VÍDEO ── */
         .video-element,
         #remoteVideo,
         #localVideo {
@@ -268,7 +274,7 @@
             max-width: 100% !important;
             max-height: 100% !important;
             object-fit: cover !important;
-            object-position: center 20% !important; /* Centraliza perfeitamente o rosto/olhos sem cortar testa nem queixo */
+            object-position: center 24% !important;
             background: #040805;
             transition: object-fit 0.2s ease;
             display: block !important;
@@ -288,10 +294,42 @@
         }
 
         /* Se for compartilhamento de tela, sempre manter 100% legível */
-        .screen-sharing-active #remoteVideo,
-        .screen-sharing-active #localVideo {
+        .video-wrap-screen-share .video-element,
+        .video-wrap-screen-share #remoteVideo,
+        .video-wrap-screen-share #localVideo {
             object-fit: contain !important;
             transform: none !important;
+            object-position: center !important;
+        }
+
+        /* Ao compartilhar, a tela local vira o conteúdo principal e a outra pessoa fica em PiP. */
+        .videos-layout-grid.mode-spotlight.screen-share-local .local-video-wrap {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: auto;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            z-index: 1;
+            cursor: default;
+        }
+
+        .videos-layout-grid.mode-spotlight.screen-share-local .local-video-wrap:hover {
+            transform: none;
+        }
+
+        .videos-layout-grid.mode-spotlight.screen-share-local .remote-video-wrap {
+            inset: auto 20px 84px auto;
+            width: clamp(140px, 22vw, 220px);
+            height: auto;
+            aspect-ratio: 16 / 9;
+            border: 2px solid rgba(140, 164, 129, 0.5);
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85);
+            overflow: hidden;
+            z-index: 25;
         }
 
         @media (max-width: 720px), (max-aspect-ratio: 1/1) {
@@ -393,7 +431,14 @@
             border-radius: 32px;
             box-shadow: 0 8px 26px rgba(0, 0, 0, 0.7);
             z-index: 40;
+            max-width: calc(100% - 24px);
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            overscroll-behavior-x: contain;
         }
+
+        .controls-bar::-webkit-scrollbar { display: none; }
 
         .ctrl-btn {
             width: 36px;
@@ -425,6 +470,11 @@
             background: rgba(140, 164, 129, 0.3);
             border-color: var(--sage-accent);
             transform: translateY(-1px);
+        }
+
+        .ctrl-btn:focus-visible {
+            outline: 3px solid #ffffff;
+            outline-offset: 2px;
         }
 
         .ctrl-btn.active {
@@ -507,26 +557,114 @@
             display: none !important;
         }
 
-        @media (max-width: 600px) {
+        /* Split compacto / tablet: prioriza uma área de vídeo utilizável. */
+        @media (max-width: 768px), (max-height: 560px) {
             .videos-layout-grid.mode-grid {
-                flex-direction: column;
-                padding-bottom: 74px;
+                grid-template-columns: 1fr !important;
+                grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) !important;
+                gap: 6px !important;
+                padding: 6px 6px calc(66px + env(safe-area-inset-bottom, 0px)) !important;
             }
             .videos-layout-grid.mode-grid .remote-video-wrap,
             .videos-layout-grid.mode-grid .local-video-wrap {
                 width: 100%;
-                height: 50%;
+                height: 100%;
+                min-height: 0;
+                border-radius: 10px;
+            }
+            .videos-layout-grid.mode-spotlight.screen-share-local .local-video-wrap {
+                inset: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                border-radius: 0;
+            }
+            .videos-layout-grid.mode-spotlight.screen-share-local .remote-video-wrap {
+                inset: auto 10px calc(70px + env(safe-area-inset-bottom, 0px)) auto;
+                width: clamp(104px, 31vw, 160px);
+                height: auto;
+                border-radius: 10px;
             }
             .videos-layout-grid.mode-spotlight .local-video-wrap {
-                width: 120px;
-                height: 90px;
-                bottom: 78px;
-                right: 12px;
+                width: clamp(104px, 31vw, 160px) !important;
+                height: auto !important;
+                bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+                right: 10px !important;
+                border-radius: 10px;
             }
-            .controls-bar { gap: 6px; padding: 6px 12px; bottom: 12px; }
-            .ctrl-btn { width: 38px; height: 38px; }
+            .controls-bar {
+                width: max-content;
+                max-width: calc(100% - 16px);
+                gap: 5px;
+                padding: 5px 8px;
+                bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+            }
+            .ctrl-btn { width: 38px; height: 38px; min-width: 38px; }
             .ctrl-btn svg { width: 16px; height: 16px; }
             .ctrl-btn.btn-hangup { width: 42px; height: 42px; }
+            .waiting-status-banner {
+                top: 8px;
+                max-width: calc(100% - 20px);
+                white-space: normal;
+            }
+            .video-label { bottom: 6px; left: 6px; }
+        }
+
+        /* Celulares estreitos: controles nunca ultrapassam a viewport. */
+        @media (max-width: 430px) {
+            .controls-bar {
+                width: calc(100% - 12px);
+                justify-content: space-between;
+                border-radius: 18px;
+                padding-inline: 6px;
+            }
+            .ctrl-btn,
+            body.is-embedded .ctrl-btn {
+                width: 36px !important;
+                min-width: 36px;
+                height: 36px !important;
+            }
+            .ctrl-btn.btn-hangup,
+            body.is-embedded .ctrl-btn.btn-hangup {
+                width: 40px !important;
+                min-width: 40px;
+                height: 40px !important;
+            }
+            .videos-layout-grid.mode-spotlight .local-video-wrap {
+                width: clamp(96px, 29vw, 124px) !important;
+            }
+            .videos-layout-grid.mode-spotlight.screen-share-local .local-video-wrap {
+                width: 100% !important;
+            }
+            .videos-layout-grid.mode-spotlight.screen-share-local .remote-video-wrap {
+                width: clamp(96px, 29vw, 124px);
+            }
+            .waiting-status-banner strong { font-size: 0.72rem; }
+        }
+
+        /* Iframes muito pequenos (miniplayer): vídeo principal + controles essenciais legíveis. */
+        @media (max-height: 320px) {
+            .videos-layout-grid.mode-grid {
+                display: block;
+                padding: 0 !important;
+            }
+            .videos-layout-grid.mode-grid .remote-video-wrap {
+                position: absolute;
+                inset: 0;
+            }
+            .videos-layout-grid.mode-grid .local-video-wrap {
+                position: absolute;
+                right: 8px;
+                bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+                width: min(32%, 112px);
+                height: auto;
+                aspect-ratio: 16 / 9;
+                z-index: 25;
+            }
+            .controls-bar,
+            body.is-embedded .controls-bar {
+                bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+            .waiting-status-banner { top: 6px !important; }
         }
     </style>
 </head>
@@ -623,7 +761,7 @@
         <!-- CONTROLES FLUTUANTES -->
         <div class="controls-bar">
             <!-- BOTÃO MICROFONE -->
-            <button class="ctrl-btn" id="btnMic" onclick="toggleAudio()" title="Ligar/Desligar Microfone">
+            <button class="ctrl-btn" id="btnMic" onclick="toggleAudio()" title="Ligar/Desligar Microfone" aria-label="Ligar ou desligar microfone">
                 <svg id="iconMicOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
                     <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -640,7 +778,7 @@
             </button>
 
             <!-- BOTÃO CÂMERA -->
-            <button class="ctrl-btn" id="btnCam" onclick="toggleVideo()" title="Ligar/Desligar Câmera">
+            <button class="ctrl-btn" id="btnCam" onclick="toggleVideo()" title="Ligar/Desligar Câmera" aria-label="Ligar ou desligar câmera">
                 <svg id="iconCamOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/>
                     <rect x="2" y="6" width="14" height="12" rx="2"/>
@@ -655,7 +793,7 @@
             </button>
 
             <!-- BOTÃO AJUSTAR ENQUADRAMENTO (SEM CORTES vs PREENCHER) -->
-            <button class="ctrl-btn" id="btnFit" onclick="toggleFitMode()" title="Ajustar Enquadramento (Sem Cortes / Preencher)">
+            <button class="ctrl-btn" id="btnFit" onclick="toggleFitMode()" title="Ajustar Enquadramento (Sem Cortes / Preencher)" aria-label="Alternar enquadramento do vídeo">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
                     <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
@@ -663,7 +801,7 @@
             </button>
 
             <!-- BOTÃO MUDAR LAYOUT (GRID 50/50 vs DESTAQUE PiP) -->
-            <button class="ctrl-btn" id="btnLayout" onclick="toggleLayoutMode()" title="Alternar Layout (Lado a Lado / Destaque)">
+            <button class="ctrl-btn" id="btnLayout" onclick="toggleLayoutMode()" title="Alternar Layout (Lado a Lado / Destaque)" aria-label="Alternar disposição dos vídeos">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <rect width="18" height="18" x="3" y="3" rx="2"/>
                     <path d="M12 3v18"/>
@@ -671,7 +809,7 @@
             </button>
 
             <!-- BOTÃO COMPARTILHAR TELA -->
-            <button class="ctrl-btn" id="btnScreen" onclick="toggleScreenShare()" title="Compartilhar Tela" style="display:none">
+            <button class="ctrl-btn" id="btnScreen" onclick="toggleScreenShare()" title="Compartilhar Tela" aria-label="Iniciar ou parar compartilhamento de tela" style="display:none">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <rect width="20" height="14" x="2" y="3" rx="2"/>
                     <line x1="8" x2="16" y1="21" y2="21"/>
@@ -682,14 +820,14 @@
             </button>
 
             <!-- BOTÃO TELA CHEIA -->
-            <button class="ctrl-btn" id="btnFullscreen" onclick="toggleStageFullscreen()" title="Tela Cheia">
+            <button class="ctrl-btn" id="btnFullscreen" onclick="toggleStageFullscreen()" title="Tela Cheia" aria-label="Alternar tela cheia">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                 </svg>
             </button>
 
             <!-- BOTÃO ENCERRAR (DESLIGAR) -->
-            <button class="ctrl-btn btn-hangup" onclick="encerrarChamada()" title="Encerrar Consulta">
+            <button class="ctrl-btn btn-hangup" onclick="encerrarChamada()" title="Encerrar Consulta" aria-label="Encerrar consulta">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.99.99 0 0 1 0-1.41C3.28 8.77 7.42 7 12 7s8.72 1.77 11.71 4.67c.39.39.39 1.02 0 1.41l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>
                 </svg>
@@ -783,48 +921,6 @@
             }
         }
 
-        // ── CONTROLE DE ENQUADRAMENTO E LAYOUT ──
-        function toggleFitMode() {
-            isCoverFit = !isCoverFit;
-            const stage = document.getElementById('stageContainer');
-            const btn = document.getElementById('btnFit');
-            if (isCoverFit) {
-                stage.classList.add('fit-cover');
-                if (btn) btn.classList.add('active');
-                showToast('Enquadramento: Preencher Tela (com Zoom)');
-            } else {
-                stage.classList.remove('fit-cover');
-                if (btn) btn.classList.remove('active');
-                showToast('Enquadramento: 100% Visível (Sem Cortes)');
-            }
-        }
-
-        function toggleLayoutMode() {
-            const layout = document.getElementById('videosLayout');
-            const btn = document.getElementById('btnLayout');
-            if (currentLayout === 'grid') {
-                currentLayout = 'spotlight';
-                if (layout) layout.className = 'videos-layout-grid mode-spotlight';
-                if (btn) btn.classList.remove('active');
-                showToast('Layout: Destaque Principal + Miniatura');
-            } else {
-                currentLayout = 'grid';
-                if (layout) layout.className = 'videos-layout-grid mode-grid';
-                if (btn) btn.classList.add('active');
-                showToast('Layout: Lado a Lado (Proporções Iguais)');
-            }
-        }
-
-        function toggleStageFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().catch(() => {});
-                }
-            }
-        }
-
         // ── INICIALIZAÇÃO DE MÍDIA NATIVA ──
         async function initLocalStream() {
             try {
@@ -903,15 +999,17 @@
 
                     // Exibe a tela compartilhada com destaque total
                     const localVideo = document.getElementById('localVideo');
+                    const localVideoBox = document.getElementById('localVideoBox');
                     if (localVideo) {
                         localVideo.srcObject = screenStream;
                         localVideo.style.transform = 'none'; // Não espelha a tela compartilhada!
                     }
+                    if (localVideoBox) localVideoBox.classList.add('video-wrap-screen-share');
 
                     // Se estiver em modo spotlight ou grid, destaca o compartilhamento
                     const layout = document.getElementById('videosLayout');
                     if (layout) {
-                        layout.className = 'videos-layout-grid mode-spotlight';
+                        layout.className = 'videos-layout-grid mode-spotlight screen-share-local';
                     }
 
                     isScreenSharing = true;
@@ -938,10 +1036,12 @@
                 if (sender) sender.replaceTrack(camTrack);
             }
             const localVideo = document.getElementById('localVideo');
+            const localVideoBox = document.getElementById('localVideoBox');
             if (localVideo) {
                 localVideo.srcObject = localStream;
                 localVideo.style.transform = 'scaleX(-1)'; // Restaura espelhamento natural da câmera
             }
+            if (localVideoBox) localVideoBox.classList.remove('video-wrap-screen-share');
             isScreenSharing = false;
             const btnScreen = document.getElementById('btnScreen');
             if (btnScreen) btnScreen.classList.remove('active');

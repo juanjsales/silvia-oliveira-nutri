@@ -7,14 +7,12 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { LaminasModal } from './LaminasModal';
 import { api } from '../lib/api';
 
 export function FloatingCallWidget() {
   const { activeCall, isMinimized, restoreCall, endCall } = useTeleconsultation();
-  const location = useLocation();
   const [elapsed, setElapsed] = useState('00:00');
   const [reconnecting, setReconnecting] = useState(false);
   const [iframeKey, setIframeKey] = useState(1);
@@ -24,15 +22,25 @@ export function FloatingCallWidget() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    if (!isMinimized) {
+      setFrameSource('');
+      return () => { cancelled = true; };
+    }
     if (!activeCall?.appointmentId) {
       setFrameSource(activeCall?.roomUrl || '');
-      return;
+      return () => { cancelled = true; };
     }
     setFrameSource('');
     api<{ data: { roomUrl: string } }>(`/api/video/appointments/${activeCall.appointmentId}/access`, { method: 'POST' })
-      .then((response) => setFrameSource(response.data.roomUrl))
-      .catch(() => setFrameSource(''));
-  }, [activeCall?.appointmentId, iframeKey]);
+      .then((response) => {
+        if (!cancelled) setFrameSource(response.data.roomUrl);
+      })
+      .catch(() => {
+        if (!cancelled) setFrameSource('');
+      });
+    return () => { cancelled = true; };
+  }, [activeCall?.appointmentId, activeCall?.roomUrl, iframeKey, isMinimized]);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -88,24 +96,12 @@ export function FloatingCallWidget() {
     return () => window.clearInterval(checkInterval);
   }, [activeCall, endCall]);
 
-  if (!activeCall) {
+  if (!activeCall || !isMinimized) {
     return null;
   }
 
-  // 1. Para a Nutricionista (ADMIN):
-  // O miniplayer NUNCA renderiza na tela de atendimento (/atendimentos), pois lá ela usa a visualização integrada/split.
-  // O miniplayer SÓ ativa quando ela sai de /atendimentos para navegar no restante do site (/pacientes, /agenda, /financeiro, etc.).
-  if (activeCall.role === 'ADMIN' && location.pathname === '/atendimentos') {
-    return null;
-  }
-
-  // 2. Para o Paciente (PATIENT):
-  // O miniplayer não renderiza na página de teleconsulta em tela cheia (/portal/video).
-  // O miniplayer SÓ ativa quando o paciente sai para navegar no portal (/portal).
-  if (activeCall.role === 'PATIENT' && location.pathname.startsWith('/portal/video')) {
-    return null;
-  }
-
+  // A localização da rota é traduzida para isMinimized pelo contexto. O widget não
+  // repete regras de URL, evitando divergências entre portal, atendimento e PiP.
   function handleReconnect() {
     setReconnecting(true);
     setIframeKey((k) => k + 1);

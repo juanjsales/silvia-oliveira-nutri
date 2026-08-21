@@ -214,6 +214,15 @@ export function EncounterPage(){
   useEffect(()=>{
     setVideoOpen(videoParam);
   },[videoParam]);
+  const setSplitVisible=useCallback((visible:boolean)=>{
+    setVideoOpen(visible);
+    if(visible)restoreCall();else minimizeCall();
+    setParams((prev)=>{
+      const updated=new URLSearchParams(prev);
+      if(visible)updated.set('video','true');else updated.delete('video');
+      return updated;
+    });
+  },[minimizeCall,restoreCall,setParams]);
   useEffect(()=>{if(!patientParam||params.get('id'))return;let cancelled=false;setLoading(true);api<{data:{id:string}}>('/api/encounters',{method:'POST',body:JSON.stringify({patientId:patientParam,...(appointmentParam?{appointmentId:appointmentParam}:{})})}).then(r=>{if(!cancelled){setParams({id:r.data.id,...(videoParam?{video:'true'}:{})});void loadEncounter(r.data.id)}}).catch(c=>setError(c instanceof Error?c.message:'Erro ao iniciar atendimento.')).finally(()=>setLoading(false));return()=>{cancelled=true}},[patientParam,appointmentParam,videoParam,params,setParams,loadEncounter]);
 
   const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);
@@ -360,7 +369,7 @@ export function EncounterPage(){
           appointmentTime={encounter.appointmentTime}
           durationMinutes={encounter.durationMinutes}
           sections={drafts}
-          onClose={()=>setVideoOpen(false)}
+          onClose={()=>setSplitVisible(false)}
         />
       )}
       <div className="encounter-page">
@@ -406,24 +415,7 @@ export function EncounterPage(){
             {encounter.status !== 'COMPLETED' && (
               <button
                 className={`secondary-button video-toggle-btn ${videoOpen ? 'active' : ''}`}
-                onClick={() => {
-                  const next = !videoOpen;
-                  setVideoOpen(next);
-                  if (next) {
-                    restoreCall();
-                  } else {
-                    minimizeCall();
-                  }
-                  setParams((prev) => {
-                    const updated = new URLSearchParams(prev);
-                    if (next) {
-                      updated.set('video', 'true');
-                    } else {
-                      updated.delete('video');
-                    }
-                    return updated;
-                  });
-                }}
+                onClick={() => setSplitVisible(!videoOpen)}
                 title={videoOpen ? 'Recolher para miniplayer flutuante' : 'Abrir teleconsulta lado a lado'}
               >
                 <Video size={15} /> <span>{videoOpen ? 'Minimizar (Split)' : 'Teleconsulta (Split)'}</span>
