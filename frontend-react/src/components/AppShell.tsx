@@ -25,8 +25,9 @@ export function AppShell() {
   async function handleLogout() { await logout(); navigate('/login'); }
   return <div className="app-shell">
     <aside className={`sidebar ${open ? 'is-open' : ''}`}>
-      <div className="brand"><ClinicMark/><div><strong>{clinic.clinicName}</strong><span>{clinic.specialty}</span></div><button className="icon-button mobile-only" onClick={() => setOpen(false)} aria-label="Fechar menu"><X size={20}/></button></div>
-      <nav>{navigation.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === '/'} onClick={() => setOpen(false)}><Icon size={19}/><span>{label}</span></NavLink>)}</nav>
+      <div className="brand"><ClinicMark/><div className="brand-copy"><strong>{clinic.clinicName}</strong><span>{clinic.specialty}</span></div><button className="icon-button mobile-only" onClick={() => setOpen(false)} aria-label="Fechar menu"><X size={20}/></button></div>
+      <div className="sidebar-nav-label">Navegação</div>
+      <nav aria-label="Navegação principal">{navigation.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === '/'} onClick={() => setOpen(false)}><span className="sidebar-nav-icon"><Icon size={19}/></span><span>{label}</span></NavLink>)}</nav>
       <div className="sidebar-profile"><div className="avatar">{(user?.name || user?.email || clinic.professionalName).charAt(0).toUpperCase()}</div><div><strong>{user?.name || clinic.professionalName}</strong><span>{user?.email || clinic.specialty}</span></div><button className="icon-button" onClick={handleLogout} aria-label="Sair"><LogOut size={18}/></button></div>
     </aside>
     {open && <button className="sidebar-backdrop" onClick={() => setOpen(false)} aria-label="Fechar menu" />}
@@ -48,4 +49,3 @@ export function AppShell() {
     </main>
   </div>;
 }
-
