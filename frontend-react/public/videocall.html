@@ -270,8 +270,8 @@
             height: 100% !important;
             max-width: 100% !important;
             max-height: 100% !important;
-            object-fit: cover !important;
-            object-position: center 24% !important;
+            object-fit: contain !important;
+            object-position: center !important;
             background: #040805;
             transition: object-fit 0.2s ease;
             display: block !important;
@@ -279,11 +279,12 @@
             padding: 0 !important;
         }
 
-        /* Modo Sem Cortes (se alternar no botão de enquadramento) */
-        .stage-container.fit-contain-mode .video-element,
-        .stage-container.fit-contain-mode #remoteVideo,
-        .stage-container.fit-contain-mode #localVideo {
-            object-fit: contain !important;
+        /* Preencher é opcional; o padrão preserva a imagem inteira sem cortes. */
+        .stage-container.fit-cover-mode .video-element,
+        .stage-container.fit-cover-mode #remoteVideo,
+        .stage-container.fit-cover-mode #localVideo {
+            object-fit: cover !important;
+            object-position: center 24% !important;
         }
 
         #localVideo {
@@ -1057,12 +1058,12 @@
             const stage = document.getElementById('stageContainer');
             const btnFit = document.getElementById('btnFit');
             if (stage) {
-                stage.classList.toggle('fit-contain-mode', isCoverFit);
+                stage.classList.toggle('fit-cover-mode', isCoverFit);
             }
             if (btnFit) {
                 btnFit.classList.toggle('active', isCoverFit);
             }
-            showToast(isCoverFit ? 'Enquadramento: Sem Cortes (Contain)' : 'Enquadramento: Otimizado para Rosto (Cover)');
+            showToast(isCoverFit ? 'Enquadramento: preencher a tela' : 'Enquadramento: imagem inteira, sem cortes');
         }
 
         function toggleLayoutMode() {

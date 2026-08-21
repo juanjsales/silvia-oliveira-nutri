@@ -149,6 +149,13 @@ test.describe('teleconsulta responsiva isolada', () => {
       expect(Math.abs(iframeBox!.width - containerBox!.width)).toBeLessThanOrEqual(2);
       expect(Math.abs(iframeBox!.height - containerBox!.height)).toBeLessThanOrEqual(2);
 
+      const defaultVideoFit = await iframe.evaluate(element => {
+        const frame = element as HTMLIFrameElement;
+        const localVideo = frame.contentDocument?.querySelector('#localVideo');
+        return localVideo ? getComputedStyle(localVideo).objectFit : null;
+      });
+      expect(defaultVideoFit, 'a câmera deve preservar a imagem inteira por padrão').toBe('contain');
+
       const splitOverflow = await split.evaluate(element => ({
         clientWidth: element.clientWidth,
         scrollWidth: element.scrollWidth,
@@ -157,6 +164,20 @@ test.describe('teleconsulta responsiva isolada', () => {
         splitOverflow.scrollWidth,
         'controles ou rodapé ultrapassaram a largura do split',
       ).toBeLessThanOrEqual(splitOverflow.clientWidth + 1);
+
+      await split.getByRole('button', { name: /Lâminas A4/i }).click();
+      const laminasBackdrop = page.locator('.laminas-modal-backdrop');
+      const laminasModal = page.locator('.laminas-interactive-modal');
+      await expect(laminasModal).toBeVisible();
+      expect(await laminasBackdrop.evaluate(element => element.parentElement === document.body)).toBe(true);
+      const modalBox = await laminasModal.boundingBox();
+      expect(modalBox).not.toBeNull();
+      expect(modalBox!.x).toBeGreaterThanOrEqual(0);
+      expect(modalBox!.x + modalBox!.width).toBeLessThanOrEqual(viewport.width + 1);
+      expect(modalBox!.y).toBeGreaterThanOrEqual(0);
+      expect(modalBox!.y + modalBox!.height).toBeLessThanOrEqual(viewport.height + 1);
+      await laminasModal.getByRole('button', { name: 'Fechar' }).click();
+      await expect(laminasModal).toHaveCount(0);
 
       await split.getByRole('button', { name: /Minimizar/i }).click();
       await expect(split).toHaveCount(0);

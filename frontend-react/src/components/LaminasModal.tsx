@@ -20,6 +20,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
+import { createPortal } from 'react-dom';
 import { NUTRITIONAL_LAMINAS, type NutritionalLamina } from '../lib/nutritionalLaminas';
 import { LaminaVisualInfographic } from './LaminaVisualInfographic';
 
@@ -334,7 +335,7 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
 
   const ActiveIcon = iconMap[activeLamina.icon] || Sparkles;
 
-  return (
+  return createPortal((
     <div
       className="modal-backdrop laminas-modal-backdrop"
       onClick={onClose}
@@ -936,5 +937,5 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
         </div>
       </div>
     </div>
-  );
+  ), document.body);
 }

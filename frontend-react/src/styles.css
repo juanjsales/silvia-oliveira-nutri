@@ -4945,15 +4945,31 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
    LÂMINAS MODAL RESPONSIVENESS & STYLING
    ========================================================= */
 .laminas-modal-backdrop {
-  z-index: 9999 !important;
+  z-index: 1000000 !important;
 }
 
 .laminas-interactive-modal {
   background: #ffffff !important;
   color: var(--ink, #183b2b) !important;
+  box-sizing: border-box;
+  width: min(1240px, calc(100vw - 32px)) !important;
+  height: min(920px, calc(100dvh - 32px)) !important;
+  max-width: none !important;
+  max-height: none !important;
 }
 
 @media (max-width: 900px) {
+  .laminas-modal-backdrop {
+    padding: 8px !important;
+  }
+
+  .laminas-interactive-modal {
+    width: calc(100vw - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    padding: 14px 12px !important;
+    border-radius: 14px !important;
+  }
+
   .laminas-mobile-tab-switch {
     display: flex !important;
     gap: 4px;
