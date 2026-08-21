@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '031_teleconsultation_sessions.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '032_notification_lifecycle.sql';
 
 export async function schemaStatus(db: Database) {
   try {

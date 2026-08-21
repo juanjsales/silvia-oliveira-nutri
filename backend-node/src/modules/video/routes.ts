@@ -349,6 +349,11 @@ export async function videoRoutes(app: FastifyInstance) {
     if (!session) return reply.code(404).send({ error: 'Teleconsulta não encontrada.' });
     if (result.rows[0]) {
       await appendEvent(app, sessionId, 'session.ended', { reason });
+      await app.db.query(`UPDATE patient_notifications n SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now())
+        FROM teleconsultation_sessions s,clinical_encounters e
+        WHERE s.id=$1 AND n.patient_id=s.patient_id AND n.status='ACTIVE'
+          AND n.dedupe_key='teleconsultation:'||e.id
+          AND (e.id=s.source_id OR e.appointment_id=s.source_id)`,[sessionId]);
       await audit(app.db, 'VIDEO_SESSION_ENDED', 'teleconsultation_session', { actorUserId: request.auth!.userId, entityId: sessionId, metadata: { reason } });
     }
     return { data: session };

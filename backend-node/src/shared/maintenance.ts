@@ -43,6 +43,7 @@ export async function runDatabasePrune(db: Database): Promise<PruneResult> {
     db.query(`DELETE FROM auth_rate_limits WHERE updated_at < now() - INTERVAL '2 days' RETURNING 1`),
     db.query(`DELETE FROM system_incidents WHERE resolved_at IS NOT NULL AND occurred_at < now() - INTERVAL '15 days' RETURNING 1`),
     db.query(`DELETE FROM patient_notifications WHERE read_at IS NOT NULL AND created_at < now() - INTERVAL '45 days' RETURNING 1`),
+    db.query(`DELETE FROM professional_notifications WHERE status IN ('RESOLVED','ARCHIVED') AND updated_at < now() - INTERVAL '90 days' RETURNING 1`).catch(() => ({ rowCount: 0 })),
     db.query(`DELETE FROM appointment_requests WHERE status IN ('APPROVED', 'DECLINED') AND created_at < now() - INTERVAL '60 days' RETURNING 1`),
     db.query(`DELETE FROM appointment_email_outbox WHERE status = 'SENT' AND sent_at < now() - INTERVAL '30 days' RETURNING 1`).catch(() => ({ rowCount: 0 })),
   ]);

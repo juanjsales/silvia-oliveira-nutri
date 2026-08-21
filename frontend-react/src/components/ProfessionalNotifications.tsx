@@ -16,13 +16,15 @@ import { api } from '../lib/api';
 
 type NotificationItem = {
   id: string;
-  type: 'APPOINTMENT' | 'APPOINTMENT_REQUEST' | 'CHECKIN' | 'EXAM' | 'MESSAGE' | 'FINANCE';
+  type: 'APPOINTMENT' | 'APPOINTMENT_REQUEST' | 'CHECKIN' | 'EXAM' | 'MESSAGE' | 'FINANCE' | 'PRIVACY';
   title: string;
   detail: string;
   timestamp: string;
   link: string;
   actionText: string;
   read: boolean;
+  priority: 'LOW'|'NORMAL'|'HIGH'|'URGENT';
+  status: 'ACTIVE'|'RESOLVED'|'ARCHIVED';
 };
 
 export function ProfessionalNotifications() {
@@ -37,97 +39,8 @@ export function ProfessionalNotifications() {
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const notifs: NotificationItem[] = [];
-
-      // 1. Pedidos de consulta enviados pelo Portal do Paciente.
-      // Reutiliza a mesma fonte exibida na Agenda para não manter alertas paralelos.
-      try {
-        const requestsRes = await api<{ data: any[] }>('/api/appointments/requests');
-        if (Array.isArray(requestsRes.data)) {
-          requestsRes.data.forEach((request) => {
-            const period = {
-              MORNING: 'manhã',
-              AFTERNOON: 'tarde',
-              EVENING: 'noite',
-            }[request.preferredPeriod as 'MORNING' | 'AFTERNOON' | 'EVENING'] || 'período a combinar';
-            const preferredDate = new Date(`${request.preferredDate}T12:00:00`).toLocaleDateString('pt-BR');
-
-            notifs.push({
-              id: `appointment-request-${request.id}`,
-              type: 'APPOINTMENT_REQUEST',
-              title: `Novo pedido de consulta: ${request.patientName}`,
-              detail: `${preferredDate} · ${period} · ${request.appointmentType || 'Consulta'}`,
-              timestamp: request.createdAt || new Date().toISOString(),
-              link: '/atendimentos',
-              actionText: 'Revisar pedido',
-              read: false,
-            });
-          });
-        }
-      } catch {}
-
-      // 2. Check-ins pendentes
-      try {
-        const checkinsRes = await api<{ data: any[] }>('/api/clinical/checkins/pending');
-        if (Array.isArray(checkinsRes.data)) {
-          checkinsRes.data.forEach((c) => {
-            notifs.push({
-              id: `checkin-${c.id}`,
-              type: 'CHECKIN',
-              title: `Check-in enviado por ${c.patientName}`,
-              detail: c.answers?.mainDifficulty
-                ? `Dificuldade: ${c.answers.mainDifficulty}`
-                : 'Respostas pré-consulta prontas para revisão.',
-              timestamp: c.submittedAt || new Date().toISOString(),
-              link: `/pacientes/${c.patientId}/clinico`,
-              actionText: 'Revisar',
-              read: false,
-            });
-          });
-        }
-      } catch {}
-
-      // 3. Consultas do dia
-      try {
-        const todayStr = new Date().toISOString().slice(0, 10);
-        const apptsRes = await api<{ data: any[] }>(`/api/appointments?from=${todayStr}&to=${todayStr}`);
-        if (Array.isArray(apptsRes.data)) {
-          apptsRes.data
-            .filter((a) => ['CONFIRMED', 'WAITING'].includes(a.status))
-            .forEach((a) => {
-              notifs.push({
-                id: `appt-${a.id}`,
-                type: 'APPOINTMENT',
-                title: `Consulta hoje: ${a.patientName}`,
-                detail: `${String(a.appointmentTime).slice(0, 5)} · ${a.appointmentType || 'Consulta'}`,
-                timestamp: `${a.appointmentDate}T${a.appointmentTime}`,
-                link: a.meetingUrl ? `/atendimentos?video=true` : `/atendimentos`,
-                actionText: 'Atender',
-                read: false,
-              });
-            });
-        }
-      } catch {}
-
-      // 4. Indicadores Financeiros de cobranças vencidas
-      try {
-        const finRes = await api<{ data: any }>('/api/finance/summary');
-        if (finRes.data?.overdue && Number(finRes.data.overdue) > 0) {
-          notifs.push({
-            id: 'finance-overdue',
-            type: 'FINANCE',
-            title: 'Cobranças vencidas',
-            detail: `${finRes.data.overdue} pagamento(s) pendente(s) aguardando regularização.`,
-            timestamp: new Date().toISOString(),
-            link: '/financeiro',
-            actionText: 'Ver financeiro',
-            read: false,
-          });
-        }
-      } catch {}
-
-      // Ordena por data mais recente
-      notifs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      const response=await api<{data:{id:string;type:NotificationItem['type'];title:string;detail:string;createdAt:string;link:string|null;readAt:string|null;priority:NotificationItem['priority'];status:NotificationItem['status']}[]}>('/api/notifications');
+      const notifs:NotificationItem[]=response.data.map(item=>({...item,timestamp:item.createdAt,link:item.link||'/atendimentos',actionText:'Abrir',read:Boolean(item.readAt)}));
 
       // A identidade do item, e não a contagem total, evita repetir toast quando
       // outro alerta some ou a ordem muda durante o polling.
@@ -149,7 +62,7 @@ export function ProfessionalNotifications() {
 
       setItems(notifs);
     } catch {
-      // Ignora falhas de conexão suavemente
+      showToast({title:'Notificações indisponíveis',message:'Não foi possível atualizar a central. Tentaremos novamente.',type:'info',key:'professional-notifications-error'});
     } finally {
       setLoading(false);
     }
@@ -176,15 +89,19 @@ export function ProfessionalNotifications() {
 
   const unreadCount = items.filter((i) => !i.read).length;
 
-  function markAllAsRead() {
-    setItems((prev) => prev.map((item) => ({ ...item, read: true })));
+  async function markAllAsRead() {
+    await api('/api/notifications/read-all',{method:'PATCH'});
+    await loadNotifications();
   }
 
-  function dismiss(id: string) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  async function dismiss(id: string) {
+    await api(`/api/notifications/${id}/archive`,{method:'PATCH'});
+    await loadNotifications();
   }
+  async function markRead(id:string){await api(`/api/notifications/${id}/read`,{method:'PATCH'});await loadNotifications()}
 
   function handleAction(item: NotificationItem) {
+    void api(`/api/notifications/${item.id}/read`,{method:'PATCH'});
     setIsOpen(false);
     navigate(item.link);
   }
@@ -196,6 +113,7 @@ export function ProfessionalNotifications() {
     EXAM: <FileSearch size={17} className="notif-icon blue" />,
     MESSAGE: <MessageCircle size={17} className="notif-icon rose" />,
     FINANCE: <CircleDollarSign size={17} className="notif-icon rose" />,
+    PRIVACY: <FileSearch size={17} className="notif-icon blue" />,
   };
 
   return (
@@ -221,11 +139,11 @@ export function ProfessionalNotifications() {
             </div>
             <div className="notif-header-actions">
               {unreadCount > 0 && (
-                <button className="notif-text-btn" onClick={markAllAsRead}>
+                <button className="notif-text-btn" onClick={() => void markAllAsRead()}>
                   <CheckCircle2 size={13} /> Marcar lidas
                 </button>
               )}
-              <button className="icon-button" onClick={() => setIsOpen(false)}>
+              <button className="icon-button" aria-label="Fechar notificações" onClick={() => setIsOpen(false)}>
                 <X size={16} />
               </button>
             </div>
@@ -242,18 +160,20 @@ export function ProfessionalNotifications() {
               </div>
             ) : (
               items.map((item) => (
-                <article key={item.id} className={`notif-card ${item.read ? 'read' : 'unread'}`}>
+                <article key={item.id} className={`notif-card ${item.read ? 'read' : 'unread'} priority-${item.priority.toLowerCase()}`}>
                   <div className="notif-card-icon">{iconMap[item.type]}</div>
                   <div className="notif-card-body">
                     <strong>{item.title}</strong>
                     <p>{item.detail}</p>
+                    <time className="notif-time" dateTime={item.timestamp}>{new Date(item.timestamp).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}</time>
                     <div className="notif-card-footer">
                       <button className="notif-action-btn" onClick={() => handleAction(item)}>
                         {item.actionText} →
                       </button>
+                      {!item.read && <button className="notif-dismiss-btn" onClick={() => void markRead(item.id)}>Marcar lida</button>}
                       <button
                         className="notif-dismiss-btn"
-                        onClick={() => dismiss(item.id)}
+                        onClick={() => void dismiss(item.id)}
                         title="Dispensar alerta"
                       >
                         Dispensar

@@ -29,6 +29,7 @@ import { clinicalCoreRoutes } from './modules/clinical-core/routes.js';
 import { messageRoutes } from './modules/messages/routes.js';
 import { followUpRoutes } from './modules/follow-up/routes.js';
 import { patientExamRoutes } from './modules/patient-exams/routes.js';
+import { notificationRoutes } from './modules/notifications/routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
@@ -90,6 +91,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(messageRoutes, { prefix: '/api/messages' });
   await app.register(followUpRoutes, { prefix: '/api/follow-up' });
   await app.register(patientExamRoutes, { prefix: '/api/patient-exams' });
+  await app.register(notificationRoutes, { prefix: '/api/notifications' });
 
   return app;
 }

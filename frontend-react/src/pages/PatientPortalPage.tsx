@@ -69,21 +69,26 @@ export function PatientPortalPage() {
   const [contrast, setContrast] = useState(() => localStorage.getItem('portal-contrast') === 'true');
   const notifRef = useRef<HTMLDivElement>(null);
   const prevActiveCallRef = useRef<string | null>(null);
-  const prevNotifCountRef = useRef<number | null>(null);
+  const knownNotificationIdsRef = useRef<Set<string> | null>(null);
+  const loadSequenceRef = useRef(0);
   const { logout } = useAuth();
-  const { showToast } = useToast();
+  const { showToast, dismissToastByKey } = useToast();
   const navigate = useNavigate();
 
   const load = useCallback(
-    () =>
+    () => {
+      const sequence = ++loadSequenceRef.current;
+      return (
       api<{ data: Any }>('/api/portal/home')
         .then((r) => {
+          if (sequence !== loadSequenceRef.current) return;
           const res = r.data;
           // Dispara alerta em tempo real se a nutricionista acabou de iniciar a chamada
           const activeEnc = res.activeConsultation;
           const currentCallId = activeEnc?.id || null;
           if (currentCallId && currentCallId !== prevActiveCallRef.current) {
             showToast({
+              key: 'active-teleconsultation',
               title: '🎥 Teleconsulta Iniciada!',
               message: 'Dra. Silvia iniciou o seu atendimento. Clique para entrar na sala.',
               type: 'call',
@@ -92,14 +97,16 @@ export function PatientPortalPage() {
               duration: 12000,
             });
           }
+          if (!currentCallId) dismissToastByKey('active-teleconsultation');
           prevActiveCallRef.current = currentCallId;
 
           // Dispara alerta se chegaram novas notificações
-          const unreadCount = res.notifications?.filter((n: Any) => !n.readAt).length || 0;
-          if (prevNotifCountRef.current !== null && unreadCount > prevNotifCountRef.current) {
-            const latest = res.notifications?.[0];
+          const currentIds = new Set<string>((res.notifications || []).filter((n: Any) => n.status === 'ACTIVE' && !n.readAt).map((n: Any) => n.id));
+          if (knownNotificationIdsRef.current !== null) {
+            const latest = (res.notifications || []).find((n: Any) => currentIds.has(n.id) && !knownNotificationIdsRef.current!.has(n.id));
             if (latest) {
               showToast({
+                key: `patient-notification:${latest.id}`,
                 title: latest.title,
                 message: latest.body,
                 type: latest.kind === 'MESSAGE' ? 'message' : 'info',
@@ -107,12 +114,14 @@ export function PatientPortalPage() {
               });
             }
           }
-          prevNotifCountRef.current = unreadCount;
+          knownNotificationIdsRef.current = currentIds;
 
           setData(res);
         })
-        .catch((c) => setError(c instanceof Error ? c.message : 'Erro ao abrir portal.')),
-    [showToast, navigate],
+        .catch((c) => { if (sequence === loadSequenceRef.current) setError(c instanceof Error ? c.message : 'Erro ao abrir portal.'); })
+      );
+    },
+    [showToast, dismissToastByKey, navigate],
   );
 
   useEffect(() => {
@@ -170,8 +179,10 @@ export function PatientPortalPage() {
     try {
       await api(`/api/portal/notifications/${id}/read`, { method: 'PATCH' });
       await load();
-    } catch {}
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar a notificação.'); }
   }
+  async function markAllNotificationsRead() { await api('/api/portal/notifications/read-all',{method:'PATCH'}); await load(); }
+  async function archiveNotification(id:string) { await api(`/api/portal/notifications/${id}/archive`,{method:'PATCH'}); await load(); }
 
   async function addQuickWater(amountLiters: number) {
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -194,12 +205,8 @@ export function PatientPortalPage() {
   }
 
   const activeTeleconsultation = useMemo(() => {
-    if (data?.activeConsultation) return data.activeConsultation;
-    if (!data?.appointments) return null;
-    return data.appointments.find(
-      (a: Any) => a.meetingUrl && a.status === 'IN_PROGRESS',
-    );
-  }, [data?.activeConsultation, data?.appointments]);
+    return data?.activeConsultation || null;
+  }, [data?.activeConsultation]);
 
   if (error && !data)
     return (
@@ -216,7 +223,7 @@ export function PatientPortalPage() {
       </div>
     );
 
-  const unreadNotifs = data.notifications?.filter((n: Any) => !n.readAt) || [];
+  const unreadNotifs = data.notifications?.filter((n: Any) => n.status === 'ACTIVE' && !n.readAt) || [];
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -251,34 +258,32 @@ export function PatientPortalPage() {
               title="Notificações"
             >
               <Bell size={18} />
-              {unreadNotifs.length > 0 && <span className="notif-badge-dot" />}
+              {unreadNotifs.length > 0 && <span className="notif-badge">{Math.min(unreadNotifs.length,99)}</span>}
             </button>
 
             {notifOpen && (
               <div className="portal-notif-dropdown">
                 <header className="portal-notif-head">
-                  <strong>Notificações</strong>
-                  <button className="icon-button" onClick={() => setNotifOpen(false)}>
+                  <div><strong>Notificações</strong><small>{unreadNotifs.length ? `${unreadNotifs.length} não lida(s)` : 'Tudo em dia'}</small></div>
+                  {unreadNotifs.length > 0 && <button className="notif-read-btn ghost-button" onClick={() => void markAllNotificationsRead()}>Marcar todas lidas</button>}
+                  <button className="icon-button" aria-label="Fechar notificações" onClick={() => setNotifOpen(false)}>
                     <X size={15} />
                   </button>
                 </header>
                 <div className="portal-notif-items">
                   {data.notifications?.length ? (
                     data.notifications.map((n: Any) => (
-                      <article key={n.id} className={`portal-notif-row ${!n.readAt ? 'unread' : 'read'}`}>
+                      <article key={n.id} className={`portal-notif-row ${!n.readAt && n.status==='ACTIVE' ? 'unread' : 'read'} ${n.status?.toLowerCase()}`}>
                         <div>
                           <strong>{n.title}</strong>
                           <p>{n.body}</p>
-                          <small>{new Date(n.createdAt).toLocaleDateString('pt-BR')}</small>
+                          <small>{new Date(n.createdAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}{n.status==='RESOLVED'?' · Resolvida':''}</small>
+                          <div className="portal-notif-actions">
+                            {n.actionUrl && n.status==='ACTIVE' && <button className="notif-read-btn" onClick={()=>{setNotifOpen(false);navigate(n.actionUrl)}}>Abrir</button>}
+                            {!n.readAt && <button className="notif-read-btn ghost-button" onClick={() => void markNotificationRead(n.id)}>Marcar lida</button>}
+                            <button className="notif-read-btn ghost-button" onClick={() => void archiveNotification(n.id)}>Arquivar</button>
+                          </div>
                         </div>
-                        {!n.readAt && (
-                          <button
-                            className="notif-read-btn ghost-button"
-                            onClick={() => markNotificationRead(n.id)}
-                          >
-                            Marcar lida
-                          </button>
-                        )}
                       </article>
                     ))
                   ) : (

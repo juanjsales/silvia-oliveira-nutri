@@ -6,6 +6,7 @@ export type ToastType = 'info' | 'success' | 'call' | 'message';
 
 export type ToastItem = {
   id: string;
+  key?: string;
   title: string;
   message: string;
   type?: ToastType;
@@ -17,6 +18,7 @@ export type ToastItem = {
 type ToastContextType = {
   showToast: (toast: Omit<ToastItem, 'id'>) => void;
   dismissToast: (id: string) => void;
+  dismissToastByKey: (key: string) => void;
 };
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -27,12 +29,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+  const dismissToastByKey = useCallback((key: string) => {
+    setToasts((prev) => prev.filter((t) => t.key !== key));
+  }, []);
 
   const showToast = useCallback((item: Omit<ToastItem, 'id'>) => {
     const id = Math.random().toString(36).slice(2, 9);
     const newToast: ToastItem = { ...item, id };
 
-    setToasts((prev) => [newToast, ...prev.slice(0, 3)]); // Mantém no máximo 4 toasts simultâneos
+    setToasts((prev) => [newToast, ...prev.filter((toast) => !item.key || toast.key !== item.key).slice(0, 3)]);
 
     // Toca som apropriado
     if (item.type === 'call') {
@@ -52,7 +57,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [dismissToast]);
 
   return (
-    <ToastContext.Provider value={{ showToast, dismissToast }}>
+    <ToastContext.Provider value={{ showToast, dismissToast, dismissToastByKey }}>
       {children}
       <div className="toast-portal-container" aria-live="polite" aria-atomic="true">
         {toasts.map((toast) => (

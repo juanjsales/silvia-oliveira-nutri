@@ -117,21 +117,17 @@ export async function encounterRoutes(app: FastifyInstance) {
       const existing = await app.db.query<{id:string}>('SELECT id FROM clinical_encounters WHERE appointment_id=$1', [body.appointmentId]);
       if (existing.rows[0]) {
         await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
-        await app.db.query(
-          `INSERT INTO patient_notifications(patient_id, title, body, kind)
-           VALUES ($1, '🎥 Teleconsulta iniciada pela nutricionista', 'Sua nutricionista iniciou o seu atendimento. Clique no portal para entrar na sala virtual.', 'APPOINTMENT')`,
-          [body.patientId]
-        ).catch(() => {});
+        await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key)
+          VALUES($1,'Teleconsulta iniciada','Sua nutricionista iniciou o atendimento. Entre na sala virtual.','VIDEO','URGENT','clinical_encounter',$2,'/portal/video/'||$3,'teleconsultation:'||$2)
+          ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO UPDATE SET read_at=NULL,created_at=now(),action_url=EXCLUDED.action_url`,[body.patientId,existing.rows[0].id,body.appointmentId]);
         return reply.send({ data: { id: existing.rows[0].id, resumed: true } });
       }
     } else {
       const existingDirect = await app.db.query<{id:string}>("SELECT id FROM clinical_encounters WHERE patient_id=$1 AND status='IN_PROGRESS' ORDER BY started_at DESC LIMIT 1", [body.patientId]);
       if (existingDirect.rows[0]) {
-        await app.db.query(
-          `INSERT INTO patient_notifications(patient_id, title, body, kind)
-           VALUES ($1, '🎥 Teleconsulta iniciada pela nutricionista', 'Sua nutricionista iniciou o seu atendimento. Clique no portal para entrar na sala virtual.', 'APPOINTMENT')`,
-          [body.patientId]
-        ).catch(() => {});
+        await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key)
+          VALUES($1,'Teleconsulta iniciada','Sua nutricionista iniciou o atendimento. Entre na sala virtual.','VIDEO','URGENT','clinical_encounter',$2,'/portal/video/'||$2,'teleconsultation:'||$2)
+          ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO UPDATE SET read_at=NULL,created_at=now()`,[body.patientId,existingDirect.rows[0].id]);
         return reply.send({ data: { id: existingDirect.rows[0].id, resumed: true } });
       }
     }
@@ -139,11 +135,9 @@ export async function encounterRoutes(app: FastifyInstance) {
       VALUES ($1,$2,$3, encode(gen_random_bytes(18), 'hex')) RETURNING id`, [body.patientId, body.appointmentId ?? null, request.auth!.userId]);
     const id = result.rows[0]!.id;
     if (body.appointmentId) await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
-    await app.db.query(
-      `INSERT INTO patient_notifications(patient_id, title, body, kind)
-       VALUES ($1, '🎥 Teleconsulta iniciada pela nutricionista', 'Sua nutricionista iniciou o seu atendimento. Clique no portal para entrar na sala virtual.', 'APPOINTMENT')`,
-      [body.patientId]
-    ).catch(() => {});
+    await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key)
+      VALUES($1,'Teleconsulta iniciada','Sua nutricionista iniciou o atendimento. Entre na sala virtual.','VIDEO','URGENT','clinical_encounter',$2,'/portal/video/'||COALESCE($3,$2),'teleconsultation:'||$2)
+      ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO UPDATE SET read_at=NULL,created_at=now(),action_url=EXCLUDED.action_url`,[body.patientId,id,body.appointmentId??null]);
     await audit(app.db, 'ENCOUNTER_STARTED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id, metadata: { patientId: body.patientId } });
     return reply.code(201).send({ data: { id, resumed: false } });
   });
@@ -242,6 +236,11 @@ export async function encounterRoutes(app: FastifyInstance) {
         const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);
         financeCreated=finance.created;
       }
+      await client.query(`UPDATE teleconsultation_sessions SET state='ENDED',ended_at=COALESCE(ended_at,now()),end_reason=COALESCE(end_reason,'COMPLETED'),updated_at=now() WHERE ended_at IS NULL AND source_id IN ($1,$2)`,[id,result.rows[0].appointment_id]);
+      await client.query(`UPDATE patient_notifications SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now()) WHERE patient_id=$1 AND dedupe_key=$2 AND status='ACTIVE'`,[encounterInfo.rows[0].patientId,`teleconsultation:${id}`]);
+      await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,dedupe_key)
+        VALUES($1,'Atendimento concluído','Seu atendimento foi concluído. As orientações disponíveis podem ser consultadas no portal.','APPOINTMENT','NORMAL','clinical_encounter',$2,'encounter-completed:'||$2)
+        ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO NOTHING`,[encounterInfo.rows[0].patientId,id]);
       await audit(client,'ENCOUNTER_COMPLETED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{financeCreated, emailSent: !!body.sendEmail}});
       await client.query('COMMIT');
     }catch(error){
@@ -298,8 +297,8 @@ export async function encounterRoutes(app: FastifyInstance) {
     const client = await app.db.connect();
     try {
       await client.query('BEGIN');
-      const result = await client.query<{ appointment_id: string | null }>(
-        `UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id`,
+      const result = await client.query<{ appointment_id: string | null; patient_id:string }>(
+        `UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=$1 AND status='IN_PROGRESS' RETURNING appointment_id,patient_id`,
         [id]
       );
       if (!result.rows[0]) {
@@ -309,6 +308,8 @@ export async function encounterRoutes(app: FastifyInstance) {
       if (result.rows[0].appointment_id) {
         await client.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [result.rows[0].appointment_id]);
       }
+      await client.query(`UPDATE teleconsultation_sessions SET state='ENDED',ended_at=COALESCE(ended_at,now()),end_reason=COALESCE(end_reason,'COMPLETED'),updated_at=now() WHERE ended_at IS NULL AND source_id IN ($1,$2)`,[id,result.rows[0].appointment_id]);
+      await client.query(`UPDATE patient_notifications SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now()) WHERE patient_id=$1 AND dedupe_key=$2 AND status='ACTIVE'`,[result.rows[0].patient_id,`teleconsultation:${id}`]);
       await audit(client, 'ENCOUNTER_QUICK_CLOSED', 'clinical_encounter', { actorUserId: request.auth!.userId, entityId: id });
       await client.query('COMMIT');
       return { data: { id, status: 'COMPLETED' } };
@@ -337,6 +338,8 @@ export async function encounterRoutes(app: FastifyInstance) {
       await client.query('UPDATE laboratory_results SET encounter_id=NULL WHERE encounter_id=$1', [id]);
       await client.query('UPDATE supplement_prescriptions SET encounter_id=NULL WHERE encounter_id=$1', [id]);
       await client.query('UPDATE clinical_documents SET encounter_id=NULL WHERE encounter_id=$1', [id]);
+      await client.query(`UPDATE teleconsultation_sessions SET state='ENDED',ended_at=COALESCE(ended_at,now()),end_reason=COALESCE(end_reason,'CANCELLED'),updated_at=now() WHERE ended_at IS NULL AND source_id IN($1,$2)`,[id,encounter.rows[0].appointment_id]);
+      await client.query(`UPDATE patient_notifications SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now()) WHERE patient_id=$1 AND dedupe_key=$2 AND status='ACTIVE'`,[encounter.rows[0].patient_id,`teleconsultation:${id}`]);
       await client.query('DELETE FROM clinical_sections WHERE encounter_id=$1', [id]);
       await client.query('DELETE FROM clinical_encounters WHERE id=$1', [id]);
 
@@ -367,14 +370,16 @@ export async function encounterRoutes(app: FastifyInstance) {
     const client = await app.db.connect();
     try {
       await client.query('BEGIN');
-      const updated = await client.query<{ id: string; appointment_id: string | null }>(
-        `UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=ANY($1::uuid[]) AND status='IN_PROGRESS' RETURNING id, appointment_id`,
+      const updated = await client.query<{ id: string; appointment_id: string | null; patient_id:string }>(
+        `UPDATE clinical_encounters SET status='COMPLETED', completed_at=now(), updated_at=now() WHERE id=ANY($1::uuid[]) AND status='IN_PROGRESS' RETURNING id, appointment_id,patient_id`,
         [ids]
       );
       for (const row of updated.rows) {
         if (row.appointment_id) {
           await client.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [row.appointment_id]);
         }
+        await client.query(`UPDATE teleconsultation_sessions SET state='ENDED',ended_at=COALESCE(ended_at,now()),end_reason=COALESCE(end_reason,'COMPLETED'),updated_at=now() WHERE ended_at IS NULL AND source_id IN($1,$2)`,[row.id,row.appointment_id]);
+        await client.query(`UPDATE patient_notifications SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now()) WHERE patient_id=$1 AND dedupe_key=$2 AND status='ACTIVE'`,[row.patient_id,`teleconsultation:${row.id}`]);
       }
       await audit(client, 'ENCOUNTERS_BULK_CLOSED', 'clinical_encounter', {
         actorUserId: request.auth!.userId,
@@ -390,4 +395,3 @@ export async function encounterRoutes(app: FastifyInstance) {
     }
   });
 }
-
