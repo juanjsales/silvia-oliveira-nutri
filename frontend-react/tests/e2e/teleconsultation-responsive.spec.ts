@@ -134,14 +134,29 @@ test.describe('teleconsulta responsiva isolada', () => {
       await expectInsideViewport(page, '.video-consultation header button, .video-consultation footer button, .broadcast-toggle-collapse');
       await expectInsideViewport(page, '.video-broadcast-bar');
 
-      const [containerBox, iframeBox] = await Promise.all([
+      const [splitBox, containerBox, iframeBox] = await Promise.all([
+        split.boundingBox(),
         frameContainer.boundingBox(),
         iframe.boundingBox(),
       ]);
+      expect(splitBox).not.toBeNull();
       expect(containerBox).not.toBeNull();
       expect(iframeBox).not.toBeNull();
+      expect(
+        containerBox!.height / splitBox!.height,
+        'o palco de vídeo foi comprimido por uma linha incorreta da grade',
+      ).toBeGreaterThan(0.4);
       expect(Math.abs(iframeBox!.width - containerBox!.width)).toBeLessThanOrEqual(2);
       expect(Math.abs(iframeBox!.height - containerBox!.height)).toBeLessThanOrEqual(2);
+
+      const splitOverflow = await split.evaluate(element => ({
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+      }));
+      expect(
+        splitOverflow.scrollWidth,
+        'controles ou rodapé ultrapassaram a largura do split',
+      ).toBeLessThanOrEqual(splitOverflow.clientWidth + 1);
 
       await split.getByRole('button', { name: /Minimizar/i }).click();
       await expect(split).toHaveCount(0);

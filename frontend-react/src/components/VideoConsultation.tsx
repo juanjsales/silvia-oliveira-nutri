@@ -356,6 +356,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
           <button
             type="button"
             className="video-minimize-btn secondary-button"
+            aria-label="Minimizar teleconsulta"
             onClick={() => {
               minimizeCall();
               onClose();
@@ -369,6 +370,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
           <button
             type="button"
             className="hangup"
+            aria-label="Encerrar teleconsulta para todos"
             onClick={() => {
               if (window.confirm('Deseja realmente encerrar a teleconsulta?')) {
                 void finishForEveryone();
