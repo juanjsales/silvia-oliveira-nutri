@@ -28,6 +28,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { api } from '../lib/api';
 import { PwaInstallBanner } from '../components/PwaInstallBanner';
 import { BodyEvolutionChart } from '../components/BodyEvolutionChart';
@@ -74,6 +75,7 @@ export function PatientPortalPage() {
   const { logout } = useAuth();
   const { showToast, dismissToastByKey } = useToast();
   const navigate = useNavigate();
+  const { activeCall, isCallActiveFor, restoreCall } = useTeleconsultation();
 
   const load = useCallback(
     () => {
@@ -86,7 +88,9 @@ export function PatientPortalPage() {
           // Dispara alerta em tempo real se a nutricionista acabou de iniciar a chamada
           const activeEnc = res.activeConsultation;
           const currentCallId = activeEnc?.id || null;
-          if (currentCallId && currentCallId !== prevActiveCallRef.current) {
+          const alreadyInCurrentCall = isCallActiveFor(currentCallId, activeEnc?.appointmentId, activeEnc?.meetingUrl);
+          if (alreadyInCurrentCall) dismissToastByKey('active-teleconsultation');
+          if (currentCallId && !alreadyInCurrentCall && currentCallId !== prevActiveCallRef.current) {
             showToast({
               key: 'active-teleconsultation',
               title: '🎥 Teleconsulta Iniciada!',
@@ -104,7 +108,7 @@ export function PatientPortalPage() {
           const currentIds = new Set<string>((res.notifications || []).filter((n: Any) => n.status === 'ACTIVE' && !n.readAt).map((n: Any) => n.id));
           if (knownNotificationIdsRef.current !== null) {
             const latest = (res.notifications || []).find((n: Any) => currentIds.has(n.id) && !knownNotificationIdsRef.current!.has(n.id));
-            if (latest) {
+            if (latest && !isCallActiveFor(latest.actionUrl)) {
               showToast({
                 key: `patient-notification:${latest.id}`,
                 title: latest.title,
@@ -121,7 +125,7 @@ export function PatientPortalPage() {
         .catch((c) => { if (sequence === loadSequenceRef.current) setError(c instanceof Error ? c.message : 'Erro ao abrir portal.'); })
       );
     },
-    [showToast, dismissToastByKey, navigate],
+    [showToast, dismissToastByKey, navigate, isCallActiveFor],
   );
 
   useEffect(() => {
@@ -131,6 +135,20 @@ export function PatientPortalPage() {
     }, 4000);
     return () => window.clearInterval(interval);
   }, [load]);
+
+  useEffect(() => {
+    if (!activeCall) {
+      prevActiveCallRef.current = null;
+      return;
+    }
+    dismissToastByKey('active-teleconsultation');
+    const redundant = (data?.notifications || []).filter((notification: Any) =>
+      notification.status === 'ACTIVE' && !notification.readAt && isCallActiveFor(notification.actionUrl),
+    );
+    redundant.forEach((notification: Any) => {
+      void api(`/api/portal/notifications/${notification.id}/read`, { method: 'PATCH' });
+    });
+  }, [activeCall, data?.notifications, dismissToastByKey, isCallActiveFor]);
 
   useEffect(() => {
     localStorage.setItem('portal-font-scale', String(fontScale));
@@ -223,7 +241,8 @@ export function PatientPortalPage() {
       </div>
     );
 
-  const unreadNotifs = data.notifications?.filter((n: Any) => n.status === 'ACTIVE' && !n.readAt) || [];
+  const unreadNotifs = data.notifications?.filter((n: Any) => n.status === 'ACTIVE' && !n.readAt && !isCallActiveFor(n.actionUrl)) || [];
+  const currentTeleconsultationIsOpen = Boolean(activeCall && activeTeleconsultation && isCallActiveFor(activeTeleconsultation.id, activeTeleconsultation.appointmentId, activeTeleconsultation.meetingUrl));
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -279,7 +298,7 @@ export function PatientPortalPage() {
                           <p>{n.body}</p>
                           <small>{new Date(n.createdAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}{n.status==='RESOLVED'?' · Resolvida':''}</small>
                           <div className="portal-notif-actions">
-                            {n.actionUrl && n.status==='ACTIVE' && <button className="notif-read-btn" onClick={()=>{setNotifOpen(false);navigate(n.actionUrl)}}>Abrir</button>}
+                            {n.actionUrl && n.status==='ACTIVE' && <button className="notif-read-btn" onClick={()=>{setNotifOpen(false);if(isCallActiveFor(n.actionUrl))restoreCall();else navigate(n.actionUrl)}}>{isCallActiveFor(n.actionUrl)?'Voltar à chamada':'Abrir'}</button>}
                             {!n.readAt && <button className="notif-read-btn ghost-button" onClick={() => void markNotificationRead(n.id)}>Marcar lida</button>}
                             <button className="notif-read-btn ghost-button" onClick={() => void archiveNotification(n.id)}>Arquivar</button>
                           </div>
@@ -310,7 +329,7 @@ export function PatientPortalPage() {
       </header>
 
       {/* ── BANNER DE RETOMADA IMEDIATA DE TELECONSULTA ── */}
-      {activeTeleconsultation && (
+      {activeTeleconsultation && !currentTeleconsultationIsOpen && (
         <aside className="portal-active-teleconsult-bar">
           <div className="active-teleconsult-info">
             <span className="teleconsult-live-pill">
@@ -413,6 +432,7 @@ function PortalHome({
   reload: () => Promise<void> | void;
   addQuickWater: (l: number) => Promise<void>;
 }) {
+  const { isCallActiveFor, restoreCall } = useTeleconsultation();
   const upcoming = data.appointments.filter(
     (a: Any) =>
       a.status !== 'COMPLETED' &&
@@ -446,7 +466,11 @@ function PortalHome({
             </div>
           </div>
 
-          {upcoming[0].meetingUrl ? (
+          {isCallActiveFor(upcoming[0].id, upcoming[0].meetingUrl) ? (
+            <button type="button" className="appt-video-btn" onClick={restoreCall}>
+              <Video size={17} /> Voltar à chamada
+            </button>
+          ) : upcoming[0].meetingUrl ? (
             <Link className="appt-video-btn" to={upcoming[0].meetingUrl}>
               <Video size={17} /> Entrar na Sala Virtual
             </Link>
@@ -1039,6 +1063,7 @@ function Requests({ rows, submit }: { rows: Any[]; submit: any }) {
 }
 
 function Agenda({ appointments, requests, submit }: { appointments: Any[]; requests: Any[]; submit: any }) {
+  const { isCallActiveFor, restoreCall } = useTeleconsultation();
   const today = new Date();
   const localToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const upcoming = appointments
@@ -1061,7 +1086,11 @@ function Agenda({ appointments, requests, submit }: { appointments: Any[]; reque
                   {formatAppointmentSchedule(a.appointmentTime, a.durationMinutes)}
                 </span>
               </div>
-              {a.meetingUrl && (
+              {isCallActiveFor(a.id, a.meetingUrl) ? (
+                <button type="button" className="primary-button" onClick={restoreCall}>
+                  <Video size={16} /> Voltar à chamada
+                </button>
+              ) : a.meetingUrl && (
                 <Link className="primary-button" to={a.meetingUrl}>
                   <Video size={16} /> Entrar
                 </Link>

@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ToastNotification';
 import { api } from '../lib/api';
+import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 
 type NotificationItem = {
   id: string;
@@ -35,6 +36,7 @@ export function ProfessionalNotifications() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { isCallActiveFor, restoreCall } = useTeleconsultation();
 
   const loadNotifications = useCallback(async () => {
     setLoading(true);
@@ -46,7 +48,7 @@ export function ProfessionalNotifications() {
       // outro alerta some ou a ordem muda durante o polling.
       const currentIds = new Set(notifs.map((item) => item.id));
       if (knownIdsRef.current !== null) {
-        const latest = notifs.find((item) => !knownIdsRef.current!.has(item.id));
+        const latest = notifs.find((item) => !knownIdsRef.current!.has(item.id) && !isCallActiveFor(item.link));
         if (latest) {
           showToast({
             title: latest.title,
@@ -66,7 +68,7 @@ export function ProfessionalNotifications() {
     } finally {
       setLoading(false);
     }
-  }, [showToast, navigate]);
+  }, [showToast, navigate, isCallActiveFor]);
 
   useEffect(() => {
     void loadNotifications();
@@ -87,7 +89,7 @@ export function ProfessionalNotifications() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const unreadCount = items.filter((i) => !i.read).length;
+  const unreadCount = items.filter((i) => !i.read && !isCallActiveFor(i.link)).length;
 
   async function markAllAsRead() {
     await api('/api/notifications/read-all',{method:'PATCH'});
@@ -103,6 +105,10 @@ export function ProfessionalNotifications() {
   function handleAction(item: NotificationItem) {
     void api(`/api/notifications/${item.id}/read`,{method:'PATCH'});
     setIsOpen(false);
+    if (isCallActiveFor(item.link)) {
+      restoreCall();
+      return;
+    }
     navigate(item.link);
   }
 
@@ -168,7 +174,7 @@ export function ProfessionalNotifications() {
                     <time className="notif-time" dateTime={item.timestamp}>{new Date(item.timestamp).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}</time>
                     <div className="notif-card-footer">
                       <button className="notif-action-btn" onClick={() => handleAction(item)}>
-                        {item.actionText} →
+                        {isCallActiveFor(item.link) ? 'Voltar à chamada' : item.actionText} →
                       </button>
                       {!item.read && <button className="notif-dismiss-btn" onClick={() => void markRead(item.id)}>Marcar lida</button>}
                       <button

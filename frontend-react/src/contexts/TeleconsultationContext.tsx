@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 export type ActiveCall = {
   appointmentId?: string | null;
+  encounterId?: string | null;
   sessionId?: string | null;
   roomToken: string;
   patientName: string;
@@ -19,6 +20,7 @@ type TeleconsultationContextType = {
   minimizeCall: () => void;
   restoreCall: () => void;
   endCall: () => void;
+  isCallActiveFor: (...identifiers: Array<string | null | undefined>) => boolean;
 };
 
 const TeleconsultationContext = createContext<TeleconsultationContextType | null>(null);
@@ -91,6 +93,13 @@ export function TeleconsultationProvider({ children }: { children: ReactNode }) 
     sessionStorage.removeItem('global_call_minimized');
   }, []);
 
+  const isCallActiveFor = useCallback((...identifiers: Array<string | null | undefined>) => {
+    if (!activeCall) return false;
+    const callIds = [activeCall.appointmentId, activeCall.encounterId, activeCall.sessionId, activeCall.roomToken]
+      .filter((value): value is string => Boolean(value));
+    return identifiers.some((candidate) => Boolean(candidate) && callIds.some((id) => candidate === id || candidate!.includes(id)));
+  }, [activeCall]);
+
   return (
     <TeleconsultationContext.Provider
       value={{
@@ -100,6 +109,7 @@ export function TeleconsultationProvider({ children }: { children: ReactNode }) 
         minimizeCall,
         restoreCall,
         endCall,
+        isCallActiveFor,
       }}
     >
       {children}

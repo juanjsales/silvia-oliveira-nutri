@@ -83,6 +83,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
 
       startCall({
         appointmentId: appointmentId || encounterId,
+        encounterId,
         sessionId,
         roomToken,
         patientName,

@@ -36,7 +36,7 @@ export function ProfessionalLiveAlerts() {
   const [dismissedApptId, setDismissedApptId] = useState<string | null>(null);
   const notifiedThresholdsRef = useRef<Set<string>>(new Set());
   const { showToast } = useToast();
-  const { restoreCall, activeCall } = useTeleconsultation();
+  const { activeCall, isCallActiveFor } = useTeleconsultation();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -55,6 +55,7 @@ export function ProfessionalLiveAlerts() {
 
         res.data.todayAppointments.forEach((appt) => {
           if (res.data.activeEncounter?.appointmentId === appt.id) return;
+          if (isCallActiveFor(appt.id)) return;
           const [h, m] = String(appt.appointmentTime).slice(0, 5).split(':').map(Number);
           if (isNaN(h) || isNaN(m)) return;
           const apptTotalMinutes = h * 60 + m;
@@ -100,7 +101,7 @@ export function ProfessionalLiveAlerts() {
       mounted = false;
       clearInterval(interval);
     };
-  }, [showToast, navigate]);
+  }, [showToast, navigate, isCallActiveFor]);
 
   if (!data) return null;
 
@@ -108,7 +109,7 @@ export function ProfessionalLiveAlerts() {
   const isCurrentlyInEncounter = location.pathname === '/atendimentos' && Boolean(currentEncounterId && data.activeEncounter?.id === currentEncounterId);
 
   // 1. Prioridade: Atendimento Ativo em Andamento (quando a nutricionista não estiver na tela exata daquele atendimento)
-  if (data.activeEncounter && !isCurrentlyInEncounter) {
+  if (data.activeEncounter && !isCurrentlyInEncounter && !isCallActiveFor(data.activeEncounter.id, data.activeEncounter.appointmentId)) {
     const enc = data.activeEncounter;
     return (
       <aside className="pro-live-top-banner in-progress-banner">
@@ -140,6 +141,7 @@ export function ProfessionalLiveAlerts() {
 
   const imminent = data.todayAppointments.find((appt) => {
     if (appt.id === dismissedApptId) return false;
+    if (isCallActiveFor(appt.id)) return false;
     if (data.activeEncounter?.appointmentId === appt.id) return false;
     const [h, m] = String(appt.appointmentTime).slice(0, 5).split(':').map(Number);
     if (isNaN(h) || isNaN(m)) return false;
