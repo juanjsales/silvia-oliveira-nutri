@@ -535,18 +535,18 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 @media(max-width:600px){.portal-notif-head{align-items:flex-start;flex-wrap:wrap;gap:8px}.portal-notif-head .icon-button{position:absolute;right:8px;top:8px}.portal-notif-head{padding-right:54px}.portal-notif-actions button{min-height:44px;flex:1}.portal-notif-row{padding:14px}}
 
 /* Split clínico: nenhuma ferramenta pode ampliar a página além da área útil. */
-.virtual-office.with-video{grid-template-columns:minmax(360px,.82fr) minmax(0,1.18fr);max-width:100%;min-width:0}
+.virtual-office.with-video{grid-template-columns:minmax(420px,.92fr) minmax(0,1.08fr);max-width:100%;min-width:0}
 .virtual-office.with-video>.encounter-page{width:100%;max-width:100%;min-width:0;overflow-x:clip}
 .virtual-office.with-video .encounter-header{min-width:0}
 .virtual-office.with-video .encounter-header-main{flex-basis:100%}
 .virtual-office.with-video .encounter-header-actions{flex:1 1 100%;width:100%;min-width:0;justify-content:flex-start}
 .virtual-office.with-video .encounter-header-actions>*{max-width:100%}
 .virtual-office.with-video .clinical-stepper{max-width:100%}
-@media(max-width:1250px) and (min-width:981px){.virtual-office.with-video{grid-template-columns:minmax(320px,.72fr) minmax(0,1.28fr)}.virtual-office.with-video .encounter-header-actions .secondary-button,.virtual-office.with-video .encounter-header-actions .primary-button{flex:1 1 auto;justify-content:center}}
+@media(max-width:1250px) and (min-width:981px){.virtual-office.with-video{grid-template-columns:minmax(390px,.88fr) minmax(0,1.12fr)}.virtual-office.with-video .encounter-header-actions .secondary-button,.virtual-office.with-video .encounter-header-actions .primary-button{flex:1 1 auto;justify-content:center}}
 @media(max-width:980px){.virtual-office.with-video{display:flex;max-width:100%}.virtual-office.with-video .encounter-header-actions>*{flex:1 1 180px;justify-content:center}}
 
 /* A barra de transmissão é uma linha própria; o palco recebe todo o espaço restante. */
-.video-consultation{grid-template-rows:auto auto minmax(0,1fr) auto}
+.video-consultation{grid-template-rows:auto auto minmax(0,1fr) auto;container-type:inline-size}
 .video-consultation .video-frame{min-width:0;min-height:0;overflow:hidden}
 .virtual-office.with-video .video-footer-info{display:none}
 .virtual-office.with-video .video-footer-actions{width:100%;min-width:0;justify-content:flex-end}
@@ -3352,7 +3352,8 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 .broadcast-library-btn { flex:0 0 auto;background:#7ee0a4;color:#0c2015;border-color:#7ee0a4;font-weight:800; }
 .broadcast-library-btn:hover { background:#9aebba;color:#08170f; }
 .appointment-discard-btn { margin-right:auto; }
-@media(max-width:700px){.broadcast-library-guide{align-items:stretch;flex-direction:column}.broadcast-library-btn{width:100%}.appointment-discard-btn{margin-right:0}}
+@media(max-width:700px){.broadcast-library-guide{align-items:center;flex-direction:row}.broadcast-guide-steps span{font-size:0}.broadcast-guide-steps span b{font-size:.61rem}.broadcast-library-btn{width:auto}.appointment-discard-btn{margin-right:0}}
+@container (max-width:520px){.broadcast-library-guide{align-items:center;flex-direction:row}.broadcast-guide-steps span{font-size:0}.broadcast-guide-steps span b{font-size:.61rem}.broadcast-library-btn{width:auto;padding-inline:10px}.broadcast-library-btn{font-size:.68rem}}
 
 /* Live Clinical Cards for Patient */
 .live-clinical-card {

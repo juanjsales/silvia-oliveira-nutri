@@ -291,6 +291,12 @@
             transform: scaleX(-1); /* espelha câmera própria */
         }
 
+        /* A miniatura própria deve parecer uma câmera, não um quadro com barras. */
+        .videos-layout-grid.mode-spotlight .local-video-wrap:not(.video-wrap-screen-share) #localVideo {
+            object-fit: cover !important;
+            object-position: center 24% !important;
+        }
+
         /* Se for compartilhamento de tela, sempre manter 100% legível */
         .video-wrap-screen-share .video-element,
         .video-wrap-screen-share #remoteVideo,
@@ -846,7 +852,9 @@
         let isScreenSharing = false;
         let isModerator = false;
         let isCoverFit = false;
-        let currentLayout = 'grid'; // 'grid' | 'spotlight'
+        // O padrão clínico prioriza contato visual: participante remoto em destaque
+        // e câmera própria como miniatura. A grade continua disponível manualmente.
+        let currentLayout = 'spotlight'; // 'grid' | 'spotlight'
         let myPeerId = '';
         let targetPeerId = '';
         let connectRetryTimer = null;
@@ -1109,9 +1117,7 @@
             }
 
             const btnLayout = document.getElementById('btnLayout');
-            if (btnLayout && currentLayout === 'grid') {
-                btnLayout.classList.add('active');
-            }
+            if (btnLayout) btnLayout.classList.toggle('active', currentLayout === 'grid');
 
             setStatus('Conectado em HD', true);
             startTimer();
