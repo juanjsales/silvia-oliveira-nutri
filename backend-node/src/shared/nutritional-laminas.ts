@@ -8,6 +8,36 @@ export interface NutritionalLamina {
   icon: string;
 }
 
+const expanded=(id:string,title:string,category:NutritionalLamina['category'],categoryLabel:string,summary:string):NutritionalLamina=>({id,title,category,categoryLabel,summary,icon:category==='ROTULOS'?'Tags':category==='COMPORTAMENTO'?'Brain':'Salad',tips:['Use esta orientação como apoio ao plano alimentar individual.','Observe porções, frequência, tolerância e contexto clínico.','Priorize escolhas possíveis e mudanças graduais.','Consulte os detalhes e exemplos disponíveis no Portal do Paciente.']});
+const EXPANDED_NUTRITIONAL_LAMINAS:NutritionalLamina[]=[
+ expanded('grupos-alimentares','Conhecendo os Grupos Alimentares','PRATICA','Educação Alimentar','Funções dos principais grupos e combinações variadas.'),
+ expanded('pratos-saudaveis-semana','Ideias de Pratos Saudáveis para a Semana','PRATICA','Alimentação Prática','Combinações simples para refeições equilibradas.'),
+ expanded('lanches-saudaveis-semana','Ideias de Lanches para a Semana','PRATICA','Alimentação Prática','Lanches práticos com fibras e proteínas.'),
+ expanded('ervas-especiarias','Ervas e Especiarias na Cozinha','PRATICA','Culinária Saudável','Sabores naturais para variar preparações.'),
+ expanded('legumes-verduras','Como Incluir Mais Legumes e Verduras','PRATICA','Alimentação Prática','Estratégias graduais para aumentar variedade.'),
+ expanded('cafe-manha-equilibrado','Como Montar um Café da Manhã Equilibrado','PRATICA','Alimentação Prática','Combinações para energia, proteína e fibras.'),
+ expanded('frutas-acompanhamentos','Acompanhamentos para Comer com Frutas','PRATICA','Alimentação Prática','Complementos para refeições e lanches mais completos.'),
+ expanded('alimentos-estacao','Frutas, Legumes e Verduras da Estação','PRATICA','Planejamento Alimentar','Sazonalidade para variar e economizar.'),
+ expanded('anti-inflamatorios','Padrão Alimentar Anti-inflamatório','PRATICA','Nutrição Funcional','Hábitos alimentares associados à saúde metabólica.'),
+ expanded('molhos-saudaveis','Molhos Caseiros para Saladas','PRATICA','Culinária Saudável','Molhos simples com controle de gordura e sódio.'),
+ expanded('tipos-acucares','Tipos de Açúcares: O que Realmente Muda','ROTULOS','Educação Alimentar','Compare açúcares sem confundir origem com consumo livre.'),
+ expanded('deficit-calorico','Déficit Calórico com Segurança','COMPORTAMENTO','Emagrecimento','Redução energética planejada sem dietas extremas.'),
+ expanded('bebidas-alcoolicas','Bebidas Alcoólicas e Consumo Consciente','ROTULOS','Escolhas Conscientes','Impactos do álcool, das doses e dos acompanhamentos.'),
+ expanded('bebidas-baixa-caloria','Escolhas de Bebidas no Emagrecimento','SUBSTITUICAO','Escolhas Conscientes','Compare bebidas dentro do planejamento individual.'),
+ expanded('azeites-cozinha','Como Escolher Azeite para Cozinhar','ROTULOS','Culinária Saudável','Tipos, armazenamento e uso culinário.'),
+ expanded('pre-treino','O que Comer Antes do Treino','PRATICA','Nutrição Esportiva','Refeição pré-treino conforme horário e tolerância.'),
+ expanded('constipacao-intestinal','Estratégias para Constipação Intestinal','PRATICA','Saúde Intestinal','Fibras, líquidos, movimento e rotina intestinal.'),
+ expanded('porcoes-maos','Porções com Medidas das Mãos','PRATICA','Educação Alimentar','Referências práticas quando não houver utensílios.'),
+ expanded('whey-protein','Whey Protein: Tipos e Uso','ROTULOS','Suplementação','Diferenças gerais e critérios para suplementação.'),
+ expanded('superavit-calorico','Superávit Calórico Planejado','PRATICA','Ganho de Peso','Aumento energético gradual e acompanhado.'),
+ expanded('ganho-peso-saudavel','Estratégias para Ganho de Peso Saudável','PRATICA','Ganho de Peso','Mais densidade energética com qualidade nutricional.'),
+ expanded('equilibrio-fim-semana','Como Equilibrar o Fim de Semana','COMPORTAMENTO','Comportamento Alimentar','Flexibilidade sem culpa ou compensação.'),
+ expanded('erros-emagrecimento','Erros Comuns que Dificultam o Emagrecimento','COMPORTAMENTO','Emagrecimento','Padrões que prejudicam adesão e consistência.'),
+ expanded('refeicao-livre','Como Funciona uma Refeição Flexível','COMPORTAMENTO','Comportamento Alimentar','Escolhas prazerosas sem prêmio ou descontrole.'),
+ expanded('medidas-caseiras','Entendendo Medidas Caseiras','PRATICA','Educação Alimentar','Uso consistente de copos, xícaras e colheres.'),
+ expanded('pao-tapioca','Pão ou Tapioca: Como Escolher','SUBSTITUICAO','Escolhas Conscientes','Compare contexto, porção, composição e combinação.'),
+];
+
 export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
   {
     id: 'prato-ideal',
@@ -167,4 +197,5 @@ export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
   { id:'alimentacao-gestacao',title:'Alimentação Segura na Gestação',category:'HIGIENE',categoryLabel:'Gestação',summary:'Cuidados essenciais de segurança alimentar, hidratação e organização das refeições na gestação.',tips:['Evite carnes, ovos e pescados crus ou malpassados e leite não pasteurizado.','Higienize hortaliças e mantenha alimentos refrigerados adequadamente.','Distribua refeições conforme tolerância, náuseas e orientação individual.','Suplementos e ganho de peso devem seguir o acompanhamento pré-natal.'],icon:'HeartPulse' },
   { id:'alimentacao-infancia',title:'Prato Colorido para Crianças',category:'PRATICA',categoryLabel:'Infância',summary:'Estratégias respeitosas para ampliar variedade e autonomia alimentar na infância.',tips:['Ofereça variedade sem pressionar, ameaçar ou usar sobremesa como recompensa.','Inclua a criança no preparo e apresente o alimento repetidas vezes.','Mantenha rotina de refeições e limite distrações à mesa.','Respeite sinais de fome e saciedade e adapte cortes à segurança da idade.'],icon:'Salad' },
   { id:'nutricao-longevidade',title:'Nutrição para Longevidade Ativa',category:'PRATICA',categoryLabel:'Pessoa Idosa',summary:'Prioridades alimentares para preservar força, hidratação e autonomia ao envelhecer.',tips:['Distribua fontes de proteína ao longo do dia conforme orientação.','Facilite o acesso à água e observe alterações de sede e deglutição.','Valorize alimentos densos em nutrientes quando houver pouco apetite.','Perda de peso involuntária, fraqueza ou dificuldade para mastigar exigem avaliação.'],icon:'HeartPulse' },
+  ...EXPANDED_NUTRITIONAL_LAMINAS,
 ];

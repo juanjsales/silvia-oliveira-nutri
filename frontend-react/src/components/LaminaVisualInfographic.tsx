@@ -48,8 +48,46 @@ export function LaminaVisualInfographic({ laminaId }: { laminaId: string }) {
     case 'conservacao-sobras':
       return <MealPrepIllustration />;
     default:
-      return null;
+      return TOPIC_VISUALS[laminaId]?<TopicIllustration spec={TOPIC_VISUALS[laminaId]}/>:null;
   }
+}
+
+type TopicVisual={emoji:string;accent:string;steps:[string,string,string]};
+const TOPIC_VISUALS:Record<string,TopicVisual>={
+  'grupos-alimentares':{emoji:'🥗',accent:'#2d6a4f',steps:['Energia','Construção','Proteção']},
+  'pratos-saudaveis-semana':{emoji:'🍽️',accent:'#40916c',steps:['Planeje','Combine','Varie']},
+  'lanches-saudaveis-semana':{emoji:'🍎',accent:'#52b788',steps:['Fruta','Proteína','Fibras']},
+  'ervas-especiarias':{emoji:'🌿',accent:'#588157',steps:['Aroma','Cor','Menos prontos']},
+  'legumes-verduras':{emoji:'🥦',accent:'#40916c',steps:['Pouco a pouco','Novos preparos','Mais cores']},
+  'cafe-manha-equilibrado':{emoji:'☕',accent:'#9c6644',steps:['Energia','Proteína','Fibras']},
+  'frutas-acompanhamentos':{emoji:'🍓',accent:'#c44536',steps:['Fruta','Complemento','Saciedade']},
+  'alimentos-estacao':{emoji:'🗓️',accent:'#6a994e',steps:['Observe a safra','Varie','Economize']},
+  'anti-inflamatorios':{emoji:'🫐',accent:'#52796f',steps:['In natura','Variedade','Consistência']},
+  'molhos-saudaveis':{emoji:'🥣',accent:'#6b8e23',steps:['Base','Acidez','Ervas']},
+  'tipos-acucares':{emoji:'🥄',accent:'#b08968',steps:['Compare','Leia','Modere']},
+  'deficit-calorico':{emoji:'📉',accent:'#457b9d',steps:['Individualize','Preserve nutrientes','Acompanhe']},
+  'bebidas-alcoolicas':{emoji:'🍷',accent:'#9d4edd',steps:['Dose','Frequência','Hidratação']},
+  'bebidas-baixa-caloria':{emoji:'🥤',accent:'#168aad',steps:['Água primeiro','Compare','Planeje']},
+  'azeites-cozinha':{emoji:'🫒',accent:'#718355',steps:['Escolha','Armazene','Não queime']},
+  'pre-treino':{emoji:'🏃',accent:'#e76f51',steps:['Horário','Digestão','Energia']},
+  'constipacao-intestinal':{emoji:'🌾',accent:'#588157',steps:['Fibras','Água','Rotina']},
+  'porcoes-maos':{emoji:'✋',accent:'#8d6e63',steps:['Palma','Punho','Concha']},
+  'whey-protein':{emoji:'🥛',accent:'#5e60ce',steps:['Necessidade','Tipo','Dose']},
+  'superavit-calorico':{emoji:'📈',accent:'#bc6c25',steps:['Aumente aos poucos','Treine','Monitore']},
+  'ganho-peso-saudavel':{emoji:'🥑',accent:'#6a994e',steps:['Densidade','Frequência','Qualidade']},
+  'equilibrio-fim-semana':{emoji:'⚖️',accent:'#457b9d',steps:['Flexibilidade','Presença','Retomada']},
+  'erros-emagrecimento':{emoji:'🧭',accent:'#d1495b',steps:['Sem extremos','Durma','Seja consistente']},
+  'refeicao-livre':{emoji:'🍕',accent:'#e07a5f',steps:['Escolha','Aprecie','Sem compensar']},
+  'medidas-caseiras':{emoji:'🥄',accent:'#7f5539',steps:['Colher','Xícara','Copo']},
+  'pao-tapioca':{emoji:'🍞',accent:'#bc6c25',steps:['Porção','Composição','Combinação']},
+};
+
+function TopicIllustration({spec}:{spec:TopicVisual}){
+ return <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:10,margin:'10px 0'}}>
+  {spec.steps.map((label,index)=><div key={label} style={{minHeight:112,border:`1.5px solid ${spec.accent}55`,borderTop:`5px solid ${spec.accent}`,borderRadius:12,background:'#fff',padding:14,display:'grid',placeItems:'center',textAlign:'center',boxShadow:'0 3px 12px rgba(24,59,43,.06)'}}>
+   <span style={{fontSize:'1.9rem'}}>{spec.emoji}</span><strong style={{fontSize:'.78rem',color:'#1b4332'}}>{index+1}. {label}</strong>
+  </div>)}
+ </div>;
 }
 
 /* ─────────────────────────────────────────────────────────────

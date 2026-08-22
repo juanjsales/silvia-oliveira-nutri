@@ -8,6 +8,8 @@ export interface NutritionalLamina {
   icon: string;
 }
 
+import { EXPANDED_NUTRITIONAL_LAMINAS } from './expandedNutritionalLaminas';
+
 export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
   {
     id: 'prato-ideal',
@@ -167,4 +169,5 @@ export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
   { id:'alimentacao-gestacao',title:'Alimentação Segura na Gestação',category:'HIGIENE',categoryLabel:'Gestação',summary:'Cuidados essenciais de segurança alimentar, hidratação e organização das refeições na gestação.',tips:['Evite carnes, ovos e pescados crus ou malpassados e leite não pasteurizado.','Higienize hortaliças e mantenha alimentos refrigerados adequadamente.','Distribua refeições conforme tolerância, náuseas e orientação individual.','Suplementos e ganho de peso devem seguir o acompanhamento pré-natal.'],icon:'HeartPulse' },
   { id:'alimentacao-infancia',title:'Prato Colorido para Crianças',category:'PRATICA',categoryLabel:'Infância',summary:'Estratégias respeitosas para ampliar variedade e autonomia alimentar na infância.',tips:['Ofereça variedade sem pressionar, ameaçar ou usar sobremesa como recompensa.','Inclua a criança no preparo e apresente o alimento repetidas vezes.','Mantenha rotina de refeições e limite distrações à mesa.','Respeite sinais de fome e saciedade e adapte cortes à segurança da idade.'],icon:'Salad' },
   { id:'nutricao-longevidade',title:'Nutrição para Longevidade Ativa',category:'PRATICA',categoryLabel:'Pessoa Idosa',summary:'Prioridades alimentares para preservar força, hidratação e autonomia ao envelhecer.',tips:['Distribua fontes de proteína ao longo do dia conforme orientação.','Facilite o acesso à água e observe alterações de sede e deglutição.','Valorize alimentos densos em nutrientes quando houver pouco apetite.','Perda de peso involuntária, fraqueza ou dificuldade para mastigar exigem avaliação.'],icon:'HeartPulse' },
+  ...EXPANDED_NUTRITIONAL_LAMINAS,
 ];

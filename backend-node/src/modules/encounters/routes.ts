@@ -156,7 +156,7 @@ export async function encounterRoutes(app: FastifyInstance) {
   app.get('/:id', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
     const result = await app.db.query(`SELECT e.id, e.patient_id AS "patientId", p.name AS "patientName", p.birth_date AS "birthDate",
-      p.objective, p.whatsapp, p.email, e.appointment_id AS "appointmentId", COALESCE(a.video_room_token,e.video_room_token) AS "videoRoomToken", e.status,
+      p.objective, p.whatsapp, p.email AS "patientEmail", e.appointment_id AS "appointmentId", COALESCE(a.video_room_token,e.video_room_token) AS "videoRoomToken", e.status,
       e.correction_open AS "correctionOpen", e.revision_count AS "revisionCount",
       e.started_at AS "startedAt", e.completed_at AS "completedAt",
       to_char(a.appointment_date,'YYYY-MM-DD') AS "appointmentDate", to_char(a.appointment_time,'HH24:MI') AS "appointmentTime",
