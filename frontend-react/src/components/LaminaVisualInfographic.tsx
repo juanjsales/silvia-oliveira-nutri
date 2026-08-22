@@ -22,34 +22,36 @@ import {
 } from 'lucide-react';
 
 export function LaminaVisualInfographic({ laminaId }: { laminaId: string }) {
+  let illustration: React.ReactNode;
   switch (laminaId) {
     case 'prato-ideal':
     case 'fibras-no-dia':
     case 'lanche-equilibrado':
-      return <PratoIdealIllustration />;
+      illustration = <PratoIdealIllustration />; break;
     case 'rotulos-alimentos':
     case 'acucar-bebidas':
     case 'sodio-rotulos':
-      return <RotulosIllustration />;
+      illustration = <RotulosIllustration />; break;
     case 'fome-saciedade':
     case 'comer-com-atencao':
-      return <FomeSaciedadeIllustration />;
+      illustration = <FomeSaciedadeIllustration />; break;
     case 'hidratacao-correta':
     case 'hidratacao-rotina':
-      return <HidratacaoIllustration />;
+      illustration = <HidratacaoIllustration />; break;
     case 'substituicoes-praticas':
-      return <SubstituicoesIllustration />;
+      illustration = <SubstituicoesIllustration />; break;
     case 'higienizacao-hortifruti':
-      return <HigienizacaoIllustration />;
+      illustration = <HigienizacaoIllustration />; break;
     case 'gorduras-boas':
-      return <GordurasBoasIllustration />;
+      illustration = <GordurasBoasIllustration />; break;
     case 'meal-prep-marmitas':
     case 'planejamento-compras':
     case 'conservacao-sobras':
-      return <MealPrepIllustration />;
+      illustration = <MealPrepIllustration />; break;
     default:
-      return TOPIC_VISUALS[laminaId]?<TopicIllustration spec={TOPIC_VISUALS[laminaId]}/>:null;
+      illustration = TOPIC_VISUALS[laminaId] ? <TopicIllustration spec={TOPIC_VISUALS[laminaId]} /> : null;
   }
+  return illustration ? <div className="lamina-visual-infographic">{illustration}</div> : null;
 }
 
 type TopicVisual={emoji:string;accent:string;steps:[string,string,string]};

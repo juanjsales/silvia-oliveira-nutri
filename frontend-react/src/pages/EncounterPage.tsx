@@ -1839,29 +1839,31 @@ function EncounterHub({
       )}
 
       {walkInOpen && (
-        <div className="modal-backdrop" onClick={() => setWalkInOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px' }}>
-            <div className="modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Zap size={20} color="var(--forest)" />
-                <h3 style={{ margin: 0 }}>Atendimento Avulso (Encaixe)</h3>
+        <div className="modal-backdrop walk-in-backdrop" onClick={() => setWalkInOpen(false)}>
+          <section className="modal-content walk-in-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="walk-in-title">
+            <div className="modal-header walk-in-header">
+              <div className="walk-in-heading">
+                <span className="walk-in-icon" aria-hidden="true"><Zap size={21} /></span>
+                <div>
+                  <span className="eyebrow">Atendimento imediato</span>
+                  <h3 id="walk-in-title">Atendimento avulso</h3>
+                </div>
               </div>
-              <button type="button" className="icon-button" onClick={() => setWalkInOpen(false)}>
+              <button type="button" className="icon-button" onClick={() => setWalkInOpen(false)} aria-label="Fechar janela">
                 <X size={18} />
               </button>
             </div>
 
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>
-                Selecione o paciente cadastrado para abrir um atendimento clínico de emergência ou encaixe sem agendamento prévio.
+            <div className="modal-body walk-in-body">
+              <p>
+                Inicie uma consulta sem agendamento prévio. O prontuário será vinculado automaticamente ao paciente selecionado.
               </p>
 
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
-                Paciente
+              <label className="walk-in-field">
+                <span>Paciente</span>
                 <select
                   value={walkInPatientId}
                   onChange={(e) => setWalkInPatientId(e.target.value)}
-                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}
                 >
                   <option value="">Selecione um paciente</option>
                   {patients.map((p) => (
@@ -1873,7 +1875,7 @@ function EncounterHub({
               </label>
             </div>
 
-            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+            <div className="modal-footer walk-in-footer">
               <button type="button" className="secondary-button" onClick={() => setWalkInOpen(false)}>
                 Cancelar
               </button>
@@ -1886,7 +1888,7 @@ function EncounterHub({
                 {startingWalkIn ? 'Abrindo...' : 'Iniciar Atendimento'}
               </button>
             </div>
-          </div>
+          </section>
         </div>
       )}
     </div>

@@ -903,6 +903,9 @@
   overflow: hidden;
   border: 1px solid #e2e8f0;
   animation: slideInUp 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  max-height: min(820px, calc(100dvh - 32px));
 }
 
 .portal-detail-header {
@@ -925,8 +928,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 65vh;
+  min-height: 0;
+  max-height: none;
+  flex: 1 1 auto;
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 .portal-detail-summary {
@@ -1036,4 +1043,121 @@
   .portal-more-menu-grid { grid-template-columns: 1fr; }
   .water-tracker-card, .current-meal-card { padding: 18px; border-radius: 16px; }
   .water-ring-layout { align-items: flex-start; }
+}
+
+/* Portal dialogs: correct stacking, compact mobile sheet and responsive infographics. */
+.patient-portal-v2 .modal-backdrop {
+  z-index: 1000;
+}
+
+.ios-pwa-modal {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(720px, calc(100dvh - 112px));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+}
+
+.ios-pwa-modal .portal-more-menu-grid {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+}
+
+.lamina-visual-infographic {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .patient-portal-v2 .modal-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .ios-pwa-modal {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 88px);
+    border-radius: 24px 24px 0 0;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .ios-pwa-modal .ios-modal-header {
+    margin-bottom: 10px;
+  }
+
+  .ios-pwa-modal .portal-more-menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 6px;
+  }
+
+  .ios-pwa-modal .more-menu-btn {
+    min-width: 0;
+    min-height: 84px;
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .ios-pwa-modal .more-menu-btn > div {
+    min-width: 0;
+  }
+
+  .ios-pwa-modal .more-menu-btn strong,
+  .ios-pwa-modal .more-menu-btn small {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .portal-lamina-detail-modal {
+    width: 100%;
+    max-width: none;
+    height: min(860px, calc(100dvh - 24px));
+    max-height: calc(100dvh - 24px);
+    border-radius: 24px 24px 0 0;
+  }
+
+  .portal-detail-header {
+    flex: 0 0 auto;
+    padding: 18px 18px 16px;
+  }
+
+  .portal-detail-header h2 {
+    font-size: clamp(1.25rem, 6vw, 1.65rem);
+    line-height: 1.15;
+  }
+
+  .portal-detail-body {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .portal-detail-footer {
+    flex: 0 0 auto;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .portal-detail-footer button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .lamina-visual-infographic > div,
+  .lamina-visual-infographic > div > div {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .lamina-visual-infographic [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
