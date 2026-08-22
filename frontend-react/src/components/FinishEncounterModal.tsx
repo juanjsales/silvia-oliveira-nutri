@@ -15,7 +15,7 @@ import {
   Tags,
   X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NUTRITIONAL_LAMINAS, type NutritionalLamina } from '../lib/nutritionalLaminas';
 
 const iconMap: Record<string, any> = {
@@ -66,6 +66,10 @@ export function FinishEncounterModal({
   ]);
   const [customMessage, setCustomMessage] = useState('');
   const [previewLamina, setPreviewLamina] = useState<NutritionalLamina | null>(null);
+
+  useEffect(() => {
+    setEmailRecipient(patientEmail?.trim() || '');
+  }, [patientEmail]);
 
   function toggleLamina(id: string) {
     setSelectedLaminas((prev) =>
@@ -146,7 +150,7 @@ export function FinishEncounterModal({
             {sendEmail && (
               <div className="email-recipient-input">
                 <label>
-                  <span>E-mail do Paciente:</span>
+                  <span>E-mail do paciente {patientEmail ? '· preenchido automaticamente pelo cadastro' : '· informe para realizar o envio'}:</span>
                   <input
                     type="email"
                     value={emailRecipient}

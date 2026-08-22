@@ -63,8 +63,8 @@ export function PwaInstallBanner() {
             <Smartphone size={20} />
           </div>
           <div className="pwa-banner-text">
-            <strong>Instale o App no seu Celular</strong>
-            <span>Acesse seu plano e diário direto da tela inicial com 1 toque.</span>
+            <strong>Adicione o Portal à tela inicial</strong>
+            <span>Acesse seu acompanhamento em uma janela própria, sem procurar o endereço no navegador.</span>
           </div>
         </div>
 
@@ -74,7 +74,7 @@ export function PwaInstallBanner() {
             className="pwa-install-btn"
             onClick={handleInstallClick}
           >
-            <Download size={15} /> Instalar Aplicativo
+            <Download size={15} /> Adicionar à tela inicial
           </button>
           <button
             type="button"
@@ -113,7 +113,7 @@ export function PwaInstallBanner() {
               </li>
             </ol>
             <p className="ios-modal-footer">
-              Pronto! O ícone do consultório aparecerá como um aplicativo junto com seus outros apps.
+              Pronto! Um atalho do Portal aparecerá na tela inicial e abrirá em uma janela própria.
             </p>
           </div>
         </div>

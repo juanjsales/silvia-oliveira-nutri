@@ -160,7 +160,7 @@ test('a completed encounter can be reopened through an audited correction action
   let committed=false;
   let appointmentReopened=false;
   const client={query:async(sql:string)=>{
-    if(sql.includes("SET status='IN_PROGRESS',completed_at=NULL"))return{rows:[{appointment_id:'00000000-0000-4000-8000-000000000005'}]};
+    if(sql.includes('SET correction_open=true'))return{rows:[{appointment_id:'00000000-0000-4000-8000-000000000005'}]};
     if(sql.includes("UPDATE appointments SET status='IN_PROGRESS'"))appointmentReopened=true;
     if(sql==='COMMIT')committed=true;
     return{rows:[]};
@@ -169,8 +169,9 @@ test('a completed encounter can be reopened through an audited correction action
   const app=await buildApp(env,db as never);
   const response=await app.inject({method:'POST',url:`/api/encounters/${encounterId}/reopen`,cookies:{nutri_session:'token'}});
   assert.equal(response.statusCode,200);
-  assert.equal(response.json().data.status,'IN_PROGRESS');
-  assert.equal(appointmentReopened,true);
+  assert.equal(response.json().data.status,'COMPLETED');
+  assert.equal(response.json().data.correctionOpen,true);
+  assert.equal(appointmentReopened,false);
   assert.equal(committed,true);
   await app.close();
 });

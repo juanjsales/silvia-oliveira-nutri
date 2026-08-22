@@ -57,7 +57,7 @@ type Value=string|number|boolean|null;
 type SectionData=Record<string,Value>;
 type Patient={id:string;name:string;objective?:string|null;email?:string|null;whatsapp?:string|null};
 type Checkin={id:string;answers:Record<string,unknown>;status:'PENDING_REVIEW'|'REVIEWED';submittedAt:string;reviewedAt?:string|null};
-type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;appointmentDate?:string|null;appointmentTime?:string|null;durationMinutes?:number|null;appointmentType?:string|null;status:'IN_PROGRESS'|'COMPLETED';startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
+type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;appointmentDate?:string|null;appointmentTime?:string|null;durationMinutes?:number|null;appointmentType?:string|null;status:'IN_PROGRESS'|'COMPLETED';correctionOpen?:boolean;revisionCount?:number;startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string;version:number}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
 type Field={key:string;label:string;type?:'text'|'textarea'|'number'|'select'|'date'|'time';placeholder?:string;options?:string[];suffix?:string;profiles?:string[];group?:string;groupDescription?:string};
 type Step={key:SectionKey|'review';label:string;description:string;fields?:Field[]};
 
@@ -232,7 +232,7 @@ export function EncounterPage(){
 
   const current=steps[active];const savedKeys=useMemo(()=>new Set(Object.keys(encounter?.sections||{})),[encounter]);
   function change(key:SectionKey,field:string,value:string){setDrafts(d=>({...d,[key]:{...(d[key]||{}),[field]:value}}));setDirtyKeys(keys=>new Set(keys).add(key));setNotice('')}
-  async function saveSection(){if(!encounter||current.key==='review')return;setSaving(true);setError('');try{await api(`/api/encounters/${encounter.id}/sections/${current.key}`,{method:'PUT',body:JSON.stringify({data:drafts[current.key]||{},expectedSavedAt:encounter.sections[current.key]?.savedAt||null})});await loadEncounter(encounter.id);setNotice('Etapa salva com segurança.');if(active<steps.length-1)setActive(active+1)}catch(c){setError(c instanceof Error?c.message:'Não foi possível salvar a etapa.')}finally{setSaving(false)}}
+  async function saveSection(){if(!encounter||current.key==='review')return;setSaving(true);setError('');try{const loadedSection=encounter.sections[current.key];await api(`/api/encounters/${encounter.id}/sections/${current.key}`,{method:'PUT',body:JSON.stringify({data:drafts[current.key]||{},expectedVersion:loadedSection?.version??null,...(loadedSection?.version===undefined?{expectedSavedAt:loadedSection?.savedAt||null}:{})})});await loadEncounter(encounter.id);setNotice('Etapa salva com segurança.');if(active<steps.length-1)setActive(active+1)}catch(c){setError(c instanceof Error?c.message:'Não foi possível salvar a etapa.')}finally{setSaving(false)}}
   function requestFinalize() {
     if (!encounter) return;
     setFinishModalOpen(true);
@@ -313,7 +313,7 @@ export function EncounterPage(){
     try {
       await api(`/api/encounters/${encounter.id}/reopen`, { method: 'POST' });
       await loadEncounter(encounter.id);
-      setNotice('Prontuário reaberto para correção. Finalize novamente após concluir as alterações.');
+      setNotice('Modo de correção aberto. O prontuário continua arquivado como finalizado e a consulta não foi reativada.');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível reabrir o prontuário.');
     } finally {
@@ -385,6 +385,8 @@ export function EncounterPage(){
     setNotice('Meta calórica e macronutrientes aplicados com sucesso à Avaliação e Conduta!');
   }
 
+  const correctionOpen=encounter.status==='COMPLETED'&&Boolean(encounter.correctionOpen);
+  const canEdit=encounter.status==='IN_PROGRESS'||correctionOpen;
   return (
     <div className={`virtual-office ${videoOpen?'with-video':''}`}>
       {videoOpen && (
@@ -421,7 +423,7 @@ export function EncounterPage(){
               <div className="encounter-title-row">
                 <span className="eyebrow">Atendimento Clínico</span>
                 <span className={`encounter-state ${encounter.status==='COMPLETED'?'done':''}`}>
-                  {encounter.status==='COMPLETED'?<><CheckCircle2 size={13}/> Finalizado</>:'Em andamento'}
+                  {correctionOpen?<><Edit3 size={13}/> Em correção</>:encounter.status==='COMPLETED'?<><CheckCircle2 size={13}/> Finalizado</>:'Em andamento'}
                 </span>
                 {!encounter.appointmentId && (
                   <span className="walkin-pill-tag">Consulta Avulsa / Imediata</span>
@@ -448,7 +450,7 @@ export function EncounterPage(){
                 <Video size={15} /> <span>{videoOpen ? 'Minimizar (Split)' : 'Teleconsulta (Split)'}</span>
               </button>
             )}
-            {encounter.status !== 'COMPLETED' ? (
+            {canEdit ? (
               <>
                 <button
                   type="button"
@@ -457,9 +459,9 @@ export function EncounterPage(){
                   title="Concluir este atendimento clínico e liberar orientações"
                   style={{ background: '#1b4332', color: '#ffffff' }}
                 >
-                  <CheckCircle2 size={15} /> <span>Encerrar Atendimento</span>
+                  <CheckCircle2 size={15} /> <span>{correctionOpen?'Concluir correção':'Encerrar Atendimento'}</span>
                 </button>
-                <button
+                {!correctionOpen&&<button
                   type="button"
                   className="secondary-button discard-top-btn"
                   onClick={handleDiscardEncounter}
@@ -467,7 +469,7 @@ export function EncounterPage(){
                   style={{ color: '#dc2626', borderColor: 'rgba(239, 68, 68, 0.3)' }}
                 >
                   <Trash2 size={15} /> <span>Descartar</span>
-                </button>
+                </button>}
               </>
             ) : (
               <>
@@ -568,14 +570,14 @@ export function EncounterPage(){
                           {field.label}
                           <div className={field.suffix?'field-suffix':''}>
                             {field.type==='textarea'? (
-                              <textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={encounter.status==='COMPLETED'}/>
+                              <textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={!canEdit}/>
                             ) : field.type==='select'? (
-                              <select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} disabled={encounter.status==='COMPLETED'}>
+                              <select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} disabled={!canEdit}>
                                 <option value="">Selecione</option>
                                 {field.options?.map(option=><option key={option}>{option}</option>)}
                               </select>
                             ) : (
-                              <input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={encounter.status==='COMPLETED'}/>
+                              <input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={!canEdit}/>
                             )}
                             {field.suffix&&<span>{field.suffix}</span>}
                           </div>
@@ -607,10 +609,10 @@ export function EncounterPage(){
             </button>
             {current.key!=='review'&&current.key!=='plan'&& (
               <div>
-                <button className="ghost-button" onClick={()=>setActive(Math.min(steps.length-1,active+1))} disabled={encounter.status==='COMPLETED'}>
+                <button className="ghost-button" onClick={()=>setActive(Math.min(steps.length-1,active+1))} disabled={!canEdit}>
                   Avançar sem salvar
                 </button>
-                <button className="primary-button" onClick={()=>void saveSection()} disabled={saving||encounter.status==='COMPLETED'}>
+                <button className="primary-button" onClick={()=>void saveSection()} disabled={saving||!canEdit}>
                   <Save size={17}/>{saving?'Salvando...':'Salvar e continuar'}<ChevronRight size={16}/>
                 </button>
               </div>
