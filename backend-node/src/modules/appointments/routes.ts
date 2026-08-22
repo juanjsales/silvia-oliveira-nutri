@@ -159,4 +159,14 @@ export async function appointmentRoutes(app: FastifyInstance) {
     const warning = !shouldEmail || emailSent ? null : deliveryId ? 'Consulta atualizada; o e-mail ficou registrado para nova tentativa automática.' : 'Consulta atualizada, mas o paciente não possui e-mail cadastrado.';
     return { data: { id, financeCreated, emailSent, emailDeliveryId: deliveryId, warning } };
   });
+
+  app.delete('/:id', async (request, reply) => {
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const linked = await app.db.query<{status:string}>(`SELECT status FROM clinical_encounters WHERE appointment_id=$1`,[id]);
+    if(linked.rows[0]) return reply.code(409).send({error:'Este agendamento possui prontuário vinculado e não pode ser descartado. Cancele ou finalize o atendimento correspondente.'});
+    const removed = await app.db.query<{patient_id:string}>(`DELETE FROM appointments WHERE id=$1 AND status IN ('CONFIRMED','WAITING','CANCELLED','NO_SHOW') RETURNING patient_id`,[id]);
+    if(!removed.rows[0]) return reply.code(409).send({error:'Agendamento em andamento ou concluído não pode ser descartado.'});
+    await audit(app.db,'APPOINTMENT_DISCARDED','appointment',{actorUserId:request.auth!.userId,entityId:id,metadata:{patientId:removed.rows[0].patient_id}});
+    return reply.code(204).send();
+  });
 }

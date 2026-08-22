@@ -281,7 +281,7 @@ export function EncounterPage(){
     setSaving(true);
     setError('');
     try {
-      const response = await api<{ data: { id: string; emailSent?: boolean } }>(`/api/encounters/${encounter.id}/finalize`, {
+      const response = await api<{ data: { id: string; emailSent?: boolean; emailWarning?: string | null } }>(`/api/encounters/${encounter.id}/finalize`, {
         method: 'POST',
         body: JSON.stringify({ ...data, force: true }),
       });
@@ -294,10 +294,25 @@ export function EncounterPage(){
       if (response.data.emailSent) {
         setNotice('✨ Atendimento finalizado com sucesso! E-mail com orientações, plano alimentar e lâminas nutricionais enviado ao paciente.');
       } else {
-        setNotice('Atendimento finalizado com sucesso.');
+        setNotice(response.data.emailWarning || 'Atendimento finalizado com sucesso.');
       }
     } catch (c) {
       setError(c instanceof Error ? c.message : 'Não foi possível finalizar o atendimento.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleReopenEncounter() {
+    if (!encounter || !window.confirm('Reabrir este prontuário para correção? A ação ficará registrada no histórico de auditoria.')) return;
+    setSaving(true);
+    setError('');
+    try {
+      await api(`/api/encounters/${encounter.id}/reopen`, { method: 'POST' });
+      await loadEncounter(encounter.id);
+      setNotice('Prontuário reaberto para correção. Finalize novamente após concluir as alterações.');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível reabrir o prontuário.');
     } finally {
       setSaving(false);
     }
@@ -445,9 +460,14 @@ export function EncounterPage(){
                 </button>
               </>
             ) : (
-              <span className="encounter-state done" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <CheckCircle2 size={14} /> Atendimento Concluído
-              </span>
+              <>
+                <button type="button" className="secondary-button" onClick={handleReopenEncounter} disabled={saving}>
+                  <Edit3 size={15} /> <span>Reabrir para editar</span>
+                </button>
+                <button type="button" className="primary-button" disabled title="Atendimento já encerrado">
+                  <CheckCircle2 size={15} /> <span>Atendimento encerrado</span>
+                </button>
+              </>
             )}
           </div>
         </section>
@@ -534,14 +554,14 @@ export function EncounterPage(){
                     {field.label}
                     <div className={field.suffix?'field-suffix':''}>
                       {field.type==='textarea'? (
-                        <textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>
+                        <textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={encounter.status==='COMPLETED'}/>
                       ) : field.type==='select'? (
-                        <select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)}>
+                        <select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} disabled={encounter.status==='COMPLETED'}>
                           <option value="">Selecione</option>
                           {field.options?.map(option=><option key={option}>{option}</option>)}
                         </select>
                       ) : (
-                        <input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder}/>
+                        <input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={encounter.status==='COMPLETED'}/>
                       )}
                       {field.suffix&&<span>{field.suffix}</span>}
                     </div>
@@ -570,7 +590,7 @@ export function EncounterPage(){
             </button>
             {current.key!=='review'&&current.key!=='plan'&& (
               <div>
-                <button className="ghost-button" onClick={()=>setActive(Math.min(steps.length-1,active+1))}>
+                <button className="ghost-button" onClick={()=>setActive(Math.min(steps.length-1,active+1))} disabled={encounter.status==='COMPLETED'}>
                   Avançar sem salvar
                 </button>
                 <button className="primary-button" onClick={()=>void saveSection()} disabled={saving||encounter.status==='COMPLETED'}>
@@ -895,6 +915,23 @@ function EncounterHub({
       await loadHubData();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível alterar o status.');
+    }
+  }
+
+  async function discardAppointment(id: string) {
+    if (!window.confirm('Descartar definitivamente este agendamento? Esta ação só é permitida quando não existe prontuário vinculado.')) return;
+    setSavingAppointment(true);
+    setError('');
+    try {
+      await api(`/api/appointments/${id}`, { method: 'DELETE' });
+      setAppointmentModalOpen(false);
+      setEditingAppointmentId(null);
+      setNotice('Agendamento descartado com segurança.');
+      await loadHubData();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível descartar o agendamento.');
+    } finally {
+      setSavingAppointment(false);
     }
   }
 
@@ -1746,6 +1783,11 @@ function EncounterHub({
               )}
 
               <div className="modal-actions">
+                {editingAppointmentId && (
+                  <button type="button" className="danger-button appointment-discard-btn" onClick={() => void discardAppointment(editingAppointmentId)} disabled={savingAppointment}>
+                    <Trash2 size={16} /> Descartar agendamento
+                  </button>
+                )}
                 <button
                   type="button"
                   className="secondary-button"

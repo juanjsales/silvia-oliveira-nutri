@@ -3344,6 +3344,15 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   font-size: 0.72rem;
   font-weight: 700;
 }
+.broadcast-live-banner span { color: inherit !important; }
+.broadcast-library-guide { display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0; }
+.broadcast-guide-steps { display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none; }
+.broadcast-guide-steps span { display:inline-flex;align-items:center;gap:5px;color:#bcd0c1;font-size:.65rem;white-space:nowrap; }
+.broadcast-guide-steps b { width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:rgba(126,224,164,.14);color:#7ee0a4;font-size:.61rem; }
+.broadcast-library-btn { flex:0 0 auto;background:#7ee0a4;color:#0c2015;border-color:#7ee0a4;font-weight:800; }
+.broadcast-library-btn:hover { background:#9aebba;color:#08170f; }
+.appointment-discard-btn { margin-right:auto; }
+@media(max-width:700px){.broadcast-library-guide{align-items:stretch;flex-direction:column}.broadcast-library-btn{width:100%}.appointment-discard-btn{margin-right:0}}
 
 /* Live Clinical Cards for Patient */
 .live-clinical-card {

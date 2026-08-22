@@ -461,48 +461,6 @@ export function PatientVideoPage() {
                     <BookOpen size={15} /> Lâmina A4
                   </button>
                 )}
-                <button
-                  type="button"
-                  className={guideTab === 'medidas' ? 'active' : ''}
-                  onClick={() => setGuideTab('medidas')}
-                >
-                  <Ruler size={15} /> Medidas
-                </button>
-                <button
-                  type="button"
-                  className={guideTab === 'fome' ? 'active' : ''}
-                  onClick={() => setGuideTab('fome')}
-                >
-                  <Smile size={15} /> Fome
-                </button>
-                <button
-                  type="button"
-                  className={guideTab === 'prato' ? 'active' : ''}
-                  onClick={() => setGuideTab('prato')}
-                >
-                  <PieChart size={15} /> Prato
-                </button>
-                <button
-                  type="button"
-                  className={guideTab === 'bristol' ? 'active' : ''}
-                  onClick={() => setGuideTab('bristol')}
-                >
-                  <Layers size={15} /> Bristol
-                </button>
-                <button
-                  type="button"
-                  className={guideTab === 'metas' ? 'active' : ''}
-                  onClick={() => setGuideTab('metas')}
-                >
-                  <Target size={15} /> Metas
-                </button>
-                <button
-                  type="button"
-                  className={guideTab === 'avaliacao' ? 'active' : ''}
-                  onClick={() => setGuideTab('avaliacao')}
-                >
-                  <Scale size={15} /> Avaliação
-                </button>
               </nav>
 
               <div className="guide-panel-content">

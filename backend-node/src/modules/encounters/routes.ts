@@ -316,7 +316,38 @@ export async function encounterRoutes(app: FastifyInstance) {
       }
     }
 
-    return { data: { id, status: 'COMPLETED', financeCreated, emailSent } };
+    const emailWarning = body.sendEmail && !emailSent
+      ? (body.emailRecipient || encounterInfo.rows[0].patientEmail
+          ? 'Atendimento concluído, mas o e-mail não foi enviado. Verifique a configuração SMTP em Configurações.'
+          : 'Atendimento concluído, mas o paciente não possui e-mail cadastrado.')
+      : null;
+    return { data: { id, status: 'COMPLETED', financeCreated, emailSent, emailWarning } };
+  });
+
+  app.post('/:id/reopen', async (request, reply) => {
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const client = await app.db.connect();
+    try {
+      await client.query('BEGIN');
+      const reopened = await client.query<{appointment_id:string|null}>(`UPDATE clinical_encounters
+        SET status='IN_PROGRESS',completed_at=NULL,updated_at=now()
+        WHERE id=$1 AND status='COMPLETED' RETURNING appointment_id`,[id]);
+      if(!reopened.rows[0]){
+        await client.query('ROLLBACK');
+        return reply.code(409).send({error:'O atendimento não está finalizado ou não foi encontrado.'});
+      }
+      if(reopened.rows[0].appointment_id){
+        await client.query("UPDATE appointments SET status='IN_PROGRESS',updated_at=now() WHERE id=$1 AND status='COMPLETED'",[reopened.rows[0].appointment_id]);
+      }
+      await audit(client,'ENCOUNTER_REOPENED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{reason:'correction'}});
+      await client.query('COMMIT');
+      return {data:{id,status:'IN_PROGRESS'}};
+    } catch(error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   });
 
   app.patch('/:id/quick-close', async (request, reply) => {

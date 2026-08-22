@@ -2,18 +2,12 @@ import {
   BookOpen,
   Check,
   ExternalLink,
-  Layers,
   Maximize2,
   Minimize2,
   PhoneOff,
-  PieChart,
   RefreshCw,
-  Ruler,
-  Scale,
   Send,
-  Smile,
   Sparkles,
-  Target,
   Video,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -22,7 +16,7 @@ import { LaminasModal } from './LaminasModal';
 import { type NutritionalLamina } from '../lib/nutritionalLaminas';
 import { api } from '../lib/api';
 
-type BroadcastTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta' | 'lamina';
+type BroadcastTab = 'lamina';
 
 type Props = {
   encounterId?: string | null;
@@ -35,7 +29,7 @@ type Props = {
   onClose: () => void;
 };
 
-export function VideoConsultation({ encounterId, appointmentId, roomToken, patientName, appointmentTime, durationMinutes, sections, onClose }: Props) {
+export function VideoConsultation({ encounterId, appointmentId, roomToken, patientName, appointmentTime, durationMinutes, onClose }: Props) {
   const { startCall, minimizeCall, endCall } = useTeleconsultation();
   const [expanded, setExpanded] = useState(false);
   const [startedAt] = useState(Date.now());
@@ -45,7 +39,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
   const [error, setError] = useState('');
   const [iframeKey, setIframeKey] = useState(1);
   const [reconnecting, setReconnecting] = useState(false);
-  const [activeBroadcast, setActiveBroadcast] = useState<BroadcastTab | null>('medidas');
+  const [activeBroadcast, setActiveBroadcast] = useState<BroadcastTab | null>(null);
   const [broadcastingNotice, setBroadcastingNotice] = useState('');
   const [showBroadcastMenu, setShowBroadcastMenu] = useState(true);
   const [laminasOpen, setLaminasOpen] = useState(false);
@@ -128,43 +122,6 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
 
   const targetBroadcastId = appointmentId || encounterId;
 
-  async function broadcastToPatient(tab: BroadcastTab, label: string) {
-    if (!targetBroadcastId) return;
-    setActiveBroadcast(tab);
-
-    const assessment = sections?.assessment || {};
-    const conduct = sections?.conduct || {};
-    const followup = sections?.followup || {};
-
-    const weightNum = parseFloat(String(assessment.weight || ''));
-    const heightNum = parseFloat(String(assessment.height || '')) / 100;
-    const bmiCalc = weightNum > 0 && heightNum > 0 ? (weightNum / (heightNum * heightNum)).toFixed(1) : undefined;
-
-    const clinicalData = {
-      weight: assessment.weight ? `${assessment.weight} kg` : undefined,
-      height: assessment.height ? `${assessment.height} cm` : undefined,
-      bmi: bmiCalc,
-      bodyFat: assessment.bodyFat ? `${assessment.bodyFat}%` : undefined,
-      goals: conduct.goals || followup.nextGoal || undefined,
-      guidance: conduct.guidance || undefined,
-      dietRating: followup.dietRating || undefined,
-    };
-
-    try {
-      await api(`/api/video/appointments/${targetBroadcastId}/broadcast`, {
-        method: 'POST',
-        body: JSON.stringify({
-          activeTab: tab,
-          clinicalData,
-        }),
-      });
-      setBroadcastingNotice(`Transmitindo: ${label}`);
-      setTimeout(() => setBroadcastingNotice(''), 3500);
-    } catch {
-      // Ignora falhas de broadcast silenciosamente
-    }
-  }
-
   async function broadcastLaminaToPatient(lamina: NutritionalLamina) {
     if (!targetBroadcastId) return;
     setActiveBroadcast('lamina');
@@ -229,7 +186,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
         <div className="video-broadcast-bar">
           <div className="broadcast-bar-head">
             <span className="broadcast-tag">
-              <Sparkles size={13} /> Transmitir ao Paciente:
+              <Sparkles size={13} /> Materiais para o paciente
             </span>
             {broadcastingNotice && (
               <span className="broadcast-live-notice">
@@ -246,69 +203,19 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
           </div>
 
           {showBroadcastMenu && (
-            <div className="broadcast-actions-row">
+            <div className="broadcast-library-guide">
+              <div className="broadcast-guide-steps" aria-label="Como compartilhar uma lâmina">
+                <span><b>1</b> Abra a biblioteca</span>
+                <span><b>2</b> Escolha o conteúdo</span>
+                <span><b>3</b> Transmita ao paciente</span>
+              </div>
               <button
                 type="button"
-                className={`broadcast-btn ${activeBroadcast === 'medidas' ? 'active' : ''}`}
-                onClick={() => broadcastToPatient('medidas', 'Guia de Medidas')}
-                title="Mostrar como tirar medidas com a fita métrica"
-              >
-                <Ruler size={13} /> Medidas
-              </button>
-
-              <button
-                type="button"
-                className={`broadcast-btn ${activeBroadcast === 'fome' ? 'active' : ''}`}
-                onClick={() => broadcastToPatient('fome', 'Escala de Fome & Saciedade')}
-                title="Mostrar escala de fome de 1 a 10"
-              >
-                <Smile size={13} /> Fome (1-10)
-              </button>
-
-              <button
-                type="button"
-                className={`broadcast-btn ${activeBroadcast === 'prato' ? 'active' : ''}`}
-                onClick={() => broadcastToPatient('prato', 'Prato Saudável')}
-                title="Mostrar proporções de macronutrientes"
-              >
-                <PieChart size={13} /> Prato Ideal
-              </button>
-
-              <button
-                type="button"
-                className={`broadcast-btn ${activeBroadcast === 'bristol' ? 'active' : ''}`}
-                onClick={() => broadcastToPatient('bristol', 'Escala de Bristol')}
-                title="Mostrar escala de fezes de Bristol"
-              >
-                <Layers size={13} /> Bristol
-              </button>
-
-              <button
-                type="button"
-                className={`broadcast-btn ${activeBroadcast === 'metas' ? 'active' : ''}`}
-                onClick={() => broadcastToPatient('metas', 'Metas da Consulta')}
-                title="Transmitir as metas digitadas no prontuário"
-              >
-                <Target size={13} /> Metas
-              </button>
-
-              <button
-                type="button"
-                className={`broadcast-btn ${activeBroadcast === 'avaliacao' ? 'active' : ''}`}
-                onClick={() => broadcastToPatient('avaliacao', 'Avaliação Corporal & IMC')}
-                title="Transmitir peso, altura e IMC calculados"
-              >
-                <Scale size={13} /> Avaliação
-              </button>
-
-              <button
-                type="button"
-                className="broadcast-btn"
+                className={`broadcast-btn broadcast-library-btn ${activeBroadcast === 'lamina' ? 'active' : ''}`}
                 onClick={() => setLaminasOpen(true)}
-                title="Ver e Imprimir Lâminas Educativas A4"
-                style={{ background: 'rgba(45, 106, 79, 0.15)', borderColor: 'var(--forest)', color: 'var(--forest)', fontWeight: 700 }}
+                title="Abrir biblioteca de lâminas educativas"
               >
-                <BookOpen size={13} /> Lâminas A4
+                <BookOpen size={14} /> Abrir lâminas educativas
               </button>
             </div>
           )}
