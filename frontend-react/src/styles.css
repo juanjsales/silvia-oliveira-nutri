@@ -3558,7 +3558,13 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   padding: 10px 12px;
   background: #11241a;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
+.persistent-video-container.pip-mode.is-dragging { transition: none; animation: none; }
+.persistent-video-container.pip-mode.is-dragging .pip-header { cursor: grabbing; }
+.pip-drag-grip { flex:0 0 auto;color:#789486;opacity:.85; }
 
 .pip-title {
   display: flex;

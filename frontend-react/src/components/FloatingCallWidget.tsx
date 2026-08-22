@@ -1,12 +1,13 @@
 import {
   BookOpen,
+  GripHorizontal,
   Maximize2,
   Minimize2,
   PhoneOff,
   RefreshCw,
   Sparkles,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { LaminasModal } from './LaminasModal';
 import { api } from '../lib/api';
@@ -19,7 +20,55 @@ export function FloatingCallWidget() {
   const [collapsed, setCollapsed] = useState(false);
   const [laminasOpen, setLaminasOpen] = useState(false);
   const [frameSource, setFrameSource] = useState('');
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playerRef = useRef<HTMLElement>(null);
+  const dragRef = useRef<{pointerId:number;startX:number;startY:number;originX:number;originY:number;moved:boolean}|null>(null);
+
+  function clampPosition(x: number, y: number) {
+    const rect = playerRef.current?.getBoundingClientRect();
+    const width = rect?.width || (collapsed ? 280 : 340);
+    const height = rect?.height || (collapsed ? 48 : 240);
+    const margin = 8;
+    return {
+      x: Math.min(Math.max(margin, x), Math.max(margin, window.innerWidth - width - margin)),
+      y: Math.min(Math.max(margin, y), Math.max(margin, window.innerHeight - height - margin)),
+    };
+  }
+
+  function beginDrag(event: ReactPointerEvent<HTMLElement>) {
+    if (event.button !== 0 || (event.target as HTMLElement).closest('button')) return;
+    const rect = playerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = {pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,originX:rect.left,originY:rect.top,moved:false};
+    setDragging(true);
+  }
+
+  function moveDrag(event: ReactPointerEvent<HTMLElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    setPosition(clampPosition(drag.originX + dx, drag.originY + dy));
+  }
+
+  function finishDrag(event: ReactPointerEvent<HTMLElement>) {
+    if (dragRef.current?.pointerId !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    window.setTimeout(() => { dragRef.current = null; }, 0);
+    setDragging(false);
+  }
+
+  useEffect(() => {
+    if (!position) return;
+    const keepInsideViewport = () => setPosition((current) => current ? clampPosition(current.x, current.y) : null);
+    keepInsideViewport();
+    window.addEventListener('resize', keepInsideViewport);
+    return () => window.removeEventListener('resize', keepInsideViewport);
+  }, [collapsed]);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,10 +177,13 @@ export function FloatingCallWidget() {
   return (
     <>
       <aside
-        className={`persistent-video-container pip-mode ${collapsed ? 'collapsed' : ''}`}
+        ref={playerRef}
+        className={`persistent-video-container pip-mode ${collapsed ? 'collapsed' : ''} ${dragging ? 'is-dragging' : ''}`}
+        style={position ? { left: position.x, top: position.y, right: 'auto', bottom: 'auto' } : undefined}
       >
-        <header className="pip-header">
-          <div className="pip-title" onClick={restoreCall} title="Clique para voltar para a tela cheia">
+        <header className="pip-header" onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={finishDrag}>
+          <GripHorizontal className="pip-drag-grip" size={16} aria-hidden="true" />
+          <div className="pip-title" onClick={() => { if (!dragRef.current?.moved) restoreCall(); }} title="Arraste para mover ou clique para voltar à consulta">
             <span className="live-dot" />
             <div className="pip-info">
               <strong>{activeCall.role === 'ADMIN' ? activeCall.patientName : 'Dra. Silvia Oliveira'}</strong>
