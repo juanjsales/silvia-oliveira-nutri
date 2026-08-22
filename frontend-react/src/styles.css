@@ -5531,3 +5531,54 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   }
   :where(.icon-button) { min-width: 44px; }
 }
+
+/* Clinical anamnesis groups */
+.clinical-form.grouped {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.clinical-field-group {
+  min-width: 0;
+}
+.clinical-form:not(.grouped) .clinical-field-group {
+  grid-column: 1 / -1;
+}
+.clinical-form.grouped .clinical-field-group {
+  padding: 20px;
+  border: 1px solid var(--color-border, var(--line));
+  border-radius: var(--radius-lg, 16px);
+  background: #fbfcfa;
+}
+.clinical-field-group > header {
+  margin: 0 0 17px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--color-border, var(--line));
+}
+.clinical-field-group > header h3 {
+  margin: 0;
+  color: var(--forest);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+.clinical-field-group > header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: .75rem;
+  line-height: 1.5;
+}
+.clinical-field-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 17px;
+}
+.clinical-field-grid label.wide {
+  grid-column: 1 / -1;
+}
+@media (max-width: 800px) {
+  .clinical-field-grid { grid-template-columns: 1fr; }
+  .clinical-field-grid label.wide { grid-column: auto; }
+}
+@media (max-width: 520px) {
+  .clinical-form.grouped .clinical-field-group { padding: 16px; }
+}

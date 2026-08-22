@@ -58,7 +58,7 @@ type SectionData=Record<string,Value>;
 type Patient={id:string;name:string;objective?:string|null;email?:string|null;whatsapp?:string|null};
 type Checkin={id:string;answers:Record<string,unknown>;status:'PENDING_REVIEW'|'REVIEWED';submittedAt:string;reviewedAt?:string|null};
 type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;appointmentDate?:string|null;appointmentTime?:string|null;durationMinutes?:number|null;appointmentType?:string|null;status:'IN_PROGRESS'|'COMPLETED';startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
-type Field={key:string;label:string;type?:'text'|'textarea'|'number'|'select'|'date'|'time';placeholder?:string;options?:string[];suffix?:string;profiles?:string[]};
+type Field={key:string;label:string;type?:'text'|'textarea'|'number'|'select'|'date'|'time';placeholder?:string;options?:string[];suffix?:string;profiles?:string[];group?:string;groupDescription?:string};
 type Step={key:SectionKey|'review';label:string;description:string;fields?:Field[]};
 
 type EncounterListItem = {
@@ -162,9 +162,12 @@ const steps:Step[]=[
   {key:'mainComplaint',label:'Queixa principal',type:'textarea',placeholder:'O que trouxe o paciente à consulta?'},{key:'expectations',label:'Expectativas',type:'textarea'},{key:'consultationType',label:'Tipo de atendimento',type:'select',options:['Primeira consulta','Retorno','Reavaliação','Intercorrência']},
   {key:'education',label:'Escolaridade',type:'select',options:['Ensino Fundamental Incompleto','Ensino Fundamental Completo','Ensino Médio Incompleto','Ensino Médio Completo','Ensino Superior Incompleto','Ensino Superior Completo','Pós-graduação / Especialização','Mestrado / Doutorado']},{key:'profession',label:'Profissão'},{key:'maritalStatus',label:'Estado civil',type:'select',options:['Solteiro(a)','Casado(a) / União Estável','Divorciado(a)','Viúvo(a)','Outro']},{key:'income',label:'Renda familiar'},{key:'dependents',label:'Dependentes',type:'number'}]},
  {key:'anamnesis',label:'Anamnese',description:'História clínica, hábitos e alimentação',fields:[
-  {key:'clinicalHistory',label:'Histórico de saúde',type:'textarea'},{key:'medications',label:'Medicamentos em uso',type:'textarea'},{key:'familyHistory',label:'Histórico familiar',type:'textarea'},{key:'allergies',label:'Alergias e intolerâncias',type:'textarea'},
-  {key:'smoking',label:'Tabagismo',type:'select',options:yesNo},{key:'alcohol',label:'Consumo de álcool',type:'select',options:['Não','Socialmente','Frequentemente']},{key:'waterIntake',label:'Consumo de água',placeholder:'Ex.: 2 litros/dia'},{key:'bowelFunction',label:'Função intestinal',type:'select',options:['Regular','Constipação','Diarreia','Alternado']},
-  {key:'emotionalSymptoms',label:'Sintomas emocionais',type:'select',options:['Nenhum sintoma relevante','Ansiedade leve','Ansiedade moderada a alta','Estresse frequente / Sobrecarga','Compulsão por doces ou momentos de estresse','Oscilações frequentes de humor','Cansaço mental / Esgotamento','Outro']},{key:'foodPreferences',label:'Preferências e aversões',type:'textarea'},{key:'foodRoutine',label:'Rotina alimentar atual',type:'textarea'},{key:'sleep',label:'Sono',type:'select',options:['Excelente / Reparador (7 a 9h)','Bom (6 a 8h)','Irregular / Acorda à noite','Insônia inicial (demora a dormir)','Insônia terminal (acorda cedo)','Menos de 6h por noite','Uso contínuo de indutores/fitoterápicos']},{key:'physicalActivity',label:'Atividade física',type:'textarea'},{key:'objective',label:'Objetivo do acompanhamento',type:'textarea'}]},
+  {key:'clinicalHistory',label:'Histórico de saúde e sintomas clínicos',type:'textarea',group:'História clínica',groupDescription:'Antecedentes, tratamentos e condições atuais.'},{key:'previousDietTreatment',label:'Tratamento dietético anterior',type:'textarea',group:'História clínica'},{key:'medications',label:'Medicamentos e suplementos em uso',type:'textarea',placeholder:'Nome, fabricante, dose, frequência, tempo de uso e motivo',group:'História clínica'},{key:'familyHistory',label:'Doenças na família e grau de parentesco',type:'textarea',placeholder:'Diabetes tipo 1/2, doenças cardiovasculares, hipertensão, doenças renais ou hepáticas, câncer, obesidade, tireoide, colesterol e outras',group:'História clínica'},{key:'vitaminDeficiency',label:'Carência de vitaminas diagnosticada',type:'textarea',group:'História clínica'},{key:'menopausePregnancies',label:'Menopausa, gestações e partos',type:'textarea',group:'História clínica'},
+  {key:'allergies',label:'Alergias alimentares',type:'textarea',group:'Sinais, sintomas e tolerâncias',groupDescription:'Investigação digestiva e manifestações associadas.'},{key:'lactoseIntolerance',label:'Intolerância à lactose',type:'select',options:yesNo,group:'Sinais, sintomas e tolerâncias'},{key:'glutenIntolerance',label:'Intolerância ao glúten',type:'select',options:yesNo,group:'Sinais, sintomas e tolerâncias'},{key:'otherIntolerances',label:'Outras intolerâncias',type:'textarea',group:'Sinais, sintomas e tolerâncias'},{key:'clinicalSymptoms',label:'Sintomas associados',type:'textarea',placeholder:'Flatulência, aftas, bruxismo, azia, gastrite, úlcera, eructação, vômitos, enjoo, gases, diarreia ou outros',group:'Sinais, sintomas e tolerâncias'},{key:'chewing',label:'Mastigação',type:'select',options:['Lenta','Adequada','Rápida'],group:'Sinais, sintomas e tolerâncias'},{key:'digestionDifficulty',label:'Dificuldade de digestão',type:'select',options:yesNo,group:'Sinais, sintomas e tolerâncias'},{key:'digestionTriggerFoods',label:'Alimentos associados à dificuldade digestiva',type:'textarea',group:'Sinais, sintomas e tolerâncias'},{key:'bowelFunction',label:'Função intestinal',type:'select',options:['Regular','Constipação','Diarreia','Alternado'],group:'Sinais, sintomas e tolerâncias'},{key:'bowelFrequency',label:'Evacuações por dia e horário habitual',group:'Sinais, sintomas e tolerâncias'},{key:'edema',label:'Edema',type:'select',options:yesNo,group:'Sinais, sintomas e tolerâncias'},{key:'edemaLocation',label:'Local do edema',group:'Sinais, sintomas e tolerâncias'},
+  {key:'smoking',label:'Tabagismo',type:'select',options:yesNo,group:'Hábitos e rotina',groupDescription:'Sono, substâncias, hidratação e movimento.'},{key:'alcohol',label:'Consumo de álcool',type:'select',options:['Não','Socialmente','Frequentemente'],group:'Hábitos e rotina'},{key:'waterIntake',label:'Ingestão hídrica diária',placeholder:'Ex.: 2 litros/dia',group:'Hábitos e rotina'},{key:'sleep',label:'Sono',type:'select',options:['Excelente / Reparador (7 a 9h)','Bom (6 a 8h)','Irregular / Acorda à noite','Insônia inicial (demora a dormir)','Insônia terminal (acorda cedo)','Menos de 6h por noite','Uso contínuo de indutores/fitoterápicos'],group:'Hábitos e rotina'},{key:'emotionalSymptoms',label:'Sintomas emocionais',type:'select',options:['Nenhum sintoma relevante','Ansiedade leve','Ansiedade moderada a alta','Estresse frequente / Sobrecarga','Compulsão por doces ou momentos de estresse','Oscilações frequentes de humor','Cansaço mental / Esgotamento','Outro'],group:'Hábitos e rotina'},{key:'physicalActivity',label:'Atividade física praticada',type:'textarea',placeholder:'Tipo, duração, horário e frequência semanal',group:'Hábitos e rotina'},
+  {key:'foodRoutine',label:'Rotina alimentar atual',type:'textarea',group:'Inquérito alimentar',groupDescription:'Organização, comportamento e relação com os alimentos.'},{key:'whoCooks',label:'Quem cozinha?',group:'Inquérito alimentar'},{key:'whoShops',label:'Quem faz as compras?',group:'Inquérito alimentar'},{key:'mealLocations',label:'Local das refeições durante a semana e no fim de semana',type:'textarea',group:'Inquérito alimentar'},{key:'previousDiet',label:'Já seguiu alguma dieta? Como foi?',type:'textarea',group:'Inquérito alimentar'},{key:'recentWeightChange',label:'Alteração recente de peso e motivo',type:'textarea',group:'Inquérito alimentar'},{key:'liquidsWithMeals',label:'Consome líquidos nas refeições? Quais e quanto?',group:'Inquérito alimentar'},{key:'anxietyEating',label:'Quando fica ansioso(a), como muda sua alimentação?',type:'select',options:['Come mais','Come menos','Sem alteração','Não se aplica'],group:'Inquérito alimentar'},{key:'sweetenerUse',label:'Uso de adoçante: tipo e quantidade',group:'Inquérito alimentar'},{key:'hungerTime',label:'Horário do dia em que sente mais fome',group:'Inquérito alimentar'},{key:'flavorPreference',label:'Preferência de sabor',type:'select',options:['Doce','Salgado','Ambos','Sem preferência'],group:'Inquérito alimentar'},{key:'foodPreferences',label:'Preferências alimentares',type:'textarea',group:'Inquérito alimentar'},{key:'foodAversions',label:'Aversões alimentares',type:'textarea',group:'Inquérito alimentar'},{key:'bingeEatingHistory',label:'Compulsão alimentar: frequência, gatilhos e contexto',type:'textarea',group:'Inquérito alimentar'},
+  {key:'physicalExamGeneral',label:'Impressão geral do exame físico',type:'textarea',group:'Avaliação Física',groupDescription:'Registre a condição observada e os achados relevantes em cada região.'},{key:'physicalFace',label:'Face',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalEyes',label:'Olhos',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalOralCavity',label:'Cavidade oral e dentes',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalTongue',label:'Língua',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalHair',label:'Cabelos',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalSkin',label:'Pele',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalNails',label:'Unhas',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalMusculoskeletal',label:'Sistema musculoesquelético',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalAbdomen',label:'Abdômen',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalLowerLimbs',label:'Membros inferiores',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalIntestinalNoises',label:'Ruídos intestinais',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalUrinary',label:'Aspectos urinários',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalExamNotes',label:'Observações do exame físico',type:'textarea',placeholder:'Descreva alterações, localização, intensidade e conduta relacionada',group:'Avaliação Física'},
+  {key:'objective',label:'Objetivo do acompanhamento',type:'textarea',group:'Síntese clínica',groupDescription:'Conclusão profissional após a coleta.'},{key:'diagnosticSummary',label:'Diagnóstico e conduta inicial',type:'textarea',group:'Síntese clínica'}]},
  {key:'recall24h',label:'Recordatório 24h',description:'Consumo alimentar do dia anterior',fields:[
   {key:'wakeTime',label:'Horário que acordou',type:'time'},{key:'breakfast',label:'Café da manhã',type:'textarea',placeholder:'Horário, alimentos e quantidades'},{key:'morningSnack',label:'Lanche da manhã',type:'textarea'},{key:'lunch',label:'Almoço',type:'textarea'},{key:'afternoonSnack',label:'Lanche da tarde',type:'textarea'},{key:'dinner',label:'Jantar',type:'textarea'},{key:'supper',label:'Ceia',type:'textarea'},{key:'otherIntake',label:'Outros consumos e observações',type:'textarea'}]},
  {key:'assessment',label:'Avaliação corporal',description:'Antropometria, bioimpedância e energia',fields:[
@@ -357,6 +360,13 @@ export function EncounterPage(){
  }
 
  const key=current.key as SectionKey;const assessment=drafts.assessment||{};const profile=String(assessment.clinicalProfile||'Adulto');const weight=Number(assessment.weight);const height=Number(assessment.height);const age=Number(assessment.age);const bmi=weight>0&&height>0?(weight/(height/100)**2).toFixed(1):null;const whr=Number(assessment.waist)>0&&Number(assessment.hip)>0?(Number(assessment.waist)/Number(assessment.hip)).toFixed(2):null;const activityFactor=parseFloat(String(assessment.activityFactor||'1.375'))||1.375;const bmr=weight>0&&height>0&&age>0?10*weight+6.25*height-5*age+(assessment.sex==='Masculino'?5:-161):null;const totalEnergy=bmr?Math.round(bmr*activityFactor):null;const gestationalGain=profile==='Gestante'&&Number(assessment.prePregnancyWeight)>0?(weight-Number(assessment.prePregnancyWeight)).toFixed(1):null;
+ const visibleFields=current.fields?.filter(field=>!field.profiles||field.profiles.includes(profile))||[];
+ const fieldGroups=visibleFields.reduce<Array<{name:string;description?:string;fields:Field[]}>>((groups,field)=>{
+  const name=field.group||'';
+  const existing=groups.find(group=>group.name===name);
+  if(existing)existing.fields.push(field);else groups.push({name,description:field.groupDescription,fields:[field]});
+  return groups;
+ },[]);
  const roomToken=encounter.videoRoomToken||encounter.id;
 
  function handleApplyEnergy(results: { tmb: number; vet: number; targetKcal: number; proteinGrams: number; carbsGrams: number; fatGrams: number }) {
@@ -548,24 +558,31 @@ export function EncounterPage(){
             <SupplementsList encounterId={encounter.id} initial={encounter.supplements||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>
           ) : (
             <>
-              <div className="clinical-form">
-                {current.fields?.filter(field=>!field.profiles||field.profiles.includes(profile)).map(field=>(
-                  <label key={field.key} className={field.type==='textarea'?'wide':''}>
-                    {field.label}
-                    <div className={field.suffix?'field-suffix':''}>
-                      {field.type==='textarea'? (
-                        <textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={encounter.status==='COMPLETED'}/>
-                      ) : field.type==='select'? (
-                        <select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} disabled={encounter.status==='COMPLETED'}>
-                          <option value="">Selecione</option>
-                          {field.options?.map(option=><option key={option}>{option}</option>)}
-                        </select>
-                      ) : (
-                        <input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={encounter.status==='COMPLETED'}/>
-                      )}
-                      {field.suffix&&<span>{field.suffix}</span>}
+              <div className={`clinical-form${fieldGroups.some(group=>group.name)?' grouped':''}`}>
+                {fieldGroups.map(group=>(
+                  <section className="clinical-field-group" key={group.name||'default'}>
+                    {group.name&&<header><h3>{group.name}</h3>{group.description&&<p>{group.description}</p>}</header>}
+                    <div className="clinical-field-grid">
+                      {group.fields.map(field=>(
+                        <label key={field.key} className={field.type==='textarea'?'wide':''}>
+                          {field.label}
+                          <div className={field.suffix?'field-suffix':''}>
+                            {field.type==='textarea'? (
+                              <textarea rows={4} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={encounter.status==='COMPLETED'}/>
+                            ) : field.type==='select'? (
+                              <select value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} disabled={encounter.status==='COMPLETED'}>
+                                <option value="">Selecione</option>
+                                {field.options?.map(option=><option key={option}>{option}</option>)}
+                              </select>
+                            ) : (
+                              <input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={encounter.status==='COMPLETED'}/>
+                            )}
+                            {field.suffix&&<span>{field.suffix}</span>}
+                          </div>
+                        </label>
+                      ))}
                     </div>
-                  </label>
+                  </section>
                 ))}
               </div>
               {current.key==='assessment'&&(bmi||whr||bmr)&& (
