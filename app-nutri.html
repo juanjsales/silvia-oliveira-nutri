@@ -3025,7 +3025,9 @@
         '<div class="box">Recebi de <strong>' + (nome || 'Paciente') + '</strong> a quantia de <span class="val">R$ ' + valNum + '</span> referente aos serviços prestados de Acompanhamento Nutricional e Consulta Clínica no dia ' + dtFmt + '.</div>',
         '<div class="signature"><strong>Dra. Silvia de Oliveira Lemos</strong><br>Nutricionista · CRN-4 25104731</div>',
         printScript,
-        '</body></html>'
+        '<!-- Vercel Web Analytics -->
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+</body></html>'
       ];
       win.document.write(htmlParts.join(''));
       win.document.close();
@@ -3270,6 +3272,8 @@
   </div>
 
 
+<!-- Vercel Web Analytics -->
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </body>
 
 </html>

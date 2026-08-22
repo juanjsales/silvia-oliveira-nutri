@@ -1,0 +1,20 @@
+{
+  "name": "silvia-oliveira-nutri",
+  "version": "1.0.0",
+  "description": "Website da Dra. Silvia Oliveira Lemos - Nutricionista",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Static HTML site - no build step required'",
+    "lint": "echo 'No linter configured for static HTML'"
+  },
+  "keywords": [
+    "nutricionista",
+    "nutrition",
+    "healthcare"
+  ],
+  "author": "Dra. Silvia Oliveira Lemos",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
