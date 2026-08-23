@@ -30,6 +30,7 @@ import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { useToast } from '../components/ToastNotification';
 import { LaminaVisualInfographic } from '../components/LaminaVisualInfographic';
 import { api } from '../lib/api';
+import { getLaminaSources } from '../lib/laminaSources';
 
 type Access = { roomUrl: string; expiresAt: string; sessionId?: string; state?: string };
 type GuideTab = 'medidas' | 'fome' | 'prato' | 'bristol' | 'metas' | 'avaliacao' | 'conduta' | 'lamina';
@@ -754,6 +755,16 @@ export function PatientVideoPage() {
                               Dra. Silvia Oliveira Lemos · Nutrição Clínica
                             </p>
                           </div>
+                        </div>
+
+                        <div style={{ background: '#f7faf8', border: '1px solid #dbe7df', borderRadius: '9px', padding: '12px 14px' }}>
+                          <strong style={{ display: 'block', color: '#1b4332', fontSize: '0.8rem', marginBottom: '6px' }}>Fontes e referências</strong>
+                          {getLaminaSources({ id: broadcast.laminaData.id }).map((source) => (
+                            <a key={source.url} href={source.url} target="_blank" rel="noreferrer" style={{ display: 'block', color: '#356859', fontSize: '0.72rem', lineHeight: 1.4, marginTop: '5px', overflowWrap: 'anywhere' }}>
+                              {source.institution}. {source.title}. {source.year}.
+                            </a>
+                          ))}
+                          <small style={{ display: 'block', color: '#708078', marginTop: '7px' }}>Conteúdo educativo geral; siga a orientação individual da nutricionista.</small>
                         </div>
 
                         <div

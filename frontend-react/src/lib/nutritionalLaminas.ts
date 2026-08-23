@@ -34,8 +34,8 @@ export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
     tips: [
       'Ordem decrescente: O primeiro ingrediente da lista é sempre o que está em maior quantidade.',
       'Açúcar disfarçado: Atenção a xarope de milho, maltodextrina, sacarose, dextrose e néctar.',
-      'Menos é mais: Prefira alimentos com menos de 5 ingredientes e sem nomes químicos desconhecidos.',
-      'Gordura Trans Zero no rótulo pode conter gordura vegetal hidrogenada na lista de ingredientes.'
+      'Leia a lista completa: quantidade de ingredientes, isoladamente, não define se um alimento é adequado.',
+      'Confira a lupa frontal para alto teor de açúcar adicionado, gordura saturada ou sódio e compare a porção.'
     ],
     icon: 'Tags',
   },
@@ -48,8 +48,8 @@ export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
     tips: [
       'Zona Ideal para Comer: Nível 3 a 4 (fome física moderada, sem urgência ou desespero).',
       'Zona Ideal para Parar: Nível 6 a 7 (satisfeito confortavelmente, com energia renovada).',
-      'Coma devagar: O cérebro leva cerca de 20 minutos para processar os sinais hormonais de saciedade.',
-      'Fome Emocional: Surge de repente para alimentos específicos (doces/gorduras) e não cessa após comer.'
+      'Coma com calma e faça pausas para perceber mudanças na fome e na satisfação, sem depender de um tempo fixo.',
+      'Vontade de comer pode envolver emoções e contexto; observe padrões sem culpa e converse com a nutricionista.'
     ],
     icon: 'Brain',
   },
@@ -60,10 +60,10 @@ export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
     categoryLabel: 'Hidratação',
     summary: 'Como atingir sua meta diária de água com facilidade e monitorar a hidratação pela urina.',
     tips: [
-      'Meta personalizada: Multiplique seu peso corporal por 35 ml (ex: 70 kg × 35 = 2.450 ml/dia).',
-      'Monitore a urina: Deve estar em tom amarelo-palha claro (tons escuros indicam desidratação).',
+      'A necessidade de líquidos varia com idade, clima, atividade, alimentação, gestação, lactação e condições clínicas.',
+      'A cor da urina pode ajudar a observar tendências, mas também muda com medicamentos, suplementos e alimentos.',
       'Águas aromatizadas: Use hortelã, gengibre, rodelas de limão e canela em pau para variar o sabor.',
-      'Não espere ter sede: A sensação de sede já é um sinal de desidratação celular em andamento.'
+      'Distribua líquidos ao longo do dia; restrições ou metas específicas devem ser individualizadas.'
     ],
     icon: 'Droplets',
   },
@@ -89,9 +89,9 @@ export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
     summary: 'Passo a passo seguro para higienizar verduras, legumes e frutas sem riscos de contaminação.',
     tips: [
       'Lavagem prévia: Lave cada folha e fruto em água corrente para remover terra e sujidades.',
-      'Solução clorada: 1 colher de sopa (10 ml) de água sanitária (ou hipoclorito a 2,5%) para cada 1 litro de água.',
-      'Tempo de imersão: Deixe de molho por 15 minutos na solução clorada.',
-      'Enxágue final: Enxágue abundantemente em água filtrada/potável e seque bem antes de guardar.'
+      'Use somente produto regularizado para desinfecção de alimentos e siga exatamente a diluição indicada no rótulo.',
+      'Respeite o tempo de contato informado pelo fabricante; concentração e tempo variam entre produtos.',
+      'Após a desinfecção, enxágue com água potável quando o rótulo orientar e armazene adequadamente.'
     ],
     icon: 'Sparkles',
   },
@@ -105,7 +105,7 @@ export const NUTRITIONAL_LAMINAS: NutritionalLamina[] = [
       'Azeite de oliva extravirgem (acidez < 0,5%): Consuma cru por cima dos pratos prontos.',
       'Abacate e avocado: Ricos em ômega-9 e antioxidantes que promovem saciedade prolongada.',
       'Sementes funcionais: Chia e linhaça triturada fornecem ômega-3 vegetal (ALA) e fibras solúveis.',
-      'Castanhas e nozes: 2 a 3 unidades de castanha-do-pará fornecem a dose diária necessária de selênio.'
+      'Castanhas e nozes: varie tipos e porções; o teor de selênio da castanha-do-pará é muito variável.'
     ],
     icon: 'HeartPulse',
   },

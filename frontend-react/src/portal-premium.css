@@ -971,6 +971,18 @@
   line-height: 1.45;
 }
 
+.portal-lamina-references {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid #dbe7df;
+  border-radius: 12px;
+  background: #f7faf8;
+}
+
+.portal-lamina-references h4 { margin: 0 0 8px; color: #183f31; }
+.portal-lamina-references a { display: block; margin-top: 7px; color: #356859; font-size: .82rem; line-height: 1.45; overflow-wrap: anywhere; }
+.portal-lamina-references small { display: block; margin-top: 10px; color: #708078; line-height: 1.4; }
+
 .tip-icon-green {
   color: #059669;
   flex-shrink: 0;

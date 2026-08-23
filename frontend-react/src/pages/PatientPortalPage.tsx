@@ -437,7 +437,7 @@ function PortalHome({
     (a: Any) =>
       a.status !== 'COMPLETED' &&
       a.status !== 'CANCELLED' &&
-      a.status !== 'ABSENT' &&
+      a.status !== 'NO_SHOW' &&
       (a.status === 'IN_PROGRESS' ||
         new Date(`${a.appointmentDate}T${a.appointmentTime}`) >= new Date(Date.now() - 30 * 60_000)),
   );

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
-import { ensureAppointmentCharge } from '../../shared/finance.js';
+import { cancelAppointmentCharge, ensureAppointmentCharge, syncOpenAppointmentCharge } from '../../shared/finance.js';
 import { canTransitionAppointment, type AppointmentStatus } from '../../shared/appointment-status.js';
 import { appointmentEmailKey, enqueueAppointmentEmail, processAppointmentEmail } from '../../shared/appointment-email-outbox.js';
 
@@ -143,6 +143,10 @@ export async function appointmentRoutes(app: FastifyInstance) {
       if (body.status === 'COMPLETED') {
         const finance = await ensureAppointmentCharge(client,id,request.auth!.userId);
         financeCreated = finance.created;
+      } else if (body.status === 'CANCELLED') {
+        await cancelAppointmentCharge(client,id);
+      } else if (scheduleChanged || body.price !== undefined || body.type !== undefined || body.patientId !== undefined) {
+        await syncOpenAppointmentCharge(client,id);
       }
       await audit(client,'APPOINTMENT_UPDATED','appointment',{ actorUserId:request.auth!.userId,entityId:id,metadata:{fields:Object.keys(body),financeCreated,scheduleChanged,emailDeliveryId:deliveryId} });
       await client.query('COMMIT');

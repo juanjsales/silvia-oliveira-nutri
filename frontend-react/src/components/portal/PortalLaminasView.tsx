@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { NUTRITIONAL_LAMINAS, type NutritionalLamina } from '../../lib/nutritionalLaminas';
+import { getLaminaSources } from '../../lib/laminaSources';
 import { LaminaVisualInfographic } from '../LaminaVisualInfographic';
 
 const iconMap: Record<string, any> = {
@@ -128,6 +129,8 @@ export function PortalLaminasView() {
         <div class="tips-title">✨ Orientações Práticas para seu Dia a Dia:</div>
         <ul>
           ${lamina.tips.map((t) => `<li>${t}</li>`).join('')}
+          <h3>Fontes e referências</h3>
+          ${getLaminaSources(lamina).map((source) => `<p><b>${source.institution}.</b> ${source.title}. ${source.year}.<br>${source.url}</p>`).join('')}
         </ul>
         <div class="footer">
           Material educativo exclusivo · Consultório Nutricional Dra. Silvia Oliveira Lemos
@@ -278,6 +281,15 @@ export function PortalLaminasView() {
                   </li>
                 ))}
               </ul>
+              <div className="portal-lamina-references">
+                <h4>Fontes e referências</h4>
+                {getLaminaSources(activeLamina).map((source) => (
+                  <a key={source.url} href={source.url} target="_blank" rel="noreferrer">
+                    {source.institution}. {source.title}. {source.year}.
+                  </a>
+                ))}
+                <small>Conteúdo educativo geral. Sua orientação individual pode ser diferente.</small>
+              </div>
             </div>
 
             <footer className="portal-detail-footer">

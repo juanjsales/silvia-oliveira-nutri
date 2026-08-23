@@ -127,7 +127,7 @@ export async function encounterRoutes(app: FastifyInstance) {
     const patient = await app.db.query('SELECT id FROM patients WHERE id=$1 AND active=true', [body.patientId]);
     if (!patient.rows[0]) return reply.code(404).send({ error: 'Paciente não encontrado ou inativo.' });
     if (body.appointmentId) {
-      const appointment = await app.db.query('SELECT id FROM appointments WHERE id=$1 AND patient_id=$2', [body.appointmentId, body.patientId]);
+      const appointment = await app.db.query<{id:string;status:string}>('SELECT id,status FROM appointments WHERE id=$1 AND patient_id=$2', [body.appointmentId, body.patientId]);
       if (!appointment.rows[0]) return reply.code(400).send({ error: 'Consulta não pertence ao paciente informado.' });
       const existing = await app.db.query<{id:string;status:string}>('SELECT id,status FROM clinical_encounters WHERE appointment_id=$1', [body.appointmentId]);
       if (existing.rows[0]) {
@@ -137,6 +137,7 @@ export async function encounterRoutes(app: FastifyInstance) {
         }
         return reply.send({ data: { id: existing.rows[0].id, resumed: true } });
       }
+      if (!['CONFIRMED','WAITING','IN_PROGRESS'].includes(appointment.rows[0].status)) return reply.code(409).send({ error: 'Esta consulta está encerrada e não pode iniciar um novo atendimento. Reagende a consulta ou abra uma correção no prontuário existente.' });
     } else {
       const existingDirect = await app.db.query<{id:string}>("SELECT id FROM clinical_encounters WHERE patient_id=$1 AND status='IN_PROGRESS' ORDER BY started_at DESC LIMIT 1", [body.patientId]);
       if (existingDirect.rows[0]) {
@@ -257,15 +258,8 @@ export async function encounterRoutes(app: FastifyInstance) {
       }
       if(result.rows[0].appointment_id && encounterInfo.rows[0].status==='IN_PROGRESS'){
         await client.query("UPDATE appointments SET status='COMPLETED',updated_at=now() WHERE id=$1",[result.rows[0].appointment_id]);
-        await client.query('SAVEPOINT finalize_finance');
-        try {
-          const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);
-          financeCreated=finance.created;
-          await client.query('RELEASE SAVEPOINT finalize_finance');
-        } catch (error) {
-          await client.query('ROLLBACK TO SAVEPOINT finalize_finance');
-          app.log.error({err:error,encounterId:id},'Atendimento concluído, mas o lançamento financeiro falhou');
-        }
+        const finance=await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);
+        financeCreated=finance.created;
       }
       await client.query('SAVEPOINT finalize_notifications');
       try {
@@ -372,6 +366,7 @@ export async function encounterRoutes(app: FastifyInstance) {
       }
       if (result.rows[0].appointment_id) {
         await client.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [result.rows[0].appointment_id]);
+        await ensureAppointmentCharge(client,result.rows[0].appointment_id,request.auth!.userId);
       }
       await client.query(`UPDATE teleconsultation_sessions SET state='ENDED',ended_at=COALESCE(ended_at,now()),end_reason=COALESCE(end_reason,'COMPLETED'),updated_at=now() WHERE ended_at IS NULL AND source_id IN ($1,$2)`,[id,result.rows[0].appointment_id]);
       await client.query(`UPDATE patient_notifications SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now()) WHERE patient_id=$1 AND dedupe_key=$2 AND status='ACTIVE'`,[result.rows[0].patient_id,`teleconsultation:${id}`]);
@@ -442,6 +437,7 @@ export async function encounterRoutes(app: FastifyInstance) {
       for (const row of updated.rows) {
         if (row.appointment_id) {
           await client.query("UPDATE appointments SET status='COMPLETED', updated_at=now() WHERE id=$1", [row.appointment_id]);
+          await ensureAppointmentCharge(client,row.appointment_id,request.auth!.userId);
         }
         await client.query(`UPDATE teleconsultation_sessions SET state='ENDED',ended_at=COALESCE(ended_at,now()),end_reason=COALESCE(end_reason,'COMPLETED'),updated_at=now() WHERE ended_at IS NULL AND source_id IN($1,$2)`,[row.id,row.appointment_id]);
         await client.query(`UPDATE patient_notifications SET status='RESOLVED',resolved_at=now(),read_at=COALESCE(read_at,now()) WHERE patient_id=$1 AND dedupe_key=$2 AND status='ACTIVE'`,[row.patient_id,`teleconsultation:${row.id}`]);

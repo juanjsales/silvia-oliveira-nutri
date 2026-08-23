@@ -22,6 +22,7 @@ import {
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { createPortal } from 'react-dom';
 import { NUTRITIONAL_LAMINAS, type NutritionalLamina } from '../lib/nutritionalLaminas';
+import { getLaminaSources } from '../lib/laminaSources';
 import { LaminaVisualInfographic } from './LaminaVisualInfographic';
 
 const iconMap: Record<string, ComponentType<{ size?: number; color?: string; style?: React.CSSProperties; className?: string }>> = {
@@ -267,6 +268,9 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
             font-size: 0.78rem;
             color: #74c69d;
           }
+          .references { margin-top: 20px; padding: 14px 16px; background: #f7faf8; border: 1px solid #dbe7df; border-radius: 10px; }
+          .references strong { display: block; margin-bottom: 7px; color: #1b4332; }
+          .references p { margin: 5px 0; font-size: 0.72rem; line-height: 1.35; color: #52645b; overflow-wrap: anywhere; }
         </style>
       </head>
       <body>
@@ -293,6 +297,10 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
               </div>`
               )
               .join('')}
+          </div>
+          <div class="references">
+            <strong>Fontes e referências</strong>
+            ${getLaminaSources(lamina).map((source) => `<p>${source.institution}. <b>${source.title}</b>. ${source.year}.<br>${source.url}</p>`).join('')}
           </div>
           <div class="footer">
             <span>Material Educativo Oficial</span>
@@ -322,6 +330,8 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
       `_${lamina.summary}_\n\n` +
       `*Orientações Práticas:*\n` +
       lamina.tips.map((t, i) => `▫️ *Passo ${i + 1}:* ${t}`).join('\n') +
+      `\n\n*Fontes:*\n` +
+      getLaminaSources(lamina).map((s) => `• ${s.institution} — ${s.title} (${s.year}): ${s.url}`).join('\n') +
       `\n\n_Dra. Silvia Oliveira Lemos · Nutrição Clínica_`;
 
     navigator.clipboard
@@ -917,6 +927,16 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
                   ))}
                 </div>
               </div>
+
+              <section style={{ background: '#f7faf8', border: '1px solid #dbe7df', borderRadius: '10px', padding: '14px 16px' }}>
+                <strong style={{ display: 'block', color: '#1b4332', fontSize: '0.84rem', marginBottom: '8px' }}>Fontes e referências</strong>
+                {getLaminaSources(activeLamina).map((source) => (
+                  <a key={source.url} href={source.url} target="_blank" rel="noreferrer" style={{ display: 'block', color: '#356859', fontSize: '0.76rem', lineHeight: 1.45, marginTop: '6px', overflowWrap: 'anywhere' }}>
+                    {source.institution}. {source.title}. {source.year}.
+                  </a>
+                ))}
+                <small style={{ display: 'block', color: '#708078', marginTop: '9px' }}>Material educativo geral; a orientação individual da nutricionista prevalece.</small>
+              </section>
 
               {/* Rodapé da Lâmina */}
               <div

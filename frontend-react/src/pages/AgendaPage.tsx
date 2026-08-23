@@ -9,7 +9,7 @@ type AppointmentStatus = 'CONFIRMED'|'WAITING'|'IN_PROGRESS'|'COMPLETED'|'CANCEL
 type Appointment = { id:string; patientId:string; patientName:string; whatsapp?:string|null; date:string; time:string; durationMinutes:number; type:string; price?:number|null; status:AppointmentStatus; notes?:string|null; meetingUrl?:string|null; patientResponse:'PENDING'|'CONFIRMED'|'RESCHEDULE_REQUESTED'; patientResponseNote?:string|null; encounterId?:string|null; encounterStatus?:string|null };
 type FormState = { patientId:string; date:string; time:string; durationMinutes:string; type:string; price:string; status:AppointmentStatus; notes:string; meetingUrl:string };
 type AppointmentRequest={id:string;patientId:string;patientName:string;preferredDate:string;preferredPeriod:'MORNING'|'AFTERNOON'|'EVENING';appointmentType:string;notes?:string|null;status:'PENDING'};
-const statusLabels: Record<AppointmentStatus,string> = { CONFIRMED:'Confirmado', WAITING:'Aguardando', IN_PROGRESS:'Em atendimento', COMPLETED:'Concluído', CANCELLED:'Cancelado', NO_SHOW:'Não compareceu' };
+const statusLabels: Record<AppointmentStatus,string> = { CONFIRMED:'Confirmado', WAITING:'Aguardando confirmação', IN_PROGRESS:'Em atendimento', COMPLETED:'Concluído', CANCELLED:'Cancelado', NO_SHOW:'Não compareceu' };
 const statusTransitions:Record<AppointmentStatus,AppointmentStatus[]>={
   CONFIRMED:['CONFIRMED','WAITING','IN_PROGRESS','COMPLETED','CANCELLED','NO_SHOW'],
   WAITING:['WAITING','CONFIRMED','IN_PROGRESS','COMPLETED','CANCELLED','NO_SHOW'],
