@@ -20,8 +20,8 @@ export function PasswordInput({ className = '', ...props }: PasswordInputProps) 
         className="password-toggle-btn"
         onClick={() => setVisible((prev) => !prev)}
         aria-label={visible ? 'Ocultar senha' : 'Exibir senha'}
+        aria-pressed={visible}
         title={visible ? 'Ocultar senha' : 'Exibir senha'}
-        tabIndex={-1}
       >
         {visible ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>

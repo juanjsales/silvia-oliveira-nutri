@@ -1,15 +1,96 @@
 import { ArrowRight, CheckCircle2, Leaf, LockKeyhole } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { PasswordInput } from '../components/PasswordInput';
 import { useAuth } from '../contexts/AuthContext';
 import { ClinicMark, useClinic } from '../contexts/ClinicContext';
-import { PasswordInput } from '../components/PasswordInput';
 
-export function LoginPage(){
-  const{user,login}=useAuth();const clinic=useClinic();const navigate=useNavigate();const location=useLocation();
-  const[identifier,setIdentifier]=useState('');const[password,setPassword]=useState('');const[error,setError]=useState('');const[submitting,setSubmitting]=useState(false);
-  if(user)return <Navigate to={user.role==='PATIENT'?'/portal':'/painel'} replace/>;
-  async function submit(event:FormEvent){event.preventDefault();setError('');setSubmitting(true);try{await login(identifier,password);navigate((location.state as{from?:string}|null)?.from??'/painel',{replace:true})}catch(c){setError(c instanceof Error?c.message:'Não foi possível entrar.')}finally{setSubmitting(false)}}
-  return <main className="login-page"><section className="login-story"><div className="story-glow"/><div className="story-content"><div className="brand light"><ClinicMark/><div><strong>{clinic.clinicName}</strong><span>{clinic.specialty}</span></div></div><div className="story-copy"><span className="eyebrow light-text">Cuidado que se organiza</span><h1>Mais presença no atendimento.<br/>Menos ruído na rotina.</h1><p>Um espaço clínico pensado para acompanhar cada paciente com clareza, contexto e continuidade.</p><div className="story-points"><span><CheckCircle2/> Jornada clínica em um só lugar</span><span><CheckCircle2/> Dados protegidos e acessíveis</span></div></div><div className="story-quote"><Leaf/><p>“Cuidar bem também é tornar o complexo mais simples.”</p></div></div></section><section className="login-panel"><form className="login-card" onSubmit={submit}><div className="mobile-login-brand"><ClinicMark/><strong>{clinic.clinicName}</strong></div><span className="eyebrow">Bem-vinda de volta</span><h2>Acesse seu espaço</h2><p className="muted">Use seu e-mail ou CPF e sua senha para continuar.</p><label>E-mail ou CPF<input value={identifier} onChange={e=>setIdentifier(e.target.value)} autoComplete="username" required/></label><label>Senha<PasswordInput value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" required/></label>{error&&<div className="form-error">{error}</div>}<button className="primary-button login-submit" disabled={submitting}>{submitting?'Entrando...':<>Entrar <ArrowRight/></>}</button><Link className="auth-back" to="/recuperar-senha">Esqueci minha senha</Link><div className="security-note"><LockKeyhole/> Acesso protegido e sessão segura.</div></form></section></main>;
+type LoginLocationState = { from?: string } | null;
+
+function safeReturnPath(state: LoginLocationState) {
+  const path = state?.from;
+  return path?.startsWith('/') && !path.startsWith('//') ? path : null;
 }
 
+export function LoginPage() {
+  const { user, login } = useAuth();
+  const clinic = useClinic();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const identifierRef = useRef<HTMLInputElement>(null);
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
+
+  if (user) return <Navigate to={user.role === 'PATIENT' ? '/portal' : '/painel'} replace />;
+
+  function updateCapsLock(event: KeyboardEvent<HTMLInputElement>) {
+    setCapsLock(event.getModifierState('CapsLock'));
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting) return;
+    setError('');
+    setSubmitting(true);
+    try {
+      const authenticatedUser = await login(identifier.trim(), password);
+      const returnPath = safeReturnPath(location.state as LoginLocationState);
+      navigate(returnPath ?? (authenticatedUser.role === 'PATIENT' ? '/portal' : '/painel'), { replace: true });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível entrar. Tente novamente.');
+      identifierRef.current?.focus();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <main className="login-page">
+      <section className="login-story" aria-labelledby="login-story-title">
+        <div className="story-glow" aria-hidden="true" />
+        <div className="story-content">
+          <div className="brand light"><ClinicMark /><div><strong>{clinic.clinicName}</strong><span>{clinic.specialty}</span></div></div>
+          <div className="story-copy">
+            <span className="eyebrow light-text">Cuidado que se organiza</span>
+            <h1 id="login-story-title">Mais presença no atendimento.<br />Menos ruído na rotina.</h1>
+            <p>Um espaço clínico pensado para acompanhar cada paciente com clareza, contexto e continuidade.</p>
+            <div className="story-points" aria-label="Benefícios da plataforma">
+              <span><CheckCircle2 aria-hidden="true" /> Jornada clínica em um só lugar</span>
+              <span><CheckCircle2 aria-hidden="true" /> Dados protegidos e acessíveis</span>
+            </div>
+          </div>
+          <div className="story-quote"><Leaf aria-hidden="true" /><p>“Cuidar bem também é tornar o complexo mais simples.”</p></div>
+        </div>
+      </section>
+
+      <section className="login-panel" aria-labelledby="login-title">
+        <form className="login-card" onSubmit={submit} aria-busy={submitting}>
+          <div className="mobile-login-brand"><ClinicMark /><strong>{clinic.clinicName}</strong></div>
+          <header>
+            <span className="eyebrow">Acesso ao portal</span>
+            <h2 id="login-title">Bem-vindo ao seu espaço</h2>
+            <p className="muted">Entre com seu e-mail ou CPF e sua senha para continuar.</p>
+          </header>
+          <label htmlFor="login-identifier">
+            E-mail ou CPF
+            <input ref={identifierRef} id="login-identifier" name="identifier" value={identifier} onChange={(event) => { setIdentifier(event.target.value); if (error) setError(''); }} autoComplete="username" autoCapitalize="none" spellCheck={false} aria-invalid={Boolean(error)} aria-describedby={error ? 'login-error' : undefined} disabled={submitting} required />
+          </label>
+          <label htmlFor="login-password">
+            Senha
+            <PasswordInput id="login-password" name="password" value={password} onChange={(event) => { setPassword(event.target.value); if (error) setError(''); }} onKeyDown={updateCapsLock} onKeyUp={updateCapsLock} onBlur={() => setCapsLock(false)} autoComplete="current-password" aria-invalid={Boolean(error)} aria-describedby={[error ? 'login-error' : '', capsLock ? 'caps-lock-warning' : ''].filter(Boolean).join(' ') || undefined} disabled={submitting} required />
+          </label>
+          {capsLock && <div id="caps-lock-warning" className="security-note" role="status">Caps Lock está ativado.</div>}
+          {error && <div id="login-error" className="form-error" role="alert" aria-live="assertive">{error}</div>}
+          <button className="primary-button login-submit" type="submit" disabled={submitting} aria-busy={submitting}>
+            {submitting ? <><span className="spinner" aria-hidden="true" /> Entrando...</> : <>Entrar <ArrowRight aria-hidden="true" /></>}
+          </button>
+          <Link className="auth-back" to="/recuperar-senha">Esqueceu sua senha?</Link>
+          <div className="security-note"><LockKeyhole aria-hidden="true" /> Acesso protegido e sessão segura.</div>
+        </form>
+      </section>
+    </main>
+  );
+}

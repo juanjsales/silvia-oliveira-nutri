@@ -19,6 +19,7 @@ import './document-professional.css';
 import './messages.css';
 import './follow-up.css';
 import './patient-exams.css';
+import './login.css';
 
 function syncA4ScreenScale(){
   const scale=Math.min(1,Math.max(.32,(window.innerWidth-24)/794));
