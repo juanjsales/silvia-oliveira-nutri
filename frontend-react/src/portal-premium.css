@@ -17,15 +17,17 @@
   --portal-text: #203028;
   --portal-text-muted: var(--muted, #55665b);
   --portal-border: var(--line, #dfe6df);
-  animation: portalPageEnter 0.35s ease-out both;
+  animation: calmFloatUp var(--duration-smooth, 450ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
 }
 
 @keyframes portalPageEnter {
   from {
     opacity: 0;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -35,11 +37,14 @@
   justify-content: space-between;
   align-items: center;
   gap: 14px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   padding: 14px 20px;
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: var(--shadow-soft-sm, 0 4px 16px rgba(0, 0, 0, 0.03));
+  transition: transform var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)), box-shadow var(--duration-fast, 220ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1));
 }
 
 .portal-brand-v2 {
@@ -224,19 +229,32 @@
   color: #475569;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  box-shadow: var(--shadow-soft-xs);
+  transition: 
+    transform var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    background var(--duration-fast, 220ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)),
+    color var(--duration-fast, 220ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)),
+    border-color var(--duration-fast, 220ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1));
 }
 
 .portal-nav-pill:hover {
   background: #f8fafc;
   color: #1e293b;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-sm);
+}
+
+.portal-nav-pill:active {
+  transform: scale(0.98);
+  transition-duration: var(--duration-instant, 140ms);
 }
 
 .portal-nav-pill.active {
   background: #203528;
   border-color: #203528;
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(32, 53, 40, 0.15);
+  box-shadow: 0 4px 16px rgba(32, 53, 40, 0.18);
 }
 
 /* ── NAVEGAÇÃO INFERIOR FIXA NO MOBILE (BOTTOM NAV BAR) ── */
@@ -561,19 +579,27 @@
   gap: 20px;
 }
 
-/* ── WIDGET DE HIDRATAÇÃO (CIRCULAR WATER TRACKER) ── */
 .water-tracker-card {
   background: #ffffff;
   border: 1px solid #dfe7e1;
   border-radius: 20px;
   padding: 22px;
-  box-shadow: 0 4px 20px rgba(24, 59, 43, 0.04);
+  box-shadow: var(--shadow-soft-sm, 0 4px 20px rgba(24, 59, 43, 0.04));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 16px;
   position: relative;
-  transition: border-color 0.2s ease;
+  transition: 
+    transform var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color var(--duration-normal, 320ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    background var(--duration-normal, 320ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.water-tracker-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-md, 0 8px 26px rgba(24, 59, 43, 0.08));
 }
 
 .water-tracker-card.water-goal-achieved {
@@ -581,111 +607,8 @@
   background: linear-gradient(145deg, #ffffff 0%, #f6fbf8 100%);
 }
 
-.water-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.water-card-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.water-icon-badge {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #eef6f1;
-  color: #2f7352;
-  display: grid;
-  place-items: center;
-}
-
-.water-card-title strong {
-  display: block;
-  font-size: 0.95rem;
-  color: #173b2b;
-}
-
-.water-card-title small {
-  display: block;
-  font-size: 0.74rem;
-  color: #607267;
-}
-
-.water-success-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  background: #e4f2e9;
-  color: #206742;
-  font-size: 0.72rem;
-  font-weight: 750;
-  border-radius: 999px;
-}
-
-.water-ring-layout {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-
-.water-svg-ring {
-  width: 105px;
-  height: 105px;
-  flex-shrink: 0;
-}
-
-.water-ring-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.water-current-val {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #173b2b;
-  line-height: 1;
-}
-
-.water-current-val small {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #607267;
-}
-
-.water-goal-val {
-  font-size: 0.78rem;
-  color: #607267;
-  font-weight: 600;
-}
-
-.water-status-label {
-  margin-top: 4px;
-}
-
-.water-status-complete {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: #206742;
-}
-
-.water-status-pending {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: #728479;
-}
-
-.water-quick-buttons {
-  display: flex;
-  gap: 10px;
+.water-svg-ring circle {
+  transition: stroke-dashoffset 800ms cubic-bezier(0.34, 1.4, 0.64, 1), stroke 400ms var(--ease-soft);
 }
 
 .water-btn-add {
@@ -702,7 +625,12 @@
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.18s ease;
+  box-shadow: var(--shadow-soft-xs);
+  transition: 
+    transform var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    background var(--duration-fast, 220ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)),
+    border-color var(--duration-fast, 220ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
   min-height: 44px;
 }
 
@@ -715,11 +643,13 @@
 .water-btn-add:hover:not(:disabled) {
   background: #e5f3ea;
   border-color: #b5d8c1;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-sm);
 }
 
 .water-btn-add:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(0.97);
+  transition-duration: var(--duration-instant, 140ms);
 }
 
 /* ── REFEIÇÃO DO MOMENTO ── */
@@ -728,13 +658,22 @@
   border: 1px solid #dfe7e1;
   border-radius: 20px;
   padding: 22px;
-  box-shadow: 0 4px 20px rgba(24, 59, 43, 0.04);
+  box-shadow: var(--shadow-soft-sm, 0 4px 20px rgba(24, 59, 43, 0.04));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 14px;
   position: relative;
   overflow: hidden;
+  transition: 
+    transform var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color var(--duration-fast, 220ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.current-meal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-md, 0 8px 26px rgba(24, 59, 43, 0.08));
 }
 
 .current-meal-head {
