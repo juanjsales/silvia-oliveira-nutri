@@ -216,15 +216,24 @@ export async function appointmentRoutes(app: FastifyInstance) {
       }
       const appt = apptRes.rows[0];
 
-      // Desvincula de atendimento/prontuário clínico com segurança (preserva o prontuário)
-      await client.query(`UPDATE clinical_encounters SET appointment_id = NULL WHERE appointment_id = $1`, [id]);
+      const dependencies = await client.query<{has_encounter:boolean;has_checkin:boolean;has_paid_transaction:boolean}>(
+        `SELECT
+          EXISTS(SELECT 1 FROM clinical_encounters WHERE appointment_id=$1) AS has_encounter,
+          EXISTS(SELECT 1 FROM preconsult_checkins WHERE appointment_id=$1) AS has_checkin,
+          EXISTS(SELECT 1 FROM financial_transactions WHERE appointment_id=$1 AND status='PAID') AS has_paid_transaction`,
+        [id]
+      );
+      const linked = dependencies.rows[0];
+      if (linked?.has_encounter || linked?.has_checkin || linked?.has_paid_transaction) {
+        await client.query('ROLLBACK');
+        return reply.code(409).send({
+          error: 'Este agendamento possui histórico clínico, pré-check-in ou pagamento confirmado e não pode ser descartado. Cancele a consulta para preservar o registro.'
+        });
+      }
 
-      // Desvincula de check-ins pré-consulta
-      await client.query(`UPDATE preconsult_checkins SET appointment_id = NULL WHERE appointment_id = $1`, [id]);
-
-      // Remove cobranças financeiras não pagas e desvincula as pagas
-      await client.query(`DELETE FROM financial_transactions WHERE appointment_id = $1 AND status <> 'PAID'`, [id]);
-      await client.query(`UPDATE financial_transactions SET appointment_id = NULL WHERE appointment_id = $1`, [id]);
+      // Um descarte existe apenas para agendamentos sem histórico; cobranças abertas
+      // geradas para esse agendamento deixam de ter finalidade e são removidas.
+      await client.query(`DELETE FROM financial_transactions WHERE appointment_id = $1`, [id]);
 
       // Remove notificações e lembretes vinculados
       await client.query(`DELETE FROM teleconsultation_sessions WHERE source_id = $1`, [id]);

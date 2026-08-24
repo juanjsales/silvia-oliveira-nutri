@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '035_lgpd_governance.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '037_patient_diary_unique_date.sql';
 
 export async function schemaStatus(db: Database) {
   try {

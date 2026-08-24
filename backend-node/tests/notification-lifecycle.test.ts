@@ -179,15 +179,36 @@ test('a completed encounter can be reopened through an audited correction action
 test('an appointment without a linked encounter can be discarded',async()=>{
   const appointmentId='00000000-0000-4000-8000-000000000005';
   let discarded=false;
+  const client={query:async(sql:string)=>{
+    if(sql.includes('SELECT id, patient_id, status FROM appointments'))return{rows:[{id:appointmentId,patient_id:'00000000-0000-4000-8000-000000000002',status:'WAITING'}]};
+    if(sql.includes('EXISTS(SELECT 1 FROM clinical_encounters'))return{rows:[{has_encounter:false,has_checkin:false,has_paid_transaction:false}]};
+    if(sql.includes('DELETE FROM appointments'))discarded=true;
+    return{rows:[]};
+  },release:()=>{}};
   const db={query:async(sql:string)=>{
     if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]};
-    if(sql.includes('SELECT status FROM clinical_encounters'))return{rows:[]};
-    if(sql.includes('DELETE FROM appointments')){discarded=true;return{rows:[{patient_id:'00000000-0000-4000-8000-000000000002'}]}};
     return{rows:[]};
-  },connect:async()=>{throw new Error('unused')},end:async()=>{}};
+  },connect:async()=>client,end:async()=>{}};
   const app=await buildApp(env,db as never);
   const response=await app.inject({method:'DELETE',url:`/api/appointments/${appointmentId}`,cookies:{nutri_session:'token'}});
   assert.equal(response.statusCode,204);
   assert.equal(discarded,true);
+  await app.close();
+});
+
+test('an appointment with clinical history cannot be discarded',async()=>{
+  const appointmentId='00000000-0000-4000-8000-000000000005';
+  let discarded=false;
+  const client={query:async(sql:string)=>{
+    if(sql.includes('SELECT id, patient_id, status FROM appointments'))return{rows:[{id:appointmentId,patient_id:'00000000-0000-4000-8000-000000000002',status:'COMPLETED'}]};
+    if(sql.includes('EXISTS(SELECT 1 FROM clinical_encounters'))return{rows:[{has_encounter:true,has_checkin:false,has_paid_transaction:false}]};
+    if(sql.includes('DELETE FROM appointments'))discarded=true;
+    return{rows:[]};
+  },release:()=>{}};
+  const db={query:async(sql:string)=>sql.includes('FROM sessions s')?{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]}:{rows:[]},connect:async()=>client,end:async()=>{}};
+  const app=await buildApp(env,db as never);
+  const response=await app.inject({method:'DELETE',url:`/api/appointments/${appointmentId}`,cookies:{nutri_session:'token'}});
+  assert.equal(response.statusCode,409);
+  assert.equal(discarded,false);
   await app.close();
 });

@@ -2,8 +2,9 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { loadSmtpConfig, smtpTransport } from '../../integrations/configured-email.js';
+import { PRIVACY_NOTICE_VERSION } from '../../shared/privacy-notice.js';
 
-const NOTICE_VERSION='2026-08-01';
+const NOTICE_VERSION=PRIVACY_NOTICE_VERSION;
 const notice={version:NOTICE_VERSION,title:'Aviso de privacidade do Portal Nutricional',summary:'Seus dados são usados para cadastro, atendimento nutricional, comunicação, documentos, acompanhamento e obrigações profissionais. Dados clínicos recebem acesso restrito e não são excluídos automaticamente quando existe obrigação de conservação. Você pode solicitar acesso, correção ou análise de exclusão pelo portal.'};
 
 export async function privacyRoutes(app:FastifyInstance){

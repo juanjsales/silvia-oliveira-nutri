@@ -31,6 +31,7 @@ import { followUpRoutes } from './modules/follow-up/routes.js';
 import { patientExamRoutes } from './modules/patient-exams/routes.js';
 import { notificationRoutes } from './modules/notifications/routes.js';
 import { auditRoutes } from './modules/audit/routes.js';
+import { PRIVACY_NOTICE_VERSION } from './shared/privacy-notice.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
@@ -92,7 +93,7 @@ export async function buildApp(env: AppEnv, db: Database) {
       privacy_contact_name AS "privacyContactName",privacy_contact_email AS "privacyContactEmail",
       email,privacy_notice_updated_at AS "updatedAt" FROM clinic_settings WHERE singleton=true`)).rows[0];
     return { data: {
-      version: '2026-08-23',
+      version: PRIVACY_NOTICE_VERSION,
       controller: { name: settings?.controllerName || settings?.clinicName, document: settings?.controllerDocument || null },
       privacyContact: { name: settings?.privacyContactName || settings?.professionalName, email: settings?.privacyContactEmail || settings?.email || null },
       updatedAt: settings?.updatedAt || null,

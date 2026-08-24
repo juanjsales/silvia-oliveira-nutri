@@ -687,17 +687,21 @@ function PortalHome({
 
 function PreCheckin({ appointments }: { appointments: Any[] }) {
   const [history, setHistory] = useState<Any[]>([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const upcoming = appointments.filter(
     (a: Any) => new Date(`${a.appointmentDate}T${a.appointmentTime}`) >= new Date() && ['CONFIRMED', 'WAITING'].includes(a.status),
   );
+  const submittedAppointments = new Set(history.map((item) => item.appointmentId).filter(Boolean));
+  const availableUpcoming = upcoming.filter((appointment: Any) => !submittedAppointments.has(appointment.id));
   const loadHistory = useCallback(
     () =>
       api<{ data: Any[] }>('/api/portal/checkins')
         .then((r) => setHistory(r.data))
-        .catch(() => setHistory([])),
+        .catch(() => setHistory([]))
+        .finally(() => setHistoryLoaded(true)),
     [],
   );
   useEffect(() => {
@@ -746,12 +750,24 @@ function PreCheckin({ appointments }: { appointments: Any[] }) {
             automaticamente no prontuário.
           </p>
         </header>
-        {upcoming.length ? (
+        {error && <div className="form-error wide">{error}</div>}
+        {success && (
+          <div className="form-success wide">
+            <CheckCircle2 size={16} />
+            {success}
+          </div>
+        )}
+        {!historyLoaded ? (
+          <div className="precheckin-empty wide" aria-live="polite">
+            <span className="spinner" />
+            <strong>Verificando seus check-ins...</strong>
+          </div>
+        ) : availableUpcoming.length ? (
           <>
             <label className="wide">
               Consulta
-              <select name="appointmentId" required defaultValue={upcoming[0]?.id}>
-                {upcoming.map((a: Any) => (
+              <select name="appointmentId" required defaultValue={availableUpcoming[0]?.id}>
+                {availableUpcoming.map((a: Any) => (
                   <option key={a.id} value={a.id}>
                     {portalDate(a.appointmentDate)} às {String(a.appointmentTime).slice(0, 5)} · {a.appointmentType}
                   </option>
@@ -791,13 +807,6 @@ function PreCheckin({ appointments }: { appointments: Any[] }) {
               Assuntos para a consulta
               <textarea name="discussionTopics" maxLength={1500} placeholder="O que você não quer esquecer de conversar?" />
             </label>
-            {error && <div className="form-error wide">{error}</div>}
-            {success && (
-              <div className="form-success wide">
-                <CheckCircle2 size={16} />
-                {success}
-              </div>
-            )}
             <button className="primary-button" disabled={busy}>
               <Save size={16} /> {busy ? 'Enviando...' : 'Enviar check-in'}
             </button>
@@ -805,11 +814,11 @@ function PreCheckin({ appointments }: { appointments: Any[] }) {
         ) : (
           <div className="precheckin-empty wide">
             <CalendarDays size={28} />
-            <strong>Nenhuma consulta próxima encontrada</strong>
-            <p>Quando uma consulta estiver confirmada, o questionário ficará disponível aqui.</p>
-            <button type="button" className="secondary-button" onClick={() => openPortalTab('agenda')}>
+            <strong>{upcoming.length ? 'Pré-check-in já enviado' : 'Nenhuma consulta próxima encontrada'}</strong>
+            <p>{upcoming.length ? 'As respostas desta consulta já estão registradas. Fale com a nutricionista caso precise corrigir alguma informação.' : 'Quando uma consulta estiver confirmada, o questionário ficará disponível aqui.'}</p>
+            {!upcoming.length && <button type="button" className="secondary-button" onClick={() => openPortalTab('agenda')}>
               Solicitar consulta
-            </button>
+            </button>}
           </div>
         )}
       </form>
@@ -818,7 +827,8 @@ function PreCheckin({ appointments }: { appointments: Any[] }) {
         {history.length ? (
           history.map((item) => (
             <article key={item.id}>
-              <strong>{item.status === 'REVIEWED' ? 'Revisado pela nutricionista' : 'Aguardando revisão'}</strong>
+              <strong>{item.status === 'REVIEWED' ? 'Revisado pela nutricionista' : item.status === 'CLOSED' ? 'Consulta encerrada' : 'Aguardando revisão'}</strong>
+              <span>{item.appointmentDate ? `${portalDate(item.appointmentDate)} às ${String(item.appointmentTime || '').slice(0, 5)} · ${item.appointmentType || 'Consulta'}` : 'Consulta não identificada'}</span>
               <span>Enviado em {new Date(item.submittedAt).toLocaleDateString('pt-BR')}</span>
             </article>
           ))

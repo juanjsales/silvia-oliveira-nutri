@@ -56,12 +56,12 @@ test.describe('pré-check-in do paciente com API simulada', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ data: saved ? [{ id: 'checkin-1', status: 'PENDING_REVIEW', submittedAt: '2099-08-15T12:00:00.000Z' }] : [] }),
+        body: JSON.stringify({ data: saved ? [{ id: 'checkin-1', appointmentId: 'appointment-1', appointmentDate: '2099-08-20', appointmentTime: '14:30', appointmentType: 'Retorno', status: 'PENDING_REVIEW', submittedAt: '2099-08-15T12:00:00.000Z' }] : [] }),
       });
     });
 
     await page.goto('/portal');
-    await page.getByRole('button', { name: 'Preparar consulta' }).click();
+    await page.getByRole('button', { name: 'Preencher agora' }).click();
 
     await page.getByLabel('O que melhorou').fill('Tenho mais energia durante a tarde.');
     await page.getByLabel('Principal dificuldade').fill('Organizar o jantar.');

@@ -60,8 +60,8 @@ test.describe('fluxos clínicos isolados com API simulada', () => {
 
     await page.goto('/planos/plan-2');
     await expect(page.locator('input').first()).toHaveValue('Plano ajustado');
-    page.once('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'Publicar' }).click();
+    await page.getByRole('button', { name: 'Publicar plano' }).click();
 
     await expect(page.getByText('Registre o motivo da alteração antes de publicar uma nova versão.')).toBeVisible();
     expect(patchCalls).toBe(0);
