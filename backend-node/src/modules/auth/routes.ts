@@ -36,6 +36,15 @@ export async function authRoutes(app: FastifyInstance) {
       `INSERT INTO sessions(user_id, token_hash, expires_at) VALUES ($1, $2, $3)`,
       [user.id, hashToken(token), expiresAt]
     );
+    // Bound active sessions per account. The newest five remain valid.
+    await app.db.query(
+      `UPDATE sessions SET revoked_at=now()
+       WHERE user_id=$1 AND revoked_at IS NULL AND id NOT IN (
+         SELECT id FROM sessions WHERE user_id=$1 AND revoked_at IS NULL
+         ORDER BY created_at DESC LIMIT 5
+       )`,
+      [user.id]
+    );
     await audit(app.db, 'AUTH_LOGIN_SUCCEEDED', 'user', { actorUserId: user.id, entityId: user.id });
     reply.setCookie(app.env.SESSION_COOKIE_NAME, token, {
       path: '/', httpOnly: true, secure: app.env.NODE_ENV === 'production', sameSite: 'lax', expires: expiresAt
@@ -46,6 +55,7 @@ export async function authRoutes(app: FastifyInstance) {
   app.post('/logout', { preHandler: app.authenticate }, async (request, reply) => {
     const token = request.cookies[app.env.SESSION_COOKIE_NAME];
     if (token) await app.db.query('UPDATE sessions SET revoked_at = now() WHERE token_hash = $1', [hashToken(token)]);
+    await audit(app.db, 'AUTH_LOGOUT', 'user', { actorUserId: request.auth!.userId, entityId: request.auth!.userId });
     reply.clearCookie(app.env.SESSION_COOKIE_NAME, { path: '/' });
     return reply.code(204).send();
   });
@@ -130,8 +140,8 @@ export async function authRoutes(app: FastifyInstance) {
     const body=z.object({currentPassword:z.string().min(1),newPassword:z.string().min(12).max(128)}).parse(request.body);
     const result=await app.db.query<{password_hash:string}>('SELECT password_hash FROM users WHERE id=$1 AND active=true',[request.auth!.userId]);
     if(!result.rows[0]||!(await verifyPassword(result.rows[0].password_hash,body.currentPassword)))return reply.code(400).send({error:'Senha atual incorreta.'});
-    const token=request.cookies[app.env.SESSION_COOKIE_NAME];await app.db.query('UPDATE users SET password_hash=$1,updated_at=now() WHERE id=$2',[await hashPassword(body.newPassword),request.auth!.userId]);
-    await app.db.query('UPDATE sessions SET revoked_at=now() WHERE user_id=$1 AND token_hash<>$2 AND revoked_at IS NULL',[request.auth!.userId,token?hashToken(token):'']);
+    await app.db.query('UPDATE users SET password_hash=$1,updated_at=now() WHERE id=$2',[await hashPassword(body.newPassword),request.auth!.userId]);
+    await app.db.query('UPDATE sessions SET revoked_at=now() WHERE user_id=$1 AND id<>$2 AND revoked_at IS NULL',[request.auth!.userId,request.auth!.sessionId]);
     await audit(app.db,'PASSWORD_CHANGED','user',{actorUserId:request.auth!.userId,entityId:request.auth!.userId});return{message:'Senha alterada com sucesso.'};
   });
 }

@@ -18,7 +18,7 @@ export async function notificationRoutes(app: FastifyInstance) {
       FROM patient_messages m JOIN patients p ON p.id=m.patient_id WHERE m.sender_role='PATIENT' AND m.read_at IS NULL
       ON CONFLICT(dedupe_key) DO UPDATE SET status=CASE WHEN professional_notifications.status='ARCHIVED' THEN 'ARCHIVED' ELSE 'ACTIVE' END,updated_at=now()`);
     await reconcile('privacy',`INSERT INTO professional_notifications(kind,title,body,priority,entity_type,entity_id,action_url,dedupe_key)
-      SELECT 'PRIVACY','Solicitação de privacidade de '||p.name,COALESCE(r.details,'Nova solicitação LGPD aguardando análise.'),'HIGH','privacy_request',r.id,'/configuracoes','privacy:'||r.id
+      SELECT 'PRIVACY','Solicitação de privacidade de '||p.name,'Nova solicitação LGPD aguardando análise na área protegida.','HIGH','privacy_request',r.id,'/configuracoes','privacy:'||r.id
       FROM data_subject_requests r JOIN patients p ON p.id=r.patient_id WHERE r.status IN('OPEN','IN_REVIEW')
       ON CONFLICT(dedupe_key) DO UPDATE SET status=CASE WHEN professional_notifications.status='ARCHIVED' THEN 'ARCHIVED' ELSE 'ACTIVE' END,updated_at=now()`);
     await reconcile('finance',`INSERT INTO professional_notifications(kind,title,body,priority,entity_type,action_url,dedupe_key)

@@ -51,6 +51,7 @@ import { FinishEncounterModal, type FinishEncounterData } from '../components/Fi
 import { api } from '../lib/api';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { formatAppointmentSchedule, getEndTime } from '../lib/formatters';
+import { useConfirm } from '../components/ConfirmDialog';
 
 type SectionKey='context'|'anamnesis'|'recall24h'|'followup'|'assessment'|'exams'|'conduct'|'plan'|'supplements'|'notes';
 type Value=string|number|boolean|null;
@@ -200,6 +201,7 @@ function missingClinicalCore(sections:Encounter['sections']){
 }
 
 export function EncounterPage(){
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const { endCall, minimizeCall, restoreCall, activeCall } = useTeleconsultation();
   const[params,setParams]=useSearchParams();const patientParam=params.get('paciente')||'';const appointmentParam=params.get('agendamento')||'';const videoParam=params.get('video')==='true';
@@ -240,7 +242,7 @@ export function EncounterPage(){
 
   async function handleDiscardEncounter() {
     if (!encounter) return;
-    if (window.confirm('Deseja realmente cancelar/descartar este atendimento? O status em andamento será cancelado e a sala de vídeo será fechada imediatamente.')) {
+    if (await confirm({title:'Descartar atendimento?',message:'O atendimento em andamento será cancelado e a sala de vídeo será fechada imediatamente.',confirmLabel:'Descartar atendimento',tone:'destructive'})) {
       setSaving(true);
       setError('');
       try {
@@ -260,7 +262,7 @@ export function EncounterPage(){
 
   async function handleQuickClose() {
     if (!encounter) return;
-    if (window.confirm('Deseja encerrar este atendimento agora? Ele será marcado como concluído imediatamente.')) {
+    if (await confirm({title:'Encerrar atendimento?',message:'O atendimento será marcado como concluído imediatamente. Confira se os registros necessários já foram salvos.',confirmLabel:'Encerrar atendimento',tone:'warning'})) {
       setSaving(true);
       setError('');
       try {
@@ -307,7 +309,7 @@ export function EncounterPage(){
   }
 
   async function handleReopenEncounter() {
-    if (!encounter || !window.confirm('Reabrir este prontuário para correção? A ação ficará registrada no histórico de auditoria.')) return;
+    if (!encounter || !(await confirm({title:'Abrir modo de correção?',message:'O prontuário continuará finalizado, mas seus campos poderão ser corrigidos. A ação ficará registrada no histórico de auditoria.',confirmLabel:'Abrir correção'}))) return;
     setSaving(true);
     setError('');
     try {
@@ -405,8 +407,8 @@ export function EncounterPage(){
         <button
           type="button"
           className="encounter-return-link"
-          onClick={() => {
-            if (dirtyKeys.size > 0 && !window.confirm('Existem alterações não salvas nesta etapa. Deseja realmente voltar para a lista de atendimentos?')) {
+          onClick={async () => {
+            if (dirtyKeys.size > 0 && !(await confirm({title:'Descartar alterações não salvas?',message:'Existem alterações nesta etapa que ainda não foram salvas. Ao voltar, elas serão perdidas.',confirmLabel:'Voltar sem salvar',tone:'warning'}))) {
               return;
             }
             setParams({});
@@ -677,6 +679,7 @@ function EncounterHub({
 }: {
   onSelectEncounter: (id: string, openVideo?: boolean) => void;
 }) {
+  const confirm = useConfirm();
   const location = useLocation();
   const [encounters, setEncounters] = useState<EncounterListItem[]>([]);
   const [todayAppointments, setTodayAppointments] = useState<CalendarAppointment[]>([]);
@@ -835,7 +838,7 @@ function EncounterHub({
   }
 
   async function declineRequest(item: AppointmentRequest) {
-    if (!window.confirm(`Recusar a solicitação de ${item.patientName}?`)) return;
+    if (!(await confirm({title:'Recusar solicitação?',message:`A solicitação de ${item.patientName} será recusada e o paciente será avisado no portal.`,confirmLabel:'Recusar',tone:'warning'}))) return;
     try {
       await api(`/api/appointments/requests/${item.id}`, {
         method: 'PATCH',
@@ -861,9 +864,7 @@ function EncounterHub({
 
     if (!editingAppointmentId && (isPastDate || isPastTimeToday)) {
       if (
-        !window.confirm(
-          `⚠️ O horário selecionado (${appointmentForm.time} em ${appointmentForm.date.split('-').reverse().join('/')}) já passou em relação ao horário atual (${currentHourMin}).\n\nDeseja realmente registrar esta consulta retroativa no passado?`
-        )
+        !(await confirm({title:'Registrar consulta retroativa?',message:`O horário selecionado (${appointmentForm.time} em ${appointmentForm.date.split('-').reverse().join('/')}) já passou. Confirme apenas se esse registro for intencional.`,confirmLabel:'Registrar mesmo assim',tone:'warning'}))
       ) {
         setSavingAppointment(false);
         return;
@@ -938,7 +939,7 @@ function EncounterHub({
   }
 
   async function discardAppointment(id: string) {
-    if (!window.confirm('Descartar definitivamente este agendamento? Esta ação só é permitida quando não existe prontuário vinculado.')) return;
+    if (!(await confirm({title:'Descartar agendamento?',message:'O agendamento será removido definitivamente. A ação só é permitida quando não existe prontuário vinculado.',confirmLabel:'Descartar agendamento',tone:'destructive'}))) return;
     setSavingAppointment(true);
     setError('');
     try {
@@ -970,7 +971,7 @@ function EncounterHub({
   }
 
   async function handleQuickClose(id: string, patientName: string) {
-    if (!window.confirm(`Deseja encerrar e arquivar o atendimento de "${patientName}" agora? Ele será movido para o Histórico de Realizados.`)) {
+    if (!(await confirm({title:'Encerrar e arquivar?',message:`O atendimento de ${patientName} será concluído e movido para o Histórico de Realizados.`,confirmLabel:'Encerrar atendimento',tone:'warning'}))) {
       return;
     }
     try {
@@ -982,7 +983,7 @@ function EncounterHub({
   }
 
   async function handleDeleteEncounter(id: string, patientName: string) {
-    if (!window.confirm(`⚠️ Atenção: Deseja realmente EXCLUIR o atendimento de "${patientName}"? Esta ação removerá o prontuário permanentemente.`)) {
+    if (!(await confirm({title:'Excluir prontuário permanentemente?',message:`O atendimento de ${patientName} será removido de forma permanente. Esta ação não pode ser desfeita.`,confirmLabel:'Excluir prontuário',tone:'destructive'}))) {
       return;
     }
     try {
@@ -995,7 +996,7 @@ function EncounterHub({
 
   async function handleBulkCloseAll() {
     if (!inProgressList.length) return;
-    if (!window.confirm(`Deseja encerrar e arquivar todos os ${inProgressList.length} atendimentos em andamento? Eles serão movidos para o Histórico.`)) {
+    if (!(await confirm({title:'Encerrar atendimentos em lote?',message:`Os ${inProgressList.length} atendimentos em andamento serão concluídos e movidos para o Histórico.`,confirmLabel:'Encerrar todos',tone:'warning'}))) {
       return;
     }
     try {

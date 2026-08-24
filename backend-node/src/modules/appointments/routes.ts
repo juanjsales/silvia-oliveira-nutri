@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { cancelAppointmentCharge, ensureAppointmentCharge, syncOpenAppointmentCharge } from '../../shared/finance.js';
-import { canTransitionAppointment, type AppointmentStatus } from '../../shared/appointment-status.js';
+import { canTransitionAppointment, hasAppointmentScheduleChanged, type AppointmentStatus } from '../../shared/appointment-status.js';
 import { appointmentEmailKey, enqueueAppointmentEmail, processAppointmentEmail } from '../../shared/appointment-email-outbox.js';
 
 const statusSchema = z.enum(['CONFIRMED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW']);
@@ -66,7 +66,11 @@ export async function appointmentRoutes(app: FastifyInstance) {
         [body.patientId,body.date,body.time,body.durationMinutes,body.type,body.price??null,body.status,body.notes||null,body.meetingUrl||null]);
       id = result.rows[0]!.id;
       if (body.requestId) await client.query(`UPDATE appointment_requests SET status='APPROVED' WHERE id=$1`, [body.requestId]);
-      await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind) VALUES($1,'Consulta agendada',$2,'APPOINTMENT')`, [body.patientId, `Sua consulta foi confirmada para ${body.date.split('-').reverse().join('/')} às ${body.time}.`]);
+      await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)
+        VALUES($1,'Consulta agendada',$2,'APPOINTMENT','NORMAL','appointment',$3,'/portal/consultas','appointment:scheduled:'||$3,$4::date+interval '7 days')
+        ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE'
+        DO UPDATE SET title=EXCLUDED.title,body=EXCLUDED.body,action_url=EXCLUDED.action_url,expires_at=EXCLUDED.expires_at,read_at=NULL`,
+        [body.patientId, `Sua consulta foi confirmada para ${body.date.split('-').reverse().join('/')} às ${body.time}.`, id, body.date]);
       if (patient.rows[0].email) {
         const queued = await enqueueAppointmentEmail(client, {
           appointmentId: id, eventType: 'SCHEDULED', recipient: patient.rows[0].email,
@@ -94,30 +98,58 @@ export async function appointmentRoutes(app: FastifyInstance) {
     const { status } = z.object({ status: z.literal('DECLINED') }).parse(request.body);
     const result = await app.db.query<{patient_id:string}>(`UPDATE appointment_requests SET status=$1 WHERE id=$2 AND status='PENDING' RETURNING patient_id`, [status,id]);
     if (!result.rows[0]) return reply.code(404).send({ error: 'Solicitação pendente não encontrada.' });
-    await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind) VALUES($1,'Solicitação de consulta atualizada','Entre em contato com o consultório para escolhermos uma nova data.','APPOINTMENT')`, [result.rows[0].patient_id]);
+    await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)
+      VALUES($1,'Solicitação de consulta atualizada','Entre em contato com o consultório para escolhermos uma nova data.','APPOINTMENT','NORMAL','appointment_request',$2,'/portal/consultas','appointment-request:declined:'||$2,now()+interval '30 days')
+      ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO NOTHING`, [result.rows[0].patient_id,id]);
     return { data: { id } };
   });
 
   app.patch('/:id', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
     const body = appointmentSchema.partial().parse(request.body);
-    const current = await app.db.query<Record<string, unknown>>('SELECT * FROM appointments WHERE id=$1', [id]);
-    if (!current.rows[0]) return reply.code(404).send({ error: 'Agendamento não encontrado.' });
-    const a = current.rows[0];
     let financeCreated = false;
-    const scheduleChanged = body.date !== undefined || body.time !== undefined || body.durationMinutes !== undefined;
-    const currentStatus = a.status as AppointmentStatus;
-    const nextStatus = (body.status ?? currentStatus) as AppointmentStatus;
-    if (!canTransitionAppointment(currentStatus,nextStatus,scheduleChanged)) return reply.code(409).send({ error: 'Alteração de status incompatível com o estado atual da consulta.' });
-    if ((nextStatus === 'COMPLETED' || nextStatus === 'CANCELLED') && nextStatus !== currentStatus) {
-      const encounter = await app.db.query<{status:string}>('SELECT status FROM clinical_encounters WHERE appointment_id=$1', [id]);
-      if (encounter.rows[0]?.status === 'IN_PROGRESS') return reply.code(409).send({ error: 'Existe um atendimento em andamento. Finalize-o pela sala de atendimento antes de alterar a consulta.' });
-    }
-
     const client = await app.db.connect();
     let deliveryId: string | null = null;
+    let scheduleChanged = false;
     try {
       await client.query('BEGIN');
+      const current = await client.query<Record<string, unknown>>(`SELECT *,to_char(appointment_date,'YYYY-MM-DD') AS current_date,
+        to_char(appointment_time,'HH24:MI') AS current_time FROM appointments WHERE id=$1 FOR UPDATE`, [id]);
+      if (!current.rows[0]) {
+        await client.query('ROLLBACK');
+        return reply.code(404).send({ error: 'Agendamento não encontrado.' });
+      }
+      const a = current.rows[0];
+      scheduleChanged = hasAppointmentScheduleChanged(
+        {date:String(a.current_date),time:String(a.current_time),durationMinutes:Number(a.duration_minutes)},body,
+      );
+      const currentStatus = a.status as AppointmentStatus;
+      const nextStatus = (body.status ?? currentStatus) as AppointmentStatus;
+      if (!canTransitionAppointment(currentStatus,nextStatus,scheduleChanged)) {
+        await client.query('ROLLBACK');
+        return reply.code(409).send({ error: 'Alteração de status incompatível com o estado atual da consulta.' });
+      }
+      const reopening = scheduleChanged && ['CANCELLED','NO_SHOW'].includes(currentStatus) && ['CONFIRMED','WAITING'].includes(nextStatus);
+      const changesBusinessData = body.patientId !== undefined || body.date !== undefined || body.time !== undefined
+        || body.durationMinutes !== undefined || body.type !== undefined || body.price !== undefined;
+      if (['COMPLETED','CANCELLED','NO_SHOW'].includes(currentStatus) && changesBusinessData && !reopening) {
+        await client.query('ROLLBACK');
+        return reply.code(409).send({ error: 'Consultas encerradas preservam seus dados históricos. Reagende uma consulta cancelada ou crie um novo agendamento.' });
+      }
+      if (body.patientId !== undefined && body.patientId !== a.patient_id) {
+        const patient = await client.query('SELECT id FROM patients WHERE id=$1 AND active=true',[body.patientId]);
+        if (!patient.rows[0]) {
+          await client.query('ROLLBACK');
+          return reply.code(404).send({ error: 'Paciente não encontrado ou inativo.' });
+        }
+      }
+      if ((nextStatus === 'COMPLETED' || nextStatus === 'CANCELLED') && nextStatus !== currentStatus) {
+        const encounter = await client.query<{status:string}>('SELECT status FROM clinical_encounters WHERE appointment_id=$1 FOR UPDATE', [id]);
+        if (encounter.rows[0]?.status === 'IN_PROGRESS') {
+          await client.query('ROLLBACK');
+          return reply.code(409).send({ error: 'Existe um atendimento em andamento. Finalize-o pela sala de atendimento antes de alterar a consulta.' });
+        }
+      }
       const updated = await client.query<{revision:Date}>(`UPDATE appointments SET patient_id=$1,appointment_date=$2,appointment_time=$3,
         duration_minutes=$4,appointment_type=$5,price=$6,status=$7,notes=$8,meeting_url=$9,
         patient_response=CASE WHEN $11 THEN 'PENDING' ELSE patient_response END,
@@ -128,7 +160,12 @@ export async function appointmentRoutes(app: FastifyInstance) {
          body.durationMinutes??a.duration_minutes,body.type??a.appointment_type,body.price??a.price,
          body.status??a.status,body.notes??a.notes,body.meetingUrl??a.meeting_url,id,scheduleChanged]);
       if (scheduleChanged || body.status === 'CANCELLED') {
-        await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind) SELECT patient_id,CASE WHEN status='CANCELLED' THEN 'Consulta cancelada' ELSE 'Novo horário da consulta' END,CASE WHEN status='CANCELLED' THEN 'Sua consulta foi cancelada pelo consultório.' ELSE 'Sua consulta foi atualizada para '||to_char(appointment_date,'DD/MM/YYYY')||' às '||to_char(appointment_time,'HH24:MI')||'. Confirme o novo horário no portal.' END,'APPOINTMENT' FROM appointments WHERE id=$1`, [id]);
+        await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)
+          SELECT patient_id,CASE WHEN status='CANCELLED' THEN 'Consulta cancelada' ELSE 'Novo horário da consulta' END,
+          CASE WHEN status='CANCELLED' THEN 'Sua consulta foi cancelada pelo consultório.' ELSE 'Sua consulta foi atualizada para '||to_char(appointment_date,'DD/MM/YYYY')||' às '||to_char(appointment_time,'HH24:MI')||'. Confirme o novo horário no portal.' END,
+          'APPOINTMENT',CASE WHEN status='CANCELLED' THEN 'HIGH' ELSE 'NORMAL' END,'appointment',id,'/portal/consultas',
+          'appointment:update:'||id||':'||extract(epoch FROM updated_at)::bigint,(appointment_date+interval '7 days')
+          FROM appointments WHERE id=$1`, [id]);
         const target = (await client.query<{email:string|null;name:string;date:string;time:string;type:string}>(`SELECT p.email,p.name,to_char(a.appointment_date,'YYYY-MM-DD') AS date,to_char(a.appointment_time,'HH24:MI') AS time,a.appointment_type AS type FROM appointments a JOIN patients p ON p.id=a.patient_id WHERE a.id=$1`, [id])).rows[0];
         if (target?.email) {
           const eventType = body.status === 'CANCELLED' ? 'CANCELLED' : 'RESCHEDULED';

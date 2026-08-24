@@ -15,6 +15,7 @@ import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { LaminasModal } from './LaminasModal';
 import { type NutritionalLamina } from '../lib/nutritionalLaminas';
 import { api } from '../lib/api';
+import { useConfirm } from './ConfirmDialog';
 
 type BroadcastTab = 'lamina';
 
@@ -30,6 +31,7 @@ type Props = {
 };
 
 export function VideoConsultation({ encounterId, appointmentId, roomToken, patientName, appointmentTime, durationMinutes, onClose }: Props) {
+  const confirm = useConfirm();
   const { startCall, minimizeCall, endCall } = useTeleconsultation();
   const [expanded, setExpanded] = useState(false);
   const [startedAt] = useState(Date.now());
@@ -279,8 +281,8 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
             type="button"
             className="hangup"
             aria-label="Encerrar teleconsulta para todos"
-            onClick={() => {
-              if (window.confirm('Deseja realmente encerrar a teleconsulta?')) {
+            onClick={async () => {
+              if (await confirm({title:'Encerrar teleconsulta?',message:'A sala será encerrada para todos os participantes. O prontuário clínico permanecerá aberto.',confirmLabel:'Encerrar para todos',tone:'warning'})) {
                 void finishForEveryone();
               }
             }}

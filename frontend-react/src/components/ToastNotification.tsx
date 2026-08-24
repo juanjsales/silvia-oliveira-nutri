@@ -1,8 +1,8 @@
-import { CheckCircle2, MessageCircle, Sparkles, Video, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CircleDollarSign, Info, MessageCircle, ShieldCheck, Sparkles, TriangleAlert, Video, X } from 'lucide-react';
 import React, { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 import { sounds } from '../lib/sound';
 
-export type ToastType = 'info' | 'success' | 'call' | 'message';
+export type ToastType = 'info' | 'success' | 'warning' | 'error' | 'destructive' | 'call' | 'message' | 'privacy' | 'finance' | 'system';
 
 export type ToastItem = {
   id: string;
@@ -42,7 +42,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     // Toca som apropriado
     if (item.type === 'call') {
       sounds.playCallAlert();
-    } else if (item.type === 'message' || item.type === 'info') {
+    } else if (item.type === 'message' || item.type === 'info' || item.type === 'warning' || item.type === 'error') {
       sounds.playNotification();
     } else if (item.type === 'success') {
       sounds.playBroadcastSync();
@@ -64,7 +64,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <aside
             key={toast.id}
             className={`toast-banner toast-${toast.type || 'info'}`}
-            role="alert"
+            role={toast.type === 'error' || toast.type === 'destructive' ? 'alert' : 'status'}
           >
             <div className="toast-icon-wrap">
               {toast.type === 'call' ? (
@@ -73,6 +73,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <MessageCircle size={18} />
               ) : toast.type === 'success' ? (
                 <CheckCircle2 size={18} />
+              ) : toast.type === 'warning' ? (
+                <AlertTriangle size={18} />
+              ) : toast.type === 'error' || toast.type === 'destructive' ? (
+                <TriangleAlert size={18} />
+              ) : toast.type === 'privacy' ? (
+                <ShieldCheck size={18} />
+              ) : toast.type === 'finance' ? (
+                <CircleDollarSign size={18} />
+              ) : toast.type === 'system' ? (
+                <Info size={18} />
               ) : (
                 <Sparkles size={18} />
               )}

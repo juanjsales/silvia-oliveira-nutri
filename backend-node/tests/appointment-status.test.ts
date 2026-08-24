@@ -1,4 +1,5 @@
-import test from'node:test';import assert from'node:assert/strict';import{canTransitionAppointment}from'../src/shared/appointment-status.js';
+import test from'node:test';import assert from'node:assert/strict';import{canTransitionAppointment,hasAppointmentScheduleChanged}from'../src/shared/appointment-status.js';
 test('completed appointments are terminal',()=>{assert.equal(canTransitionAppointment('COMPLETED','CONFIRMED'),false);assert.equal(canTransitionAppointment('COMPLETED','CANCELLED'),false)});
 test('an in-progress appointment can only be completed',()=>{assert.equal(canTransitionAppointment('IN_PROGRESS','COMPLETED'),true);assert.equal(canTransitionAppointment('IN_PROGRESS','CANCELLED'),false);assert.equal(canTransitionAppointment('IN_PROGRESS','WAITING'),false)});
 test('cancelled or missed appointments require a new schedule to reopen',()=>{assert.equal(canTransitionAppointment('CANCELLED','CONFIRMED'),false);assert.equal(canTransitionAppointment('CANCELLED','CONFIRMED',true),true);assert.equal(canTransitionAppointment('NO_SHOW','WAITING',true),true)});
+test('an unchanged schedule payload is not treated as a reschedule',()=>{const current={date:'2026-09-01',time:'10:00',durationMinutes:60};assert.equal(hasAppointmentScheduleChanged(current,{...current}),false);assert.equal(hasAppointmentScheduleChanged(current,{date:'2026-09-02'}),true)});

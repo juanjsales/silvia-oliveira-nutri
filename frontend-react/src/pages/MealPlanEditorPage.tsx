@@ -2,6 +2,7 @@ import { ArrowLeft, BookOpen, CheckCircle2, Plus, Save, Search, Send, Trash2, Ut
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
+import { useConfirm } from '../components/ConfirmDialog';
 
 type Macro = { kcal:number; protein:number; carbohydrate:number; fat:number };
 type Food = { id:string; name:string; category:string; referenceUnit:string; kcal:number; protein:number; carbohydrate:number; fat:number };
@@ -60,6 +61,7 @@ const resultTotals=(content:Record<string,unknown>|undefined)=>normalizeContent(
 const signed=(value:number)=>`${value>0?'+':''}${value.toFixed(value%1?1:0)}`;
 
 export function MealPlanEditorPage() {
+  const confirm = useConfirm();
   const { id } = useParams();
   const [plan,setPlan] = useState<Plan|null>(null);
   const [meals,setMeals] = useState<Meal[]>([]);
@@ -139,7 +141,7 @@ export function MealPlanEditorPage() {
   function removeSubstitution(mealId:string,index:number) { setMeals(current => current.map(meal => meal.id === mealId ? {...meal,substitutions:meal.substitutions.filter((_,i) => i !== index)} : meal)); }
   async function save(status=plan?.status || 'DRAFT') {
     if (!id) return;
-    if (status === 'PUBLISHED' && !window.confirm('Publicar este plano como vigente? Se o paciente já tiver outro plano publicado, ele será movido para o histórico.')) return;
+    if (status === 'PUBLISHED' && !(await confirm({title:'Publicar plano alimentar?',message:'Este plano passará a ser o vigente. Se o paciente já tiver outro plano publicado, ele será preservado no histórico.',confirmLabel:'Publicar plano'}))) return;
     setSaving(true); setError('');
     try {
       if(status==='PUBLISHED'&&plan?.sourcePlan&&!revisionReason.trim()){setError('Registre o motivo da alteração antes de publicar uma nova versão.');setSaving(false);return}

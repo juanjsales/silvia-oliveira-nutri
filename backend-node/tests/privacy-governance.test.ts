@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import type { AppEnv } from '../src/config/env.js';
+import { buildApp } from '../src/app.js';
+
+const env:AppEnv={NODE_ENV:'test',PORT:3000,HOST:'127.0.0.1',DATABASE_URL:'postgres://test',DB_POOL_MAX:2,DB_CONNECTION_TIMEOUT_MS:10000,DB_IDLE_TIMEOUT_MS:10000,FRONTEND_ORIGIN:'http://localhost:5173',SESSION_COOKIE_NAME:'nutri_session',SESSION_TTL_HOURS:6,PASSWORD_RESET_TTL_MINUTES:30,APP_URL:'http://localhost:5173',SMTP_PORT:587,SMTP_SECURE:false,SMTP_FROM:'test@example.com'};
+function database(role:'ADMIN'|'PATIENT'){return{query:async(sql:string)=>{if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role,patient_id:role==='PATIENT'?'00000000-0000-4000-8000-000000000002':null}]};if(sql.includes('FROM clinic_settings'))return{rows:[{clinicName:'Clínica Teste',professionalName:'Profissional',controllerName:null,controllerDocument:null,privacyContactName:null,privacyContactEmail:null,email:'privacidade@example.com'}]};return{rows:[]}},connect:async()=>{throw new Error('not needed')},end:async()=>{}}}
+
+test('public privacy notice exposes purpose and channel without authentication',async()=>{const app=await buildApp(env,database('PATIENT') as never);const response=await app.inject({method:'GET',url:'/api/privacy/public-notice'});assert.equal(response.statusCode,200);const body=response.json();assert.equal(body.data.controller.name,'Clínica Teste');assert.equal(body.data.privacyContact.email,'privacidade@example.com');assert.ok(body.data.rights.length>=4);assert.match(body.data.retention,/não são apagados automaticamente/i);await app.close()});
+test('patient cannot access privacy governance records',async()=>{const app=await buildApp(env,database('PATIENT') as never);const response=await app.inject({method:'GET',url:'/api/privacy/governance',cookies:{nutri_session:'token'}});assert.equal(response.statusCode,403);await app.close()});
+test('LGPD governance migration protects clinical retention and separates privacy incidents',async()=>{const sql=await readFile(new URL('../src/database/migrations/035_lgpd_governance.sql',import.meta.url),'utf8');assert.match(sql,/privacy_processing_activities/);assert.match(sql,/privacy_retention_policies/);assert.match(sql,/privacy_incidents/);assert.match(sql,/Prontuário e documentos clínicos/);assert.match(sql,/PRESERVE/);assert.doesNotMatch(sql,/DELETE FROM (patients|clinical_encounters|clinical_sections)/i)});

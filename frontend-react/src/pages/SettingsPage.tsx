@@ -21,6 +21,7 @@ import { SmtpSettings } from "../components/SmtpSettings";
 import { ReadinessPanel } from "../components/ReadinessPanel";
 import { IncidentPanel } from "../components/IncidentPanel";
 import { PrivacyRequestsPanel } from "../components/PrivacyRequestsPanel";
+import { PrivacyGovernancePanel } from "../components/PrivacyGovernancePanel";
 import { StorageMaintenancePanel } from "../components/StorageMaintenancePanel";
 import { PasswordInput } from "../components/PasswordInput";
 import { SetupWizardModal } from "../components/SetupWizardModal";
@@ -696,6 +697,7 @@ export function SettingsPage() {
           <ReadinessPanel />
           <IncidentPanel />
           <PrivacyRequestsPanel />
+          <PrivacyGovernancePanel />
         </div>
       )}
     </div>

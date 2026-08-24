@@ -16,3 +16,9 @@
 .public-home section{scroll-margin-top:82px}.public-home a:focus-visible,.public-home button:focus-visible,.public-home summary:focus-visible{outline:3px solid #c5902f;outline-offset:4px;border-radius:8px}
 @media(max-width:900px){.home-proof{grid-template-columns:1fr}.home-included,.home-portal-showcase{grid-template-columns:1fr}.home-portal-showcase>div:first-child{max-width:680px}.portal-mockup{transform:none;max-width:580px}.home-included{gap:35px}}
 @media(max-width:640px){.public-home{padding-bottom:76px}.home-proof>span{padding:20px}.included-grid{grid-template-columns:1fr}.home-included,.home-portal-showcase,.home-faq{padding:70px 20px}.home-portal-showcase h2,.included-copy h2{font-size:2.35rem}.portal-mockup{padding:20px;border-radius:22px}.portal-mockup h3{font-size:1.7rem}.mockup-row{grid-template-columns:1fr}.mockup-row>div{min-height:62px}.home-footer{padding-bottom:35px}.mobile-contact-cta{position:fixed;display:flex;align-items:center;justify-content:center;gap:9px;z-index:45;left:14px;right:14px;bottom:max(12px,env(safe-area-inset-bottom));min-height:52px;border-radius:999px;background:var(--brand-primary);color:#fff;font-weight:800;box-shadow:0 14px 36px #152d2055}.home-privacy{padding:24px 20px}.hero-trust span{min-height:28px}}
+
+/* Preserve the original 180 × 489 portrait ratio at every breakpoint. */
+.home-about .about-photo{height:clamp(440px,52vw,620px);min-width:0;overflow:hidden}
+.home-about .about-photo>img{display:block;width:auto;height:min(100%,620px);max-width:100%;max-height:100%;aspect-ratio:180/489;object-fit:contain;object-position:center bottom;justify-self:center;align-self:end}
+@media(max-width:900px){.home-about .about-photo{width:min(100%,460px);height:clamp(420px,72vw,560px);margin-inline:auto}.home-about .about-photo>img{height:100%}}
+@media(max-width:560px){.home-about .about-photo{width:100%;height:min(118vw,500px)}.home-about .about-photo>img{height:100%;max-width:82%}}

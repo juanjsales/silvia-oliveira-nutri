@@ -28,6 +28,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { useToast } from '../components/ToastNotification';
+import { useConfirm } from '../components/ConfirmDialog';
 import { LaminaVisualInfographic } from '../components/LaminaVisualInfographic';
 import { api } from '../lib/api';
 import { getLaminaSources } from '../lib/laminaSources';
@@ -60,6 +61,7 @@ type BroadcastData = {
 };
 
 export function PatientVideoPage() {
+  const confirm = useConfirm();
   const { id } = useParams();
   const { user } = useAuth();
   const { startCall, minimizeCall, endCall } = useTeleconsultation();
@@ -240,7 +242,7 @@ export function PatientVideoPage() {
   }
 
   async function handleExitCall() {
-    if (window.confirm('Deseja realmente encerrar a teleconsulta?')) {
+    if (await confirm({title:'Sair da teleconsulta?',message:'Você sairá da sala de vídeo. Se a nutricionista ainda estiver conectada, poderá entrar novamente pelo portal.',confirmLabel:'Sair da consulta',tone:'warning'})) {
       sessionStorage.removeItem(`in_call_${id}`);
       setEntered(false);
       endCall();

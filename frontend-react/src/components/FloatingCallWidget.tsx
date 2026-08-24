@@ -11,8 +11,10 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { LaminasModal } from './LaminasModal';
 import { api } from '../lib/api';
+import { useConfirm } from './ConfirmDialog';
 
 export function FloatingCallWidget() {
+  const confirm = useConfirm();
   const { activeCall, isMinimized, restoreCall, endCall } = useTeleconsultation();
   const [elapsed, setElapsed] = useState('00:00');
   const [reconnecting, setReconnecting] = useState(false);
@@ -157,13 +159,13 @@ export function FloatingCallWidget() {
     setTimeout(() => setReconnecting(false), 1200);
   }
 
-  function handleHangup() {
+  async function handleHangup() {
     if (!activeCall) return;
     const call = activeCall;
     const prompt = call.role === 'ADMIN'
       ? 'Encerrar a sala para todos os participantes? O prontuário continuará aberto.'
       : 'Deseja sair da teleconsulta? A consulta continuará disponível enquanto a nutricionista estiver na sala.';
-    if (window.confirm(prompt)) {
+    if (await confirm({title:call.role === 'ADMIN' ? 'Encerrar sala de vídeo?' : 'Sair da teleconsulta?',message:prompt,confirmLabel:call.role === 'ADMIN' ? 'Encerrar sala' : 'Sair da consulta',tone:'warning'})) {
       if (call.role === 'ADMIN' && call.sessionId) {
         void api(`/api/video/sessions/${call.sessionId}/end`, {
           method: 'POST', body: JSON.stringify({ reason: 'COMPLETED' }),

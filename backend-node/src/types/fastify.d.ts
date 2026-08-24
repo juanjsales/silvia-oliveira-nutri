@@ -9,7 +9,7 @@ declare module 'fastify' {
     requireAdmin: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
   interface FastifyRequest {
-    auth: { userId: string; role: 'ADMIN' | 'PATIENT'; patientId: string | null } | null;
+    auth: { sessionId: string; userId: string; role: 'ADMIN' | 'PATIENT'; patientId: string | null } | null;
   }
 }
 

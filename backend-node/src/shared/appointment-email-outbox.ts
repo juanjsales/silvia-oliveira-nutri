@@ -38,9 +38,9 @@ export async function processAppointmentEmail(app:{db:Database;env:AppEnv;log:{e
     if(item.eventType==='REMINDER_24H'){
       await app.db.query(`INSERT INTO appointment_email_events(appointment_id,event_type,recipient)
         VALUES($1,'REMINDER_24H',$2) ON CONFLICT DO NOTHING`,[item.appointmentId,item.recipient]);
-      await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind)
-        SELECT patient_id,'Lembrete de consulta',$2,'APPOINTMENT' FROM appointments WHERE id=$1
-        AND NOT EXISTS(SELECT 1 FROM patient_notifications WHERE patient_id=appointments.patient_id AND title='Lembrete de consulta' AND body=$2 AND created_at>now()-interval '2 days')`,
+      await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)
+        SELECT patient_id,'Lembrete de consulta',$2,'APPOINTMENT','HIGH','appointment',id,'/portal/consultas','appointment:reminder-24h:'||id,appointment_date+interval '2 days' FROM appointments WHERE id=$1
+        ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO NOTHING`,
         [item.appointmentId,`Sua consulta é amanhã, ${payload.date.split('-').reverse().join('/')} às ${payload.time}.`]);
     }
     return{processed:true,sent:true};
@@ -49,7 +49,9 @@ export async function processAppointmentEmail(app:{db:Database;env:AppEnv;log:{e
     const exhausted=item.attempts>=item.max_attempts;
     await app.db.query(`UPDATE appointment_email_outbox SET status='FAILED',processing_started_at=NULL,last_error=$2,
       next_attempt_at=CASE WHEN $3 THEN next_attempt_at ELSE now()+(LEAST(60,power(2,attempts))::text||' minutes')::interval END WHERE id=$1`,[id,message,exhausted]);
-    app.log.error({err:error,appointmentId:item.appointmentId,emailDeliveryId:id},'Falha ao processar e-mail de consulta');
+    const errorName=error instanceof Error?error.name:'UnknownError';
+    const errorCode=typeof error==='object'&&error!==null&&'code' in error?String(error.code).slice(0,80):undefined;
+    app.log.error({errorName,errorCode,appointmentId:item.appointmentId,emailDeliveryId:id},'Falha ao processar e-mail de consulta');
     return{processed:true,sent:false};
   }
 }

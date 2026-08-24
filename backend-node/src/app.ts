@@ -30,6 +30,7 @@ import { messageRoutes } from './modules/messages/routes.js';
 import { followUpRoutes } from './modules/follow-up/routes.js';
 import { patientExamRoutes } from './modules/patient-exams/routes.js';
 import { notificationRoutes } from './modules/notifications/routes.js';
+import { auditRoutes } from './modules/audit/routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
@@ -39,6 +40,17 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(cookie);
   await app.register(cors, { origin: env.FRONTEND_ORIGIN, credentials: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] });
   await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
+  app.addHook('onRequest', async (request, reply) => {
+    if (!request.url.startsWith('/api/')) return;
+    reply.header('Cache-Control', 'no-store');
+    reply.header('Pragma', 'no-cache');
+    if (env.NODE_ENV !== 'production' || !['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) return;
+    const origin = request.headers.origin;
+    const allowed = new Set([new URL(env.FRONTEND_ORIGIN).origin, new URL(env.APP_URL).origin]);
+    // Browser mutations must originate from the configured application. Requests
+    // without Origin remain available to trusted server-to-server integrations.
+    if (origin && !allowed.has(origin)) return reply.code(403).send({ error: 'Origem da solicitação não autorizada.' });
+  });
   // Authentication decorators must live on the root instance so sibling route
   // plugins can use them. Registering this function as a regular Fastify plugin
   // would encapsulate the decorators inside its own scope.
@@ -71,6 +83,28 @@ export async function buildApp(env: AppEnv, db: Database) {
       crn, specialty, phone, email, city, logo_url AS "logoUrl", primary_color AS "primaryColor",
       secondary_color AS "secondaryColor" FROM clinic_settings WHERE singleton=true`)).rows[0]
   }));
+  app.get('/api/privacy/public-notice', async () => {
+    const settings = (await db.query<{
+      clinicName:string; professionalName:string; controllerName:string|null; controllerDocument:string|null;
+      privacyContactName:string|null; privacyContactEmail:string|null; email:string|null; updatedAt:Date|null;
+    }>(`SELECT clinic_name AS "clinicName",professional_name AS "professionalName",
+      privacy_controller_name AS "controllerName",privacy_controller_document AS "controllerDocument",
+      privacy_contact_name AS "privacyContactName",privacy_contact_email AS "privacyContactEmail",
+      email,privacy_notice_updated_at AS "updatedAt" FROM clinic_settings WHERE singleton=true`)).rows[0];
+    return { data: {
+      version: '2026-08-23',
+      controller: { name: settings?.controllerName || settings?.clinicName, document: settings?.controllerDocument || null },
+      privacyContact: { name: settings?.privacyContactName || settings?.professionalName, email: settings?.privacyContactEmail || settings?.email || null },
+      updatedAt: settings?.updatedAt || null,
+      purposes: ['Prestar atendimento nutricional e manter o prontuário','Gerenciar consultas, comunicações e documentos','Cumprir obrigações profissionais, legais e de segurança'],
+      categories: ['Dados cadastrais e de contato','Dados de saúde e histórico clínico','Registros de atendimento, documentos e comunicações','Dados técnicos de acesso e segurança'],
+      rights: ['Confirmar e acessar dados','Solicitar correção','Solicitar portabilidade ou informação sobre compartilhamentos','Solicitar análise de anonimização, bloqueio ou eliminação quando aplicável','Revogar consentimentos específicos, sem afetar tratamentos apoiados em outra base'],
+      retention: 'Os dados são mantidos somente pelo período necessário às finalidades e obrigações aplicáveis. Prontuários não são apagados automaticamente: pedidos de eliminação passam por análise para preservar obrigações profissionais e direitos.',
+      security: 'O acesso é autenticado e restrito por perfil. Eventos relevantes são registrados para segurança e prestação de contas.',
+      sharing: 'Dados podem ser processados por fornecedores essenciais de infraestrutura, armazenamento e e-mail, sob controles contratuais e de segurança. Não são comercializados.',
+      channels: 'O paciente autenticado pode baixar seus dados e registrar solicitações na área Privacidade e meus dados.'
+    }};
+  });
   await app.register(authRoutes, { prefix: '/api/auth' });
   await app.register(patientRoutes, { prefix: '/api/patients' });
   await app.register(appointmentRoutes, { prefix: '/api/appointments' });
@@ -92,6 +126,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(followUpRoutes, { prefix: '/api/follow-up' });
   await app.register(patientExamRoutes, { prefix: '/api/patient-exams' });
   await app.register(notificationRoutes, { prefix: '/api/notifications' });
+  await app.register(auditRoutes, { prefix: '/api/audit' });
 
   return app;
 }

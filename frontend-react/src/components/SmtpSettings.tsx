@@ -22,6 +22,7 @@ import {
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../lib/api";
 import { PasswordInput } from "./PasswordInput";
+import { useConfirm } from "./ConfirmDialog";
 
 type Smtp = {
   host: string;
@@ -53,6 +54,7 @@ type EmailTemplateKey =
   | "PRIVACY_ALERT";
 
 export function SmtpSettings() {
+  const confirm = useConfirm();
   const [form, setForm] = useState(initial);
   const [password, setPassword] = useState("");
   const [testEmail, setTestEmail] = useState("");
@@ -115,11 +117,7 @@ export function SmtpSettings() {
   }
 
   async function removeSmtp() {
-    if (
-      !window.confirm(
-        "Tem certeza que deseja desconectar o e-mail do consultório? Os envios automáticos de confirmação ficarão desativados até você reconectar."
-      )
-    ) {
+    if (!(await confirm({title:"Desconectar e-mail?",message:"Os envios automáticos de confirmação ficarão desativados até que uma conta seja conectada novamente.",confirmLabel:"Desconectar",tone:"destructive"}))) {
       return;
     }
 

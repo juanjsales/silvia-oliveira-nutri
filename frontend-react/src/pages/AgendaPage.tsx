@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { getEndTime, formatAppointmentSchedule } from '../lib/formatters';
+import { useConfirm } from '../components/ConfirmDialog';
 
 type Patient = { id: string; name: string };
 type AppointmentStatus = 'CONFIRMED'|'WAITING'|'IN_PROGRESS'|'COMPLETED'|'CANCELLED'|'NO_SHOW';
@@ -26,6 +27,7 @@ const todayIso = isoDate(new Date());
 const initialForm = (date=todayIso):FormState => ({ patientId:'', date, time:'09:00', durationMinutes:'60', type:types[0], price:'250', status:'CONFIRMED', notes:'', meetingUrl:'' });
 
 export function AgendaPage() {
+  const confirm = useConfirm();
   const [month,setMonth]=useState(() => new Date(new Date().getFullYear(),new Date().getMonth(),1)); const [selected,setSelected]=useState(todayIso);
   const [appointments,setAppointments]=useState<Appointment[]>([]); const [patients,setPatients]=useState<Patient[]>([]); const [loading,setLoading]=useState(true); const [error,setError]=useState('');const[notice,setNotice]=useState('');
   const[requests,setRequests]=useState<AppointmentRequest[]>([]);const[requestId,setRequestId]=useState<string|null>(null);const[editingId,setEditingId]=useState<string|null>(null);const[rebooking,setRebooking]=useState(false);
@@ -44,7 +46,7 @@ export function AgendaPage() {
   function showCreate(date=selected){setRequestId(null);setEditingId(null);setRebooking(false);setForm(initialForm(date));setOpen(true)}
   function showEdit(item:Appointment){setRequestId(null);setEditingId(item.id);setRebooking(item.patientResponse==='RESCHEDULE_REQUESTED');setForm({patientId:item.patientId,date:item.date.slice(0,10),time:item.time.slice(0,5),durationMinutes:String(item.durationMinutes),type:item.type,price:item.price==null?'':String(item.price),status:item.status,notes:item.notes||'',meetingUrl:item.meetingUrl||''});setOpen(true)}
   function approveRequest(item:AppointmentRequest){const time={MORNING:'09:00',AFTERNOON:'14:00',EVENING:'18:00'}[item.preferredPeriod];setRequestId(item.id);setEditingId(null);setRebooking(false);setForm({...initialForm(item.preferredDate),patientId:item.patientId,time,type:item.appointmentType,notes:item.notes||''});setSelected(item.preferredDate);setMonth(new Date(`${item.preferredDate}T12:00:00`));setOpen(true)}
-  async function declineRequest(item:AppointmentRequest){if(!window.confirm(`Recusar a solicitação de ${item.patientName}?`))return;try{await api(`/api/appointments/requests/${item.id}`,{method:'PATCH',body:JSON.stringify({status:'DECLINED'})});setNotice('Solicitação atualizada e paciente notificado no portal.');await load()}catch(cause){setError(cause instanceof Error?cause.message:'Não foi possível atualizar a solicitação.')}}
+  async function declineRequest(item:AppointmentRequest){if(!(await confirm({title:'Recusar solicitação?',message:`A solicitação de ${item.patientName} será recusada e o paciente será avisado no portal.`,confirmLabel:'Recusar',tone:'warning'})))return;try{await api(`/api/appointments/requests/${item.id}`,{method:'PATCH',body:JSON.stringify({status:'DECLINED'})});setNotice('Solicitação atualizada e paciente notificado no portal.');await load()}catch(cause){setError(cause instanceof Error?cause.message:'Não foi possível atualizar a solicitação.')}}
   async function save(event:FormEvent){
     event.preventDefault();
     setSaving(true);
@@ -57,7 +59,7 @@ export function AgendaPage() {
     const isPastTimeToday = form.date === todayIso && form.time < currentHourMin;
 
     if (!editingId && (isPastDate || isPastTimeToday)) {
-      if (!window.confirm(`⚠️ O horário selecionado (${form.time} em ${form.date.split('-').reverse().join('/')}) já passou em relação ao horário atual (${currentHourMin}).\n\nDeseja realmente registrar esta consulta retroativa no passado?`)) {
+      if (!(await confirm({title:'Registrar consulta retroativa?',message:`O horário selecionado (${form.time} em ${form.date.split('-').reverse().join('/')}) já passou. Confirme apenas se esse registro retroativo for intencional.`,confirmLabel:'Registrar mesmo assim',tone:'warning'}))) {
         setSaving(false);
         return;
       }

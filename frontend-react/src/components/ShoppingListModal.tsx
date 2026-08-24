@@ -15,6 +15,7 @@ import {
   Wheat,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useConfirm } from "./ConfirmDialog";
 
 type MealItem = {
   name?: string;
@@ -174,6 +175,7 @@ function classifyFood(name: string): FoodCategory {
 }
 
 export function ShoppingListSection({ plans }: { plans: Plan[] }) {
+  const confirm = useConfirm();
   const activePlan = plans[0];
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
     try {
@@ -240,8 +242,8 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
     });
   }
 
-  function resetList() {
-    if (window.confirm("Deseja desmarcar todos os itens da lista de compras?")) {
+  async function resetList() {
+    if (await confirm({title:"Limpar marcações?",message:"Todos os itens marcados na lista de compras voltarão ao estado inicial.",confirmLabel:"Limpar marcações",tone:"warning"})) {
       setCheckedItems({});
       localStorage.removeItem("portal_shopping_checked");
     }

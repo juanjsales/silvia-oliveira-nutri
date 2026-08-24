@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { useConfirm } from "./ConfirmDialog";
 
 type TableStat = {
   tableName: string;
@@ -41,6 +42,7 @@ type PruneResult = {
 };
 
 export function StorageMaintenancePanel() {
+  const confirm = useConfirm();
   const [stats, setStats] = useState<StorageStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [pruning, setPruning] = useState(false);
@@ -65,7 +67,7 @@ export function StorageMaintenancePanel() {
   }, [loadStats]);
 
   async function handlePrune() {
-    if (!window.confirm("Deseja executar a rotina de limpeza agora? Sessões expiradas, logs técnicos antigos e notificações lidas serão removidos com segurança.")) {
+    if (!(await confirm({title:"Executar manutenção?",message:"Sessões expiradas, logs técnicos antigos e notificações lidas serão removidos conforme a política de retenção.",confirmLabel:"Executar limpeza",tone:"warning"}))) {
       return;
     }
     setPruning(true);

@@ -35,10 +35,19 @@ export function ProfessionalLiveAlerts() {
   const [data, setData] = useState<LiveStatusData | null>(null);
   const [dismissedApptId, setDismissedApptId] = useState<string | null>(null);
   const notifiedThresholdsRef = useRef<Set<string>>(new Set());
-  const { showToast } = useToast();
+  const { showToast, dismissToastByKey } = useToast();
   const { activeCall, isCallActiveFor } = useTeleconsultation();
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!activeCall) return;
+    const identifiers = [activeCall.appointmentId, activeCall.encounterId].filter(Boolean) as string[];
+    identifiers.forEach((identifier) => {
+      dismissToastByKey(`appointment-upcoming:${identifier}`);
+      dismissToastByKey(`appointment-now:${identifier}`);
+    });
+  }, [activeCall, dismissToastByKey]);
 
   useEffect(() => {
     let mounted = true;
@@ -72,6 +81,7 @@ export function ProfessionalLiveAlerts() {
               actionLabel: 'Abrir Atendimento',
               onAction: () => navigate(`/atendimentos?paciente=${appt.patientId}&agendamento=${appt.id}`),
               duration: 9000,
+              key: `appointment-upcoming:${appt.id}`,
             });
           }
 
@@ -86,6 +96,7 @@ export function ProfessionalLiveAlerts() {
               actionLabel: 'Iniciar Agora',
               onAction: () => navigate(`/atendimentos?paciente=${appt.patientId}&agendamento=${appt.id}&video=true`),
               duration: 12000,
+              key: `appointment-now:${appt.id}`,
             });
           }
         });

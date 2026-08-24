@@ -6,6 +6,7 @@ import { RoleRoute } from '../components/RoleRoute';
 import { TeleconsultationProvider } from '../contexts/TeleconsultationContext';
 import { ToastProvider } from '../components/ToastNotification';
 import { FloatingCallWidget } from '../components/FloatingCallWidget';
+import { ConfirmProvider } from '../components/ConfirmDialog';
 
 const ClinicalOverviewPage = lazy(() => import('../pages/ClinicalOverviewPage').then(module => ({ default: module.ClinicalOverviewPage })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
@@ -31,6 +32,7 @@ const PatientVideoPage = lazy(() => import('../pages/PatientVideoPage').then(mod
 const PatientsPage = lazy(() => import('../pages/PatientsPage').then(module => ({ default: module.PatientsPage })));
 const PlanDocumentPage = lazy(() => import('../pages/PlanDocumentPage').then(module => ({ default: module.PlanDocumentPage })));
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
+const PublicPrivacyPage = lazy(() => import('../pages/PublicPrivacyPage').then(module => ({ default: module.PublicPrivacyPage })));
 const SettingsPage = lazy(() => import('../pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
 
 function RouteFallback() {
@@ -40,12 +42,14 @@ function RouteFallback() {
 export function App() {
   return (
     <ToastProvider>
-      <TeleconsultationProvider>
+      <ConfirmProvider>
+        <TeleconsultationProvider>
         <FloatingCallWidget />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/privacidade" element={<PublicPrivacyPage />} />
         <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
         <Route path="/redefinir-senha" element={<PasswordResetPage />} />
         <Route element={<ProtectedRoute />}>
@@ -101,7 +105,8 @@ export function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
-    </TeleconsultationProvider>
+        </TeleconsultationProvider>
+      </ConfirmProvider>
     </ToastProvider>
   );
 }
