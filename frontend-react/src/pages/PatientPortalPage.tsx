@@ -385,19 +385,23 @@ export function PatientPortalPage() {
         </aside>
       )}
 
-      {/* ── HERO BANNER DE SAUDAÇÃO ── */}
-      <section className="portal-hero-card">
-        <div className="hero-left">
-          <span className="hero-greeting-tag">
-            <Sparkles size={13} /> {greeting}, {firstName}!
-          </span>
-          <span className="hero-care-provider">Acompanhamento com {clinic.professionalName}</span>
-          <h1>Seu cuidado, organizado em um só lugar.</h1>
-          <p>{data.patient.objective
-            ? `Objetivo em acompanhamento: ${data.patient.objective}`
-            : 'Acesse seu plano, registre sua rotina e acompanhe orientações e evolução clínica.'}</p>
-        </div>
-      </section>
+      {/* ── HERO BANNER DE SAUDAÇÃO (APENAS NA PÁGINA INICIAL) ── */}
+      {tab === 'inicio' && (
+        <section className="portal-hero-card">
+          <div className="hero-left">
+            <span className="hero-greeting-tag">
+              <Sparkles size={13} /> {greeting}, {firstName}!
+            </span>
+            <span className="hero-care-provider">Acompanhamento com {clinic.professionalName}</span>
+            <h1>Seu cuidado, organizado em um só lugar.</h1>
+            <p>
+              {data.patient.objective
+                ? `Objetivo em acompanhamento: ${data.patient.objective}`
+                : 'Acesse seu plano, registre sua rotina e acompanhe orientações e evolução clínica.'}
+            </p>
+          </div>
+        </section>
+      )}
 
       <PwaInstallBanner />
 
