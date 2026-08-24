@@ -479,14 +479,14 @@ function PortalHome({
     <div className="portal-today-dashboard">
       {pendingConfirmation && pendingConfirmation.id !== nextAppointment?.id && (
         <section className="portal-confirmation-prompt" aria-labelledby="pending-confirmation-title">
-          <span className="confirmation-prompt-icon"><CheckCircle2 size={21} /></span>
-          <span>
-            <strong id="pending-confirmation-title">Confirme sua próxima consulta pendente</strong>
+          <span className="confirmation-prompt-icon"><CheckCircle2 size={20} /></span>
+          <div className="confirmation-prompt-text">
+            <strong id="pending-confirmation-title">Confirme sua presença</strong>
             <small>
               {new Date(`${pendingConfirmation.appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
               {' · '}{formatAppointmentSchedule(pendingConfirmation.appointmentTime, pendingConfirmation.durationMinutes)}
             </small>
-          </span>
+          </div>
           <Link className="appt-confirm-btn" to="/portal/consultas">Revisar e confirmar</Link>
         </section>
       )}
@@ -496,52 +496,67 @@ function PortalHome({
         <section className={`portal-next-appointment-card ${needsConfirmation ? 'needs-confirmation' : ''}`}>
           <div className="appt-left-info">
             <div className="appt-icon-box">
-              <CalendarDays size={24} />
+              {nextAppointment.appointmentType?.toLowerCase().includes('online') || nextAppointment.meetingUrl ? (
+                <Video size={22} />
+              ) : (
+                <CalendarDays size={22} />
+              )}
             </div>
             <div className="appt-details">
-              <strong>{nextAppointment.appointmentType}</strong>
-              <span>
-                📅 {new Date(`${nextAppointment.appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} · {formatAppointmentSchedule(nextAppointment.appointmentTime, nextAppointment.durationMinutes)}
-              </span>
-              <small>{needsConfirmation ? 'Sua confirmação está pendente' : `Duração: ${nextAppointment.durationMinutes} minutos`}</small>
+              <div className="appt-type-badge-row">
+                <span className="appt-type-tag">{nextAppointment.appointmentType || 'Consulta Nutricional'}</span>
+                {needsConfirmation && <span className="appt-pending-badge">Confirmação pendente</span>}
+              </div>
+              <div className="appt-datetime-meta">
+                <span className="appt-date-chip">
+                  <CalendarDays size={13} />
+                  {new Date(`${nextAppointment.appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
+                </span>
+                <span className="appt-time-chip">
+                  <Clock3 size={13} />
+                  {formatAppointmentSchedule(nextAppointment.appointmentTime, nextAppointment.durationMinutes)}
+                </span>
+              </div>
             </div>
           </div>
 
-          {isCallActiveFor(nextAppointment.id, nextAppointment.meetingUrl) ? (
-            <button type="button" className="appt-video-btn" onClick={restoreCall}>
-              <Video size={17} /> Voltar à chamada
-            </button>
-          ) : isLiveAppointment && nextAppointment.meetingUrl ? (
-            <Link className="appt-video-btn" to={nextAppointment.meetingUrl}>
-              <Video size={17} /> Entrar na Sala Virtual
-            </Link>
-          ) : needsConfirmation ? (
-            <Link className="appt-confirm-btn" to="/portal/consultas">
-              <CheckCircle2 size={17} /> Confirmar presença
-            </Link>
-          ) : (
-            <div className="appt-neutral-actions">
-              <Link className="secondary-button" to="/portal/consultas">Ver consultas</Link>
-              <button type="button" className="secondary-button" onClick={() => setTab('checkin')}>
-                <ClipboardList size={16} /> Preparar Consulta
+          <div className="appt-action-zone">
+            {isCallActiveFor(nextAppointment.id, nextAppointment.meetingUrl) ? (
+              <button type="button" className="appt-video-btn" onClick={restoreCall}>
+                <Video size={16} /> Voltar à chamada
               </button>
-            </div>
-          )}
+            ) : isLiveAppointment && nextAppointment.meetingUrl ? (
+              <Link className="appt-video-btn" to={nextAppointment.meetingUrl}>
+                <Video size={16} /> Entrar na Sala Virtual
+              </Link>
+            ) : needsConfirmation ? (
+              <Link className="appt-confirm-btn" to="/portal/consultas">
+                <CheckCircle2 size={16} /> Confirmar presença
+              </Link>
+            ) : (
+              <div className="appt-neutral-actions">
+                <Link className="secondary-button" to="/portal/consultas">Ver detalhes</Link>
+                <button type="button" className="secondary-button" onClick={() => setTab('checkin')}>
+                  <ClipboardList size={15} /> Pré-Consulta
+                </button>
+              </div>
+            )}
+          </div>
         </section>
       ) : (
-        <section className="portal-next-appointment-card" style={{ borderColor: '#e2e8f0' }}>
+        <section className="portal-next-appointment-card empty-schedule">
           <div className="appt-left-info">
-            <div className="appt-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
-              <CalendarDays size={24} />
+            <div className="appt-icon-box empty-box">
+              <CalendarDays size={22} />
             </div>
             <div className="appt-details">
               <strong>Agende seu próximo retorno</strong>
-              <span style={{ color: '#64748b' }}>Mantenha seu acompanhamento em dia</span>
+              <span>Mantenha seu acompanhamento nutricional e metas em dia.</span>
             </div>
           </div>
           <button
             type="button"
-            className="secondary-button"
+            className="secondary-button appt-schedule-btn"
             onClick={() => setTab('agenda')}
           >
             Solicitar Horário <ArrowRight size={15} />
@@ -564,42 +579,55 @@ function PortalHome({
       </div>
 
       {/* ── ATALHOS RÁPIDOS (QUICK ACTIONS) ── */}
-      <section>
-        <span className="control-section-title" style={{ marginBottom: 10, display: 'block' }}>
-          Acesso Rápido
-        </span>
+      <section className="portal-quick-section">
+        <div className="quick-section-head">
+          <h3>Acesso Rápido</h3>
+          <small>Principais áreas de cuidado</small>
+        </div>
         <div className="portal-quick-actions-grid">
-          <div className="quick-action-card" onClick={() => setTab('plano')}>
-            <div className="action-icon" style={{ background: '#f0fdf4', color: '#166534' }}>
+          <button type="button" className="quick-action-card quick-action-nutrition" onClick={() => setTab('plano')}>
+            <div className="action-icon">
               <Utensils size={18} />
             </div>
-            <strong>Meu Plano</strong>
-            <small>Ver todas as refeições</small>
-          </div>
+            <div className="action-text">
+              <strong>Meu Plano</strong>
+              <small>Todas as refeições</small>
+            </div>
+            <ArrowRight size={14} className="action-arrow" />
+          </button>
 
-          <div className="quick-action-card" onClick={() => setTab('compras')}>
-            <div className="action-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+          <button type="button" className="quick-action-card quick-action-shopping" onClick={() => setTab('compras')}>
+            <div className="action-icon">
               <ShoppingBasket size={18} />
             </div>
-            <strong>Lista de Compras</strong>
-            <small>Setores do supermercado</small>
-          </div>
+            <div className="action-text">
+              <strong>Lista de Compras</strong>
+              <small>Setores de mercado</small>
+            </div>
+            <ArrowRight size={14} className="action-arrow" />
+          </button>
 
-          <div className="quick-action-card" onClick={() => setTab('evolucao')}>
-            <div className="action-icon" style={{ background: '#eff6ff', color: '#2563eb' }}>
+          <button type="button" className="quick-action-card quick-action-evolution" onClick={() => setTab('evolucao')}>
+            <div className="action-icon">
               <LineChart size={18} />
             </div>
-            <strong>Minha Evolução</strong>
-            <small>Curva de peso e medidas</small>
-          </div>
+            <div className="action-text">
+              <strong>Minha Evolução</strong>
+              <small>Curva e medidas</small>
+            </div>
+            <ArrowRight size={14} className="action-arrow" />
+          </button>
 
-          <div className="quick-action-card" onClick={() => setTab('mensagens')}>
-            <div className="action-icon" style={{ background: '#fffbeb', color: '#d97706' }}>
+          <button type="button" className="quick-action-card quick-action-chat" onClick={() => setTab('mensagens')}>
+            <div className="action-icon">
               <MessageCircle size={18} />
             </div>
-            <strong>Falar com a Nutri</strong>
-            <small>Tirar dúvidas rápidas</small>
-          </div>
+            <div className="action-text">
+              <strong>Falar com a Nutri</strong>
+              <small>Canal de suporte</small>
+            </div>
+            <ArrowRight size={14} className="action-arrow" />
+          </button>
         </div>
       </section>
     </div>

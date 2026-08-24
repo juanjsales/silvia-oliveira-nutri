@@ -188,12 +188,17 @@ export function PortalCurrentMealCard({
 
   return (
     <div className="current-meal-card">
-      <div>
-        <span className="meal-badge-time">
+      <div className="current-meal-head">
+        <div className="meal-badge-time">
           <Clock size={12} /> Refeição Sugerida · {currentMealInfo.periodTag}
-        </span>
+        </div>
         <div className="meal-header-info">
-          <h3>{currentMealInfo.mealName}</h3>
+          <div className="meal-title-row">
+            <div className="meal-icon-pill">
+              <Utensils size={15} />
+            </div>
+            <h3>{currentMealInfo.mealName}</h3>
+          </div>
           <p>O que seu plano alimentar orienta para este momento:</p>
         </div>
       </div>
@@ -203,16 +208,16 @@ export function PortalCurrentMealCard({
           currentMealInfo.items.slice(0, 5).map((it, idx) => (
             <div key={idx} className="meal-item-preview-row">
               <span className="meal-dot" />
-              <strong style={{ fontSize: "0.82rem", color: "#1e293b" }}>{it.name}</strong>
+              <strong className="meal-item-name">{it.name}</strong>
               {it.portion && (
-                <small style={{ color: "#64748b", marginLeft: "auto", fontSize: "0.74rem" }}>
+                <span className="meal-item-portion">
                   {it.portion}
-                </small>
+                </span>
               )}
             </div>
           ))
         ) : (
-          <div style={{ color: "#64748b", fontSize: "0.82rem", padding: "6px 0" }}>
+          <div className="meal-empty-note">
             Consulte seu plano alimentar para conferir as opções desta refeição.
           </div>
         )}
