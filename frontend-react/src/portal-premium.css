@@ -1677,43 +1677,43 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PORTAL DO PACIENTE — TELA DE BOAS-VINDAS EM TELA INTEIRA (ZEN & CALM)
+   PORTAL DO PACIENTE — TELA DE BOAS-VINDAS EM TELA INTEIRA (ZEN & CALM LUXURY)
    ═══════════════════════════════════════════════════════════════ */
 .portal-welcome-screen {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 99999;
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
-  color: #173b2b;
-  background:
-    radial-gradient(circle at 50% 30%, rgba(220, 238, 226, 0.95) 0%, rgba(244, 248, 244, 0.6) 45%, rgba(235, 243, 237, 0.9) 100%),
-    linear-gradient(155deg, #f9fcf9 0%, #ecf5ee 50%, #e2efe5 100%);
+  color: #ffffff;
+  background: #0f271c;
+  background: radial-gradient(circle at 50% 35%, #183f2e 0%, #0d2118 70%, #06130d 100%);
   overflow: hidden;
   box-sizing: border-box;
+  animation: welcomeFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .portal-welcome-ambient {
   position: absolute;
-  width: min(600px, 90vw);
-  height: min(600px, 90vw);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(47, 115, 82, 0.12) 0%, rgba(79, 160, 118, 0.04) 50%, transparent 70%);
-  filter: blur(40px);
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(215, 195, 142, 0.14) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(82, 183, 136, 0.16) 0%, transparent 45%);
   pointer-events: none;
+  filter: blur(40px);
   animation: zenAmbientBreathe 5s ease-in-out infinite alternate;
 }
 
 @keyframes zenAmbientBreathe {
   0% {
-    transform: scale(0.85);
-    opacity: 0.6;
+    transform: scale(0.9);
+    opacity: 0.7;
   }
   100% {
-    transform: scale(1.15);
+    transform: scale(1.1);
     opacity: 1;
   }
 }
@@ -1727,6 +1727,7 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   align-items: center;
   text-align: center;
   padding: 10px;
+  animation: welcomeCardFloat 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── ORBE ZEN DE RESPIRAÇÃO E CUIDADO ── */
@@ -1747,53 +1748,44 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
 
 .zen-breathing-ring.ring-outer {
   inset: -16px;
-  background: radial-gradient(circle, rgba(47, 115, 82, 0.14) 0%, rgba(47, 115, 82, 0) 70%);
-  animation: zenRingPulse 3.8s ease-in-out infinite alternate;
+  border: 1px solid rgba(215, 195, 142, 0.25);
+  animation: ringBreathe1 3.5s ease-in-out infinite;
 }
 
 .zen-breathing-ring.ring-middle {
   inset: -6px;
-  background: radial-gradient(circle, rgba(47, 115, 82, 0.22) 0%, rgba(47, 115, 82, 0.02) 65%);
-  animation: zenRingPulse 3s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes zenRingPulse {
-  0% {
-    transform: scale(0.88);
-    opacity: 0.4;
-  }
-  100% {
-    transform: scale(1.14);
-    opacity: 0.9;
-  }
+  border: 1px solid rgba(82, 183, 136, 0.3);
+  animation: ringBreathe2 3s ease-in-out infinite;
 }
 
 .zen-center-circle {
   position: relative;
   z-index: 2;
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: linear-gradient(145deg, #173b2b, #2f7352);
-  color: #f1ebd8;
+  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+  border: 1px solid rgba(215, 195, 142, 0.45);
+  box-shadow: 0 0 32px rgba(82, 183, 136, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
   display: grid;
   place-items: center;
-  box-shadow: 0 10px 28px rgba(23, 59, 43, 0.26), 0 0 18px rgba(47, 115, 82, 0.2);
+  color: #d7c38e;
+  animation: orbPulse 3.5s ease-in-out infinite;
 }
 
 .zen-icon {
-  color: #e5d8b2;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+  color: #d7c38e;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
 }
 
 .zen-orbital-spinner {
   position: absolute;
-  inset: 12px;
-  border: 2px solid rgba(220, 233, 223, 0.6);
-  border-top-color: #2f7352;
-  border-right-color: #8fac96;
+  inset: 6px;
+  border: 2px solid rgba(215, 195, 142, 0.15);
+  border-top-color: #d7c38e;
+  border-right-color: #52b788;
   border-radius: 50%;
-  animation: zenOrbit 1.2s linear infinite;
+  animation: zenOrbit 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
 @keyframes zenOrbit {
@@ -1807,11 +1799,12 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   height: 68px;
   margin-bottom: 22px;
   border-radius: 20px;
-  background: #fdf2f0;
-  color: #a8382d;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
   display: grid;
   place-items: center;
-  box-shadow: 0 8px 24px rgba(168, 56, 45, 0.12);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
 }
 
 /* ── TEXTOS E TIPOGRAFIA DE BOAS-VINDAS ── */
@@ -1827,41 +1820,41 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   align-items: center;
   gap: 6px;
   padding: 5px 14px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(188, 212, 196, 0.65);
-  color: #276545;
+  background: rgba(215, 195, 142, 0.14);
+  border: 1px solid rgba(215, 195, 142, 0.35);
+  color: #e8d7ad;
   border-radius: 999px;
   font-size: 0.74rem;
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  box-shadow: 0 2px 10px rgba(24, 59, 43, 0.04);
 }
 
 .portal-welcome-content h1 {
   margin: 4px 0 0;
-  color: #123022;
-  font-family: 'Playfair Display', serif;
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: clamp(1.85rem, 5.5vw, 2.35rem);
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .portal-welcome-content p {
   margin: 0;
   max-width: 440px;
-  color: #556c5e;
-  font-size: 0.98rem;
+  color: #cbdcd0;
+  font-size: 0.95rem;
   line-height: 1.6;
 }
 
-/* ── BARRA DE PROGRESSO ULTRAFINA ZEN ── */
+/* ── BARRA DE PROGRESSO FLUIDA ── */
 .portal-welcome-progress {
   width: 100%;
-  max-width: 240px;
-  height: 3.5px;
+  max-width: 220px;
+  height: 3px;
   margin-top: 26px;
-  background: rgba(198, 222, 206, 0.5);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   overflow: hidden;
   position: relative;
@@ -1870,20 +1863,22 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
 .portal-welcome-progress-bar {
   position: absolute;
   top: 0;
+  left: 0;
   bottom: 0;
-  width: 45%;
-  background: linear-gradient(90deg, transparent, #2f7352, #7eb897, transparent);
+  width: 50%;
+  background: linear-gradient(90deg, #52b788, #d7c38e, #74c69d);
   border-radius: 999px;
-  animation: zenProgress 1.7s ease-in-out infinite;
+  animation: fluidBarSlide 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
-@keyframes zenProgress {
-  0% {
-    left: -50%;
-  }
-  100% {
-    left: 110%;
-  }
+.portal-welcome-footer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 24px;
+  color: #8da696;
+  font-size: 0.76rem;
+  font-weight: 500;
 }
 
 .portal-welcome-actions {
