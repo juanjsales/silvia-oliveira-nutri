@@ -1,0 +1,36 @@
+# Robots.txt — Dra. Silvia Oliveira Lemos (Nutrição Clínica & Esportiva)
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /privacidade
+Allow: /recuperar-senha
+
+# Proteger rotas autenticadas, dados de pacientes e painel clínico contra indexação
+Disallow: /portal
+Disallow: /portal/
+Disallow: /painel
+Disallow: /painel/
+Disallow: /agenda
+Disallow: /agenda/
+Disallow: /pacientes
+Disallow: /pacientes/
+Disallow: /atendimentos
+Disallow: /atendimentos/
+Disallow: /mensagens
+Disallow: /mensagens/
+Disallow: /acompanhamento
+Disallow: /acompanhamento/
+Disallow: /exames
+Disallow: /exames/
+Disallow: /planos
+Disallow: /planos/
+Disallow: /documentos
+Disallow: /documentos/
+Disallow: /financeiro
+Disallow: /financeiro/
+Disallow: /configuracoes
+Disallow: /configuracoes/
+Disallow: /api/
+
+# Sitemap Oficial para o Google Search Console
+Sitemap: https://silvia-oliveira-nutri-v2.vercel.app/sitemap.xml
