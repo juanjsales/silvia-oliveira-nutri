@@ -29,6 +29,9 @@ export function PortalLoadingScreen({
           <div className="portal-loading-brand" aria-hidden="true"><AlertTriangle /></div>
         ) : (
           <div className="portal-loading-visual" aria-hidden="true">
+            <span className="portal-loading-aura ring-1" />
+            <span className="portal-loading-aura ring-2" />
+            <span className="portal-loading-aura ring-3" />
             <span className="portal-loading-spinner" />
             <span className="portal-loading-brand"><ShieldCheck /></span>
           </div>
@@ -36,6 +39,11 @@ export function PortalLoadingScreen({
         <span className="portal-loading-eyebrow">{error ? 'Acesso protegido' : 'Ambiente seguro'}</span>
         <h1 id="portal-loading-title">{title}</h1>
         <p>{message}</p>
+        {!error && (
+          <div className="portal-loading-progress-track" aria-hidden="true">
+            <div className="portal-loading-progress-bar" />
+          </div>
+        )}
         {(onRetry || onExit) && (
           <div className="portal-loading-actions">
             {onRetry && <button type="button" className="primary-button" onClick={onRetry}><RefreshCw size={17} /> Tentar novamente</button>}

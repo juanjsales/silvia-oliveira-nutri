@@ -17,6 +17,18 @@
   --portal-text: #203028;
   --portal-text-muted: var(--muted, #55665b);
   --portal-border: var(--line, #dfe6df);
+  animation: portalPageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes portalPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── CABEÇALHO DO PORTAL ── */
@@ -1335,31 +1347,79 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   width: min(440px, 100%);
   padding: 38px 36px 32px;
   text-align: center;
-  background: rgba(255, 255, 255, .88);
+  background: rgba(255, 255, 255, .92);
   border: 1px solid rgba(188, 207, 193, .72);
   border-radius: 28px;
-  box-shadow: 0 24px 70px rgba(24, 59, 43, .11);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  box-shadow: 0 24px 70px rgba(24, 59, 43, .13), 0 4px 20px rgba(24, 59, 43, .04);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  animation: portalCardEnter .55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes portalCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .portal-loading-visual {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   margin: 0 auto 20px;
   display: grid;
   place-items: center;
 }
 
+.portal-loading-aura {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(47, 115, 82, 0.18) 0%, rgba(47, 115, 82, 0) 70%);
+  animation: portalAuraPulse 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.portal-loading-aura.ring-1 {
+  animation-delay: 0s;
+}
+
+.portal-loading-aura.ring-2 {
+  animation-delay: 0.9s;
+}
+
+.portal-loading-aura.ring-3 {
+  animation-delay: 1.8s;
+}
+
+@keyframes portalAuraPulse {
+  0% {
+    transform: scale(0.65);
+    opacity: 0.85;
+  }
+  60% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
 .portal-loading-spinner {
   position: absolute;
-  inset: 4px;
-  border: 3px solid #dce9df;
+  inset: 8px;
+  border: 2.5px solid rgba(220, 233, 223, 0.65);
   border-top-color: #2f7352;
   border-right-color: #8fac96;
   border-radius: 50%;
-  animation: portalLoaderSpin .9s linear infinite;
+  animation: portalLoaderSpin 1.1s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+  box-shadow: 0 0 12px rgba(47, 115, 82, 0.12);
 }
 
 .portal-loading-brand {
@@ -1375,18 +1435,22 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
 }
 
 .portal-loading-visual .portal-loading-brand {
-  width: 38px;
-  height: 38px;
+  position: relative;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
   margin: 0;
   border-radius: 50%;
-  box-shadow: none;
+  box-shadow: 0 4px 16px rgba(24, 59, 43, .22);
+  transition: transform .3s ease;
 }
 
-.portal-loading-brand svg { width: 20px; height: 20px; }
+.portal-loading-brand svg { width: 22px; height: 22px; }
+
 .portal-loading-eyebrow {
   display: block;
   margin-bottom: 8px;
-  color: #688071;
+  color: #537560;
   font-size: .7rem;
   font-weight: 800;
   letter-spacing: .14em;
@@ -1409,9 +1473,39 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   line-height: 1.6;
 }
 
+.portal-loading-progress-track {
+  width: 100%;
+  max-width: 220px;
+  height: 4px;
+  margin: 18px auto 0;
+  background: rgba(220, 233, 223, 0.55);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.portal-loading-progress-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, #2f7352, #5fa47e, transparent);
+  border-radius: 999px;
+  animation: portalProgressIndeterminate 1.6s ease-in-out infinite;
+}
+
+@keyframes portalProgressIndeterminate {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 110%;
+  }
+}
+
 .portal-loading-card small {
   display: block;
-  margin-top: 20px;
+  margin-top: 18px;
   color: #7b8c82;
   font-size: .7rem;
   line-height: 1.5;
@@ -1445,8 +1539,13 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .portal-loading-card,
+  .portal-loading-aura,
+  .portal-loading-progress-bar,
   .portal-loading-spinner {
-    animation: none;
+    animation: none !important;
+  }
+  .portal-loading-spinner {
     border-color: #c9dacf;
     border-top-color: #2f7352;
   }
