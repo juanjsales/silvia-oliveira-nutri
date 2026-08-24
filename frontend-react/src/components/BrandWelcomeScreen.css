@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   BRAND WELCOME SCREEN — EXPERIÊNCIA DE BOAS-VINDAS LUXURY HEALTH
+   BRAND WELCOME SCREEN — EXPERIÊNCIA DE BOAS-VINDAS SERENA & LUMICOSA
    ═══════════════════════════════════════════════════════════════ */
 
 .brand-welcome-backdrop {
@@ -9,19 +9,19 @@
   display: grid;
   place-items: center;
   padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
-  background: #0f271c;
-  background: radial-gradient(circle at 50% 35%, #183f2e 0%, #0d2118 70%, #06130d 100%);
-  color: #ffffff;
+  background: #fbfdfb;
+  background: radial-gradient(circle at 50% 38%, #ffffff 0%, #f4f8f5 55%, #e9f2ec 100%);
+  color: #183b2b;
   overflow: hidden;
   opacity: 1;
   transform: scale(1);
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
 }
 
 .brand-welcome-backdrop.brand-welcome-fading {
   opacity: 0;
-  transform: scale(1.03);
+  transform: scale(1.02);
   pointer-events: none;
 }
 
@@ -29,10 +29,10 @@
   position: absolute;
   inset: 0;
   background-image: 
-    radial-gradient(circle at 20% 20%, rgba(215, 195, 142, 0.12) 0%, transparent 40%),
-    radial-gradient(circle at 80% 80%, rgba(82, 183, 136, 0.14) 0%, transparent 45%);
+    radial-gradient(circle at 25% 25%, rgba(215, 195, 142, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 75% 75%, rgba(138, 196, 160, 0.2) 0%, transparent 50%);
   pointer-events: none;
-  filter: blur(40px);
+  filter: blur(50px);
 }
 
 .brand-welcome-card {
@@ -56,75 +56,75 @@
 }
 
 .brand-welcome-actions .primary-button {
-  background: #d7c38e;
-  color: #0f271c;
+  background: #245e3f;
+  color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 4px 20px rgba(215, 195, 142, 0.25);
+  box-shadow: 0 4px 18px rgba(36, 94, 63, 0.2);
 }
 
 .brand-welcome-actions .secondary-button {
-  background: rgba(255, 255, 255, 0.08);
-  color: #dce8dc;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #ffffff;
+  color: #4b6656;
+  border: 1px solid #d3e2d7;
 }
 
-/* ── ORB CENTRAL RESPIRANDO ── */
+/* ── ORB ZEN CENTRAL RESPIRANDO ── */
 .brand-welcome-orb {
   position: relative;
-  width: 88px;
-  height: 88px;
+  width: 92px;
+  height: 92px;
   display: grid;
   place-items: center;
   margin-bottom: 24px;
 }
 
 .brand-orb-core {
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
-  border: 1px solid rgba(215, 195, 142, 0.4);
-  box-shadow: 0 0 32px rgba(82, 183, 136, 0.28), 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(135deg, #ffffff 0%, #edf5f0 100%);
+  border: 1.5px solid rgba(206, 183, 126, 0.6);
+  box-shadow: 0 10px 30px rgba(32, 77, 53, 0.08), 0 0 24px rgba(116, 198, 157, 0.22);
   display: grid;
   place-items: center;
-  color: #d7c38e;
+  color: #245e3f;
   z-index: 3;
-  animation: orbPulse 3.5s ease-in-out infinite;
+  animation: orbPulse 3.8s ease-in-out infinite;
 }
 
 .brand-leaf-icon {
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(36, 94, 63, 0.15));
 }
 
 .brand-orb-ring {
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(215, 195, 142, 0.25);
+  border: 1px solid rgba(206, 183, 126, 0.4);
   pointer-events: none;
 }
 
 .brand-orb-ring.ring-1 {
-  width: 78px;
-  height: 78px;
-  animation: ringBreathe1 3.5s ease-in-out infinite;
+  width: 82px;
+  height: 82px;
+  animation: ringBreathe1 3.8s ease-in-out infinite;
 }
 
 .brand-orb-ring.ring-2 {
-  width: 96px;
-  height: 96px;
-  border-color: rgba(82, 183, 136, 0.2);
-  animation: ringBreathe2 3.5s ease-in-out infinite;
+  width: 100px;
+  height: 100px;
+  border-color: rgba(116, 198, 157, 0.35);
+  animation: ringBreathe2 3.8s ease-in-out infinite;
 }
 
 .brand-sparkle-dot {
   position: absolute;
-  color: #d7c38e;
+  color: #c9a44c;
   z-index: 4;
   animation: sparkleTwinkle 2.4s ease-in-out infinite;
 }
 
 .brand-sparkle-dot.top-right {
-  top: 0;
+  top: -2px;
   right: 6px;
 }
 
@@ -135,54 +135,33 @@
   gap: 6px;
   padding: 5px 14px;
   border-radius: 999px;
-  background: rgba(215, 195, 142, 0.12);
-  border: 1px solid rgba(215, 195, 142, 0.3);
-  color: #e8d7ad;
+  background: #edf5f0;
+  border: 1px solid #d4e5da;
+  color: #21593c;
   font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(33, 89, 60, 0.04);
 }
 
 .brand-welcome-title {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-size: clamp(1.65rem, 4vw, 2.2rem);
   font-weight: 700;
-  color: #ffffff;
+  color: #173b2b;
   margin: 0 0 8px;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
 
 .brand-welcome-sub {
-  font-size: 0.88rem;
-  color: #b7cebf;
-  margin: 0 0 28px;
+  font-size: 0.9rem;
+  color: #5c7769;
+  margin: 0 0 26px;
   line-height: 1.5;
-  max-width: 380px;
-}
-
-/* ── BARRA DE PROGRESSO FLUIDA ── */
-.brand-welcome-bar-wrap {
-  width: 200px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 24px;
-}
-
-.brand-welcome-bar-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 50%;
-  background: linear-gradient(90deg, #52b788, #d7c38e, #74c69d);
-  border-radius: 999px;
-  animation: fluidBarSlide 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  max-width: 390px;
 }
 
 /* ── RODAPÉ ── */
@@ -190,65 +169,34 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #8da696;
-  font-size: 0.74rem;
+  color: #7b9687;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
-/* ── KEYFRAMES ── */
-@keyframes welcomeFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes welcomeCardFloat {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
+/* ── KEYFRAMES SUAVES DE RESPIRAÇÃO ── */
 @keyframes orbPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 28px rgba(82, 183, 136, 0.28), 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(32, 77, 53, 0.08), 0 0 24px rgba(116, 198, 157, 0.2);
   }
   50% {
     transform: scale(1.05);
-    box-shadow: 0 0 42px rgba(215, 195, 142, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 14px 38px rgba(32, 77, 53, 0.12), 0 0 36px rgba(206, 183, 126, 0.3);
   }
 }
 
 @keyframes ringBreathe1 {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
-  50% { transform: scale(1.12) rotate(90deg); opacity: 0.85; }
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.45; }
+  50% { transform: scale(1.1) rotate(60deg); opacity: 0.85; }
 }
 
 @keyframes ringBreathe2 {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
-  50% { transform: scale(1.18) rotate(-90deg); opacity: 0.65; }
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.25; }
+  50% { transform: scale(1.15) rotate(-60deg); opacity: 0.65; }
 }
 
 @keyframes sparkleTwinkle {
-  0%, 100% { transform: scale(0.8) rotate(0deg); opacity: 0.4; }
-  50% { transform: scale(1.2) rotate(15deg); opacity: 1; filter: drop-shadow(0 0 6px #d7c38e); }
-}
-
-@keyframes fluidBarSlide {
-  0% {
-    left: -50%;
-    width: 30%;
-  }
-  50% {
-    left: 25%;
-    width: 60%;
-  }
-  100% {
-    left: 100%;
-    width: 30%;
-  }
+  0%, 100% { transform: scale(0.85); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 5px rgba(201, 164, 76, 0.6)); }
 }

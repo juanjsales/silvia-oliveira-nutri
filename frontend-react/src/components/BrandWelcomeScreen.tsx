@@ -57,12 +57,6 @@ export function BrandWelcomeScreen({
           <p className="brand-welcome-sub">{displaySubtitle}</p>
         </div>
 
-        {!error && (
-          <div className="brand-welcome-bar-wrap" aria-hidden="true">
-            <div className="brand-welcome-bar-fill" />
-          </div>
-        )}
-
         {(onRetry || onExit) && (
           <div className="brand-welcome-actions">
             {onRetry && (
