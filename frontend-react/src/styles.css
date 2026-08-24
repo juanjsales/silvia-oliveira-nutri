@@ -2798,12 +2798,12 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  background: linear-gradient(135deg, #183b2b, #2b5a42);
+  background: linear-gradient(135deg, #173b2b 0%, #24543c 100%);
   color: #ffffff;
   padding: 16px 22px;
   border-radius: 16px;
   margin: 18px 0;
-  box-shadow: 0 10px 25px rgba(24, 59, 43, 0.22);
+  box-shadow: 0 12px 30px rgba(24, 59, 43, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.15);
   animation: fadeInDown 0.3s ease;
 }
@@ -2860,11 +2860,15 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 }
 @media (max-width: 768px) {
   .portal-active-teleconsult-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    padding: 18px;
+    gap: 14px;
   }
+  .active-teleconsult-info { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .active-teleconsult-info strong { font-size: 1rem; line-height: 1.35; }
+  .active-teleconsult-info p { font-size: .8rem; line-height: 1.5; }
   .join-live-btn {
     width: 100%;
     justify-content: center;
@@ -3335,22 +3339,33 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 .video-broadcast-bar {
   background: #152b20;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 14px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  box-sizing: border-box;
+  overflow: hidden;
   animation: fadeInDown 0.2s ease;
 }
 .broadcast-bar-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 7px;
+  min-width: 0;
+  min-height: 25px;
 }
 .broadcast-tag {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.72rem;
   font-weight: 700;
   color: #7ee0a4;
@@ -3366,6 +3381,12 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   border-radius: 6px;
   font-size: 0.67rem;
   font-weight: 700;
+  min-width: 0;
+  max-width: 42%;
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .broadcast-toggle-collapse {
   background: transparent;
@@ -3375,6 +3396,9 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   cursor: pointer;
   padding: 2px 5px;
   border-radius: 4px;
+  flex: 0 0 auto;
+  min-height: 28px;
+  white-space: nowrap;
 }
 .broadcast-toggle-collapse:hover {
   color: #ffffff;
@@ -3427,15 +3451,17 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   font-weight: 700;
 }
 .broadcast-live-banner span { color: inherit !important; }
-.broadcast-library-guide { display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0; }
-.broadcast-guide-steps { display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none; }
+.broadcast-library-guide { display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;min-width:0;height:34px; }
+.broadcast-guide-steps { display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;scrollbar-width:none; }
 .broadcast-guide-steps span { display:inline-flex;align-items:center;gap:5px;color:#bcd0c1;font-size:.65rem;white-space:nowrap; }
-.broadcast-guide-steps b { width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:rgba(126,224,164,.14);color:#7ee0a4;font-size:.61rem; }
-.broadcast-library-btn { flex:0 0 auto;background:#7ee0a4;color:#0c2015;border-color:#7ee0a4;font-weight:800; }
+.broadcast-guide-steps b { flex:0 0 19px;width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:rgba(126,224,164,.14);color:#7ee0a4;font-size:.61rem; }
+.broadcast-library-btn { flex:0 0 auto;min-height:32px;max-height:32px;background:#7ee0a4;color:#0c2015;border-color:#7ee0a4;font-weight:800; }
 .broadcast-library-btn:hover { background:#9aebba;color:#08170f; }
 .appointment-discard-btn { margin-right:auto; }
 @media(max-width:700px){.broadcast-library-guide{align-items:center;flex-direction:row}.broadcast-guide-steps span{font-size:0}.broadcast-guide-steps span b{font-size:.61rem}.broadcast-library-btn{width:auto}.appointment-discard-btn{margin-right:0}}
 @container (max-width:520px){.broadcast-library-guide{align-items:center;flex-direction:row}.broadcast-guide-steps span{font-size:0}.broadcast-guide-steps span b{font-size:.61rem}.broadcast-library-btn{width:auto;padding-inline:10px}.broadcast-library-btn{font-size:.68rem}}
+@container (max-width:700px){.broadcast-guide-steps span{font-size:0}.broadcast-guide-steps span b{font-size:.61rem}.broadcast-live-notice{display:none}}
+@container (max-width:390px){.broadcast-library-guide{grid-template-columns:1fr}.broadcast-guide-steps{display:none}.broadcast-library-btn{width:100%;justify-content:center}.broadcast-tag{font-size:.66rem}.broadcast-toggle-collapse{font-size:.63rem}}
 
 /* Live Clinical Cards for Patient */
 .live-clinical-card {
@@ -5364,6 +5390,7 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 }
 
 .toast-banner {
+  position: relative;
   pointer-events: auto;
   display: flex;
   align-items: flex-start;
@@ -5376,6 +5403,27 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   box-shadow: 0 16px 38px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12);
   animation: slideInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   transition: all 0.2s ease;
+}
+
+@media (max-width: 600px) {
+  .toast-portal-container {
+    top: max(12px, env(safe-area-inset-top));
+    right: 12px;
+    width: calc(100vw - 24px);
+    max-width: none;
+    gap: 8px;
+  }
+  .toast-banner {
+    gap: 10px;
+    padding: 12px;
+    border-radius: 14px;
+    box-shadow: 0 14px 34px rgba(7, 27, 17, .28), 0 0 0 1px rgba(255,255,255,.1);
+  }
+  .toast-icon-wrap { width: 34px; height: 34px; }
+  .toast-title { padding-right: 20px; font-size: .84rem; }
+  .toast-message { font-size: .75rem; line-height: 1.45; }
+  .toast-action-btn { min-height: 38px; margin-top: 9px; padding: 7px 12px; }
+  .toast-close-btn { position: absolute; top: 9px; right: 9px; }
 }
 
 .toast-banner:hover {

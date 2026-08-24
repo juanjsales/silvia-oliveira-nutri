@@ -30,6 +30,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useClinic } from '../contexts/ClinicContext';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { api } from '../lib/api';
 import { PwaInstallBanner } from '../components/PwaInstallBanner';
@@ -78,6 +79,7 @@ export function PatientPortalPage() {
   const knownNotificationIdsRef = useRef<Set<string> | null>(null);
   const loadSequenceRef = useRef(0);
   const { logout } = useAuth();
+  const clinic = useClinic();
   const { showToast, dismissToastByKey } = useToast();
   const navigate = useNavigate();
   const { activeCall, isCallActiveFor, restoreCall } = useTeleconsultation();
@@ -95,16 +97,10 @@ export function PatientPortalPage() {
           const currentCallId = activeEnc?.id || null;
           const alreadyInCurrentCall = isCallActiveFor(currentCallId, activeEnc?.appointmentId, activeEnc?.meetingUrl);
           if (alreadyInCurrentCall) dismissToastByKey('active-teleconsultation');
+          // Nesta página, o banner persistente da sala é a chamada principal.
+          // Não empilhe um toast com a mesma ação sobre o conteúdo do paciente.
           if (currentCallId && !alreadyInCurrentCall && currentCallId !== prevActiveCallRef.current) {
-            showToast({
-              key: 'active-teleconsultation',
-              title: '🎥 Teleconsulta Iniciada!',
-              message: 'Dra. Silvia iniciou o seu atendimento. Clique para entrar na sala.',
-              type: 'call',
-              actionLabel: 'Entrar na Sala',
-              onAction: () => navigate(activeEnc.meetingUrl || `/portal/video/${currentCallId}`),
-              duration: 12000,
-            });
+            dismissToastByKey('active-teleconsultation');
           }
           if (!currentCallId) dismissToastByKey('active-teleconsultation');
           prevActiveCallRef.current = currentCallId;
@@ -351,15 +347,15 @@ export function PatientPortalPage() {
         <aside className="portal-active-teleconsult-bar">
           <div className="active-teleconsult-info">
             <span className="teleconsult-live-pill">
-              <span className="live-dot" /> AO VIVO
+              <span className="live-dot" /> SALA ABERTA
             </span>
             <div>
-              <strong>Teleconsulta pronta para atendimento!</strong>
-              <p>Sua sala virtual com a nutricionista está disponível. Clique para entrar ou reconectar.</p>
+              <strong>Consulta online com {clinic.professionalName}</strong>
+              <p>A profissional já está na sala. Entre agora para iniciar ou retomar seu atendimento.</p>
             </div>
           </div>
           <Link to={activeTeleconsultation.meetingUrl} className="primary-button join-live-btn">
-            <Video size={16} /> Entrar na Sala
+            <Video size={16} /> Entrar na teleconsulta
           </Link>
         </aside>
       )}
@@ -370,8 +366,11 @@ export function PatientPortalPage() {
           <span className="hero-greeting-tag">
             <Sparkles size={13} /> {greeting}, {firstName}!
           </span>
-          <h1>Seu plano, diário e evolução em um só lugar.</h1>
-          <p>{data.patient.objective || 'Acompanhe suas metas e orientações nutricionais individualizadas.'}</p>
+          <span className="hero-care-provider">Acompanhamento com {clinic.professionalName}</span>
+          <h1>Seu cuidado, organizado em um só lugar.</h1>
+          <p>{data.patient.objective
+            ? `Objetivo em acompanhamento: ${data.patient.objective}`
+            : 'Acesse seu plano, registre sua rotina e acompanhe orientações e evolução clínica.'}</p>
         </div>
       </section>
 

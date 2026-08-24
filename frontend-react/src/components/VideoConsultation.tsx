@@ -206,13 +206,15 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
               type="button"
               className="broadcast-toggle-collapse"
               onClick={() => setShowBroadcastMenu(!showBroadcastMenu)}
+              aria-expanded={showBroadcastMenu}
+              aria-controls="patient-materials-guide"
             >
               {showBroadcastMenu ? 'Ocultar' : 'Mostrar opções'}
             </button>
           </div>
 
           {showBroadcastMenu && (
-            <div className="broadcast-library-guide">
+            <div className="broadcast-library-guide" id="patient-materials-guide">
               <div className="broadcast-guide-steps" aria-label="Como compartilhar uma lâmina">
                 <span><b>1</b> Abra a biblioteca</span>
                 <span><b>2</b> Escolha o conteúdo</span>

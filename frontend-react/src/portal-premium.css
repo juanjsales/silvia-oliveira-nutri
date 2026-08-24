@@ -170,6 +170,15 @@
   margin-bottom: 8px;
 }
 
+.hero-care-provider {
+  display: block;
+  margin: 0 0 7px;
+  color: #c5d8ca;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .025em;
+}
+
 .hero-left h1 {
   margin: 0 0 6px;
   font-size: 1.6rem;
@@ -1189,6 +1198,18 @@
   overflow-y: visible;
 }
 
+.balanced-plate-visual {
+  padding: clamp(12px, 2.5vw, 20px);
+  border: 1px solid #dce9df;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fbfdfb, #f1f7f2);
+  box-sizing: border-box;
+}
+
+.balanced-plate-disc {
+  flex: 0 0 auto;
+}
+
 @media (max-width: 640px) {
   .patient-portal-v2 .modal-backdrop {
     align-items: end;
@@ -1269,9 +1290,13 @@
     min-width: 0 !important;
   }
 
-  .lamina-visual-infographic [style*="grid-template-columns"] {
+  .lamina-visual-infographic [style*="grid-template-columns"]:not(.balanced-plate-disc) {
     grid-template-columns: 1fr !important;
   }
+
+  .balanced-plate-visual { padding: 10px; }
+  .balanced-plate-disc { max-width: min(320px, 100%) !important; }
+  .balanced-plate-disc small { display: none; }
 }
 
 body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
@@ -1577,4 +1602,219 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   .message-status { align-self: flex-start; }
   .portal-message-thread { min-height: 280px; max-height: 420px; }
   .portal-messages .portal-message-thread > article { max-width: 91%; }
+}
+
+/* Plano alimentar: leitura clínica clara, compacta e responsiva. */
+.portal-meal-plan-view {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+}
+
+.portal-plan-overview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+}
+
+.portal-plan-overview-main,
+.portal-plan-meal-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.portal-plan-icon,
+.portal-plan-meal-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: #176b46;
+  background: #eaf8ef;
+}
+
+.portal-plan-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+}
+
+.portal-plan-overview-main > div:last-child { min-width: 0; }
+.portal-plan-overview h2 { margin: 3px 0 6px; font-size: clamp(1.35rem, 2vw, 1.75rem); line-height: 1.15; }
+.portal-plan-overview p { max-width: 720px; margin: 0; color: var(--portal-text-muted); line-height: 1.55; }
+
+.portal-plan-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.portal-plan-meta span,
+.portal-plan-item-count {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid #dce7df;
+  border-radius: 999px;
+  background: #f6f8f6;
+  color: #53675b;
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.portal-plan-meta span { padding: 6px 9px; }
+.portal-plan-print { flex: 0 0 auto; justify-content: center; text-decoration: none; }
+.portal-plan-meals { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.portal-plan-meal-card { min-width: 0; padding: 20px; }
+
+.portal-plan-meal-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e8eee9;
+}
+
+.portal-plan-meal-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+
+.portal-plan-meal-heading h3 { margin: 0 0 5px; font-size: 1.08rem; line-height: 1.2; }
+.portal-plan-meal-heading small { display: flex; align-items: center; gap: 6px; color: #738278; font-size: .77rem; }
+.portal-plan-item-count { flex: 0 0 auto; padding: 7px 10px; }
+.portal-plan-food-list { display: flex; flex-direction: column; gap: 8px; padding-top: 15px; }
+
+.portal-plan-food-row {
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr) minmax(96px, auto);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #e6ece7;
+  border-radius: 13px;
+  background: #fbfcfb;
+}
+
+.portal-plan-food-row strong { min-width: 0; color: #26342d; font-size: .9rem; line-height: 1.35; overflow-wrap: anywhere; }
+.portal-plan-food-dot { width: 7px; height: 7px; border-radius: 50%; background: #25a863; box-shadow: 0 0 0 4px #e8f6ed; }
+
+.portal-plan-portion {
+  justify-self: end;
+  max-width: 180px;
+  padding: 6px 9px;
+  border-radius: 9px;
+  background: #eef3ef;
+  color: #465a4e;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: right;
+  overflow-wrap: break-word;
+}
+
+.portal-plan-meal-empty,
+.portal-plan-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: var(--portal-text-muted);
+  text-align: center;
+}
+
+.portal-plan-meal-empty { min-height: 76px; }
+.portal-plan-empty { flex-direction: column; min-height: 220px; padding: 34px; }
+.portal-plan-empty strong { color: var(--portal-primary); }
+.portal-plan-empty p { margin: 0; }
+
+.portal-plan-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-left: 3px solid #c9a966;
+  border-radius: 4px 12px 12px 4px;
+  background: #fbf7ec;
+  color: #56645b;
+  font-size: .8rem;
+  line-height: 1.5;
+}
+
+.portal-plan-note svg { flex: 0 0 auto; margin-top: 2px; color: #8a6b2c; }
+.portal-plan-note span { display: flex; flex-direction: column; gap: 2px; }
+.portal-plan-note strong { color: #614d27; }
+.portal-plan-substitutions { margin-top: 10px; }
+
+.portal-plan-substitution-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 10px;
+  color: #176b46;
+  background: #edf7f0;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.portal-plan-substitution-list { display: grid; gap: 8px; margin-top: 9px; }
+.portal-plan-substitution-list > div { display: grid; gap: 3px; padding: 11px 13px; border: 1px solid #dce9df; border-radius: 11px; background: #f7faf8; }
+.portal-plan-substitution-list strong { font-size: .78rem; color: #294637; }
+.portal-plan-substitution-list span { color: #617267; font-size: .76rem; line-height: 1.45; }
+
+.portal-plan-guidance { padding: 22px 24px; }
+.portal-plan-guidance header { display: flex; align-items: flex-start; gap: 11px; }
+.portal-plan-guidance header svg { flex: 0 0 auto; color: #a47d2e; }
+.portal-plan-guidance h3 { margin: 0 0 3px; font-size: 1.05rem; }
+.portal-plan-guidance header p { margin: 0; color: var(--portal-text-muted); font-size: .78rem; }
+.portal-plan-guidance ul { display: grid; gap: 8px; margin: 16px 0 0; padding-left: 20px; color: #44564b; font-size: .84rem; line-height: 1.55; }
+
+@media (max-width: 640px) {
+  .portal-meal-plan-view { gap: 12px; }
+  .portal-plan-overview { align-items: stretch; flex-direction: column; gap: 18px; padding: 18px; }
+  .portal-plan-overview-main { gap: 11px; }
+  .portal-plan-icon { width: 42px; height: 42px; border-radius: 13px; }
+  .portal-plan-overview h2 { font-size: 1.28rem; }
+  .portal-plan-print { width: 100%; }
+  .portal-plan-meals { gap: 12px; }
+  .portal-plan-meal-card { padding: 16px; border-radius: 20px; }
+  .portal-plan-meal-card > header { align-items: flex-start; gap: 10px; padding-bottom: 13px; }
+  .portal-plan-meal-heading { gap: 10px; }
+  .portal-plan-meal-icon { width: 36px; height: 36px; }
+  .portal-plan-meal-heading h3 { font-size: 1rem; }
+  .portal-plan-item-count { padding: 6px 8px; font-size: .68rem; }
+  .portal-plan-food-list { gap: 7px; padding-top: 13px; }
+  .portal-plan-food-row { grid-template-columns: 7px minmax(0, 1fr) minmax(76px, auto); gap: 9px; padding: 11px 12px; }
+  .portal-plan-food-row strong { font-size: .84rem; }
+  .portal-plan-portion { max-width: 132px; padding: 5px 8px; font-size: .73rem; }
+  .portal-plan-guidance { padding: 18px; }
+}
+
+@media (max-width: 390px) {
+  .portal-plan-meal-card > header { flex-wrap: wrap; }
+  .portal-plan-food-row { grid-template-columns: 7px minmax(0, 1fr); }
+  .portal-plan-portion { grid-column: 2; justify-self: start; max-width: 100%; text-align: left; }
+}
+
+@media print {
+  .portal-plan-print,
+  .portal-plan-substitution-toggle { display: none !important; }
+  .portal-plan-meal-card,
+  .portal-plan-guidance { break-inside: avoid; box-shadow: none !important; }
 }

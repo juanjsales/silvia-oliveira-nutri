@@ -9,12 +9,14 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
+import { useClinic } from '../contexts/ClinicContext';
 import { LaminasModal } from './LaminasModal';
 import { api } from '../lib/api';
 import { useConfirm } from './ConfirmDialog';
 
 export function FloatingCallWidget() {
   const confirm = useConfirm();
+  const clinic = useClinic();
   const { activeCall, isMinimized, restoreCall, endCall } = useTeleconsultation();
   const [elapsed, setElapsed] = useState('00:00');
   const [reconnecting, setReconnecting] = useState(false);
@@ -217,7 +219,7 @@ export function FloatingCallWidget() {
           <div className="pip-title" onClick={() => { if (!dragRef.current?.moved) restoreCall(); }} title="Arraste para mover ou clique para voltar à consulta">
             <span className="live-dot" />
             <div className="pip-info">
-              <strong>{activeCall.role === 'ADMIN' ? activeCall.patientName : 'Dra. Silvia Oliveira'}</strong>
+              <strong>{activeCall.role === 'ADMIN' ? activeCall.patientName : clinic.professionalName}</strong>
               <small>Teleconsulta ativa · {elapsed}</small>
             </div>
           </div>

@@ -1,9 +1,6 @@
 import {
   ArrowRightLeft,
-  CheckCircle2,
   Clock,
-  Download,
-  Flame,
   Info,
   Printer,
   Salad,
@@ -48,6 +45,13 @@ type Plan = {
   publishedAt?: string;
 };
 
+const sentenceCase = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  const normalized = trimmed === trimmed.toLocaleUpperCase('pt-BR') ? trimmed.toLocaleLowerCase('pt-BR') : trimmed;
+  return normalized.charAt(0).toLocaleUpperCase('pt-BR') + normalized.slice(1);
+};
+
 export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
   const [selectedSubMeal, setSelectedSubMeal] = useState<number | null>(null);
 
@@ -65,67 +69,71 @@ export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
   const orientations = plan.content.orientations || plan.content.orientacoes || [];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      {/* CABEÇALHO DO PLANO */}
-      <section className="panel" style={{ padding: 24, borderRadius: 20 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
+    <div className="portal-meal-plan-view">
+      <section className="panel portal-plan-overview">
+        <div className="portal-plan-overview-main">
+          <span className="portal-plan-icon"><Salad size={21} /></span>
           <div>
-            <span className="eyebrow">Plano Alimentar Ativo</span>
-            <h2 style={{ margin: "4px 0 6px", fontSize: "1.4rem", color: "#1e293b" }}>{plan.title || "Estratégia Nutricional Personalizada"}</h2>
-            <p style={{ margin: 0, color: "#64748b", fontSize: "0.85rem" }}>
+            <span className="eyebrow">Plano alimentar vigente</span>
+            <h2>{sentenceCase(plan.title || "Estratégia nutricional personalizada")}</h2>
+            <p>
               {plan.objective || "Siga as orientações e horários sugeridos para atingir suas metas de saúde."}
             </p>
+            <div className="portal-plan-meta">
+              <span>{meals.length} {meals.length === 1 ? 'refeição planejada' : 'refeições planejadas'}</span>
+              {plan.content.targetKcal ? <span>Referência: {plan.content.targetKcal} kcal/dia</span> : null}
+              {plan.publishedAt ? <span>Atualizado em {new Date(plan.publishedAt).toLocaleDateString('pt-BR')}</span> : null}
+            </div>
           </div>
-
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => window.print()}
-            style={{ fontSize: "0.8rem", padding: "8px 16px" }}
-          >
-            <Printer size={15} /> Imprimir / Salvar PDF
-          </button>
         </div>
+          {plan.id ? (
+            <a
+              className="secondary-button portal-plan-print"
+              href={`/portal/plano/${plan.id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Printer size={16} /> Abrir versão para impressão
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="secondary-button portal-plan-print"
+              onClick={() => window.print()}
+            >
+              <Printer size={16} /> Imprimir ou salvar em PDF
+            </button>
+          )}
       </section>
 
-      {/* LISTA DE REFEIÇÕES EM CARDS ELEGANTES */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <section className="portal-plan-meals" aria-label="Refeições do plano alimentar">
         {meals.map((meal: any, index: number) => {
-          const mealName = meal.title || meal.titulo || meal.name || meal.nome || `Refeição ${index + 1}`;
+          const mealName = sentenceCase(meal.title || meal.titulo || meal.name || meal.nome || `Refeição ${index + 1}`);
           const mealTime = meal.time || meal.horario;
           const items = meal.items || meal.alimentosList || meal.foods || [];
           const notes = meal.notes || meal.obs || meal.observacoes;
+          const hasSubstitutions = items.some((item: MealItem) => (item.substitutions || item.substituicoes || []).length > 0);
+          const substitutionsOpen = selectedSubMeal === index;
 
           return (
-            <article
-              key={index}
-              className="panel"
-              style={{
-                borderRadius: 18,
-                padding: 22,
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, borderBottom: "1px solid #f1f5f9", paddingBottom: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 10, background: "#f0fdf4", color: "#166534", display: "grid", placeItems: "center" }}>
+            <article key={index} className="panel portal-plan-meal-card">
+              <header>
+                <div className="portal-plan-meal-heading">
+                  <div className="portal-plan-meal-icon">
                     <Utensils size={17} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: "1.05rem", color: "#1e293b" }}>{mealName}</h3>
-                    {mealTime && <small style={{ color: "#64748b", fontSize: "0.74rem" }}>⏰ Horário sugerido: {mealTime}</small>}
+                    <h3>{mealName}</h3>
+                    {mealTime && <small><Clock size={14} /> Horário sugerido: {mealTime}</small>}
                   </div>
                 </div>
-
-                <span style={{ fontSize: "0.72rem", fontWeight: 700, background: "#f8fafc", color: "#475569", padding: "3px 8px", borderRadius: 6, border: "1px solid #e2e8f0" }}>
+                <span className="portal-plan-item-count">
                   {items.length} {items.length === 1 ? "item" : "itens"}
                 </span>
-              </div>
+              </header>
 
-              {/* LISTA DE ALIMENTOS */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {items.map((it: any, itIdx: number) => {
+              <div className="portal-plan-food-list">
+                {items.length ? items.map((it: any, itIdx: number) => {
                   const name = it.name || it.nome;
                   let portion = it.amountText || "";
                   if (!portion) {
@@ -135,54 +143,45 @@ export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
                   }
 
                   return (
-                    <div
-                      key={itIdx}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        padding: "9px 12px",
-                        background: "#fbfcfb",
-                        border: "1px solid #f1f5f9",
-                        borderRadius: 10,
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16a34a" }} />
-                        <strong style={{ color: "#1e293b" }}>{name}</strong>
-                      </div>
-
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        {portion && (
-                          <span style={{ color: "#475569", fontWeight: 600, fontSize: "0.8rem", background: "#f1f5f9", padding: "2px 8px", borderRadius: 6 }}>
-                            {portion}
-                          </span>
-                        )}
-                      </div>
+                    <div key={itIdx} className="portal-plan-food-row">
+                      <span className="portal-plan-food-dot" aria-hidden="true" />
+                      <strong>{name || 'Alimento não informado'}</strong>
+                      {portion && <span className="portal-plan-portion">{portion}</span>}
                     </div>
                   );
-                })}
+                }) : <div className="portal-plan-meal-empty"><Info size={18} /><span>Nenhum alimento informado nesta refeição.</span></div>}
               </div>
 
               {notes && (
-                <div style={{ marginTop: 12, padding: "8px 12px", background: "#fefce8", border: "1px solid #fef08a", borderRadius: 8, fontSize: "0.78rem", color: "#854d0e" }}>
-                  💡 <strong>Observação:</strong> {notes}
+                <div className="portal-plan-note">
+                  <Info size={16} /><span><strong>Orientação para esta refeição</strong>{notes}</span>
+                </div>
+              )}
+
+              {hasSubstitutions && (
+                <div className="portal-plan-substitutions">
+                  <button type="button" className="portal-plan-substitution-toggle" onClick={() => setSelectedSubMeal(substitutionsOpen ? null : index)} aria-expanded={substitutionsOpen}>
+                    <ArrowRightLeft size={16} /> {substitutionsOpen ? 'Ocultar substituições' : 'Ver opções de substituição'}
+                  </button>
+                  {substitutionsOpen && <div className="portal-plan-substitution-list">
+                    {items.map((item: MealItem, itemIndex: number) => {
+                      const options = item.substitutions || item.substituicoes || [];
+                      if (!options.length) return null;
+                      return <div key={itemIndex}><strong>{item.name || item.nome}</strong><span>{options.join(' · ')}</span></div>;
+                    })}
+                  </div>}
                 </div>
               )}
             </article>
           );
         })}
-      </div>
+        {!meals.length && <div className="panel portal-plan-empty"><Utensils size={28} /><strong>Plano sem refeições cadastradas</strong><p>Solicite à nutricionista a revisão do plano publicado.</p></div>}
+      </section>
 
-      {/* ORIENTAÇÕES GERAIS */}
       {orientations.length > 0 && (
-        <section className="panel" style={{ padding: 22, borderRadius: 18, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <Sparkles size={18} style={{ color: "#166534" }} />
-            <h3 style={{ margin: 0, fontSize: "1rem", color: "#166534" }}>Diretrizes & Recomendações Gerais</h3>
-          </div>
-          <ul style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 6, fontSize: "0.85rem", color: "#14532d" }}>
+        <section className="panel portal-plan-guidance">
+          <header><Sparkles size={19} /><div><h3>Orientações gerais</h3><p>Recomendações que complementam todas as refeições do plano.</p></div></header>
+          <ul>
             {orientations.map((ori, i) => (
               <li key={i}>{ori}</li>
             ))}
