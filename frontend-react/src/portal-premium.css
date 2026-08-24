@@ -1693,6 +1693,16 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   background: radial-gradient(circle at 50% 35%, #183f2e 0%, #0d2118 70%, #06130d 100%);
   overflow: hidden;
   box-sizing: border-box;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.portal-welcome-screen.portal-welcome-fading {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
 }
 
 .portal-welcome-ambient {

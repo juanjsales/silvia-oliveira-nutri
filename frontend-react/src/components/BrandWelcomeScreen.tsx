@@ -1,44 +1,82 @@
-import { Leaf, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlertTriangle, Leaf, LogOut, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 import './BrandWelcomeScreen.css';
 
-interface BrandWelcomeScreenProps {
+export interface BrandWelcomeScreenProps {
   title?: string;
   subtitle?: string;
   badge?: string;
+  fading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
+  onExit?: () => void;
 }
 
 export function BrandWelcomeScreen({
   title = 'Dra. Silvia Oliveira Lemos',
   subtitle = 'Nutrição Clínica & Esportiva · Saúde Integrativa',
   badge = 'Espaço de Cuidado & Bem-Estar',
+  fading = false,
+  error = false,
+  onRetry,
+  onExit,
 }: BrandWelcomeScreenProps) {
+  const displayTitle = error ? 'Não foi possível carregar as informações' : title;
+  const displaySubtitle = error ? 'Verifique sua conexão ou tente novamente.' : subtitle;
+
   return (
-    <div className="brand-welcome-backdrop" role="status" aria-live="polite">
+    <div
+      className={`brand-welcome-backdrop${error ? ' brand-welcome-error' : ''}${fading ? ' brand-welcome-fading' : ''}`}
+      role={error ? 'alert' : 'status'}
+      aria-live={error ? 'assertive' : 'polite'}
+    >
       <div className="brand-welcome-ambient" aria-hidden="true" />
-      
+
       <div className="brand-welcome-card">
         <div className="brand-welcome-orb" aria-hidden="true">
           <div className="brand-orb-ring ring-1" />
           <div className="brand-orb-ring ring-2" />
           <div className="brand-orb-core">
-            <Leaf size={28} className="brand-leaf-icon" />
+            {error ? (
+              <AlertTriangle size={28} className="brand-error-icon" />
+            ) : (
+              <Leaf size={28} className="brand-leaf-icon" />
+            )}
           </div>
-          <div className="brand-sparkle-dot top-right">
-            <Sparkles size={14} />
-          </div>
+          {!error && (
+            <div className="brand-sparkle-dot top-right">
+              <Sparkles size={14} />
+            </div>
+          )}
         </div>
 
         <div className="brand-welcome-text">
           <span className="brand-welcome-pill">
-            <Sparkles size={12} /> {badge}
+            <Sparkles size={12} /> {error ? 'Acesso Seguro' : badge}
           </span>
-          <h1 className="brand-welcome-title">{title}</h1>
-          <p className="brand-welcome-sub">{subtitle}</p>
+          <h1 className="brand-welcome-title">{displayTitle}</h1>
+          <p className="brand-welcome-sub">{displaySubtitle}</p>
         </div>
 
-        <div className="brand-welcome-bar-wrap" aria-hidden="true">
-          <div className="brand-welcome-bar-fill" />
-        </div>
+        {!error && (
+          <div className="brand-welcome-bar-wrap" aria-hidden="true">
+            <div className="brand-welcome-bar-fill" />
+          </div>
+        )}
+
+        {(onRetry || onExit) && (
+          <div className="brand-welcome-actions">
+            {onRetry && (
+              <button type="button" className="primary-button" onClick={onRetry}>
+                <RefreshCw size={16} /> Tentar novamente
+              </button>
+            )}
+            {onExit && (
+              <button type="button" className="secondary-button" onClick={onExit}>
+                <LogOut size={16} /> Sair com segurança
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="brand-welcome-footer">
           <ShieldCheck size={14} />

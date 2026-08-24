@@ -70,6 +70,8 @@ export function PatientPortalPage() {
   const [tab, setTab] = useState<Tab>('inicio');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [welcomeVisible, setWelcomeVisible] = useState(true);
+  const [welcomeFading, setWelcomeFading] = useState(false);
   const [loadingStage, setLoadingStage] = useState<'initial' | 'delayed' | 'recovery'>('initial');
   const [loadingAttempt, setLoadingAttempt] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -246,6 +248,21 @@ export function PatientPortalPage() {
     return data?.activeConsultation || null;
   }, [data?.activeConsultation]);
 
+  useEffect(() => {
+    if (data && welcomeVisible) {
+      const fadeTimer = setTimeout(() => {
+        setWelcomeFading(true);
+      }, 400);
+      const hideTimer = setTimeout(() => {
+        setWelcomeVisible(false);
+      }, 950);
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [data, welcomeVisible]);
+
   if (error && !data)
     return <PortalLoadingScreen error message="Não conseguimos carregar suas informações agora. Seus dados permanecem protegidos." onRetry={retryInitialLoad} onExit={() => void exit()} />;
 
@@ -264,7 +281,14 @@ export function PatientPortalPage() {
   const firstName = data.patient.name.split(' ')[0];
 
   return (
-    <main className="patient-portal-v2">
+    <>
+      {welcomeVisible && (
+        <PortalLoadingScreen
+          fading={welcomeFading}
+          message="Seu plano e orientações foram carregados com sucesso."
+        />
+      )}
+      <main className="patient-portal-v2">
       {/* ── CABEÇALHO TIMBRADO OFICIAL DO PORTAL ── */}
       <header className="portal-header-v2">
         <div className="portal-brand-v2">
@@ -401,6 +425,7 @@ export function PatientPortalPage() {
         addQuickWater={addQuickWater}
       />
     </main>
+    </>
   );
 }
 
