@@ -41,6 +41,7 @@ import { PortalWaterTracker } from '../components/portal/PortalWaterTracker';
 import { PortalCurrentMealCard } from '../components/portal/PortalCurrentMealCard';
 import { PortalMealPlanView } from '../components/portal/PortalMealPlanView';
 import { PortalLaminasView } from '../components/portal/PortalLaminasView';
+import { PortalOnboardingGuide } from '../components/portal/PortalOnboardingGuide';
 import { useToast } from '../components/ToastNotification';
 import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
 import { formatAppointmentSchedule } from '../lib/formatters';
@@ -250,7 +251,7 @@ export function PatientPortalPage() {
 
   if (!data)
     return <PortalLoadingScreen
-      message={loadingStage === 'initial' ? 'Estamos organizando suas informações com segurança.' : loadingStage === 'delayed' ? 'Isso está levando um pouco mais de tempo. Continuamos tentando conectar com segurança.' : 'A conexão está demorando mais que o esperado. Você pode tentar novamente ou sair com segurança.'}
+      message={loadingStage === 'initial' ? 'Preparando seu plano alimentar e suas orientações com todo o cuidado.' : loadingStage === 'delayed' ? 'Isso está levando um pouco mais de tempo. Continuamos conectando com segurança.' : 'A conexão está demorando mais que o esperado. Você pode tentar novamente ou sair com segurança.'}
       onRetry={loadingStage === 'recovery' ? retryInitialLoad : undefined}
       onExit={loadingStage === 'recovery' ? () => void exit() : undefined}
     />;
@@ -472,11 +473,29 @@ function PortalHome({
     [data.activeConsultation.id, data.activeConsultation.appointmentId].filter(Boolean).includes(nextAppointment.id),
   );
 
+  const isNewPatient = !latestPlan || data.appointments?.length === 0;
+  const hasAppointment = Boolean(nextAppointment || data.appointments?.some((a: Any) => a.status === 'COMPLETED' || a.status === 'CONFIRMED' || a.status === 'WAITING'));
+  const hasExams = Boolean(data.exams?.length > 0);
+  const hasPlan = Boolean(latestPlan && latestPlan.status === 'PUBLISHED');
+  const hasCheckin = Boolean(data.checkins?.length > 0);
+
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayDiary = data.diary?.find((d: Any) => String(d.entryDate).slice(0, 10) === todayStr);
 
   return (
     <div className="portal-today-dashboard">
+      {/* ── GUIA DE PRIMEIROS PASSOS PARA PACIENTE EM INÍCIO DE JORNADA ── */}
+      {!hasPlan && (
+        <PortalOnboardingGuide
+          onNavigateTab={setTab}
+          hasAppointment={hasAppointment}
+          hasCheckin={hasCheckin}
+          hasExams={hasExams}
+          hasPlan={hasPlan}
+          professionalName={data.settings?.professionalName}
+        />
+      )}
+
       {pendingConfirmation && pendingConfirmation.id !== nextAppointment?.id && (
         <section className="portal-confirmation-prompt" aria-labelledby="pending-confirmation-title">
           <span className="confirmation-prompt-icon"><CheckCircle2 size={20} /></span>

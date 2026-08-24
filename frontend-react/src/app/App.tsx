@@ -8,6 +8,7 @@ import { ToastProvider } from '../components/ToastNotification';
 import { FloatingCallWidget } from '../components/FloatingCallWidget';
 import { ConfirmProvider } from '../components/ConfirmDialog';
 import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
+import { PatientPortalPage } from '../pages/PatientPortalPage';
 
 const ClinicalOverviewPage = lazy(() => import('../pages/ClinicalOverviewPage').then(module => ({ default: module.ClinicalOverviewPage })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
@@ -28,7 +29,6 @@ const PatientAppointmentsPage = lazy(() => import('../pages/PatientAppointmentsP
 const PatientDocumentPage = lazy(() => import('../pages/PatientDocumentPage').then(module => ({ default: module.PatientDocumentPage })));
 const PatientExamsPage = lazy(() => import('../pages/PatientExamsPage').then(module => ({ default: module.PatientExamsPage })));
 const PatientPlanPage = lazy(() => import('../pages/PatientPlanPage').then(module => ({ default: module.PatientPlanPage })));
-const PatientPortalPage = lazy(() => import('../pages/PatientPortalPage').then(module => ({ default: module.PatientPortalPage })));
 const PatientVideoPage = lazy(() => import('../pages/PatientVideoPage').then(module => ({ default: module.PatientVideoPage })));
 const PatientsPage = lazy(() => import('../pages/PatientsPage').then(module => ({ default: module.PatientsPage })));
 const PlanDocumentPage = lazy(() => import('../pages/PlanDocumentPage').then(module => ({ default: module.PlanDocumentPage })));
@@ -39,7 +39,7 @@ const SettingsPage = lazy(() => import('../pages/SettingsPage').then(module => (
 function RouteFallback() {
   const location = useLocation();
   if (location.pathname.startsWith('/portal')) {
-    return <PortalLoadingScreen message="Abrindo seu portal com segurança…" />;
+    return <PortalLoadingScreen />;
   }
   return <div className="route-loading" role="status" aria-live="polite">Carregando página...</div>;
 }

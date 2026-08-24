@@ -17,17 +17,15 @@
   --portal-text: #203028;
   --portal-text-muted: var(--muted, #55665b);
   --portal-border: var(--line, #dfe6df);
-  animation: portalPageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: portalPageEnter 0.35s ease-out both;
 }
 
 @keyframes portalPageEnter {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -244,17 +242,21 @@
 /* ── NAVEGAÇÃO INFERIOR FIXA NO MOBILE (BOTTOM NAV BAR) ── */
 .portal-bottom-nav {
   display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  border-top: 1px solid #e2e8f0;
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-  z-index: 99;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.94);
+  border-top: 1px solid rgba(210, 226, 215, 0.85);
+  padding: 6px 10px calc(8px + env(safe-area-inset-bottom));
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(24, 59, 43, 0.08);
   justify-content: space-around;
   align-items: center;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-sizing: border-box;
 }
 
 .bottom-nav-item {
@@ -290,6 +292,267 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+/* ── GUIA DE PRIMEIROS PASSOS (ONBOARDING DO NOVO PACIENTE) ── */
+.portal-onboarding-card {
+  background: #ffffff;
+  border: 1.5px solid #c8dfd0;
+  border-radius: 22px;
+  padding: 24px 26px;
+  box-shadow: 0 4px 24px rgba(24, 59, 43, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.onboarding-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e7eee9;
+}
+
+.onboarding-head-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 620px;
+}
+
+.onboarding-icon-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #eef6f1;
+  color: #266545;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.onboarding-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.onboarding-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: #e4f2e9;
+  color: #1f6440;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.onboarding-count-pill {
+  font-size: 0.74rem;
+  color: #557262;
+  font-weight: 600;
+}
+
+.onboarding-head-left h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #173b2b;
+  font-family: 'Playfair Display', serif;
+}
+
+.onboarding-head-left p {
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+  color: #5d7568;
+  line-height: 1.5;
+}
+
+.onboarding-progress-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.onboarding-progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #e6ede8;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.onboarding-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2f7352, #5fa47e);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.onboarding-progress-percent {
+  font-size: 0.74rem;
+  font-weight: 750;
+  color: #266545;
+}
+
+.onboarding-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onboarding-step-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: #f9fbf9;
+  border: 1px solid #e7eee9;
+  border-radius: 14px;
+  transition: all 0.18s ease;
+}
+
+.onboarding-step-row:hover {
+  background: #ffffff;
+  border-color: #cde2d4;
+  box-shadow: 0 4px 14px rgba(24, 59, 43, 0.04);
+}
+
+.onboarding-step-row.step-completed {
+  background: #f4faf6;
+  border-color: #d6e8dc;
+}
+
+.step-number-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e8efe9;
+  color: #3f5e4e;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.step-completed .step-number-box {
+  background: #e2f2e7;
+  color: #1e643f;
+}
+
+.step-check-icon {
+  color: #1e643f;
+}
+
+.step-content-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.step-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-type-icon {
+  color: #276545;
+  flex-shrink: 0;
+}
+
+.step-title-line strong {
+  font-size: 0.88rem;
+  color: #173b2b;
+}
+
+.step-completed .step-title-line strong {
+  color: #1a4f35;
+}
+
+.step-content-box p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #617769;
+  line-height: 1.4;
+}
+
+.step-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  min-height: 38px;
+}
+
+.step-action-btn.active-btn {
+  background: #173b2b;
+  color: #ffffff;
+  border: 0;
+  box-shadow: 0 2px 8px rgba(23, 59, 43, 0.15);
+}
+
+.step-action-btn.active-btn:hover {
+  background: #0f2c1f;
+  transform: translateY(-1px);
+}
+
+.step-action-btn.done-btn {
+  background: #eef6f1;
+  color: #246342;
+  border: 1px solid #cee4d5;
+}
+
+.step-action-btn.done-btn:hover {
+  background: #e1f0e6;
+}
+
+.step-pending-tag {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #7b8e82;
+  background: #eef2ef;
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .onboarding-step-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+  }
+  .step-action-box {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+  .step-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .onboarding-progress-indicator {
+    align-items: flex-start;
+    width: 100%;
+  }
 }
 
 .today-widgets-grid {
@@ -882,7 +1145,7 @@
 /* ── RESPONSIVIDADE MOBILE ── */
 @media (max-width: 768px) {
   .patient-portal-v2 {
-    padding-bottom: 90px;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
   }
   .portal-next-appointment-card,
   .appt-left-info,
@@ -899,7 +1162,11 @@
     display: none;
   }
   .portal-bottom-nav {
-    display: flex;
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
   }
   .today-widgets-grid {
     grid-template-columns: 1fr;

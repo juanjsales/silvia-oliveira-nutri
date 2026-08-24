@@ -164,6 +164,60 @@
     0 2px 5px rgba(24, 59, 43, .035),
     0 22px 64px rgba(24, 59, 43, .11);
   backdrop-filter: blur(10px);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease, border-color 0.45s ease, background 0.45s ease;
+}
+
+.login-page .login-card.morphing-to-portal {
+  border-color: #a8d5b8;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(220, 238, 226, 0.95) 0%, rgba(244, 248, 244, 0.7) 50%, rgba(235, 243, 237, 0.95) 100%),
+    linear-gradient(155deg, #f9fcf9 0%, #ecf5ee 50%, #e2efe5 100%);
+  box-shadow:
+    0 24px 70px rgba(24, 59, 43, 0.16),
+    0 0 40px rgba(47, 115, 82, 0.12);
+  transform: scale(1.02);
+  padding: 44px 36px;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.morph-zen-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  animation: morphFadeIn 0.38s ease-out both;
+}
+
+@keyframes morphFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.morph-zen-stage h2 {
+  margin: 12px 0 4px;
+  color: #123022;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 4vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.morph-zen-stage p {
+  margin: 0;
+  color: #556c5e;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 .login-page .login-card > header .eyebrow {
