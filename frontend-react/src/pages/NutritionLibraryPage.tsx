@@ -145,43 +145,57 @@ export function NutritionLibraryPage() {
 
   return (
     <div>
-      <div className="page-intro">
+      <div className="page-intro-v2">
         <div>
-          <h2>Planos & Biblioteca Nutricional</h2>
+          <span className="eyebrow">Catálogo & Modelos</span>
+          <h2>Planos e Receitas</h2>
           <p>Pesquise alimentos TACO, reutilize receitas e transforme modelos em planos individualizados.</p>
         </div>
-        <button className="primary-button" onClick={() => setTab('templates')}>
+        <button type="button" className="primary-button" onClick={() => setTab('templates')}>
           <FilePlus2 size={18} /> Criar plano
         </button>
       </div>
 
-      <nav className="library-tabs" aria-label="Abas da biblioteca nutricional">
-        {tabs.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            type="button"
-            className={tab === key ? 'active' : ''}
-            onClick={() => {
-              setTab(key);
-              setQuery('');
-            }}
-          >
-            <Icon size={17} />
-            {label}
-          </button>
-        ))}
-      </nav>
+      <div className="library-toolbar">
+        <nav className="library-tabs" aria-label="Abas da biblioteca nutricional">
+          {tabs.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              type="button"
+              className={tab === key ? 'active' : ''}
+              onClick={() => {
+                setTab(key);
+                setQuery('');
+              }}
+            >
+              <Icon size={17} />
+              {label}
+            </button>
+          ))}
+        </nav>
 
-      {(tab === 'foods' || tab === 'recipes') && (
-        <label className="search-field library-search">
-          <Search size={18} />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={tab === 'foods' ? 'Buscar arroz, frango, banana...' : 'Buscar receita ou ingrediente...'}
-          />
-        </label>
-      )}
+        {(tab === 'foods' || tab === 'recipes') && (
+          <div className="search-box-wrap">
+            <Search size={18} className="search-icon" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={tab === 'foods' ? 'Buscar alimentos TACO (ex: arroz, frango, aveia)...' : 'Buscar receita ou ingrediente...'}
+            />
+            {query && (
+              <button
+                type="button"
+                className="clear-search-btn"
+                onClick={() => setQuery('')}
+                title="Limpar busca"
+              >
+                <X size={15} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {error && <div className="form-error">{error}</div>}
 
