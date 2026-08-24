@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { AppShell } from '../components/AppShell';
 import { RoleRoute } from '../components/RoleRoute';
@@ -54,18 +54,7 @@ export function App() {
         <Route path="/redefinir-senha" element={<PasswordResetPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<RoleRoute role="PATIENT" />}>
-            <Route
-              path="portal"
-              element={
-                <>
-                  <PatientPortalPage />
-                  <div className="portal-floating-actions">
-                    <Link to="/portal/consultas">Confirmar consultas</Link>
-                    <Link to="/portal/privacidade">Privacidade e meus dados</Link>
-                  </div>
-                </>
-              }
-            />
+            <Route path="portal" element={<PatientPortalPage />} />
             <Route path="portal/consultas" element={<PatientAppointmentsPage />} />
             <Route path="portal/privacidade" element={<PrivacyPage />} />
             <Route path="portal/alterar-senha" element={<PasswordChangePage />} />

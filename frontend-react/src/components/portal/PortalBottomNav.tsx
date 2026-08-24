@@ -8,12 +8,14 @@ import {
   Menu,
   MessageCircle,
   Salad,
+  ShieldCheck,
   ShoppingBasket,
   UserRound,
   Utensils,
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export type PortalTab =
   | "inicio"
@@ -163,6 +165,18 @@ export function PortalBottomNav({
                   <small>Guias práticos & infográficos</small>
                 </div>
               </button>
+
+              <Link
+                className="more-menu-btn"
+                to="/portal/privacidade"
+                onClick={() => setShowMoreModal(false)}
+              >
+                <ShieldCheck size={20} style={{ color: "#166534" }} />
+                <div>
+                  <strong>Privacidade e meus dados</strong>
+                  <small>Avisos, exportação e solicitações LGPD</small>
+                </div>
+              </Link>
 
               <button
                 type="button"

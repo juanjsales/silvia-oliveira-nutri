@@ -16,8 +16,10 @@ import {
   LineChart,
   LogOut,
   MessageCircle,
+  RefreshCw,
   Salad,
   Save,
+  ShieldCheck,
   ShoppingBasket,
   Sparkles,
   UserRound,
@@ -65,6 +67,8 @@ export function PatientPortalPage() {
   const [tab, setTab] = useState<Tab>('inicio');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [loadingStage, setLoadingStage] = useState<'initial' | 'delayed' | 'recovery'>('initial');
+  const [loadingAttempt, setLoadingAttempt] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const [fontScale, setFontScale] = useState(() => Number(localStorage.getItem('portal-font-scale') || 1));
   const [contrast, setContrast] = useState(() => localStorage.getItem('portal-contrast') === 'true');
@@ -120,6 +124,7 @@ export function PatientPortalPage() {
           }
           knownNotificationIdsRef.current = currentIds;
 
+          setError('');
           setData(res);
         })
         .catch((c) => { if (sequence === loadSequenceRef.current) setError(c instanceof Error ? c.message : 'Erro ao abrir portal.'); })
@@ -135,6 +140,16 @@ export function PatientPortalPage() {
     }, 4000);
     return () => window.clearInterval(interval);
   }, [load]);
+
+  useEffect(() => {
+    if (data || error) return;
+    const delayedTimer = window.setTimeout(() => setLoadingStage('delayed'), 7000);
+    const recoveryTimer = window.setTimeout(() => setLoadingStage('recovery'), 16000);
+    return () => {
+      window.clearTimeout(delayedTimer);
+      window.clearTimeout(recoveryTimer);
+    };
+  }, [data, error, loadingAttempt]);
 
   useEffect(() => {
     if (!activeCall) {
@@ -177,8 +192,15 @@ export function PatientPortalPage() {
   }, [notifOpen]);
 
   async function exit() {
-    await logout();
-    navigate('/login');
+    void logout();
+    navigate('/login', { replace: true });
+  }
+
+  function retryInitialLoad() {
+    setError('');
+    setLoadingStage('initial');
+    setLoadingAttempt((attempt) => attempt + 1);
+    void load();
   }
 
   async function submit(path: string, body: Any) {
@@ -228,17 +250,53 @@ export function PatientPortalPage() {
 
   if (error && !data)
     return (
-      <main className="patient-portal">
-        <div className="form-error">{error}</div>
+      <main className="portal-loading-screen portal-loading-screen-error">
+        <section className="portal-loading-card" role="alert" aria-labelledby="portal-load-error-title">
+          <div className="portal-loading-brand" aria-hidden="true"><AlertTriangle /></div>
+          <span className="portal-loading-eyebrow">Portal do paciente</span>
+          <h1 id="portal-load-error-title">Não foi possível abrir seu portal</h1>
+          <p>Não conseguimos carregar suas informações agora. Seus dados permanecem protegidos.</p>
+          <div className="portal-loading-actions">
+            <button type="button" className="primary-button" onClick={retryInitialLoad}>
+              <RefreshCw size={17} /> Tentar novamente
+            </button>
+            <button type="button" className="secondary-button" onClick={() => void exit()}>
+              <LogOut size={17} /> Sair com segurança
+            </button>
+          </div>
+          <small>Se o problema continuar, verifique sua conexão e tente novamente em alguns instantes.</small>
+        </section>
       </main>
     );
 
   if (!data)
     return (
-      <div className="page-loader">
-        <span className="spinner" />
-        <p>Preparando seu portal...</p>
-      </div>
+      <main className="portal-loading-screen">
+        <section className="portal-loading-card" role="status" aria-live="polite" aria-atomic="true">
+          <div className="portal-loading-visual" aria-hidden="true">
+            <span className="portal-loading-spinner" />
+            <span className="portal-loading-brand"><ShieldCheck /></span>
+          </div>
+          <span className="portal-loading-eyebrow">Ambiente seguro</span>
+          <h1>Preparando seu portal</h1>
+          <p>
+            {loadingStage === 'initial' && 'Estamos organizando suas informações com segurança.'}
+            {loadingStage === 'delayed' && 'Isso está levando um pouco mais de tempo. Continuamos tentando conectar com segurança.'}
+            {loadingStage === 'recovery' && 'A conexão está demorando mais que o esperado. Você pode tentar novamente ou sair com segurança.'}
+          </p>
+          {loadingStage === 'recovery' && (
+            <div className="portal-loading-actions">
+              <button type="button" className="primary-button" onClick={retryInitialLoad}>
+                <RefreshCw size={17} /> Tentar novamente
+              </button>
+              <button type="button" className="secondary-button" onClick={() => void exit()}>
+                <LogOut size={17} /> Sair com segurança
+              </button>
+            </div>
+          )}
+          <small>Nenhuma informação clínica é exibida até a validação do acesso.</small>
+        </section>
+      </main>
     );
 
   const unreadNotifs = data.notifications?.filter((n: Any) => n.status === 'ACTIVE' && !n.readAt && !isCallActiveFor(n.actionUrl)) || [];
@@ -444,44 +502,71 @@ function PortalHome({
   const unread = data.notifications.filter((n: Any) => !n.readAt);
   const activeGoals = data.goals.filter((g: Any) => g.status !== 'COMPLETED');
   const latestPlan = data.plans?.find((p: Any) => p.status === 'PUBLISHED') || data.plans?.[0] || null;
+  const nextAppointment = upcoming[0];
+  const pendingConfirmation = upcoming.find(
+    (appointment: Any) => appointment.patientResponse === 'PENDING' && ['CONFIRMED', 'WAITING'].includes(appointment.status),
+  );
+  const needsConfirmation = nextAppointment?.patientResponse === 'PENDING' && ['CONFIRMED', 'WAITING'].includes(nextAppointment.status);
+  const isLiveAppointment = Boolean(
+    nextAppointment &&
+    data.activeConsultation &&
+    [data.activeConsultation.id, data.activeConsultation.appointmentId].filter(Boolean).includes(nextAppointment.id),
+  );
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayDiary = data.diary?.find((d: Any) => String(d.entryDate).slice(0, 10) === todayStr);
 
   return (
     <div className="portal-today-dashboard">
+      {pendingConfirmation && pendingConfirmation.id !== nextAppointment?.id && (
+        <section className="portal-confirmation-prompt" aria-labelledby="pending-confirmation-title">
+          <span className="confirmation-prompt-icon"><CheckCircle2 size={21} /></span>
+          <span>
+            <strong id="pending-confirmation-title">Confirme sua próxima consulta pendente</strong>
+            <small>
+              {new Date(`${pendingConfirmation.appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
+              {' · '}{formatAppointmentSchedule(pendingConfirmation.appointmentTime, pendingConfirmation.durationMinutes)}
+            </small>
+          </span>
+          <Link className="appt-confirm-btn" to="/portal/consultas">Revisar e confirmar</Link>
+        </section>
+      )}
+
       {/* ── CARD DE PRÓXIMA CONSULTA COM AÇÃO IMEDIATA ── */}
-      {upcoming[0] ? (
-        <section className="portal-next-appointment-card">
+      {nextAppointment ? (
+        <section className={`portal-next-appointment-card ${needsConfirmation ? 'needs-confirmation' : ''}`}>
           <div className="appt-left-info">
             <div className="appt-icon-box">
               <CalendarDays size={24} />
             </div>
             <div className="appt-details">
-              <strong>{upcoming[0].appointmentType}</strong>
+              <strong>{nextAppointment.appointmentType}</strong>
               <span>
-                📅 {new Date(`${upcoming[0].appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} · {formatAppointmentSchedule(upcoming[0].appointmentTime, upcoming[0].durationMinutes)}
+                📅 {new Date(`${nextAppointment.appointmentDate}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} · {formatAppointmentSchedule(nextAppointment.appointmentTime, nextAppointment.durationMinutes)}
               </span>
-              <small>Duração: {upcoming[0].durationMinutes} minutos</small>
+              <small>{needsConfirmation ? 'Sua confirmação está pendente' : `Duração: ${nextAppointment.durationMinutes} minutos`}</small>
             </div>
           </div>
 
-          {isCallActiveFor(upcoming[0].id, upcoming[0].meetingUrl) ? (
+          {isCallActiveFor(nextAppointment.id, nextAppointment.meetingUrl) ? (
             <button type="button" className="appt-video-btn" onClick={restoreCall}>
               <Video size={17} /> Voltar à chamada
             </button>
-          ) : upcoming[0].meetingUrl ? (
-            <Link className="appt-video-btn" to={upcoming[0].meetingUrl}>
+          ) : isLiveAppointment && nextAppointment.meetingUrl ? (
+            <Link className="appt-video-btn" to={nextAppointment.meetingUrl}>
               <Video size={17} /> Entrar na Sala Virtual
             </Link>
+          ) : needsConfirmation ? (
+            <Link className="appt-confirm-btn" to="/portal/consultas">
+              <CheckCircle2 size={17} /> Confirmar presença
+            </Link>
           ) : (
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => setTab('checkin')}
-            >
-              <ClipboardList size={16} /> Preparar Consulta
-            </button>
+            <div className="appt-neutral-actions">
+              <Link className="secondary-button" to="/portal/consultas">Ver consultas</Link>
+              <button type="button" className="secondary-button" onClick={() => setTab('checkin')}>
+                <ClipboardList size={16} /> Preparar Consulta
+              </button>
+            </div>
           )}
         </section>
       ) : (
@@ -786,6 +871,14 @@ function Profile({ data, submit }: { data: Any; submit: any }) {
           <option value="BOTH">Ambos</option>
         </select>
       </label>
+      <aside className="portal-profile-privacy wide">
+        <span className="profile-privacy-icon"><ShieldCheck size={20} /></span>
+        <span>
+          <strong>Privacidade e seus dados</strong>
+          <small>Consulte o aviso, exporte seus dados ou acompanhe uma solicitação.</small>
+        </span>
+        <Link className="secondary-button" to="/portal/privacidade">Gerenciar</Link>
+      </aside>
     </Form>
   );
 }
