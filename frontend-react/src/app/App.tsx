@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { AppShell } from '../components/AppShell';
 import { RoleRoute } from '../components/RoleRoute';
@@ -7,6 +7,7 @@ import { TeleconsultationProvider } from '../contexts/TeleconsultationContext';
 import { ToastProvider } from '../components/ToastNotification';
 import { FloatingCallWidget } from '../components/FloatingCallWidget';
 import { ConfirmProvider } from '../components/ConfirmDialog';
+import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
 
 const ClinicalOverviewPage = lazy(() => import('../pages/ClinicalOverviewPage').then(module => ({ default: module.ClinicalOverviewPage })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
@@ -36,6 +37,10 @@ const PublicPrivacyPage = lazy(() => import('../pages/PublicPrivacyPage').then(m
 const SettingsPage = lazy(() => import('../pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
 
 function RouteFallback() {
+  const location = useLocation();
+  if (location.pathname.startsWith('/portal')) {
+    return <PortalLoadingScreen message="Abrindo seu portal com segurança…" />;
+  }
   return <div className="route-loading" role="status" aria-live="polite">Carregando página...</div>;
 }
 

@@ -16,7 +16,6 @@ import {
   LineChart,
   LogOut,
   MessageCircle,
-  RefreshCw,
   Salad,
   Save,
   ShieldCheck,
@@ -41,6 +40,7 @@ import { PortalCurrentMealCard } from '../components/portal/PortalCurrentMealCar
 import { PortalMealPlanView } from '../components/portal/PortalMealPlanView';
 import { PortalLaminasView } from '../components/portal/PortalLaminasView';
 import { useToast } from '../components/ToastNotification';
+import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
 import { formatAppointmentSchedule } from '../lib/formatters';
 import '../portal-premium.css';
 
@@ -249,55 +249,14 @@ export function PatientPortalPage() {
   }, [data?.activeConsultation]);
 
   if (error && !data)
-    return (
-      <main className="portal-loading-screen portal-loading-screen-error">
-        <section className="portal-loading-card" role="alert" aria-labelledby="portal-load-error-title">
-          <div className="portal-loading-brand" aria-hidden="true"><AlertTriangle /></div>
-          <span className="portal-loading-eyebrow">Portal do paciente</span>
-          <h1 id="portal-load-error-title">Não foi possível abrir seu portal</h1>
-          <p>Não conseguimos carregar suas informações agora. Seus dados permanecem protegidos.</p>
-          <div className="portal-loading-actions">
-            <button type="button" className="primary-button" onClick={retryInitialLoad}>
-              <RefreshCw size={17} /> Tentar novamente
-            </button>
-            <button type="button" className="secondary-button" onClick={() => void exit()}>
-              <LogOut size={17} /> Sair com segurança
-            </button>
-          </div>
-          <small>Se o problema continuar, verifique sua conexão e tente novamente em alguns instantes.</small>
-        </section>
-      </main>
-    );
+    return <PortalLoadingScreen error message="Não conseguimos carregar suas informações agora. Seus dados permanecem protegidos." onRetry={retryInitialLoad} onExit={() => void exit()} />;
 
   if (!data)
-    return (
-      <main className="portal-loading-screen">
-        <section className="portal-loading-card" role="status" aria-live="polite" aria-atomic="true">
-          <div className="portal-loading-visual" aria-hidden="true">
-            <span className="portal-loading-spinner" />
-            <span className="portal-loading-brand"><ShieldCheck /></span>
-          </div>
-          <span className="portal-loading-eyebrow">Ambiente seguro</span>
-          <h1>Preparando seu portal</h1>
-          <p>
-            {loadingStage === 'initial' && 'Estamos organizando suas informações com segurança.'}
-            {loadingStage === 'delayed' && 'Isso está levando um pouco mais de tempo. Continuamos tentando conectar com segurança.'}
-            {loadingStage === 'recovery' && 'A conexão está demorando mais que o esperado. Você pode tentar novamente ou sair com segurança.'}
-          </p>
-          {loadingStage === 'recovery' && (
-            <div className="portal-loading-actions">
-              <button type="button" className="primary-button" onClick={retryInitialLoad}>
-                <RefreshCw size={17} /> Tentar novamente
-              </button>
-              <button type="button" className="secondary-button" onClick={() => void exit()}>
-                <LogOut size={17} /> Sair com segurança
-              </button>
-            </div>
-          )}
-          <small>Nenhuma informação clínica é exibida até a validação do acesso.</small>
-        </section>
-      </main>
-    );
+    return <PortalLoadingScreen
+      message={loadingStage === 'initial' ? 'Estamos organizando suas informações com segurança.' : loadingStage === 'delayed' ? 'Isso está levando um pouco mais de tempo. Continuamos tentando conectar com segurança.' : 'A conexão está demorando mais que o esperado. Você pode tentar novamente ou sair com segurança.'}
+      onRetry={loadingStage === 'recovery' ? retryInitialLoad : undefined}
+      onExit={loadingStage === 'recovery' ? () => void exit() : undefined}
+    />;
 
   const unreadNotifs = data.notifications?.filter((n: Any) => n.status === 'ACTIVE' && !n.readAt && !isCallActiveFor(n.actionUrl)) || [];
   const currentTeleconsultationIsOpen = Boolean(activeCall && activeTeleconsultation && isCallActiveFor(activeTeleconsultation.id, activeTeleconsultation.appointmentId, activeTeleconsultation.meetingUrl));
