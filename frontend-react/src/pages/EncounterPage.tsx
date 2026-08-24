@@ -1333,15 +1333,23 @@ function EncounterHub({
                     </select>
 
                     <div className="appointment-actions">
-                      {item.patientResponse === 'RESCHEDULE_REQUESTED' && (
-                        <button
-                          type="button"
-                          className="secondary-button"
-                          onClick={() => showEditAppointment(item)}
-                        >
-                          Reagendar
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        className="icon-button"
+                        onClick={() => showEditAppointment(item)}
+                        title="Editar / Reagendar consulta"
+                      >
+                        <Edit3 size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-button danger-icon-button"
+                        onClick={() => void discardAppointment(item.id)}
+                        title="Excluir da agenda"
+                        style={{ color: '#dc2626' }}
+                      >
+                        <Trash2 size={15} />
+                      </button>
                       {item.whatsapp && (
                         <a
                           className="icon-button"
@@ -1533,6 +1541,22 @@ function EncounterHub({
                 </div>
 
                 <div className="encounter-hub-card-footer">
+                  <button
+                    type="button"
+                    className="encounter-hub-action-btn danger"
+                    onClick={() => void discardAppointment(app.id)}
+                    title="Excluir da agenda"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    className="encounter-hub-action-btn secondary"
+                    onClick={() => showEditAppointment(app)}
+                    title="Editar agendamento"
+                  >
+                    <Edit3 size={14} /> Editar
+                  </button>
                   <button
                     type="button"
                     className="encounter-hub-action-btn primary"
