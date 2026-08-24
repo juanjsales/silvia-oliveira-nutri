@@ -2197,7 +2197,23 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
 .portal-plan-meta span { padding: 6px 9px; }
 .portal-plan-print { flex: 0 0 auto; justify-content: center; text-decoration: none; }
 .portal-plan-meals { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.portal-plan-meal-card { min-width: 0; padding: 20px; }
+.portal-plan-meal-card {
+  min-width: 0;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #dfe7e1;
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft-xs);
+  transition: transform var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+              box-shadow var(--duration-fast, 220ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+              border-color var(--duration-fast, 220ms) var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.portal-plan-meal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-md);
+  border-color: #b9ccbe;
+}
 
 .portal-plan-meal-card > header {
   display: flex;
@@ -2212,6 +2228,11 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   width: 38px;
   height: 38px;
   border-radius: 12px;
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.portal-plan-meal-card:hover .portal-plan-meal-icon {
+  transform: scale(1.06);
 }
 
 .portal-plan-meal-heading h3 { margin: 0 0 5px; font-size: 1.08rem; line-height: 1.2; }
@@ -2229,6 +2250,17 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   border: 1px solid #e6ece7;
   border-radius: 13px;
   background: #fbfcfb;
+  transition: transform var(--duration-fast) var(--ease-spring),
+              background var(--duration-fast) var(--ease-soft),
+              border-color var(--duration-fast) var(--ease-soft),
+              box-shadow var(--duration-fast) var(--ease-spring);
+}
+
+.portal-plan-food-row:hover {
+  background: #ffffff;
+  border-color: #cce0d2;
+  transform: translateX(3px);
+  box-shadow: var(--shadow-soft-xs);
 }
 
 .portal-plan-food-row strong { min-width: 0; color: #26342d; font-size: .9rem; line-height: 1.35; overflow-wrap: anywhere; }
