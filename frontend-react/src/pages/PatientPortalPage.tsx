@@ -34,6 +34,7 @@ import { useClinic } from '../contexts/ClinicContext';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { api } from '../lib/api';
 import { PwaInstallBanner } from '../components/PwaInstallBanner';
+import { PortalPushBanner, PortalPushSettingToggle } from '../components/portal/PortalPushBanner';
 import { BodyEvolutionChart } from '../components/BodyEvolutionChart';
 import { ShoppingListSection } from '../components/ShoppingListModal';
 import { PortalBottomNav, type PortalTab } from '../components/portal/PortalBottomNav';
@@ -403,7 +404,8 @@ export function PatientPortalPage() {
         </section>
       )}
 
-      <PwaInstallBanner />
+      {tab === 'inicio' && <PwaInstallBanner />}
+      {tab === 'inicio' && <PortalPushBanner />}
 
       {/* ── BARRA DE NAVEGAÇÃO NATIVA (DESKTOP PILLS + MOBILE BOTTOM BAR) ── */}
       <PortalBottomNav
@@ -927,6 +929,9 @@ function Profile({ data, submit }: { data: Any; submit: any }) {
           </span>
           <Link className="secondary-button" to="/portal/privacidade">Gerenciar</Link>
         </aside>
+        <div className="wide" style={{ marginTop: 6 }}>
+          <PortalPushSettingToggle />
+        </div>
       </Form>
     </section>
   );

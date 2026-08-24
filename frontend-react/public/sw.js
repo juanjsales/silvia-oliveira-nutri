@@ -77,5 +77,69 @@ self.addEventListener('fetch', (event) => {
           headers: { 'Content-Type': 'text/plain; charset=utf-8' },
         });
       })
+// ── WEB PUSH NOTIFICATIONS ──
+self.addEventListener('push', (event) => {
+  let data = {
+    title: 'Consultório Dra. Silvia Oliveira',
+    body: 'Você possui uma nova notificação do consultório.',
+    icon: '/favicon.svg',
+    badge: '/favicon.svg',
+    url: '/portal',
+    tag: 'nutri-alert',
+  };
+
+  if (event.data) {
+    try {
+      const parsed = event.data.json();
+      data = { ...data, ...parsed };
+    } catch {
+      data.body = event.data.text() || data.body;
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: data.icon || '/favicon.svg',
+    badge: data.badge || '/favicon.svg',
+    tag: data.tag || 'nutri-alert',
+    renotify: true,
+    vibrate: [100, 50, 100],
+    data: {
+      url: data.url || (data.data && data.data.url) || '/portal',
+      dateOfArrival: Date.now(),
+    },
+    actions: [
+      {
+        action: 'open_url',
+        title: 'Abrir no Portal',
+      },
+    ],
+  };
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/portal';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Se já houver uma aba aberta, foca nela e navega
+      for (const client of windowClients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          if ('navigate' in client && targetUrl) {
+            client.navigate(targetUrl);
+          }
+          return client.focus();
+        }
+      }
+      // Se não houver aba aberta, abre uma nova janela
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
   );
 });
+

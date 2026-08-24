@@ -2619,3 +2619,182 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   .portal-plan-meal-card,
   .portal-plan-guidance { break-inside: avoid; box-shadow: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PORTAL WEB PUSH NOTIFICATIONS BANNER & SETTINGS
+   ═══════════════════════════════════════════════════════════════ */
+.portal-push-banner {
+  background: linear-gradient(135deg, #173b2b 0%, #204c38 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 18px 22px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: 0 8px 24px rgba(23, 59, 43, 0.15);
+  animation: calmFadeIn var(--duration-smooth, 450ms) var(--ease-soft) both;
+}
+
+.push-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 260px;
+}
+
+.push-banner-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #d1fae5;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.push-banner-text strong {
+  display: block;
+  font-size: 0.94rem;
+  font-weight: 750;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+
+.push-banner-text p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #d1e2d7;
+  line-height: 1.4;
+}
+
+.push-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.push-banner-btn-enable {
+  background: #ffffff;
+  color: #173b2b;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-height: 42px;
+}
+
+.push-banner-btn-enable:hover:not(:disabled) {
+  background: #f2f7f4;
+  transform: translateY(-1px);
+}
+
+.push-banner-btn-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #c0d4c7;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.push-banner-btn-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+/* Push Setting Card no Perfil */
+.push-setting-card {
+  background: #ffffff;
+  border: 1px solid #dfe7e1;
+  border-radius: 18px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: var(--shadow-soft-xs);
+  transition: all 0.2s ease;
+}
+
+.push-setting-card.active {
+  border-color: #bcd9c6;
+  background: linear-gradient(145deg, #ffffff 0%, #f7fbf8 100%);
+}
+
+.push-setting-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.push-setting-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #eef6f1;
+  color: #246342;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.push-setting-info strong {
+  display: block;
+  font-size: 0.88rem;
+  color: #173b2b;
+  margin-bottom: 2px;
+}
+
+.push-setting-info p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #637a6d;
+  line-height: 1.35;
+}
+
+.push-toggle-btn {
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 38px;
+  border: 1px solid transparent;
+}
+
+.push-toggle-btn.btn-enable {
+  background: #246342;
+  color: #ffffff;
+}
+
+.push-toggle-btn.btn-enable:hover:not(:disabled) {
+  background: #1b4d33;
+}
+
+.push-toggle-btn.btn-disable {
+  background: #f1f5f2;
+  color: #556c5e;
+  border-color: #dbe4dd;
+}
+
+.push-toggle-btn.btn-disable:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
