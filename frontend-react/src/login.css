@@ -167,21 +167,56 @@
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease, border-color 0.45s ease, background 0.45s ease;
 }
 
-.login-page .login-card.morphing-to-portal {
-  border-color: #a8d5b8;
-  background:
-    radial-gradient(circle at 50% 30%, rgba(220, 238, 226, 0.95) 0%, rgba(244, 248, 244, 0.7) 50%, rgba(235, 243, 237, 0.95) 100%),
-    linear-gradient(155deg, #f9fcf9 0%, #ecf5ee 50%, #e2efe5 100%);
-  box-shadow:
-    0 24px 70px rgba(24, 59, 43, 0.16),
-    0 0 40px rgba(47, 115, 82, 0.12);
-  transform: scale(1.02);
-  padding: 44px 36px;
-  min-height: 380px;
+/* ── TRANSIÇÃO EM TELA INTEIRA (MORPHING LOGIN -> BOAS-VINDAS) ── */
+.login-page.login-page-morphing {
+  position: relative;
+  overflow: hidden;
+}
+
+.login-page.login-page-morphing .login-story {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)), transform 0.6s var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.login-page.login-page-morphing .login-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: radial-gradient(circle at 50% 35%, #183f2e 0%, #0d2118 70%, #06130d 100%);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  animation: fullScreenMorph 0.55s var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+@keyframes fullScreenMorph {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.login-page.login-page-morphing .login-card.morphing-to-portal {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  max-width: 520px;
+  width: 100%;
+  padding: 0 !important;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  text-align: center;
 }
 
 .morph-zen-stage {
@@ -190,13 +225,13 @@
   align-items: center;
   text-align: center;
   width: 100%;
-  animation: morphFadeIn 0.38s ease-out both;
+  animation: morphFadeIn 0.45s var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
 }
 
 @keyframes morphFadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.97);
+    transform: translateY(14px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -204,20 +239,81 @@
   }
 }
 
-.morph-zen-stage h2 {
-  margin: 12px 0 4px;
-  color: #123022;
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.6rem, 4vw, 1.85rem);
+.login-page.login-page-morphing .morph-zen-stage h2 {
+  margin: 14px 0 6px;
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.8rem, 4vw, 2.25rem);
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
-.morph-zen-stage p {
-  margin: 0;
-  color: #556c5e;
-  font-size: 0.92rem;
-  line-height: 1.5;
+.login-page.login-page-morphing .morph-zen-stage p {
+  margin: 0 0 24px;
+  color: #b7cebf;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: 400px;
+}
+
+.login-page.login-page-morphing .portal-welcome-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(215, 195, 142, 0.14);
+  border: 1px solid rgba(215, 195, 142, 0.35);
+  color: #e8d7ad;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.login-page.login-page-morphing .portal-welcome-zen-orb {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+}
+
+.login-page.login-page-morphing .zen-center-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+  border: 1px solid rgba(215, 195, 142, 0.45);
+  box-shadow: 0 0 32px rgba(82, 183, 136, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: grid;
+  place-items: center;
+  color: #d7c38e;
+  z-index: 3;
+  animation: orbPulse 3.5s ease-in-out infinite;
+}
+
+.login-page.login-page-morphing .portal-welcome-progress {
+  width: 200px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.login-page.login-page-morphing .portal-welcome-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(90deg, #52b788, #d7c38e, #74c69d);
+  border-radius: 999px;
+  animation: fluidBarSlide 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
 .login-page .login-card > header .eyebrow {
