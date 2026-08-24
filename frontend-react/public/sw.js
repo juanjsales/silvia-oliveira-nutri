@@ -77,6 +77,9 @@ self.addEventListener('fetch', (event) => {
           headers: { 'Content-Type': 'text/plain; charset=utf-8' },
         });
       })
+  );
+});
+
 // ── WEB PUSH NOTIFICATIONS ──
 self.addEventListener('push', (event) => {
   let data = {

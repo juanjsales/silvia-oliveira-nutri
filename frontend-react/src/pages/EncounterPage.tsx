@@ -1090,6 +1090,61 @@ function EncounterHub({
         </div>
       </header>
 
+      {/* ── EXECUTIVE KPIS DO ATENDIMENTO ── */}
+      <div className="encounter-hub-kpis-grid">
+        <div className="encounter-kpi-card">
+          <div className="kpi-icon-box kpi-today">
+            <Calendar size={22} />
+          </div>
+          <div className="kpi-info">
+            <span className="kpi-num">{todayAppointments.length}</span>
+            <span className="kpi-title">Consultas Hoje</span>
+            <small className="kpi-subtext">
+              {todayAppointments.length > 0
+                ? `${todayAppointments.filter((a) => a.status === 'CONFIRMED' || a.status === 'WAITING').length} agendada(s)`
+                : 'Nenhuma consulta hoje'}
+            </small>
+          </div>
+        </div>
+
+        <div className="encounter-kpi-card">
+          <div className="kpi-icon-box kpi-video">
+            <Video size={22} />
+          </div>
+          <div className="kpi-info">
+            <span className="kpi-num">
+              {todayAppointments.filter(
+                (a) => a.type.toLowerCase().includes('online') || a.type.toLowerCase().includes('teleconsulta')
+              ).length}
+            </span>
+            <span className="kpi-title">Teleconsultas Hoje</span>
+            <small className="kpi-subtext">Salas por vídeo prontas</small>
+          </div>
+        </div>
+
+        <div className="encounter-kpi-card">
+          <div className="kpi-icon-box kpi-progress">
+            <Clock size={22} />
+          </div>
+          <div className="kpi-info">
+            <span className="kpi-num">{inProgressList.length}</span>
+            <span className="kpi-title">Em Andamento</span>
+            <small className="kpi-subtext">Prontuários / Rascunhos</small>
+          </div>
+        </div>
+
+        <div className="encounter-kpi-card">
+          <div className="kpi-icon-box kpi-completed">
+            <CheckCircle2 size={22} />
+          </div>
+          <div className="kpi-info">
+            <span className="kpi-num">{completedList.length}</span>
+            <span className="kpi-title">Finalizados</span>
+            <small className="kpi-subtext">Histórico completo</small>
+          </div>
+        </div>
+      </div>
+
       {error && <div className="form-error">{error}</div>}
       {notice && <div className="form-success">{notice}</div>}
 
