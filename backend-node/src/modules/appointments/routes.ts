@@ -203,11 +203,50 @@ export async function appointmentRoutes(app: FastifyInstance) {
 
   app.delete('/:id', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const linked = await app.db.query<{status:string}>(`SELECT status FROM clinical_encounters WHERE appointment_id=$1`,[id]);
-    if(linked.rows[0]) return reply.code(409).send({error:'Este agendamento possui prontuário vinculado e não pode ser descartado. Cancele ou finalize o atendimento correspondente.'});
-    const removed = await app.db.query<{patient_id:string}>(`DELETE FROM appointments WHERE id=$1 AND status IN ('CONFIRMED','WAITING','CANCELLED','NO_SHOW') RETURNING patient_id`,[id]);
-    if(!removed.rows[0]) return reply.code(409).send({error:'Agendamento em andamento ou concluído não pode ser descartado.'});
-    await audit(app.db,'APPOINTMENT_DISCARDED','appointment',{actorUserId:request.auth!.userId,entityId:id,metadata:{patientId:removed.rows[0].patient_id}});
-    return reply.code(204).send();
+    const client = await app.db.connect();
+    try {
+      await client.query('BEGIN');
+      const apptRes = await client.query<{id:string;patient_id:string;status:string}>(
+        `SELECT id, patient_id, status FROM appointments WHERE id=$1 FOR UPDATE`,
+        [id]
+      );
+      if (!apptRes.rows[0]) {
+        await client.query('ROLLBACK');
+        return reply.code(404).send({ error: 'Agendamento não encontrado.' });
+      }
+      const appt = apptRes.rows[0];
+
+      // Desvincula de atendimento/prontuário clínico com segurança (preserva o prontuário)
+      await client.query(`UPDATE clinical_encounters SET appointment_id = NULL WHERE appointment_id = $1`, [id]);
+
+      // Desvincula de check-ins pré-consulta
+      await client.query(`UPDATE preconsult_checkins SET appointment_id = NULL WHERE appointment_id = $1`, [id]);
+
+      // Remove cobranças financeiras não pagas e desvincula as pagas
+      await client.query(`DELETE FROM financial_transactions WHERE appointment_id = $1 AND status <> 'PAID'`, [id]);
+      await client.query(`UPDATE financial_transactions SET appointment_id = NULL WHERE appointment_id = $1`, [id]);
+
+      // Remove notificações e lembretes vinculados
+      await client.query(`DELETE FROM patient_notifications WHERE entity_id = $1 OR entity_id = 'appointment:'||$1`, [id]);
+      await client.query(`DELETE FROM appointment_reminders WHERE appointment_id = $1`, [id]);
+      await client.query(`DELETE FROM clinical_versions_email_outbox WHERE appointment_id = $1`, [id]);
+
+      // Remove o agendamento
+      await client.query(`DELETE FROM appointments WHERE id = $1`, [id]);
+
+      await audit(client, 'APPOINTMENT_DISCARDED', 'appointment', {
+        actorUserId: request.auth!.userId,
+        entityId: id,
+        metadata: { patientId: appt.patient_id, previousStatus: appt.status }
+      });
+
+      await client.query('COMMIT');
+      return reply.code(204).send();
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   });
 }
