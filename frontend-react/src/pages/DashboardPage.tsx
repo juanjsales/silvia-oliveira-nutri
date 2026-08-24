@@ -124,53 +124,53 @@ export function DashboardPage() {
           </article>
         </div>
       </section>
-      <section className="panel dashboard-shortcuts">
+      <section className="panel dashboard-shortcuts" aria-labelledby="shortcuts-heading">
         <div className="panel-heading">
           <div>
             <span className="eyebrow">Ações rápidas</span>
-            <h3>Acessos diretos</h3>
+            <h3 id="shortcuts-heading">Acessos diretos</h3>
           </div>
         </div>
-        <div className="shortcut-actions-grid">
-          <Link className="shortcut-card" to="/atendimentos">
-            <div className="shortcut-icon green">
+        <div className="shortcut-actions-grid" role="list">
+          <Link className="shortcut-card" to="/atendimentos" role="listitem" aria-label="Iniciar atendimento clínico">
+            <div className="shortcut-icon green" aria-hidden="true">
               <Stethoscope size={20} />
             </div>
             <div>
               <strong>Iniciar atendimento</strong>
               <small>Abrir prontuário e anamnese</small>
             </div>
-            <ArrowRight size={16} className="shortcut-arrow" />
+            <ArrowRight size={16} className="shortcut-arrow" aria-hidden="true" />
           </Link>
-          <Link className="shortcut-card" to="/agenda">
-            <div className="shortcut-icon gold">
+          <Link className="shortcut-card" to="/agenda" role="listitem" aria-label="Consultar agenda de consultas">
+            <div className="shortcut-icon gold" aria-hidden="true">
               <CalendarDays size={20} />
             </div>
             <div>
               <strong>Consultar agenda</strong>
               <small>Horários e marcações</small>
             </div>
-            <ArrowRight size={16} className="shortcut-arrow" />
+            <ArrowRight size={16} className="shortcut-arrow" aria-hidden="true" />
           </Link>
-          <Link className="shortcut-card" to="/pacientes">
-            <div className="shortcut-icon rose">
+          <Link className="shortcut-card" to="/pacientes" role="listitem" aria-label="Cadastrar novo paciente">
+            <div className="shortcut-icon rose" aria-hidden="true">
               <Users size={20} />
             </div>
             <div>
               <strong>Novo paciente</strong>
               <small>Cadastrar e gerenciar acessos</small>
             </div>
-            <ArrowRight size={16} className="shortcut-arrow" />
+            <ArrowRight size={16} className="shortcut-arrow" aria-hidden="true" />
           </Link>
-          <Link className="shortcut-card" to="/planos">
-            <div className="shortcut-icon green">
+          <Link className="shortcut-card" to="/planos" role="listitem" aria-label="Acessar catálogo de planos e receitas">
+            <div className="shortcut-icon green" aria-hidden="true">
               <Salad size={20} />
             </div>
             <div>
               <strong>Planos & Receitas</strong>
               <small>Tabela TACO e modelos</small>
             </div>
-            <ArrowRight size={16} className="shortcut-arrow" />
+            <ArrowRight size={16} className="shortcut-arrow" aria-hidden="true" />
           </Link>
         </div>
       </section>
