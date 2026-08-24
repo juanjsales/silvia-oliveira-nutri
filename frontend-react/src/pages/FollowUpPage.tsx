@@ -349,10 +349,14 @@ export function FollowUpPage() {
           </section>
 
           <div className="follow-up-grid">
-            <article className="panel">
-              <h2>
-                <BookOpen size={20} /> Diário Alimentar do Paciente
-              </h2>
+            <article className="panel follow-up-diary-panel">
+              <header className="follow-up-section-heading">
+                <span className="follow-up-section-icon"><BookOpen size={20} /></span>
+                <div>
+                  <h2>Diário alimentar do paciente</h2>
+                  <p>Registros recentes enviados pelo portal para apoiar a evolução clínica.</p>
+                </div>
+              </header>
               {data.diary.length ? (
                 <div className="diary-list">
                   {data.diary.map((d) => (
@@ -402,10 +406,14 @@ export function FollowUpPage() {
             </article>
 
             <div className="follow-up-side">
-              <article className="panel">
-                <h2>
-                  <Target size={20} /> Metas Terapêuticas
-                </h2>
+              <article className="panel follow-up-goals-panel">
+                <header className="follow-up-section-heading">
+                  <span className="follow-up-section-icon"><Target size={20} /></span>
+                  <div>
+                    <h2>Metas terapêuticas</h2>
+                    <p>Defina objetivos claros, mensuráveis e visíveis no portal.</p>
+                  </div>
+                </header>
                 <form className="compact-form" onSubmit={addGoal}>
                   <input name="title" required maxLength={160} placeholder="Nova meta (ex.: 2.5L de água por dia)" />
                   <textarea name="description" maxLength={1000} placeholder="Orientações e detalhes da meta (opcional)" />
@@ -418,11 +426,14 @@ export function FollowUpPage() {
                   </button>
                 </form>
                 <div className="simple-list">
-                  {data.goals
+                  {data.goals.filter((g) => g.status !== 'CANCELLED').length ? data.goals
                     .filter((g) => g.status !== 'CANCELLED')
                     .map((g) => (
                       <div key={g.id} className={`goal-card ${g.status.toLowerCase()}`}>
-                        <span>
+                        <span className="goal-card-content">
+                          <small className={`goal-state ${g.status.toLowerCase()}`}>
+                            {g.status === 'COMPLETED' ? 'Concluída' : 'Em acompanhamento'}
+                          </small>
                           <strong>{g.title}</strong>
                           {g.description && <small>{g.description}</small>}
                           {g.dueDate && <small>Prazo: {showDate(g.dueDate)}</small>}
@@ -433,14 +444,23 @@ export function FollowUpPage() {
                           <option value="CANCELLED">Cancelar</option>
                         </select>
                       </div>
-                    ))}
+                    )) : (
+                    <div className="follow-up-list-empty">
+                      <Target size={22} />
+                      <span><strong>Nenhuma meta ativa</strong><small>Crie uma meta para acompanhar o progresso do paciente.</small></span>
+                    </div>
+                  )}
                 </div>
               </article>
 
-              <article className="panel">
-                <h2>
-                  <Activity size={20} /> Evolução Corporal
-                </h2>
+              <article className="panel follow-up-measures-panel">
+                <header className="follow-up-section-heading">
+                  <span className="follow-up-section-icon"><Activity size={20} /></span>
+                  <div>
+                    <h2>Evolução corporal</h2>
+                    <p>Registre medidas antropométricas e controle a visibilidade no portal.</p>
+                  </div>
+                </header>
                 <form className="compact-form measure-form" onSubmit={addMeasure}>
                   <label>
                     Data da medição
@@ -459,7 +479,7 @@ export function FollowUpPage() {
                   </button>
                 </form>
                 <div className="simple-list">
-                  {data.measurements.map((m) => (
+                  {data.measurements.length ? data.measurements.map((m) => (
                     <div key={m.id}>
                       <span>
                         <strong>{showDate(m.measuredAt)}</strong>
@@ -478,7 +498,12 @@ export function FollowUpPage() {
                         {m.visibleToPatient ? 'Portal' : 'Privado'}
                       </small>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="follow-up-list-empty">
+                      <Activity size={22} />
+                      <span><strong>Nenhuma medição registrada</strong><small>As próximas medidas aparecerão neste histórico.</small></span>
+                    </div>
+                  )}
                 </div>
               </article>
             </div>
