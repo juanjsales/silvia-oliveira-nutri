@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { PortalLoadingScreen } from './PortalLoadingScreen';
+import { BrandWelcomeScreen } from './BrandWelcomeScreen';
 
 export function ProtectedRoute() {
   const { user, loading } = useAuth();
@@ -8,7 +9,7 @@ export function ProtectedRoute() {
   if (loading) {
     return location.pathname.startsWith('/portal')
       ? <PortalLoadingScreen />
-      : <div className="route-loading" role="status" aria-live="polite">Carregando página...</div>;
+      : <BrandWelcomeScreen />;
   }
   return user ? <Outlet /> : <Navigate to="/login" replace state={{ from: location.pathname }} />;
 }

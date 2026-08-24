@@ -8,7 +8,9 @@ import { ToastProvider } from '../components/ToastNotification';
 import { FloatingCallWidget } from '../components/FloatingCallWidget';
 import { ConfirmProvider } from '../components/ConfirmDialog';
 import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
+import { BrandWelcomeScreen } from '../components/BrandWelcomeScreen';
 import { PatientPortalPage } from '../pages/PatientPortalPage';
+import { HomePage } from '../pages/HomePage';
 
 const ClinicalOverviewPage = lazy(() => import('../pages/ClinicalOverviewPage').then(module => ({ default: module.ClinicalOverviewPage })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
@@ -16,7 +18,6 @@ const DocumentsPage = lazy(() => import('../pages/DocumentsPage').then(module =>
 const EncounterPage = lazy(() => import('../pages/EncounterPage').then(module => ({ default: module.EncounterPage })));
 const FinancePage = lazy(() => import('../pages/FinancePage').then(module => ({ default: module.FinancePage })));
 const FollowUpPage = lazy(() => import('../pages/FollowUpPage').then(module => ({ default: module.FollowUpPage })));
-const HomePage = lazy(() => import('../pages/HomePage').then(module => ({ default: module.HomePage })));
 const IssuedDocumentPage = lazy(() => import('../pages/IssuedDocumentPage').then(module => ({ default: module.IssuedDocumentPage })));
 const LoginPage = lazy(() => import('../pages/LoginPage').then(module => ({ default: module.LoginPage })));
 const MealPlanEditorPage = lazy(() => import('../pages/MealPlanEditorPage').then(module => ({ default: module.MealPlanEditorPage })));
@@ -41,7 +42,7 @@ function RouteFallback() {
   if (location.pathname.startsWith('/portal')) {
     return <PortalLoadingScreen />;
   }
-  return <div className="route-loading" role="status" aria-live="polite">Carregando página...</div>;
+  return <BrandWelcomeScreen />;
 }
 
 export function App() {
