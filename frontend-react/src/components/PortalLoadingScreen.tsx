@@ -1,4 +1,4 @@
-import { AlertTriangle, LogOut, RefreshCw, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Heart, LogOut, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 import '../portal-premium.css';
 
 type PortalLoadingScreenProps = {
@@ -9,46 +9,82 @@ type PortalLoadingScreenProps = {
 };
 
 export function PortalLoadingScreen({
-  message = 'Estamos organizando suas informações com segurança.',
+  message = 'Preparando seu plano alimentar e suas orientações com todo o cuidado.',
   error = false,
   onRetry,
   onExit,
 }: PortalLoadingScreenProps) {
-  const title = error ? 'Não foi possível abrir seu portal' : 'Preparando seu portal';
+  const title = error ? 'Não foi possível acessar seu portal' : 'Seja muito bem-vindo(a)';
 
   return (
-    <main className={`portal-loading-screen${error ? ' portal-loading-screen-error' : ''}`}>
+    <main className={`portal-welcome-screen${error ? ' portal-welcome-error' : ''}`}>
+      <div className="portal-welcome-ambient" aria-hidden="true" />
+      
       <section
-        className="portal-loading-card"
+        className="portal-welcome-content"
         role={error ? 'alert' : 'status'}
         aria-live={error ? 'assertive' : 'polite'}
         aria-atomic="true"
-        aria-labelledby="portal-loading-title"
+        aria-labelledby="portal-welcome-title"
       >
         {error ? (
-          <div className="portal-loading-brand" aria-hidden="true"><AlertTriangle /></div>
+          <div className="portal-welcome-emblem error-emblem" aria-hidden="true">
+            <AlertTriangle size={32} />
+          </div>
         ) : (
-          <div className="portal-loading-visual" aria-hidden="true">
-            <span className="portal-loading-aura" />
-            <span className="portal-loading-spinner" />
-            <span className="portal-loading-brand"><ShieldCheck /></span>
+          <div className="portal-welcome-zen-orb" aria-hidden="true">
+            <div className="zen-breathing-ring ring-outer" />
+            <div className="zen-breathing-ring ring-middle" />
+            <div className="zen-center-circle">
+              <Sparkles size={26} className="zen-icon" />
+            </div>
+            <div className="zen-orbital-spinner" />
           </div>
         )}
-        <span className="portal-loading-eyebrow">{error ? 'Acesso protegido' : 'Ambiente seguro'}</span>
-        <h1 id="portal-loading-title">{title}</h1>
-        <p>{message}</p>
+
+        <div className="portal-welcome-text-zone">
+          <span className="portal-welcome-tag">
+            {error ? (
+              <>Acesso Protegido</>
+            ) : (
+              <>
+                <Heart size={12} /> Espaço de Cuidado & Nutrição
+              </>
+            )}
+          </span>
+          <h1 id="portal-welcome-title">{title}</h1>
+          <p>{message}</p>
+        </div>
+
         {!error && (
-          <div className="portal-loading-progress-track" aria-hidden="true">
-            <div className="portal-loading-progress-bar" />
+          <div className="portal-welcome-progress" aria-hidden="true">
+            <div className="portal-welcome-progress-bar" />
           </div>
         )}
+
         {(onRetry || onExit) && (
-          <div className="portal-loading-actions">
-            {onRetry && <button type="button" className="primary-button" onClick={onRetry}><RefreshCw size={17} /> Tentar novamente</button>}
-            {onExit && <button type="button" className="secondary-button" onClick={onExit}><LogOut size={17} /> Sair com segurança</button>}
+          <div className="portal-welcome-actions">
+            {onRetry && (
+              <button type="button" className="primary-button" onClick={onRetry}>
+                <RefreshCw size={17} /> Tentar novamente
+              </button>
+            )}
+            {onExit && (
+              <button type="button" className="secondary-button" onClick={onExit}>
+                <LogOut size={17} /> Sair com segurança
+              </button>
+            )}
           </div>
         )}
-        <small>{error ? 'Se o problema continuar, verifique sua conexão e tente novamente em alguns instantes.' : 'Nenhuma informação clínica é exibida até a validação do acesso.'}</small>
+
+        <footer className="portal-welcome-footer">
+          <ShieldCheck size={14} />
+          <small>
+            {error
+              ? 'Seus dados permanecem seguros e protegidos.'
+              : 'Ambiente seguro e confidencial para o seu acompanhamento nutricional.'}
+          </small>
+        </footer>
       </section>
     </main>
   );
