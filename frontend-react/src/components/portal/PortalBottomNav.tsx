@@ -135,16 +135,22 @@ export function PortalBottomNav({
         </button>
       </nav>
 
-      {/* ── MODAL "MAIS OPÇÕES" NO MOBILE ── */}
+      {/* ── GAVETA INFERIOR "MAIS RECURSOS" (BOTTOM SHEET DRAWER) ── */}
       {showMoreModal && (
-        <div className="modal-backdrop" onClick={() => setShowMoreModal(false)}>
-          <div className="ios-pwa-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="ios-modal-header">
-              <h3 style={{ fontSize: "1.1rem" }}>Mais Recursos</h3>
+        <div className="portal-drawer-backdrop" onClick={() => setShowMoreModal(false)}>
+          <div className="portal-bottom-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-handle-bar" aria-hidden="true" />
+
+            <div className="drawer-header">
+              <div className="drawer-title-group">
+                <h3>Mais Recursos do Seu Acompanhamento</h3>
+                <p>Navegue por ferramentas, guias e documentos</p>
+              </div>
               <button
                 type="button"
-                className="icon-button"
+                className="drawer-close-btn"
                 onClick={() => setShowMoreModal(false)}
+                aria-label="Fechar gaveta"
               >
                 <X size={18} />
               </button>
@@ -174,7 +180,7 @@ export function PortalBottomNav({
                 <ShieldCheck size={20} style={{ color: "#166534" }} />
                 <div>
                   <strong>Privacidade e meus dados</strong>
-                  <small>Avisos, exportação e solicitações LGPD</small>
+                  <small>Avisos, exportação e LGPD</small>
                 </div>
               </Link>
 
@@ -203,8 +209,8 @@ export function PortalBottomNav({
               >
                 <CalendarDays size={20} style={{ color: "#2563eb" }} />
                 <div>
-                  <strong>Agenda</strong>
-                  <small>Consultas e retornos</small>
+                  <strong>Agenda & Consultas</strong>
+                  <small>Horários e retornos</small>
                 </div>
               </button>
 
@@ -248,8 +254,8 @@ export function PortalBottomNav({
               >
                 <Goal size={20} style={{ color: "#ea580c" }} />
                 <div>
-                  <strong>Metas</strong>
-                  <small>Objetivos terapêuticos</small>
+                  <strong>Metas Terapêuticas</strong>
+                  <small>Objetivos de saúde</small>
                 </div>
               </button>
 
@@ -280,7 +286,7 @@ export function PortalBottomNav({
                 <UserRound size={20} style={{ color: "#475569" }} />
                 <div>
                   <strong>Meu Perfil & Senha</strong>
-                  <small>Dados cadastrais e privacidade</small>
+                  <small>Dados cadastrais e segurança</small>
                 </div>
               </button>
             </div>
