@@ -29,9 +29,7 @@ export function PortalLoadingScreen({
           <div className="portal-loading-brand" aria-hidden="true"><AlertTriangle /></div>
         ) : (
           <div className="portal-loading-visual" aria-hidden="true">
-            <span className="portal-loading-aura ring-1" />
-            <span className="portal-loading-aura ring-2" />
-            <span className="portal-loading-aura ring-3" />
+            <span className="portal-loading-aura" />
             <span className="portal-loading-spinner" />
             <span className="portal-loading-brand"><ShieldCheck /></span>
           </div>
