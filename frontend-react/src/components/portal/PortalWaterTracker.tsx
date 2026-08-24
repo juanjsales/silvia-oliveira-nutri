@@ -30,27 +30,34 @@ export function PortalWaterTracker({
 
   return (
     <div className={`water-tracker-card ${isGoalReached ? 'water-goal-achieved' : ''}`}>
-      <div className="water-card-header">
-        <div className="water-card-title">
-          <div className="water-icon-badge">
-            <Droplets size={19} />
-          </div>
-          <div>
-            <strong>Meta de Hidratação</strong>
-            <small>Acompanhamento de consumo diário</small>
-          </div>
+      <div className="water-card-head">
+        <div className={`water-badge-time ${isGoalReached ? 'badge-achieved' : ''}`}>
+          {isGoalReached ? (
+            <>
+              <CheckCircle2 size={12} /> Meta Concluída ({percent}%)
+            </>
+          ) : (
+            <>
+              <Droplet size={12} /> Meta Diária · Hidratação
+            </>
+          )}
         </div>
-        {isGoalReached && (
-          <span className="water-success-pill">
-            <CheckCircle2 size={13} /> Concluída
-          </span>
-        )}
+
+        <div className="water-header-info">
+          <div className="water-title-row">
+            <div className="water-icon-pill">
+              <Droplets size={16} />
+            </div>
+            <h3>Consumo de Água</h3>
+          </div>
+          <p>Registre sua hidratação e acompanhe a meta do dia:</p>
+        </div>
       </div>
 
       <div className="water-ring-layout">
         {/* SVG CIRCULAR PROGRESS RING */}
         <div className="water-svg-ring">
-          <svg viewBox="0 0 100 100" width="100%" height="100%">
+          <svg viewBox="0 0 100 100" width="100%" height="100%" aria-label={`Progresso de água: ${percent}%`}>
             <defs>
               <linearGradient id="waterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#2f7352" />
@@ -62,8 +69,8 @@ export function PortalWaterTracker({
               cy="50"
               r="45"
               fill="none"
-              stroke="#e6ede8"
-              strokeWidth="7.5"
+              stroke="#e8efe9"
+              strokeWidth="7"
             />
             <circle
               cx="50"
@@ -71,12 +78,11 @@ export function PortalWaterTracker({
               r="45"
               fill="none"
               stroke="url(#waterGradient)"
-              strokeWidth="7.5"
+              strokeWidth="7"
               strokeDasharray="283"
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
               transform="rotate(-90 50 50)"
-              style={{ transition: "stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)" }}
             />
             <text
               x="50"
@@ -84,7 +90,7 @@ export function PortalWaterTracker({
               textAnchor="middle"
               fontSize="16"
               fontWeight="800"
-              fill="#1b3d2c"
+              fill="#183b2b"
             >
               {percent}%
             </text>
@@ -92,20 +98,23 @@ export function PortalWaterTracker({
         </div>
 
         <div className="water-ring-stats">
-          <span className="water-current-val">
-            {(currentLiters || 0).toFixed(2)} <small>L</small>
-          </span>
-          <span className="water-goal-val">
-            Meta diária: {goalLiters.toFixed(1)} L
-          </span>
+          <div className="water-values-row">
+            <span className="water-current-val">
+              {(currentLiters || 0).toFixed(2)} <small>L</small>
+            </span>
+            <span className="water-goal-tag">
+              Meta: {goalLiters.toFixed(1)} L
+            </span>
+          </div>
+
           <div className="water-status-label">
             {isGoalReached ? (
               <span className="water-status-complete">
-                <Sparkles size={12} /> Meta do dia alcançada!
+                <Sparkles size={13} /> Excelente! Meta diária atingida.
               </span>
             ) : (
               <span className="water-status-pending">
-                Faltam {Math.max(0, goalLiters - currentLiters).toFixed(2)} L
+                Faltam <strong>{Math.max(0, goalLiters - currentLiters).toFixed(2)} L</strong> para sua meta
               </span>
             )}
           </div>
