@@ -44,6 +44,8 @@ type Plan = {
 };
 
 type FoodCategory = "hortifruti" | "proteinas" | "laticinios" | "graos" | "outros";
+type ShoppingItem = { name: string; quantities: string[] };
+type ShoppingFilter = "ALL" | "PENDING" | "DONE";
 
 const categoryConfig: Record<
   FoodCategory,
@@ -177,21 +179,27 @@ function classifyFood(name: string): FoodCategory {
 export function ShoppingListSection({ plans }: { plans: Plan[] }) {
   const confirm = useConfirm();
   const activePlan = plans[0];
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
-    try {
-      return JSON.parse(localStorage.getItem("portal_shopping_checked") || "{}");
-    } catch {
-      return {};
-    }
-  });
+  const storageKey = `portal_shopping_checked:${activePlan?.id || "active"}`;
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [filter, setFilter] = useState<ShoppingFilter>("ALL");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey) || localStorage.getItem("portal_shopping_checked") || "{}";
+      setCheckedItems(JSON.parse(saved));
+    } catch {
+      setCheckedItems({});
+    }
+  }, [storageKey]);
 
   // Extrair todos os alimentos únicos do plano ativo
   const classifiedItems = useMemo(() => {
     if (!activePlan?.content) return { hortifruti: [], proteinas: [], laticinios: [], graos: [], outros: [] };
 
     const meals = activePlan.content.meals || activePlan.content.refeicoes || [];
-    const allItems: string[] = [];
+    const allItems = new Map<string, ShoppingItem>();
 
     meals.forEach((m) => {
       const list = m.items || m.alimentosList || [];
@@ -199,14 +207,17 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
         const raw = item.name || item.nome;
         if (raw && typeof raw === "string") {
           const cleanName = raw.trim();
-          if (cleanName && !allItems.includes(cleanName)) {
-            allItems.push(cleanName);
-          }
+          if (!cleanName) return;
+          const key = cleanName.toLocaleLowerCase("pt-BR");
+          const quantity = [item.amount || item.quantidade, item.unit || item.unidade].filter(Boolean).join(" ").trim();
+          const current = allItems.get(key) || { name: cleanName, quantities: [] };
+          if (quantity && !current.quantities.includes(quantity)) current.quantities.push(quantity);
+          allItems.set(key, current);
         }
       });
     });
 
-    const groups: Record<FoodCategory, string[]> = {
+    const groups: Record<FoodCategory, ShoppingItem[]> = {
       hortifruti: [],
       proteinas: [],
       laticinios: [],
@@ -215,9 +226,11 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
     };
 
     allItems.forEach((food) => {
-      const category = classifyFood(food);
+      const category = classifyFood(food.name);
       groups[category].push(food);
     });
+
+    Object.values(groups).forEach((items) => items.sort((a, b) => a.name.localeCompare(b.name, "pt-BR")));
 
     return groups;
   }, [activePlan]);
@@ -229,15 +242,16 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
   const checkedCount = useMemo(() => {
     return Object.values(classifiedItems)
       .flat()
-      .filter((item) => checkedItems[item]).length;
+      .filter((item) => checkedItems[item.name]).length;
   }, [classifiedItems, checkedItems]);
 
   const progressPercent = totalItemsCount > 0 ? Math.round((checkedCount / totalItemsCount) * 100) : 0;
+  const filteredItemsCount = filter === "ALL" ? totalItemsCount : filter === "DONE" ? checkedCount : totalItemsCount - checkedCount;
 
   function toggleItem(food: string) {
     setCheckedItems((prev) => {
       const next = { ...prev, [food]: !prev[food] };
-      localStorage.setItem("portal_shopping_checked", JSON.stringify(next));
+      localStorage.setItem(storageKey, JSON.stringify(next));
       return next;
     });
   }
@@ -245,7 +259,7 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
   async function resetList() {
     if (await confirm({title:"Limpar marcações?",message:"Todos os itens marcados na lista de compras voltarão ao estado inicial.",confirmLabel:"Limpar marcações",tone:"warning"})) {
       setCheckedItems({});
-      localStorage.removeItem("portal_shopping_checked");
+      localStorage.removeItem(storageKey);
     }
   }
 
@@ -256,8 +270,9 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
       if (items.length > 0) {
         text += `*${categoryConfig[cat].label.toUpperCase()}*\n`;
         items.forEach((item) => {
-          const isDone = checkedItems[item] ? "✅" : "▫️";
-          text += `${isDone} ${item}\n`;
+          const isDone = checkedItems[item.name] ? "✅" : "▫️";
+          const quantity = item.quantities.length ? ` — ${item.quantities.join(" + ")}` : "";
+          text += `${isDone} ${item.name}${quantity}\n`;
         });
         text += "\n";
       }
@@ -266,11 +281,27 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
     return text;
   }
 
-  function copyToClipboard() {
+  async function copyToClipboard() {
     const text = generateFormattedText();
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setFeedback("Lista copiada para a área de transferência.");
+      setTimeout(() => { setCopied(false); setFeedback(""); }, 3000);
+    } catch {
+      setFeedback("Não foi possível copiar. Use a opção Baixar lista.");
+    }
+  }
+
+  function downloadList() {
+    const blob = new Blob([generateFormattedText().replaceAll("*", "")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "lista-de-compras.txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+    setFeedback("Lista preparada para download.");
   }
 
   function shareToWhatsApp() {
@@ -296,8 +327,9 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
             <ShoppingBag size={20} />
           </div>
           <div>
-            <h2>Lista de Compras Inteligente</h2>
-            <p>Gerada automaticamente a partir do seu plano alimentar ativo: <strong>{activePlan?.title}</strong></p>
+            <span className="shopping-eyebrow"><Sparkles size={13}/> Organizada para sua rotina</span>
+            <h2>Lista de compras</h2>
+            <p>Itens do plano ativo <strong>{activePlan?.title}</strong>, agrupados conforme os setores do mercado.</p>
           </div>
         </div>
 
@@ -305,11 +337,15 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
           <button
             type="button"
             className="secondary-button"
-            onClick={copyToClipboard}
+            onClick={() => void copyToClipboard()}
             title="Copiar lista de compras formatada"
           >
             {copied ? <Check size={15} style={{ color: "#16a34a" }} /> : <Copy size={15} />}
             <span>{copied ? "Copiada!" : "Copiar"}</span>
+          </button>
+
+          <button type="button" className="secondary-button" onClick={downloadList} title="Baixar lista em formato de texto">
+            <Download size={15} /><span>Baixar</span>
           </button>
 
           <button
@@ -335,21 +371,37 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
         </div>
       </header>
 
+      <div className="sr-only" role="status" aria-live="polite">{feedback}</div>
+
       {/* BARRA DE PROGRESSO DE COMPRAS */}
-      <div className="shopping-progress-box">
+      <div className={`shopping-progress-box ${progressPercent === 100 ? "complete" : ""}`}>
+        <div className="shopping-progress-icon" aria-hidden="true">{progressPercent === 100 ? <PackageCheck/> : <ShoppingBag/>}</div>
         <div className="progress-labels">
-          <span>Progresso das Compras</span>
-          <strong>{checkedCount} de {totalItemsCount} itens ({progressPercent}%)</strong>
+          <span>{progressPercent === 100 ? "Lista concluída" : "Progresso das compras"}</span>
+          <strong>{checkedCount} de {totalItemsCount} itens</strong>
         </div>
         <div className="progress-track">
           <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
         </div>
+        <b>{progressPercent}%</b>
+      </div>
+
+      <div className="shopping-filter-bar" role="group" aria-label="Filtrar itens da lista">
+        <button type="button" className={filter === "ALL" ? "active" : ""} onClick={() => setFilter("ALL")}>Todos <span>{totalItemsCount}</span></button>
+        <button type="button" className={filter === "PENDING" ? "active" : ""} onClick={() => setFilter("PENDING")}>Pendentes <span>{totalItemsCount - checkedCount}</span></button>
+        <button type="button" className={filter === "DONE" ? "active" : ""} onClick={() => setFilter("DONE")}>No carrinho <span>{checkedCount}</span></button>
       </div>
 
       {/* SETORES DO SUPERMERCADO */}
-      <div className="shopping-categories-grid">
+      {filteredItemsCount === 0 ? (
+        <div className="shopping-filter-empty">
+          {filter === "DONE" ? <ShoppingBag /> : <PackageCheck />}
+          <strong>{filter === "DONE" ? "Nenhum item no carrinho" : "Todas as compras foram concluídas"}</strong>
+          <p>{filter === "DONE" ? "Marque os produtos conforme avançar pelo mercado." : "Você pode revisar os itens comprados ou limpar as marcações para uma nova compra."}</p>
+        </div>
+      ) : <div className="shopping-categories-grid">
         {(Object.keys(classifiedItems) as FoodCategory[]).map((cat) => {
-          const items = classifiedItems[cat];
+          const items = classifiedItems[cat].filter((item) => filter === "ALL" || (filter === "DONE" ? checkedItems[item.name] : !checkedItems[item.name]));
           if (items.length === 0) return null;
           const cfg = categoryConfig[cat];
           const Icon = cfg.icon;
@@ -364,16 +416,17 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
 
               <div className="cat-items-list">
                 {items.map((food) => {
-                  const isChecked = Boolean(checkedItems[food]);
+                  const isChecked = Boolean(checkedItems[food.name]);
                   return (
-                    <label key={food} className={`shopping-item-row ${isChecked ? "checked" : ""}`}>
+                    <label key={food.name} className={`shopping-item-row ${isChecked ? "checked" : ""}`}>
                       <input
                         type="checkbox"
                         checked={isChecked}
-                        onChange={() => toggleItem(food)}
+                        onChange={() => toggleItem(food.name)}
                       />
-                      <span className="item-name">{food}</span>
-                      {isChecked && <Check size={14} className="item-done-check" />}
+                      <span className="shopping-checkbox" aria-hidden="true">{isChecked && <Check size={13}/>}</span>
+                      <span className="item-name"><strong>{food.name}</strong>{food.quantities.length > 0 && <small>{food.quantities.join(" + ")}</small>}</span>
+                      {isChecked && <CheckCircle2 size={16} className="item-done-check" aria-hidden="true" />}
                     </label>
                   );
                 })}
@@ -381,7 +434,7 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
             </div>
           );
         })}
-      </div>
+      </div>}
     </section>
   );
 }

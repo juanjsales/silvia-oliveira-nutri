@@ -1031,6 +1031,13 @@
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/* O conteúdo deve ocupar sua altura real e rolar; sem isso o flexbox
+   comprime infográficos altos até restar apenas uma faixa visível. */
+.portal-detail-body > * {
+  flex: 0 0 auto;
 }
 
 .portal-detail-summary {
@@ -1177,7 +1184,9 @@
 .lamina-visual-infographic {
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  flex: 0 0 auto;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 @media (max-width: 640px) {
@@ -1416,4 +1425,156 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
     border-color: #c9dacf;
     border-top-color: #2f7352;
   }
+}
+
+/* Full-page portal tabs must use the complete content canvas. */
+.portal-full-view {
+  width: 100%;
+  min-width: 0;
+}
+
+.portal-full-view > .panel {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.portal-goals-view .portal-cards,
+.portal-finance-view .portal-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.portal-goals-view .portal-cards > article,
+.portal-finance-view .portal-cards > article {
+  min-width: 0;
+  height: 100%;
+}
+
+.portal-goals-view .portal-cards > .portal-empty,
+.portal-finance-view .portal-cards > .portal-empty {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .portal-goals-view .portal-cards,
+  .portal-finance-view .portal-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Patient messaging: full-height, readable conversation and deliberate composer. */
+.portal-messages-layout {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+  gap: 20px;
+}
+
+.portal-messages,
+.portal-messages-layout > .portal-form {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.portal-messages-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.portal-messages-avatar {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #fff;
+  background: linear-gradient(145deg, var(--portal-primary), #3f7659);
+  box-shadow: 0 8px 18px rgb(23 59 43 / 18%);
+}
+
+.portal-message-thread {
+  min-height: 360px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding: 8px 4px 8px 2px;
+  scrollbar-gutter: stable;
+}
+
+.portal-messages .portal-message-thread > article {
+  width: fit-content;
+  max-width: min(78%, 620px);
+  padding: 13px 15px;
+  border: 1px solid #dfe8e1;
+  border-radius: 4px 16px 16px;
+  background: #f4f7f4;
+  box-shadow: 0 4px 12px rgb(23 59 43 / 5%);
+}
+
+.portal-messages .portal-message-thread > article.mine {
+  border-color: #c9decf;
+  border-radius: 16px 4px 16px 16px;
+  background: #e3f0e7;
+}
+
+.portal-message-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.portal-message-meta strong { font-size: .78rem; }
+.portal-message-thread article p { color: #263a2e; overflow-wrap: anywhere; }
+.portal-message-thread article small { display: block; margin-top: 5px; text-align: right; }
+
+.portal-message-empty {
+  min-height: 330px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 28px;
+  color: var(--portal-text-muted);
+  text-align: center;
+}
+
+.portal-message-empty svg { color: #71927d; }
+.portal-message-empty strong { color: var(--portal-primary); }
+.portal-message-empty span { max-width: 300px; font-size: .78rem; line-height: 1.5; }
+
+.portal-messages-layout > .portal-form {
+  position: sticky;
+  top: 18px;
+}
+
+.portal-messages-layout > .portal-form textarea {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.portal-messages-layout > .portal-form > .primary-button {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .portal-messages-layout { grid-template-columns: 1fr; }
+  .portal-messages-layout > .portal-form { position: static; }
+  .portal-message-thread { max-height: 480px; }
+}
+
+@media (max-width: 560px) {
+  .portal-messages > header { align-items: stretch; flex-direction: column; }
+  .portal-messages-title { align-items: flex-start; }
+  .message-status { align-self: flex-start; }
+  .portal-message-thread { min-height: 280px; max-height: 420px; }
+  .portal-messages .portal-message-thread > article { max-width: 91%; }
 }

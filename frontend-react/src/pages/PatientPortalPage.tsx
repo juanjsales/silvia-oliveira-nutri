@@ -18,6 +18,7 @@ import {
   MessageCircle,
   Salad,
   Save,
+  Send,
   ShieldCheck,
   ShoppingBasket,
   Sparkles,
@@ -751,7 +752,19 @@ function PreCheckin({ appointments }: { appointments: Any[] }) {
   );
 }
 
-function Form({ children, onSubmit, title }: { children: ReactNode; onSubmit: (d: FormData) => void; title: string }) {
+function Form({
+  children,
+  onSubmit,
+  title,
+  submitLabel = 'Salvar',
+  submitIcon: SubmitIcon = Save,
+}: {
+  children: ReactNode;
+  onSubmit: (d: FormData) => void;
+  title: string;
+  submitLabel?: string;
+  submitIcon?: React.ComponentType<{ size?: number }>;
+}) {
   return (
     <form
       className="portal-form panel"
@@ -764,7 +777,7 @@ function Form({ children, onSubmit, title }: { children: ReactNode; onSubmit: (d
       <h2>{title}</h2>
       {children}
       <button className="primary-button">
-        <Save size={16} /> Salvar
+        <SubmitIcon size={16} /> {submitLabel}
       </button>
     </form>
   );
@@ -791,17 +804,18 @@ const requestStatus = (status: string) =>
 
 function Profile({ data, submit }: { data: Any; submit: any }) {
   return (
-    <Form
-      title="Meus dados"
-      onSubmit={(d) =>
-        submit('/api/portal/profile', {
-          whatsapp: v(d, 'whatsapp'),
-          address: v(d, 'address'),
-          emergencyContact: v(d, 'emergencyContact'),
-          communicationPreference: v(d, 'communicationPreference'),
-        })
-      }
-    >
+    <section className="portal-full-view portal-profile-view">
+      <Form
+        title="Meus dados"
+        onSubmit={(d) =>
+          submit('/api/portal/profile', {
+            whatsapp: v(d, 'whatsapp'),
+            address: v(d, 'address'),
+            emergencyContact: v(d, 'emergencyContact'),
+            communicationPreference: v(d, 'communicationPreference'),
+          })
+        }
+      >
       <label>
         Nome
         <input value={data.name} disabled />
@@ -830,15 +844,16 @@ function Profile({ data, submit }: { data: Any; submit: any }) {
           <option value="BOTH">Ambos</option>
         </select>
       </label>
-      <aside className="portal-profile-privacy wide">
-        <span className="profile-privacy-icon"><ShieldCheck size={20} /></span>
-        <span>
-          <strong>Privacidade e seus dados</strong>
-          <small>Consulte o aviso, exporte seus dados ou acompanhe uma solicitação.</small>
-        </span>
-        <Link className="secondary-button" to="/portal/privacidade">Gerenciar</Link>
-      </aside>
-    </Form>
+        <aside className="portal-profile-privacy wide">
+          <span className="profile-privacy-icon"><ShieldCheck size={20} /></span>
+          <span>
+            <strong>Privacidade e seus dados</strong>
+            <small>Consulte o aviso, exporte seus dados ou acompanhe uma solicitação.</small>
+          </span>
+          <Link className="secondary-button" to="/portal/privacidade">Gerenciar</Link>
+        </aside>
+      </Form>
+    </section>
   );
 }
 
@@ -996,30 +1011,45 @@ function Messages({ rows, submit }: { rows: Any[]; submit: any }) {
     <section className="portal-messages-layout">
       <div className="portal-messages panel">
         <header>
-          <div>
-            <h2>Mensagens seguras</h2>
-            <p>Use este canal para assuntos relacionados ao seu acompanhamento.</p>
+          <div className="portal-messages-title">
+            <span className="portal-messages-avatar" aria-hidden="true">
+              <MessageCircle size={20} />
+            </span>
+            <div>
+              <h2>Conversa com a nutricionista</h2>
+              <p>Canal privado para assuntos relacionados ao seu acompanhamento.</p>
+            </div>
           </div>
           <span className={`message-status ${waiting ? 'waiting' : 'answered'}`}>
             {waiting ? 'Aguardando resposta' : 'Em dia'}
           </span>
         </header>
-        <div>
-          {rows.map((r) => {
+        <div className="portal-message-thread" aria-live="polite">
+          {rows.length ? rows.map((r) => {
             const match = String(r.body).match(/^\[([^\]]+)\]\s*/);
             return (
               <article className={r.senderRole === 'PATIENT' ? 'mine' : ''} key={r.id}>
-                {match && <span className="message-category">{match[1]}</span>}
-                <strong>{r.senderRole === 'PATIENT' ? 'Você' : 'Nutricionista'}</strong>
+                <div className="portal-message-meta">
+                  <strong>{r.senderRole === 'PATIENT' ? 'Você' : 'Nutricionista'}</strong>
+                  {match && <span className="message-category">{match[1]}</span>}
+                </div>
                 <p>{String(r.body).replace(/^\[[^\]]+\]\s*/, '')}</p>
                 <small>{new Date(r.createdAt).toLocaleString('pt-BR')}</small>
               </article>
             );
-          })}
+          }) : (
+            <div className="portal-message-empty">
+              <MessageCircle size={28} />
+              <strong>Inicie uma conversa</strong>
+              <span>Envie sua primeira mensagem pelo formulário ao lado.</span>
+            </div>
+          )}
         </div>
       </div>
       <Form
         title="Nova mensagem"
+        submitLabel="Enviar mensagem"
+        submitIcon={Send}
         onSubmit={(d) => {
           const category = v(d, 'category');
           return submit('/api/portal/messages', { body: `[${category}] ${v(d, 'body')}` });
@@ -1160,25 +1190,27 @@ function Agenda({ appointments, requests, submit }: { appointments: Any[]; reque
 
 function Goals({ rows, reload }: { rows: Any[]; reload: any }) {
   return (
-    <Cards
-      rows={rows}
-      render={(r: Any) => (
-        <>
-          <strong>{r.title}</strong>
-          <p>{r.description}</p>
-          <span>{r.dueDate ? `Até ${new Date(`${r.dueDate}T12:00`).toLocaleDateString('pt-BR')}` : 'Sem prazo'}</span>
-          <button
-            className="secondary-button"
-            onClick={async () => {
-              await api(`/api/portal/goals/${r.id}`, { method: 'PATCH', body: JSON.stringify({ completed: r.status !== 'COMPLETED' }) });
-              await reload();
-            }}
-          >
-            {r.status === 'COMPLETED' ? 'Reabrir' : 'Concluir'}
-          </button>
-        </>
-      )}
-    />
+    <section className="portal-full-view portal-goals-view">
+      <Cards
+        rows={rows}
+        render={(r: Any) => (
+          <>
+            <strong>{r.title}</strong>
+            <p>{r.description}</p>
+            <span>{r.dueDate ? `Até ${new Date(`${r.dueDate}T12:00`).toLocaleDateString('pt-BR')}` : 'Sem prazo'}</span>
+            <button
+              className="secondary-button"
+              onClick={async () => {
+                await api(`/api/portal/goals/${r.id}`, { method: 'PATCH', body: JSON.stringify({ completed: r.status !== 'COMPLETED' }) });
+                await reload();
+              }}
+            >
+              {r.status === 'COMPLETED' ? 'Reabrir' : 'Concluir'}
+            </button>
+          </>
+        )}
+      />
+    </section>
   );
 }
 
@@ -1188,18 +1220,20 @@ function Evolution({ rows }: { rows: Any[] }) {
 
 function Finance({ rows }: { rows: Any[] }) {
   return (
-    <Cards
-      rows={rows}
-      render={(r: Any) => (
-        <>
-          <strong>{r.description}</strong>
-          <span>
-            {Number(r.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · {r.status}
-          </span>
-          <small>Vencimento: {new Date(`${r.dueDate}T12:00`).toLocaleDateString('pt-BR')}</small>
-        </>
-      )}
-    />
+    <section className="portal-full-view portal-finance-view">
+      <Cards
+        rows={rows}
+        render={(r: Any) => (
+          <>
+            <strong>{r.description}</strong>
+            <span>
+              {Number(r.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · {r.status}
+            </span>
+            <small>Vencimento: {new Date(`${r.dueDate}T12:00`).toLocaleDateString('pt-BR')}</small>
+          </>
+        )}
+      />
+    </section>
   );
 }
 
