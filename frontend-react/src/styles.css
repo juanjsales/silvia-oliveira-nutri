@@ -3586,6 +3586,43 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.persistent-video-container.docked-overlay {
+  position: fixed;
+  z-index: 14;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: #040805;
+  transition: left .18s ease, top .18s ease, width .18s ease, height .18s ease;
+}
+
+.persistent-video-container.docked-overlay:not([style]) {
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.persistent-video-slot-status,
+.patient-persistent-video-slot {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #040805;
+}
+
+.video-stream-container {
+  min-width: 0;
+  min-height: 0;
+}
+
+.patient-persistent-video-slot {
+  flex: 1 1 auto;
+}
+
 .persistent-video-container.docked-in-page {
   width: 100%;
   height: 100%;

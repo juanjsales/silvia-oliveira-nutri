@@ -22,11 +22,13 @@ export function FloatingCallWidget() {
   const [collapsed, setCollapsed] = useState(false);
   const [laminasOpen, setLaminasOpen] = useState(false);
   const [frameSource, setFrameSource] = useState('');
+  const [dockRect, setDockRect] = useState<DOMRect | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<HTMLElement>(null);
   const dragRef = useRef<{pointerId:number;startX:number;startY:number;originX:number;originY:number;moved:boolean}|null>(null);
+  const notifyCallClosed = () => window.dispatchEvent(new CustomEvent('teleconsultation:closed'));
 
   function clampPosition(x: number, y: number) {
     const rect = playerRef.current?.getBoundingClientRect();
@@ -73,30 +75,54 @@ export function FloatingCallWidget() {
   }, [collapsed]);
 
   useEffect(() => {
-    let cancelled = false;
-    if (!isMinimized) {
-      setFrameSource('');
-      return () => { cancelled = true; };
+    setFrameSource(activeCall?.roomUrl || '');
+  }, [activeCall?.roomUrl, iframeKey]);
+
+  useEffect(() => {
+    if (!activeCall || isMinimized) {
+      setDockRect(null);
+      return;
     }
-    if (!activeCall?.appointmentId) {
-      setFrameSource(activeCall?.roomUrl || '');
-      return () => { cancelled = true; };
-    }
-    setFrameSource('');
-    api<{ data: { roomUrl: string } }>(`/api/video/appointments/${activeCall.appointmentId}/access`, { method: 'POST' })
-      .then((response) => {
-        if (!cancelled) setFrameSource(response.data.roomUrl);
-      })
-      .catch(() => {
-        if (!cancelled) setFrameSource('');
-      });
-    return () => { cancelled = true; };
-  }, [activeCall?.appointmentId, activeCall?.roomUrl, iframeKey, isMinimized]);
+
+    let frame = 0;
+    let observer: ResizeObserver | null = null;
+    const selector = activeCall.role === 'PATIENT' ? '#patient-video-slot' : '#encounter-video-slot';
+
+    const sync = () => {
+      const host = document.querySelector<HTMLElement>(selector);
+      if (host) {
+        const next = host.getBoundingClientRect();
+        setDockRect(next.width > 0 && next.height > 0 ? next : null);
+        if (!observer) {
+          observer = new ResizeObserver(sync);
+          observer.observe(host);
+        }
+      } else {
+        setDockRect(null);
+        frame = window.requestAnimationFrame(sync);
+      }
+    };
+
+    const scheduleSync = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(sync);
+    };
+    sync();
+    window.addEventListener('resize', scheduleSync);
+    window.addEventListener('scroll', scheduleSync, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener('resize', scheduleSync);
+      window.removeEventListener('scroll', scheduleSync, true);
+    };
+  }, [activeCall, isMinimized]);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin || event.source !== iframeRef.current?.contentWindow) return;
       if (!event.data || event.data.type !== 'TELECONSULT_CALL_ENDED' || event.data.version !== 1) return;
+      notifyCallClosed();
       if (activeCall?.role === 'ADMIN' && activeCall.sessionId) {
         void api(`/api/video/sessions/${activeCall.sessionId}/end`, {
           method: 'POST', body: JSON.stringify({ reason: 'COMPLETED' }),
@@ -147,7 +173,7 @@ export function FloatingCallWidget() {
     return () => window.clearInterval(checkInterval);
   }, [activeCall, endCall]);
 
-  if (!activeCall || !isMinimized) {
+  if (!activeCall) {
     return null;
   }
 
@@ -166,6 +192,7 @@ export function FloatingCallWidget() {
       ? 'Encerrar a sala para todos os participantes? O prontuário continuará aberto.'
       : 'Deseja sair da teleconsulta? A consulta continuará disponível enquanto a nutricionista estiver na sala.';
     if (await confirm({title:call.role === 'ADMIN' ? 'Encerrar sala de vídeo?' : 'Sair da teleconsulta?',message:prompt,confirmLabel:call.role === 'ADMIN' ? 'Encerrar sala' : 'Sair da consulta',tone:'warning'})) {
+      notifyCallClosed();
       if (call.role === 'ADMIN' && call.sessionId) {
         void api(`/api/video/sessions/${call.sessionId}/end`, {
           method: 'POST', body: JSON.stringify({ reason: 'COMPLETED' }),
@@ -180,10 +207,12 @@ export function FloatingCallWidget() {
     <>
       <aside
         ref={playerRef}
-        className={`persistent-video-container pip-mode ${collapsed ? 'collapsed' : ''} ${dragging ? 'is-dragging' : ''}`}
-        style={position ? { left: position.x, top: position.y, right: 'auto', bottom: 'auto' } : undefined}
+        className={`persistent-video-container ${isMinimized ? 'pip-mode' : 'docked-overlay'} ${collapsed && isMinimized ? 'collapsed' : ''} ${dragging ? 'is-dragging' : ''}`}
+        style={isMinimized
+          ? (position ? { left: position.x, top: position.y, right: 'auto', bottom: 'auto' } : undefined)
+          : (dockRect ? { left: dockRect.left, top: dockRect.top, width: dockRect.width, height: dockRect.height } : undefined)}
       >
-        <header className="pip-header" onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={finishDrag}>
+        {isMinimized && <header className="pip-header" onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={finishDrag}>
           <GripHorizontal className="pip-drag-grip" size={16} aria-hidden="true" />
           <div className="pip-title" onClick={() => { if (!dragRef.current?.moved) restoreCall(); }} title="Arraste para mover ou clique para voltar à consulta">
             <span className="live-dot" />
@@ -243,7 +272,7 @@ export function FloatingCallWidget() {
               <PhoneOff size={14} />
             </button>
           </div>
-        </header>
+        </header>}
 
         <div className="persistent-video-frame">
           {frameSource ? <iframe
@@ -253,7 +282,7 @@ export function FloatingCallWidget() {
             title="Teleconsulta Nutricional"
             allow="camera; microphone; fullscreen; display-capture; autoplay"
           /> : <div className="video-frame-status" role="status">Revalidando acesso seguro...</div>}
-          {!collapsed && (
+          {isMinimized && !collapsed && (
             <button type="button" className="pip-overlay-hint" onClick={restoreCall} title="Voltar para a tela do atendimento">
               <Sparkles size={13} />
               <span>Voltar ao atendimento</span>

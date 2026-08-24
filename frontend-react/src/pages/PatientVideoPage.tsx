@@ -174,6 +174,15 @@ export function PatientVideoPage() {
     return () => window.removeEventListener('message', onMessage);
   }, [entered, endCall, id]);
 
+  useEffect(() => {
+    const leaveClosedCall = () => {
+      sessionStorage.removeItem(`in_call_${id}`);
+      setEntered(false);
+    };
+    window.addEventListener('teleconsultation:closed', leaveClosedCall);
+    return () => window.removeEventListener('teleconsultation:closed', leaveClosedCall);
+  }, [id]);
+
   // Sincronização em tempo real do que a nutricionista está transmitindo
   useEffect(() => {
     if (!id || !entered) return;
@@ -404,14 +413,8 @@ export function PatientVideoPage() {
         </section>
       ) : (
         <div className={`video-call-workspace ${showGuide ? 'with-guide' : 'full-video'}`}>
-          <div className="video-stream-container" id="patient-video-slot">
-            <iframe
-              ref={iframeRef}
-              key={iframeKey}
-              src={access.roomUrl}
-              title="Sala de Teleconsulta"
-              allow="camera; microphone; display-capture; autoplay; fullscreen"
-            />
+          <div className="video-stream-container">
+            <div className="patient-persistent-video-slot" id="patient-video-slot" aria-label="Sala de teleconsulta ativa" />
             <footer className="video-stream-footer">
               <small>Acesso seguro ativo até {new Date(access.expiresAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.</small>
               {!showGuide && (

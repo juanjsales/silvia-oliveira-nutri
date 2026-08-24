@@ -68,11 +68,20 @@ export function TeleconsultationProvider({ children }: { children: ReactNode }) 
   }, [location.pathname, location.search, activeCall]);
 
   const startCall = useCallback((call: Omit<ActiveCall, 'startedAt'>) => {
-    const fullCall: ActiveCall = {
-      ...call,
-      startedAt: Date.now(),
-    };
-    setActiveCall(fullCall);
+    setActiveCall((current) => {
+      const sameCall = current && Boolean(
+        ((call.sessionId && current.sessionId === call.sessionId) ||
+          (call.appointmentId && current.appointmentId === call.appointmentId) ||
+          (call.encounterId && current.encounterId === call.encounterId) ||
+          current.roomToken === call.roomToken),
+      );
+
+      // Reabrir a tela principal não pode substituir a URL efêmera nem reiniciar
+      // o relógio da conexão que já está viva no player global.
+      return current && sameCall
+        ? { ...current, returnPath: call.returnPath, patientName: call.patientName, sessionId: current.sessionId || call.sessionId }
+        : { ...call, startedAt: Date.now() };
+    });
     setIsMinimized(false);
   }, []);
 

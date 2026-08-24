@@ -117,6 +117,12 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
     return () => window.removeEventListener('message', onMessage);
   }, [sessionId, endCall, onClose]);
 
+  useEffect(() => {
+    const closeDock = () => onClose();
+    window.addEventListener('teleconsultation:closed', closeDock);
+    return () => window.removeEventListener('teleconsultation:closed', closeDock);
+  }, [onClose]);
+
   function handleReconnect() {
     setReconnecting(true);
     setIframeKey((prev) => prev + 1);
@@ -236,15 +242,7 @@ export function VideoConsultation({ encounterId, appointmentId, roomToken, patie
             <span className="spinner" />
             <span>Conectando à sala segura...</span>
           </div>
-        ) : (
-          <iframe
-            ref={iframeRef}
-            key={iframeKey}
-            src={source}
-            title="Teleconsulta Nutricional"
-            allow="camera; microphone; display-capture; autoplay; fullscreen"
-          />
-        )}
+        ) : <div className="persistent-video-slot-status" aria-hidden="true" />}
       </div>
 
       <footer>
