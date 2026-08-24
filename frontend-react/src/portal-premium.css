@@ -1725,7 +1725,6 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   align-items: center;
   text-align: center;
   padding: 10px;
-  animation: welcomeCardFloat 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── ORBE ZEN DE RESPIRAÇÃO E CUIDADO ── */

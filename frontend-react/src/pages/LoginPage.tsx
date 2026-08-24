@@ -40,15 +40,7 @@ export function LoginPage() {
       const authenticatedUser = await login(identifier.trim(), password);
       const returnPath = safeReturnPath(location.state as LoginLocationState);
       const targetPath = returnPath ?? (authenticatedUser.role === 'PATIENT' ? '/portal' : '/painel');
-
-      if (authenticatedUser.role === 'PATIENT' && targetPath.startsWith('/portal')) {
-        setMorphing(true);
-        setTimeout(() => {
-          navigate(targetPath, { replace: true });
-        }, 720);
-      } else {
-        navigate(targetPath, { replace: true });
-      }
+      navigate(targetPath, { replace: true });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível entrar. Tente novamente.');
       identifierRef.current?.focus();
