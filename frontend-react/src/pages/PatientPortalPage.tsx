@@ -42,6 +42,7 @@ import { PortalWaterTracker } from '../components/portal/PortalWaterTracker';
 import { PortalCurrentMealCard } from '../components/portal/PortalCurrentMealCard';
 import { PortalMealPlanView } from '../components/portal/PortalMealPlanView';
 import { PortalLaminasView } from '../components/portal/PortalLaminasView';
+import { PortalDiaryView } from '../components/portal/PortalDiaryView';
 import { PortalOnboardingGuide } from '../components/portal/PortalOnboardingGuide';
 import { useToast } from '../components/ToastNotification';
 import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
@@ -456,7 +457,7 @@ function PortalContent({
   if (tab === 'plano') return <PortalMealPlanView plan={activePlan} />;
   if (tab === 'checkin') return <PreCheckin appointments={data.appointments} />;
   if (tab === 'perfil') return <Profile data={data.patient} submit={submit} />;
-  if (tab === 'diario') return <Diary rows={data.diary} submit={submit} />;
+  if (tab === 'diario') return <PortalDiaryView rows={data.diary || []} submit={submit} addQuickWater={addQuickWater} />;
   if (tab === 'exames') return <Exams rows={data.exams} submit={submit} />;
   if (tab === 'mensagens') return <Messages rows={data.messages} submit={submit} />;
   if (tab === 'agenda') return <Agenda appointments={data.appointments} requests={data.requests} submit={submit} />;

@@ -2798,3 +2798,544 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
   border-color: #fca5a5;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PORTAL DIARY SUITE — DIÁRIO ALIMENTAR & BEM-ESTAR
+   ═══════════════════════════════════════════════════════════════ */
+.portal-diary-suite {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+  animation: calmFadeIn var(--duration-smooth, 450ms) var(--ease-soft) both;
+}
+
+.diary-suite-header {
+  background: #ffffff;
+  border: 1px solid #dfe7e1;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  box-shadow: var(--shadow-soft-sm);
+}
+
+.diary-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef6f1;
+  color: #246342;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diary-header-left h2 {
+  margin: 0 0 4px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
+  color: #173b2b;
+}
+
+.diary-header-left p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #5a7364;
+  max-width: 520px;
+}
+
+.diary-stats-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.diary-stat-pill {
+  background: #f4f8f5;
+  border: 1px solid #dfeae2;
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+}
+
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #173b2b;
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  color: #637a6d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+/* ── GRID PRINCIPAL: FORM + TIMELINE ── */
+.diary-main-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.diary-form-card,
+.diary-history-card {
+  background: #ffffff;
+  border: 1px solid #dfe7e1;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--shadow-soft-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.diary-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.diary-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #eef6f1;
+  color: #246342;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.diary-card-title-row h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #173b2b;
+  font-family: 'Playfair Display', serif;
+}
+
+.diary-card-title-row p {
+  margin: 3px 0 0;
+  font-size: 0.78rem;
+  color: #637a6d;
+}
+
+.diary-inner-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.diary-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diary-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 750;
+  color: #40584a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diary-date-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.diary-date-input {
+  border: 1px solid #dce6df;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: #173b2b;
+  background: #fbfdfc;
+  outline: none;
+}
+
+.diary-date-input:focus {
+  border-color: #246342;
+}
+
+.diary-btn-today {
+  background: #eef6f1;
+  color: #246342;
+  border: 1px solid #cce2d4;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.diary-btn-today:hover {
+  background: #246342;
+  color: #ffffff;
+}
+
+/* Água no Form */
+.diary-water-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.diary-water-val-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #dce6df;
+  border-radius: 10px;
+  padding: 6px 12px;
+  background: #fbfdfc;
+}
+
+.diary-water-num-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 1rem;
+  font-weight: 750;
+  color: #173b2b;
+  width: 60px;
+}
+
+.diary-water-val-box span {
+  font-size: 0.8rem;
+  color: #637a6d;
+  font-weight: 600;
+}
+
+.diary-water-quick-tags {
+  display: flex;
+  gap: 6px;
+}
+
+.water-quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f0f7f3;
+  color: #246342;
+  border: 1px solid #d5e7dc;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.water-quick-chip:hover {
+  background: #246342;
+  color: #ffffff;
+}
+
+/* Adesão Presets */
+.adherence-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.adherence-chip {
+  background: #fbfdfc;
+  border: 1px solid #dce6df;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #556c5e;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: center;
+}
+
+.adherence-chip:hover:not(.active) {
+  border-color: #246342;
+  color: #173b2b;
+}
+
+.adherence-chip.active {
+  background: #246342;
+  border-color: #246342;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(36, 99, 66, 0.2);
+}
+
+/* Sliders */
+.diary-sliders-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.diary-slider-box {
+  background: #f8fbf9;
+  border: 1px solid #e2ede6;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-label-row span {
+  font-size: 0.72rem;
+  font-weight: 750;
+  color: #556c5e;
+  text-transform: uppercase;
+}
+
+.slider-label-row strong {
+  font-size: 0.74rem;
+  color: #173b2b;
+}
+
+.diary-slider {
+  width: 100%;
+  accent-color: #246342;
+  cursor: pointer;
+}
+
+/* Textareas */
+.diary-textarea {
+  border: 1px solid #dce6df;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  color: #173b2b;
+  background: #fbfdfc;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.diary-textarea:focus {
+  border-color: #246342;
+}
+
+.diary-submit-btn {
+  background: #246342;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 0.88rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(36, 99, 66, 0.2);
+  min-height: 44px;
+  margin-top: 4px;
+}
+
+.diary-submit-btn:hover:not(:disabled) {
+  background: #1a4d33;
+  transform: translateY(-1px);
+}
+
+/* ── HISTÓRICO / TIMELINE ── */
+.diary-history-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.diary-history-head h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #173b2b;
+  font-family: 'Playfair Display', serif;
+}
+
+.diary-history-head p {
+  margin: 3px 0 0;
+  font-size: 0.78rem;
+  color: #637a6d;
+}
+
+.history-count-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #246342;
+  background: #edf5f0;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.diary-history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 580px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.diary-history-item {
+  background: #fbfdfc;
+  border: 1px solid #e3ece6;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.diary-history-item:hover {
+  border-color: #bcd9c6;
+  background: #ffffff;
+  transform: translateX(2px);
+}
+
+.diary-history-item.selected-date {
+  border-color: #246342;
+  background: #f4faf6;
+  box-shadow: 0 4px 14px rgba(36, 99, 66, 0.08);
+}
+
+.history-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-date-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-date-col strong {
+  font-size: 0.86rem;
+  color: #173b2b;
+  text-transform: capitalize;
+}
+
+.history-today-pill {
+  font-size: 0.65rem;
+  font-weight: 750;
+  background: #246342;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.history-metrics-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.history-water-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  background: #eef6f8;
+  color: #0e7490;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.history-adherence-pill {
+  font-size: 0.72rem;
+  font-weight: 750;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.history-item-meals,
+.history-item-symptoms {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.history-item-meals {
+  color: #2c4838;
+}
+
+.history-item-symptoms {
+  color: #557262;
+  font-style: italic;
+}
+
+.diary-history-empty {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #637a6d;
+}
+
+.diary-history-empty h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #173b2b;
+}
+
+.diary-history-empty p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #72877b;
+}
+
+@media (max-width: 768px) {
+  .diary-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .diary-sliders-grid {
+    grid-template-columns: 1fr;
+  }
+  .diary-suite-header {
+    padding: 18px;
+  }
+}
+
+
