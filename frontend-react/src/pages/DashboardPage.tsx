@@ -138,8 +138,9 @@ export function DashboardPage() {
             </div>
             <div>
               <strong>Iniciar atendimento</strong>
-              <small>Abrir prontuário e anamnese</small>
+              <small>{Number(data?.openEncounters || 0) > 0 ? 'Retomar prontuários em andamento' : 'Abrir prontuário e anamnese'}</small>
             </div>
+            <span className={`shortcut-badge ${Number(data?.openEncounters || 0) > 0 ? 'attention' : ''}`}>{Number(data?.openEncounters || 0) > 0 ? `${data?.openEncounters} aberto${data?.openEncounters === '1' ? '' : 's'}` : 'Novo'}</span>
             <ArrowRight size={16} className="shortcut-arrow" aria-hidden="true" />
           </Link>
           <Link className="shortcut-card" to="/agenda" role="listitem" aria-label="Consultar agenda de consultas">
@@ -148,8 +149,9 @@ export function DashboardPage() {
             </div>
             <div>
               <strong>Consultar agenda</strong>
-              <small>Horários e marcações</small>
+              <small>Horários, confirmações e encaixes</small>
             </div>
+            <span className="shortcut-badge">{data?.todayAppointments || '—'} hoje</span>
             <ArrowRight size={16} className="shortcut-arrow" aria-hidden="true" />
           </Link>
           <Link className="shortcut-card" to="/pacientes" role="listitem" aria-label="Cadastrar novo paciente">
@@ -160,6 +162,7 @@ export function DashboardPage() {
               <strong>Novo paciente</strong>
               <small>Cadastrar e gerenciar acessos</small>
             </div>
+            <span className="shortcut-badge">{data?.patients || '—'} ativos</span>
             <ArrowRight size={16} className="shortcut-arrow" aria-hidden="true" />
           </Link>
           <Link className="shortcut-card" to="/planos" role="listitem" aria-label="Acessar catálogo de planos e receitas">
@@ -170,6 +173,7 @@ export function DashboardPage() {
               <strong>Planos & Receitas</strong>
               <small>Tabela TACO e modelos</small>
             </div>
+            <span className="shortcut-badge neutral">Biblioteca</span>
             <ArrowRight size={16} className="shortcut-arrow" aria-hidden="true" />
           </Link>
         </div>

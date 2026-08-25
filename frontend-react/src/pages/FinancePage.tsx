@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleDollarSign, Clock3, Plus, RotateCcw, WalletCards, X } from 'lucide-react';import{useCallback,useEffect,useMemo,useState,type FormEvent}from'react';import{api}from'../lib/api';
+import { CheckCircle2, CircleDollarSign, Clock3, Plus, RotateCcw, Search, WalletCards, X } from 'lucide-react';import{useCallback,useEffect,useMemo,useState,type FormEvent}from'react';import{api}from'../lib/api';
 type Tx={id:string;patientId:string;patientName:string;description:string;amount:string;dueDate:string;paidAt?:string|null;paymentMethod?:string|null;status:'PENDING'|'PAID'|'OVERDUE'|'CANCELLED'|'REFUNDED';notes?:string|null;refundedAt?:string|null;refundReason?:string|null};type Patient={id:string;name:string};const today=new Date().toISOString().slice(0,10);
 export function FinancePage() {
   const [items, setItems] = useState<Tx[]>([]);
@@ -9,6 +9,8 @@ export function FinancePage() {
   const [error, setError] = useState('');
   const [refunding, setRefunding] = useState<Tx | null>(null);
   const [refundReason, setRefundReason] = useState('');
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | Tx['status']>('ALL');
   const [form, setForm] = useState({
     patientId: '',
     description: 'Consulta nutricional',
@@ -52,6 +54,11 @@ export function FinancePage() {
       ),
     [items]
   );
+  const filteredItems = useMemo(() => {
+    const normalized = query.trim().toLocaleLowerCase('pt-BR');
+    return items.filter((item) => (statusFilter === 'ALL' || item.status === statusFilter) && (!normalized || `${item.patientName} ${item.description} ${item.paymentMethod || ''}`.toLocaleLowerCase('pt-BR').includes(normalized)));
+  }, [items, query, statusFilter]);
+  const statusCounts = useMemo(() => items.reduce<Record<Tx['status'], number>>((counts, item) => ({ ...counts, [item.status]: counts[item.status] + 1 }), { PENDING: 0, PAID: 0, OVERDUE: 0, CANCELLED: 0, REFUNDED: 0 }), [items]);
 
   async function create(e: FormEvent) {
     e.preventDefault();
@@ -104,9 +111,9 @@ export function FinancePage() {
   }
 
   return (
-    <div>
-      <div className="page-intro">
-        <p>Acompanhe recebimentos e pendências vinculadas aos pacientes.</p>
+    <div className="finance-page">
+      <div className="page-intro finance-intro">
+        <div><span className="eyebrow">Gestão financeira</span><h2>Recebimentos da clínica</h2><p>Acompanhe cobranças, baixas e estornos vinculados aos pacientes.</p></div>
         <button className="primary-button" onClick={() => setOpen(true)}>
           <Plus size={18} /> Novo lançamento
         </button>
@@ -117,16 +124,19 @@ export function FinancePage() {
           <WalletCards />
           <span>Recebido</span>
           <strong>{loading ? '...' : money(sums.paid)}</strong>
+          <small>{statusCounts.PAID} pagamento{statusCounts.PAID === 1 ? '' : 's'} confirmado{statusCounts.PAID === 1 ? '' : 's'}</small>
         </article>
         <article>
           <Clock3 />
           <span>Pendente</span>
           <strong>{loading ? '...' : money(sums.pending)}</strong>
+          <small>{statusCounts.PENDING} cobrança{statusCounts.PENDING === 1 ? '' : 's'} a receber</small>
         </article>
         <article className="overdue">
           <CircleDollarSign />
           <span>Vencido</span>
           <strong>{loading ? '...' : money(sums.overdue)}</strong>
+          <small>{statusCounts.OVERDUE} cobrança{statusCounts.OVERDUE === 1 ? '' : 's'} exige{statusCounts.OVERDUE === 1 ? '' : 'm'} atenção</small>
         </article>
       </section>
 
@@ -138,6 +148,14 @@ export function FinancePage() {
             <span className="eyebrow">Movimentações</span>
             <h3>Controle financeiro</h3>
           </div>
+          <span className="finance-result-count">{filteredItems.length} de {items.length} lançamentos</span>
+        </div>
+
+        <div className="finance-toolbar" aria-label="Filtros dos lançamentos">
+          <label className="finance-search"><Search size={17}/><input value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="Buscar paciente, descrição ou pagamento" aria-label="Buscar lançamentos"/></label>
+          <select value={statusFilter} onChange={(event)=>setStatusFilter(event.target.value as 'ALL' | Tx['status'])} aria-label="Filtrar por situação">
+            <option value="ALL">Todas as situações</option><option value="PENDING">Pendentes</option><option value="OVERDUE">Vencidas</option><option value="PAID">Pagas</option><option value="REFUNDED">Estornadas</option><option value="CANCELLED">Canceladas</option>
+          </select>
         </div>
 
         {loading ? (
@@ -151,9 +169,11 @@ export function FinancePage() {
             <strong>Nenhum lançamento financeiro registrado</strong>
             <p>Clique em "Novo lançamento" para registrar consultas ou honorários.</p>
           </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="empty-state finance-filter-empty"><Search size={30}/><strong>Nenhum lançamento corresponde aos filtros</strong><p>Altere a busca ou selecione outra situação.</p><button className="secondary-button" onClick={()=>{setQuery('');setStatusFilter('ALL')}}>Limpar filtros</button></div>
         ) : (
           <div className="finance-list">
-            {items.map((t) => (
+            {filteredItems.map((t) => (
               <article key={t.id}>
                 <div className={`finance-status ${t.status.toLowerCase()}`}>
                   <CircleDollarSign />
@@ -161,9 +181,9 @@ export function FinancePage() {
                 <div>
                   <strong>{t.description}</strong>
                   <span>
-                    {t.patientName} · vencimento{' '}
-                    {new Date(`${t.dueDate}T12:00:00`).toLocaleDateString('pt-BR')}
+                    {t.patientName} · vence em {new Date(`${t.dueDate}T12:00:00`).toLocaleDateString('pt-BR')}
                   </span>
+                  {t.paymentMethod && <small>{t.paymentMethod}</small>}
                 </div>
                 <b>{money(Number(t.amount))}</b>
                 <span className={`status ${t.status === 'PAID' ? 'active' : ''}`}>
