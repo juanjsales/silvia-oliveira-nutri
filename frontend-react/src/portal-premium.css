@@ -70,8 +70,19 @@
 .portal-logo-avatar img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
+
+.portal-clinic-mark {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.portal-clinic-mark.has-logo { padding: 3px; background: #fff; }
+.portal-clinic-mark img,
+.portal-clinic-mark svg { width: 100%; height: 100%; object-fit: contain; display: block; }
 
 .portal-brand-text strong {
   display: block;
@@ -3337,5 +3348,4 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
     padding: 18px;
   }
 }
-
 

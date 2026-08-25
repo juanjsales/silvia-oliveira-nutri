@@ -1,4 +1,5 @@
-import { AlertTriangle, Leaf, LogOut, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlertTriangle, LogOut, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
+import { ClinicMark, useClinic } from '../contexts/ClinicContext';
 import './BrandWelcomeScreen.css';
 
 export interface BrandWelcomeScreenProps {
@@ -20,6 +21,7 @@ export function BrandWelcomeScreen({
   onRetry,
   onExit,
 }: BrandWelcomeScreenProps) {
+  const clinic = useClinic();
   const displayTitle = error ? 'Não foi possível carregar as informações' : title;
   const displaySubtitle = error ? 'Verifique sua conexão ou tente novamente.' : subtitle;
 
@@ -39,7 +41,7 @@ export function BrandWelcomeScreen({
             {error ? (
               <AlertTriangle size={28} className="brand-error-icon" />
             ) : (
-              <Leaf size={28} className="brand-leaf-icon" />
+              <ClinicMark className="brand-welcome-logo" />
             )}
           </div>
           {!error && (
@@ -53,7 +55,7 @@ export function BrandWelcomeScreen({
           <span className="brand-welcome-pill">
             <Sparkles size={12} /> {error ? 'Acesso Seguro' : badge}
           </span>
-          <h1 className="brand-welcome-title">{displayTitle}</h1>
+          <h1 className="brand-welcome-title">{displayTitle === 'Consultório Nutricional' ? clinic.clinicName : displayTitle}</h1>
           <p className="brand-welcome-sub">{displaySubtitle}</p>
         </div>
 

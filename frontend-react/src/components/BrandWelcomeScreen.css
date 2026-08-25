@@ -96,6 +96,28 @@
   filter: drop-shadow(0 2px 4px rgba(36, 94, 63, 0.15));
 }
 
+.brand-welcome-logo {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.brand-welcome-logo.has-logo {
+  padding: 4px;
+  background: #fff;
+}
+
+.brand-welcome-logo img,
+.brand-welcome-logo svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
 .brand-orb-ring {
   position: absolute;
   border-radius: 50%;

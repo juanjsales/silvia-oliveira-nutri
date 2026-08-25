@@ -30,7 +30,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useClinic } from '../contexts/ClinicContext';
+import { ClinicMark, useClinic } from '../contexts/ClinicContext';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { api } from '../lib/api';
 import { PwaInstallBanner } from '../components/PwaInstallBanner';
@@ -295,11 +295,7 @@ export function PatientPortalPage() {
       <header className="portal-header-v2">
         <div className="portal-brand-v2">
           <div className="portal-logo-avatar">
-            {data.settings?.logoUrl ? (
-              <img src={data.settings.logoUrl} alt="Logotipo" />
-            ) : (
-              <span>{data.settings?.clinicName?.[0] || 'N'}</span>
-            )}
+            <ClinicMark className="portal-clinic-mark" />
           </div>
           <div className="portal-brand-text">
             <strong>{data.settings?.clinicName || 'Consultório Nutricional'}</strong>

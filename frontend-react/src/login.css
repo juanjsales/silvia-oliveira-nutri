@@ -296,6 +296,28 @@
   animation: orbPulse 3.5s ease-in-out infinite;
 }
 
+.login-page.login-page-morphing .login-welcome-logo {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.login-page.login-page-morphing .login-welcome-logo.has-logo {
+  padding: 4px;
+  background: #fff;
+}
+
+.login-page.login-page-morphing .login-welcome-logo img,
+.login-page.login-page-morphing .login-welcome-logo svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
 .login-page.login-page-morphing .portal-welcome-progress {
   width: 200px;
   height: 3px;

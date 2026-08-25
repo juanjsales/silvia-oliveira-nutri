@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Heart, Leaf, LockKeyhole, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Heart, Leaf, LockKeyhole } from 'lucide-react';
 import { useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { PasswordInput } from '../components/PasswordInput';
@@ -75,7 +75,7 @@ export function LoginPage() {
                 <div className="zen-breathing-ring ring-outer" />
                 <div className="zen-breathing-ring ring-middle" />
                 <div className="zen-center-circle">
-                  <Sparkles size={28} className="zen-icon" />
+                  <ClinicMark className="login-welcome-logo" />
                 </div>
                 <div className="zen-orbital-spinner" />
               </div>

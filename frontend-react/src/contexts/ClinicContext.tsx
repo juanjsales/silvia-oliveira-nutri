@@ -11,7 +11,7 @@ export function ClinicProvider({children}:{children:ReactNode}){
   const refresh=useCallback(async()=>{try{const response=await api<{data?:Partial<ClinicIdentity>}>('/api/settings/public');if(response.data)setIdentity(current=>({...current,...response.data}))}catch(error){console.error('Não foi possível carregar a identidade do consultório.',error)}},[]);
   useEffect(()=>{void refresh()},[refresh]);
   useEffect(()=>{const update=()=>{void refresh()};window.addEventListener('clinic-settings-updated',update);return()=>window.removeEventListener('clinic-settings-updated',update)},[refresh]);
-  useEffect(()=>{document.title=identity.clinicName;document.documentElement.style.setProperty('--brand-primary',identity.primaryColor);document.documentElement.style.setProperty('--brand-secondary',identity.secondaryColor);const description=`Atendimento nutricional com ${identity.professionalName}${identity.city?` em ${identity.city}`:''}.`;document.querySelector('meta[name="description"]')?.setAttribute('content',description);document.querySelector('meta[property="og:title"]')?.setAttribute('content',identity.clinicName);document.querySelector('meta[property="og:description"]')?.setAttribute('content',description)},[identity]);
+  useEffect(()=>{document.title=identity.clinicName;document.documentElement.style.setProperty('--brand-primary',identity.primaryColor);document.documentElement.style.setProperty('--brand-secondary',identity.secondaryColor);const description=`Atendimento nutricional com ${identity.professionalName}${identity.city?` em ${identity.city}`:''}.`;document.querySelector('meta[name="description"]')?.setAttribute('content',description);document.querySelector('meta[property="og:title"]')?.setAttribute('content',identity.clinicName);document.querySelector('meta[property="og:description"]')?.setAttribute('content',description);const icon=identity.logoUrl||'/favicon.svg';document.querySelector<HTMLLinkElement>('link[rel="icon"]')?.setAttribute('href',icon);document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]')?.setAttribute('href',icon)},[identity]);
   const value=useMemo(()=>({...identity,refresh}),[identity,refresh]);
   return <ClinicContext.Provider value={value}>{children}</ClinicContext.Provider>
 }
@@ -22,9 +22,11 @@ export function useClinic(){
 }
 export function ClinicMark({className='brand-mark'}:{className?:string}){
   const clinic=useClinic();
-  return clinic.logoUrl ? (
+  const[failedUrl,setFailedUrl]=useState<string|null>(null);
+  const customLogo=clinic.logoUrl&&clinic.logoUrl!==failedUrl?clinic.logoUrl:null;
+  return customLogo ? (
     <div className={`${className} has-logo`}>
-      <img src={clinic.logoUrl} alt={`Logotipo ${clinic.clinicName}`}/>
+      <img src={customLogo} alt={`Logotipo ${clinic.clinicName}`} onError={()=>setFailedUrl(customLogo)}/>
     </div>
   ) : (
     <div className={`${className} brand-mark-svg`} title={clinic.clinicName}>

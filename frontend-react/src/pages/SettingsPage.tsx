@@ -364,15 +364,20 @@ export function SettingsPage() {
                   placeholder="São Paulo - SP"
                 />
               </label>
-              <label>
-                URL do Logotipo (Opcional)
+              <label className="wide">
+                Logotipo da clínica (opcional)
                 <input
                   type="url"
                   value={form.logoUrl}
                   onChange={(e) => set("logoUrl", e.target.value)}
-                  placeholder="https://..."
+                  placeholder="https://.../logotipo.svg"
                 />
+                <small>Aplicado na plataforma, portal, boas-vindas, documentos e ícone do navegador. Se ficar vazio, o símbolo original do sistema será mantido.</small>
               </label>
+              <div className="wide clinic-logo-preview" aria-label="Pré-visualização do logotipo">
+                {form.logoUrl ? <img src={form.logoUrl} alt="Pré-visualização do logotipo da clínica" /> : <img src="/favicon.svg" alt="Símbolo padrão do sistema" />}
+                <div><strong>{form.logoUrl ? 'Logotipo personalizado' : 'Símbolo padrão do sistema'}</strong><small>{form.logoUrl ? 'Será exibido após salvar as alterações.' : 'Será usado enquanto nenhuma logo personalizada for informada.'}</small></div>
+              </div>
               <label>
                 Foto principal da landing page
                 <input type="url" value={form.portraitUrl} onChange={(e) => set("portraitUrl", e.target.value)} placeholder="https://.../foto-principal.webp" />
