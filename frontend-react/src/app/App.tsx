@@ -59,7 +59,7 @@ export function App() {
         <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
         <Route path="/redefinir-senha" element={<PasswordResetPage />} />
         <Route element={<ProtectedRoute />}>
-          <Route element={<RoleRoute role="PATIENT" />}>
+          <Route element={<RoleRoute role="PATIENT" transition />}>
             <Route path="portal" element={<PatientPortalPage />} />
             <Route path="portal/consultas" element={<PatientAppointmentsPage />} />
             <Route path="portal/privacidade" element={<PrivacyPage />} />

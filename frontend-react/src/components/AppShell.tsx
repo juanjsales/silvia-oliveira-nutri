@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ClinicMark, useClinic } from '../contexts/ClinicContext';
 import { ProfessionalNotifications } from './ProfessionalNotifications';
 import { ProfessionalLiveAlerts } from './ProfessionalLiveAlerts';
+import { RouteTransition } from './RouteTransition';
 
 const navigation = [
   { to: '/painel', label: 'Visão geral', icon: LayoutDashboard },
@@ -44,7 +45,7 @@ export function AppShell() {
       </header>
       <div className="content">
         <ProfessionalLiveAlerts />
-        <Outlet />
+        <RouteTransition><Outlet /></RouteTransition>
       </div>
     </main>
   </div>;
