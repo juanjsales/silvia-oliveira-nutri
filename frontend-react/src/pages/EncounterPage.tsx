@@ -1422,15 +1422,15 @@ function EncounterHub({
                       >
                         <Edit3 size={15} />
                       </button>
-                      <button
+                      {!item.encounterId && <button
                         type="button"
                         className="icon-button danger-icon-button"
                         onClick={() => void discardAppointment(item.id)}
-                        title="Excluir da agenda"
-                        style={{ color: '#dc2626' }}
+                        title="Descartar agendamento sem prontuário"
+                        aria-label={`Descartar agendamento de ${item.patientName}`}
                       >
                         <Trash2 size={15} />
-                      </button>
+                      </button>}
                       {item.whatsapp && (
                         <a
                           className="icon-button"
@@ -1622,14 +1622,14 @@ function EncounterHub({
                 </div>
 
                 <div className="encounter-hub-card-footer">
-                  <button
+                  {!app.encounterId && <button
                     type="button"
                     className="encounter-hub-action-btn danger"
                     onClick={() => void discardAppointment(app.id)}
-                    title="Excluir da agenda"
+                    title="Descartar agendamento sem prontuário"
                   >
                     <Trash2 size={14} />
-                  </button>
+                  </button>}
                   <button
                     type="button"
                     className="encounter-hub-action-btn secondary"
@@ -1908,7 +1908,7 @@ function EncounterHub({
               )}
 
               <div className="modal-actions">
-                {editingAppointmentId && (
+                {editingAppointmentId && !editingAppointment?.encounterId && (
                   <button type="button" className="danger-button appointment-discard-btn" onClick={() => void discardAppointment(editingAppointmentId)} disabled={savingAppointment}>
                     <Trash2 size={16} /> Descartar agendamento
                   </button>

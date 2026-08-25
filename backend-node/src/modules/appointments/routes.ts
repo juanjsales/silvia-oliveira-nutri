@@ -240,7 +240,9 @@ export async function appointmentRoutes(app: FastifyInstance) {
       await client.query(`DELETE FROM patient_notifications WHERE entity_id = $1 OR dedupe_key = 'appointment:'||$1::text OR dedupe_key LIKE '%'||$1::text||'%'`, [id]);
       await client.query(`DELETE FROM professional_notifications WHERE entity_id = $1 OR dedupe_key = 'appointment:'||$1::text OR dedupe_key LIKE '%'||$1::text||'%'`, [id]);
       await client.query(`DELETE FROM appointment_reminders WHERE appointment_id = $1`, [id]);
-      await client.query(`DELETE FROM clinical_versions_email_outbox WHERE appointment_id = $1`, [id]);
+      await client.query(`DELETE FROM appointment_email_events WHERE appointment_id = $1`, [id]);
+      await client.query(`DELETE FROM appointment_email_outbox WHERE appointment_id = $1`, [id]);
+      await client.query(`DELETE FROM teleconsultation_consents WHERE source_id = $1`, [id]);
 
       // Remove o agendamento
       await client.query(`DELETE FROM appointments WHERE id = $1`, [id]);

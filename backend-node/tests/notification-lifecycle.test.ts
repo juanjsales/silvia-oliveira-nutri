@@ -179,10 +179,12 @@ test('a completed encounter can be reopened through an audited correction action
 test('an appointment without a linked encounter can be discarded',async()=>{
   const appointmentId='00000000-0000-4000-8000-000000000005';
   let discarded=false;
+  let emailOutboxCleared=false;
   const client={query:async(sql:string)=>{
     if(sql.includes('SELECT id, patient_id, status FROM appointments'))return{rows:[{id:appointmentId,patient_id:'00000000-0000-4000-8000-000000000002',status:'WAITING'}]};
     if(sql.includes('EXISTS(SELECT 1 FROM clinical_encounters'))return{rows:[{has_encounter:false,has_checkin:false,has_paid_transaction:false}]};
     if(sql.includes('DELETE FROM appointments'))discarded=true;
+    if(sql.includes('DELETE FROM appointment_email_outbox'))emailOutboxCleared=true;
     return{rows:[]};
   },release:()=>{}};
   const db={query:async(sql:string)=>{
@@ -193,6 +195,7 @@ test('an appointment without a linked encounter can be discarded',async()=>{
   const response=await app.inject({method:'DELETE',url:`/api/appointments/${appointmentId}`,cookies:{nutri_session:'token'}});
   assert.equal(response.statusCode,204);
   assert.equal(discarded,true);
+  assert.equal(emailOutboxCleared,true);
   await app.close();
 });
 
