@@ -23,6 +23,8 @@ O servidor é a fonte de verdade do ciclo de vida. A interface apenas apresenta 
 `FAILED` e `EXPIRED` são estados terminais alternativos. Transições repetidas devem ser idempotentes. Eventos atrasados não podem reabrir uma sessão encerrada.
 
 - Sair ou minimizar: preserva a sessão e os dispositivos, quando tecnicamente possível.
+- Monitorar a sessão: usa apenas leitura do snapshot; nunca deve emitir ou rotacionar tokens de entrada.
+- Reconectar: ação explícita do participante, que solicita uma nova credencial e recarrega o player.
 - Encerrar teleconsulta: desconecta participantes, invalida credenciais da sala e registra motivo e autor.
 - Finalizar atendimento: conclui o prontuário; exige confirmação clínica e não deve ocorrer implicitamente ao fechar a chamada.
 
@@ -64,6 +66,8 @@ Se áudio/vídeo não estabilizar após uma tentativa controlada de reconexão:
 
 O sistema não deve gravar áudio ou vídeo por padrão. Qualquer gravação futura exige base legal, informação transparente, retenção definida, controle de acesso e consentimento quando aplicável.
 
+Antes de liberar câmera e microfone, o portal registra a ciência versionada do paciente sobre atendimento remoto, uso dos dispositivos, possibilidade de oscilação e ausência de gravação pela plataforma.
+
 ## Encerramento do incidente
 
 - confirme que todas as credenciais e sessões afetadas expiraram;
@@ -71,4 +75,3 @@ O sistema não deve gravar áudio ou vídeo por padrão. Qualquer gravação fut
 - registre linha do tempo, impacto, causa, correção e prevenção sem dados pessoais;
 - execute os cenários automatizados de acesso, reconexão, múltiplas abas e término;
 - comunique titulares e autoridade quando a avaliação jurídica/LGPD determinar.
-

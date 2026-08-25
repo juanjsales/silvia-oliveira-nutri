@@ -27,6 +27,7 @@ export function FloatingCallWidget() {
   const [dockRect, setDockRect] = useState<DOMRect | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [online, setOnline] = useState(() => navigator.onLine);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<HTMLElement>(null);
   const dragRef = useRef<{pointerId:number;startX:number;startY:number;originX:number;originY:number;moved:boolean}|null>(null);
@@ -67,6 +68,17 @@ export function FloatingCallWidget() {
     window.setTimeout(() => { dragRef.current = null; }, 0);
     setDragging(false);
   }
+
+  useEffect(() => {
+    const connected = () => setOnline(true);
+    const disconnected = () => setOnline(false);
+    window.addEventListener('online', connected);
+    window.addEventListener('offline', disconnected);
+    return () => {
+      window.removeEventListener('online', connected);
+      window.removeEventListener('offline', disconnected);
+    };
+  }, []);
 
   useEffect(() => {
     if (!position) return;
@@ -148,29 +160,20 @@ export function FloatingCallWidget() {
     return () => window.clearInterval(timer);
   }, [activeCall]);
 
-  // Monitora se o atendimento foi finalizado ou descartado para fechar o miniplayer na hora
+  // Consulta apenas o snapshot da sessão. Nunca solicita um novo token de entrada
+  // durante a chamada, pois isso poderia invalidar/reordenar credenciais do iframe ativo.
   useEffect(() => {
-    if (!activeCall) return;
-    const targetId = activeCall.appointmentId || activeCall.roomToken;
-    if (!targetId) return;
+    if (!activeCall?.sessionId) return;
 
     const checkInterval = window.setInterval(async () => {
       try {
-        if (activeCall.role === 'PATIENT') {
-          await api(`/api/video/appointments/${targetId}/access`, { method: 'POST' });
-        } else {
-          const res = await api<{ data: { activeEncounter: any } }>('/api/encounters/live-status');
-          if (!res.data.activeEncounter) {
-            endCall();
-          }
-        }
+        const response = await api<{data:{state:string;endedAt?:string|null}}>(`/api/video/sessions/${activeCall.sessionId}`);
+        if (response.data.endedAt || ['ENDED','EXPIRED'].includes(response.data.state)) endCall();
       } catch (err) {
         const msg = err instanceof Error ? err.message : '';
-        if (msg.includes('finalizada') || msg.includes('cancelada') || msg.includes('não encontrada') || msg.includes('aguarde') || msg.includes('Aguarde') || msg.includes('iniciar')) {
-          endCall();
-        }
+        if (msg.includes('não encontrada')) endCall();
       }
-    }, 2500);
+    }, 5000);
 
     return () => window.clearInterval(checkInterval);
   }, [activeCall, endCall]);
@@ -277,6 +280,7 @@ export function FloatingCallWidget() {
         </header>}
 
         <div className="persistent-video-frame">
+          {!online && <div className="call-network-banner" role="status">Sem conexão. A chamada tentará reconectar automaticamente.</div>}
           {frameSource ? <iframe
             ref={iframeRef}
             key={iframeKey}

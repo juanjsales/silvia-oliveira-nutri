@@ -67,6 +67,7 @@ export function PatientVideoPage() {
   const { startCall, minimizeCall, endCall } = useTeleconsultation();
   const { showToast } = useToast();
   const [access, setAccess] = useState<Access | null>(null);
+  const [teleconsultationAcknowledged, setTeleconsultationAcknowledged] = useState(false);
   const [entered, setEntered] = useState(() => {
     return sessionStorage.getItem(`in_call_${id}`) === 'true';
   });
@@ -234,6 +235,10 @@ export function PatientVideoPage() {
   }
 
   async function checkMediaAndEnter() {
+    if (!teleconsultationAcknowledged) {
+      setError('Confirme a ciência sobre o atendimento online antes de entrar.');
+      return;
+    }
     if (!navigator.mediaDevices?.getUserMedia) {
       setMediaCheck('blocked');
       setError('Este navegador não oferece acesso seguro à câmera e ao microfone.');
@@ -241,6 +246,7 @@ export function PatientVideoPage() {
     }
     setMediaCheck('checking');
     try {
+      await api(`/api/video/appointments/${id}/consent`, { method: 'POST', body: JSON.stringify({ acknowledged: true }) });
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       stream.getTracks().forEach((track) => track.stop());
       setMediaCheck('ready');
@@ -406,7 +412,8 @@ export function PatientVideoPage() {
           {mediaCheck === 'blocked' && (
             <div className="form-error" role="alert">Câmera ou microfone bloqueado. Libere as permissões no navegador e teste novamente.</div>
           )}
-          <button className="primary-button video-enter-button" onClick={() => void checkMediaAndEnter()} disabled={mediaCheck === 'checking'}>
+          <label className="video-consent-check"><input type="checkbox" checked={teleconsultationAcknowledged} onChange={(event)=>setTeleconsultationAcknowledged(event.target.checked)}/><span>Estou ciente de que este é um atendimento por vídeo, sujeito a oscilações de internet, e que câmera e microfone serão usados durante a consulta. A plataforma não grava a chamada.</span></label>
+          <button className="primary-button video-enter-button" onClick={() => void checkMediaAndEnter()} disabled={mediaCheck === 'checking'||!teleconsultationAcknowledged}>
             <Video /> {mediaCheck === 'checking' ? 'Testando câmera e microfone...' : mediaCheck === 'blocked' ? 'Testar novamente' : 'Testar e entrar na consulta'}
           </button>
           <small>Se a conexão oscilar ou você recarregar a página, seu acesso permanecerá salvo nesta mesma sala.</small>

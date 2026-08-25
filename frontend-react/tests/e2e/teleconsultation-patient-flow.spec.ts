@@ -29,6 +29,11 @@ async function mockAccess(page: Page) {
       },
     }),
   }));
+  await page.route(`**/api/video/appointments/${appointmentId}/consent`, route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ data: { acknowledged: true, version: '2026-08-24' } }),
+  }));
 }
 
 test.describe('jornada do paciente na teleconsulta', () => {
@@ -72,6 +77,7 @@ test.describe('jornada do paciente na teleconsulta', () => {
     });
 
     await page.goto(`/portal/video/${appointmentId}`);
+    await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Testar e entrar na consulta' }).click();
 
     await expect(page.getByRole('alert')).toContainText('Câmera ou microfone bloqueado');
@@ -88,7 +94,7 @@ test.describe('jornada do paciente na teleconsulta', () => {
       return route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ data: { sessionId, state: 'ENDED' } }),
+        body: JSON.stringify({ data: { sessionId, state: sessionChecks > 1 ? 'ENDED' : 'CONNECTED' } }),
       });
     });
     await page.route(`**/api/video/sessions/${sessionId}/join`, route => route.fulfill({
@@ -111,12 +117,13 @@ test.describe('jornada do paciente na teleconsulta', () => {
     });
 
     await page.goto(`/portal/video/${appointmentId}`);
+    await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Testar e entrar na consulta' }).click();
-    await expect(page.locator('iframe[title="Sala de Teleconsulta"]')).toBeVisible();
+    await expect(page.locator('iframe[title="Teleconsulta Nutricional"]')).toBeVisible();
 
-    await expect.poll(() => sessionChecks, { timeout: 7_000 }).toBeGreaterThan(0);
+    await expect.poll(() => sessionChecks, { timeout: 9_000 }).toBeGreaterThan(1);
     await expect(page.getByRole('heading', { name: /Consulta concluída/i })).toBeVisible();
-    await expect(page.locator('iframe[title="Sala de Teleconsulta"]')).toHaveCount(0);
+    await expect(page.locator('iframe[title="Teleconsulta Nutricional"]')).toHaveCount(0);
     await expect.poll(() => page.evaluate(id => sessionStorage.getItem(`in_call_${id}`), appointmentId)).toBeNull();
   });
 });

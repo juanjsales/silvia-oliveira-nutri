@@ -167,7 +167,7 @@ test('a completed encounter can be reopened through an audited correction action
   },release:()=>{}};
   const db={query:async(sql:string)=>sql.includes('FROM sessions s')?{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]}:{rows:[]},connect:async()=>client,end:async()=>{}};
   const app=await buildApp(env,db as never);
-  const response=await app.inject({method:'POST',url:`/api/encounters/${encounterId}/reopen`,cookies:{nutri_session:'token'}});
+  const response=await app.inject({method:'POST',url:`/api/encounters/${encounterId}/reopen`,cookies:{nutri_session:'token'},payload:{reason:'Correção necessária após conferência do registro clínico.'}});
   assert.equal(response.statusCode,200);
   assert.equal(response.json().data.status,'COMPLETED');
   assert.equal(response.json().data.correctionOpen,true);

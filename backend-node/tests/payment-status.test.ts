@@ -3,9 +3,15 @@ import assert from 'node:assert/strict';
 import { canTransitionPayment, normalizedPaidAt } from '../src/shared/payment-status.js';
 import { ensureAppointmentCharge } from '../src/shared/finance.js';
 
-test('paid payments are immutable until a dedicated refund flow exists',()=>{
+test('paid payments cannot bypass the dedicated refund endpoint',()=>{
   assert.equal(canTransitionPayment('PAID','CANCELLED'),false);
   assert.equal(canTransitionPayment('PAID','PENDING'),false);
+});
+
+test('refunded payments are terminal and preserve their history',()=>{
+  assert.equal(canTransitionPayment('REFUNDED','PAID'),false);
+  assert.equal(canTransitionPayment('REFUNDED','PENDING'),false);
+  assert.equal(canTransitionPayment('REFUNDED','CANCELLED'),false);
 });
 
 test('open and overdue payments can be paid or cancelled',()=>{
@@ -19,11 +25,11 @@ test('paid timestamp follows payment status',()=>{
   assert.equal(normalizedPaidAt('PENDING','2026-08-23T10:00:00.000Z'),null);
 });
 
-test('automatic appointment synchronization preserves an already paid charge',async()=>{
+test('automatic appointment synchronization preserves paid and refunded charges',async()=>{
   let sql='';
   const db={query:async(text:string)=>{sql=text;return{rows:[{id:'transaction',inserted:false}]}}};
   await ensureAppointmentCharge(db as never,'appointment','user');
-  assert.match(sql,/status='PAID' THEN financial_transactions\.amount/);
-  assert.match(sql,/status='PAID' THEN financial_transactions\.due_date/);
-  assert.match(sql,/status='PAID' THEN financial_transactions\.description/);
+  assert.match(sql,/status IN\('PAID','REFUNDED'\) THEN financial_transactions\.amount/);
+  assert.match(sql,/status IN\('PAID','REFUNDED'\) THEN financial_transactions\.due_date/);
+  assert.match(sql,/status IN\('PAID','REFUNDED'\) THEN financial_transactions\.description/);
 });

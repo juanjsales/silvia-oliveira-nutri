@@ -9,12 +9,12 @@ export async function ensureAppointmentCharge(db: Queryable, appointmentId: stri
       'PENDING', CASE WHEN price IS NULL THEN 'Valor não informado no agendamento; revise antes de confirmar o pagamento.' ELSE 'Lançamento automático após conclusão da consulta.' END, $2
     FROM appointments WHERE id=$1
     ON CONFLICT (appointment_id) WHERE appointment_id IS NOT NULL DO UPDATE SET
-      patient_id=CASE WHEN financial_transactions.status='PAID' THEN financial_transactions.patient_id ELSE EXCLUDED.patient_id END,
-      description=CASE WHEN financial_transactions.status='PAID' THEN financial_transactions.description ELSE EXCLUDED.description END,
-      amount=CASE WHEN financial_transactions.status='PAID' THEN financial_transactions.amount ELSE EXCLUDED.amount END,
-      due_date=CASE WHEN financial_transactions.status='PAID' THEN financial_transactions.due_date ELSE EXCLUDED.due_date END,
+      patient_id=CASE WHEN financial_transactions.status IN('PAID','REFUNDED') THEN financial_transactions.patient_id ELSE EXCLUDED.patient_id END,
+      description=CASE WHEN financial_transactions.status IN('PAID','REFUNDED') THEN financial_transactions.description ELSE EXCLUDED.description END,
+      amount=CASE WHEN financial_transactions.status IN('PAID','REFUNDED') THEN financial_transactions.amount ELSE EXCLUDED.amount END,
+      due_date=CASE WHEN financial_transactions.status IN('PAID','REFUNDED') THEN financial_transactions.due_date ELSE EXCLUDED.due_date END,
       status=CASE WHEN financial_transactions.status='CANCELLED' THEN 'PENDING' ELSE financial_transactions.status END,
-      notes=CASE WHEN financial_transactions.status='PAID' THEN financial_transactions.notes ELSE EXCLUDED.notes END,
+      notes=CASE WHEN financial_transactions.status IN('PAID','REFUNDED') THEN financial_transactions.notes ELSE EXCLUDED.notes END,
       updated_at=now()
     RETURNING id,(xmax=0) AS inserted`, [appointmentId, createdBy]);
   return { created: Boolean(result.rows[0]?.inserted), transactionId: result.rows[0]?.id ?? null };

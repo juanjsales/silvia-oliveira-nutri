@@ -1,9 +1,10 @@
-export type PaymentStatus='PENDING'|'PAID'|'CANCELLED'|'OVERDUE';
+export type PaymentStatus='PENDING'|'PAID'|'CANCELLED'|'OVERDUE'|'REFUNDED';
 
 const transitions:Record<PaymentStatus,PaymentStatus[]>={
   PENDING:['PAID','CANCELLED','OVERDUE'],
   OVERDUE:['PENDING','PAID','CANCELLED'],
   PAID:[],
+  REFUNDED:[],
   CANCELLED:['PENDING']
 };
 

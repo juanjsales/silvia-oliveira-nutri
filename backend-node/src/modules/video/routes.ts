@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { createHash, randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
+import { TELECONSULTATION_CONSENT_VERSION } from '../../shared/teleconsultation-consent.js';
 
 type Appointment = {
   patientId: string;
@@ -113,6 +114,19 @@ async function resolveBroadcastTarget(app: FastifyInstance, id: string): Promise
 
 export async function videoRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.authenticate);
+
+  app.post('/appointments/:id/consent', async (request, reply) => {
+    if (request.auth!.role !== 'PATIENT' || !request.auth!.patientId) return reply.code(403).send({ error: 'Acesso restrito ao paciente.' });
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const { acknowledged } = z.object({ acknowledged: z.literal(true) }).parse(request.body);
+    const owned = await app.db.query(`SELECT patient_id FROM appointments WHERE id=$1 AND patient_id=$2 UNION ALL SELECT patient_id FROM clinical_encounters WHERE id=$1 AND patient_id=$2 LIMIT 1`, [id, request.auth!.patientId]);
+    if (!owned.rows[0]) return reply.code(404).send({ error: 'Consulta não encontrada.' });
+    const forwarded = String(request.headers['x-forwarded-for'] || request.ip || '').split(',')[0]!.trim();
+    const ipHash = forwarded ? createHash('sha256').update(forwarded).digest('hex') : null;
+    await app.db.query(`INSERT INTO teleconsultation_consents(patient_id,user_id,source_id,notice_version,ip_hash,user_agent) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(patient_id,source_id,notice_version) DO NOTHING`, [request.auth!.patientId,request.auth!.userId,id,TELECONSULTATION_CONSENT_VERSION,ipHash,String(request.headers['user-agent']||'').slice(0,500)||null]);
+    await audit(app.db,'TELECONSULTATION_CONSENT_ACKNOWLEDGED','teleconsultation_consent',{actorUserId:request.auth!.userId,entityId:id,metadata:{version:TELECONSULTATION_CONSENT_VERSION,acknowledged}});
+    return { data: { acknowledged: true, version: TELECONSULTATION_CONSENT_VERSION } };
+  });
 
   app.post('/appointments/:id/access', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request, reply) => {
     const { id } = z.object({ id: z.string().min(1) }).parse(request.params);

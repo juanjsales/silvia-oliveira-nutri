@@ -32,7 +32,7 @@ export async function encounterRoutes(app: FastifyInstance) {
     const { patientId } = z.object({ patientId: z.uuid().optional() }).parse(request.query);
     const result = await app.db.query(`SELECT e.id, e.patient_id AS "patientId", p.name AS "patientName",
       p.email AS "patientEmail", p.objective,
-      e.appointment_id AS "appointmentId", e.status, e.correction_open AS "correctionOpen", e.revision_count AS "revisionCount", e.started_at AS "startedAt", e.completed_at AS "completedAt",
+      e.appointment_id AS "appointmentId", e.status, e.correction_open AS "correctionOpen", e.correction_reason AS "correctionReason", e.correction_completed_at AS "correctionCompletedAt", e.revision_count AS "revisionCount", e.started_at AS "startedAt", e.completed_at AS "completedAt",
       to_char(a.appointment_date, 'YYYY-MM-DD') AS "appointmentDate", to_char(a.appointment_time, 'HH24:MI') AS "appointmentTime",
       a.duration_minutes AS "durationMinutes", a.appointment_type AS "appointmentType"
       FROM clinical_encounters e
@@ -158,7 +158,7 @@ export async function encounterRoutes(app: FastifyInstance) {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
     const result = await app.db.query(`SELECT e.id, e.patient_id AS "patientId", p.name AS "patientName", p.birth_date AS "birthDate",
       p.objective, p.whatsapp, p.email AS "patientEmail", e.appointment_id AS "appointmentId", COALESCE(a.video_room_token,e.video_room_token) AS "videoRoomToken", e.status,
-      e.correction_open AS "correctionOpen", e.revision_count AS "revisionCount",
+      e.correction_open AS "correctionOpen", e.correction_reason AS "correctionReason", e.correction_completed_at AS "correctionCompletedAt", e.revision_count AS "revisionCount",
       e.started_at AS "startedAt", e.completed_at AS "completedAt",
       to_char(a.appointment_date,'YYYY-MM-DD') AS "appointmentDate", to_char(a.appointment_time,'HH24:MI') AS "appointmentTime",
       a.duration_minutes AS "durationMinutes", a.appointment_type AS "appointmentType"
@@ -223,11 +223,12 @@ export async function encounterRoutes(app: FastifyInstance) {
       selectedLaminas: z.array(z.string()).optional(),
       customMessage: z.string().max(2000).optional(),
       force: z.boolean().optional(),
+      deliveryOnly: z.boolean().optional(),
     }).parse(request.body || {});
 
     const saved = await app.db.query<{section_key:string}>('SELECT section_key FROM clinical_sections WHERE encounter_id=$1', [id]);
     const missing=missingClinicalCore(saved.rows.map(row=>row.section_key));
-    if(missing.length && body.force === false)return reply.code(400).send({error:`Complete o registro clínico antes de finalizar: ${missing.join(', ')}.`});
+    if(!body.deliveryOnly && missing.length && body.force === false)return reply.code(400).send({error:`Complete o registro clínico antes de finalizar: ${missing.join(', ')}.`});
     
     let financeCreated = false;
     let emailSent = false;
@@ -245,11 +246,14 @@ export async function encounterRoutes(app: FastifyInstance) {
         FROM clinical_encounters e JOIN patients p ON p.id=e.patient_id WHERE e.id=$1`, [id]);
     
     if (!encounterInfo.rows[0]) return reply.code(404).send({ error: 'Atendimento não encontrado.' });
+    if (body.deliveryOnly && encounterInfo.rows[0].status !== 'COMPLETED') return reply.code(409).send({ error: 'Finalize o atendimento antes de usar o reenvio de orientações.' });
 
-    const client=await app.db.connect();
-    try{
+    if (!body.deliveryOnly) {
+      const client=await app.db.connect();
+      try{
       await client.query('BEGIN');
       const result=await client.query<{appointment_id:string|null}>(`UPDATE clinical_encounters SET status='COMPLETED',completed_at=COALESCE(completed_at,now()),correction_open=false,
+          correction_completed_at=CASE WHEN correction_open THEN now() ELSE correction_completed_at END,
           correction_started_at=NULL,correction_started_by=NULL,updated_at=now()
         WHERE id=$1 AND status IN('IN_PROGRESS','COMPLETED') RETURNING appointment_id`,[id]);
       if(!result.rows[0]){
@@ -275,11 +279,12 @@ export async function encounterRoutes(app: FastifyInstance) {
       }
       await audit(client,'ENCOUNTER_COMPLETED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{financeCreated, emailSent: !!body.sendEmail}});
       await client.query('COMMIT');
-    }catch(error){
-      await client.query('ROLLBACK');
-      throw error;
-    }finally{
-      client.release();
+      }catch(error){
+        await client.query('ROLLBACK');
+        throw error;
+      }finally{
+        client.release();
+      }
     }
 
     let emailFailure:unknown=null;
@@ -325,22 +330,24 @@ export async function encounterRoutes(app: FastifyInstance) {
           ? `Atendimento concluído, mas o e-mail não foi enviado. ${emailFailure?'O serviço de e-mail apresentou uma falha; tente o envio novamente.':'Verifique a configuração SMTP em Configurações.'}`
           : 'Atendimento concluído, mas o paciente não possui e-mail cadastrado.')
       : null;
+    if (body.deliveryOnly) await audit(app.db,'ENCOUNTER_ORIENTATIONS_DELIVERY_REQUESTED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{emailSent,laminaCount:body.selectedLaminas?.length||0}});
     return { data: { id, status: 'COMPLETED', financeCreated, emailSent, emailWarning } };
   });
 
   app.post('/:id/reopen', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const { reason } = z.object({ reason: z.string().trim().min(10).max(1000) }).parse(request.body);
     const client = await app.db.connect();
     try {
       await client.query('BEGIN');
       const reopened = await client.query<{appointment_id:string|null}>(`UPDATE clinical_encounters
-        SET correction_open=true,correction_started_at=now(),correction_started_by=$2,revision_count=revision_count+1,updated_at=now()
-        WHERE id=$1 AND status='COMPLETED' AND correction_open=false RETURNING appointment_id`,[id,request.auth!.userId]);
+        SET correction_open=true,correction_started_at=now(),correction_started_by=$2,correction_reason=$3,correction_completed_at=NULL,revision_count=revision_count+1,updated_at=now()
+        WHERE id=$1 AND status='COMPLETED' AND correction_open=false RETURNING appointment_id`,[id,request.auth!.userId,reason]);
       if(!reopened.rows[0]){
         await client.query('ROLLBACK');
         return reply.code(409).send({error:'O atendimento não está finalizado ou não foi encontrado.'});
       }
-      await audit(client,'ENCOUNTER_REOPENED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{reason:'correction'}});
+      await audit(client,'ENCOUNTER_REOPENED','clinical_encounter',{actorUserId:request.auth!.userId,entityId:id,metadata:{reason}});
       await client.query('COMMIT');
       return {data:{id,status:'COMPLETED',correctionOpen:true}};
     } catch(error) {

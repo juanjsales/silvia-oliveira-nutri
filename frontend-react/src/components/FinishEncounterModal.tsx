@@ -45,6 +45,7 @@ interface FinishEncounterModalProps {
   onClose: () => void;
   onConfirm: (data: FinishEncounterData) => Promise<void>;
   loading?: boolean;
+  deliveryOnly?: boolean;
 }
 
 export function FinishEncounterModal({
@@ -53,6 +54,7 @@ export function FinishEncounterModal({
   onClose,
   onConfirm,
   loading = false,
+  deliveryOnly = false,
 }: FinishEncounterModalProps) {
   const [sendEmail, setSendEmail] = useState(true);
   const [emailRecipient, setEmailRecipient] = useState(patientEmail || '');
@@ -112,7 +114,7 @@ export function FinishEncounterModal({
               <FileCheck2 size={24} />
             </div>
             <div>
-              <h2>Concluir Atendimento Clínico</h2>
+              <h2>{deliveryOnly ? 'Enviar orientações ao paciente' : 'Concluir Atendimento Clínico'}</h2>
               <p>Paciente: <strong>{patientName}</strong></p>
             </div>
           </div>
@@ -135,7 +137,7 @@ export function FinishEncounterModal({
                 type="checkbox"
                 checked={sendEmail}
                 onChange={(e) => setSendEmail(e.target.checked)}
-                disabled={loading}
+                disabled={loading || deliveryOnly}
               />
               <div className="toggle-info">
                 <span className="toggle-title">
@@ -164,7 +166,7 @@ export function FinishEncounterModal({
             )}
           </section>
 
-          {sendEmail && (
+          {sendEmail && !deliveryOnly && (
             <>
               {/* Anexos e Conteúdo do E-mail */}
               <section className="finish-section">
@@ -307,7 +309,7 @@ export function FinishEncounterModal({
           <button
             type="button"
             className="primary-button finish-submit-btn"
-            onClick={() => handleFinalize(sendEmail)}
+            onClick={() => handleFinalize(deliveryOnly || sendEmail)}
             disabled={loading || (sendEmail && !emailRecipient.trim())}
           >
             {loading ? (
@@ -316,7 +318,7 @@ export function FinishEncounterModal({
               </>
             ) : (
               <>
-                {sendEmail ? <><Send size={16} /> Concluir e enviar e-mail</> : <><CheckCircle2 size={17} /> Concluir atendimento</>}
+                {deliveryOnly ? <><Send size={16} /> Enviar e-mail</> : sendEmail ? <><Send size={16} /> Concluir e enviar e-mail</> : <><CheckCircle2 size={17} /> Concluir atendimento</>}
               </>
             )}
           </button>

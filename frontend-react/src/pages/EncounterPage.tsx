@@ -58,7 +58,7 @@ type Value=string|number|boolean|null;
 type SectionData=Record<string,Value>;
 type Patient={id:string;name:string;objective?:string|null;email?:string|null;whatsapp?:string|null};
 type Checkin={id:string;answers:Record<string,unknown>;status:'PENDING_REVIEW'|'REVIEWED';submittedAt:string;reviewedAt?:string|null};
-type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;appointmentDate?:string|null;appointmentTime?:string|null;durationMinutes?:number|null;appointmentType?:string|null;status:'IN_PROGRESS'|'COMPLETED';correctionOpen?:boolean;revisionCount?:number;startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string;version:number}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
+type Encounter={id:string;patientId:string;patientName:string;patientEmail?:string|null;objective?:string|null;appointmentId?:string|null;videoRoomToken?:string|null;appointmentDate?:string|null;appointmentTime?:string|null;durationMinutes?:number|null;appointmentType?:string|null;status:'IN_PROGRESS'|'COMPLETED';correctionOpen?:boolean;correctionReason?:string|null;correctionCompletedAt?:string|null;revisionCount?:number;startedAt:string;sections:Partial<Record<SectionKey,{data:SectionData;savedAt:string;version:number}>>;labs:Lab[];supplements:Supplement[];checkins:Checkin[]};
 type Field={key:string;label:string;type?:'text'|'textarea'|'number'|'select'|'date'|'time';placeholder?:string;options?:string[];suffix?:string;profiles?:string[];group?:string;groupDescription?:string};
 type Step={key:SectionKey|'review';label:string;description:string;fields?:Field[]};
 
@@ -207,6 +207,8 @@ export function EncounterPage(){
   const[params,setParams]=useSearchParams();const patientParam=params.get('paciente')||'';const appointmentParam=params.get('agendamento')||'';const videoParam=params.get('video')==='true';
   const[encounter,setEncounter]=useState<Encounter|null>(null);const[active,setActive]=useState(0);const[drafts,setDrafts]=useState<Partial<Record<SectionKey,SectionData>>>({});const[dirtyKeys,setDirtyKeys]=useState<Set<SectionKey>>(new Set());const[loading,setLoading]=useState(false);const[saving,setSaving]=useState(false);const[error,setError]=useState('');const[notice,setNotice]=useState('');const[videoOpen,setVideoOpen]=useState(videoParam);const[calcOpen,setCalcOpen]=useState(false);
   const[finishModalOpen,setFinishModalOpen]=useState(false);
+  const[correctionModalOpen,setCorrectionModalOpen]=useState(false);
+  const[correctionReason,setCorrectionReason]=useState('');
   const[laminasOpen,setLaminasOpen]=useState(false);
   const loadEncounter=useCallback(async(id:string)=>{setLoading(true);try{const r=await api<{data:Encounter}>(`/api/encounters/${id}`);setEncounter(r.data);const loaded:Partial<Record<SectionKey,SectionData>>={};for(const key of steps.map(s=>s.key).filter(k=>k!=='review') as SectionKey[])loaded[key]=r.data.sections[key]?.data||{};setDrafts(loaded);setDirtyKeys(new Set())}catch(c){setError(c instanceof Error?c.message:'Erro ao abrir atendimento.')}finally{setLoading(false)}},[]);
   useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(dirtyKeys.size){event.preventDefault();event.returnValue=''}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirtyKeys]);
@@ -288,7 +290,7 @@ export function EncounterPage(){
     try {
       const response = await api<{ data: { id: string; emailSent?: boolean; emailWarning?: string | null } }>(`/api/encounters/${encounter.id}/finalize`, {
         method: 'POST',
-        body: JSON.stringify({ ...data, force: true }),
+        body: JSON.stringify({ ...data, force: true, deliveryOnly: encounter.status==='COMPLETED'&&!encounter.correctionOpen }),
       });
       endCall();
       setVideoOpen(false);
@@ -309,12 +311,20 @@ export function EncounterPage(){
   }
 
   async function handleReopenEncounter() {
-    if (!encounter || !(await confirm({title:'Abrir modo de correção?',message:'O prontuário continuará finalizado, mas seus campos poderão ser corrigidos. A ação ficará registrada no histórico de auditoria.',confirmLabel:'Abrir correção'}))) return;
+    if (!encounter) return;
+    setCorrectionReason('');
+    setCorrectionModalOpen(true);
+  }
+
+  async function confirmReopenEncounter(event: FormEvent) {
+    event.preventDefault();
+    if (!encounter || correctionReason.trim().length < 10) return;
     setSaving(true);
     setError('');
     try {
-      await api(`/api/encounters/${encounter.id}/reopen`, { method: 'POST' });
+      await api(`/api/encounters/${encounter.id}/reopen`, { method: 'POST', body: JSON.stringify({ reason: correctionReason }) });
       await loadEncounter(encounter.id);
+      setCorrectionModalOpen(false);
       setNotice('Modo de correção aberto. O prontuário continua arquivado como finalizado e a consulta não foi reativada.');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível reabrir o prontuário.');
@@ -475,6 +485,9 @@ export function EncounterPage(){
               </>
             ) : (
               <>
+                <button type="button" className="secondary-button" onClick={requestFinalize} disabled={saving}>
+                  <Mail size={15} /> <span>Enviar orientações</span>
+                </button>
                 <button type="button" className="secondary-button" onClick={handleReopenEncounter} disabled={saving}>
                   <Edit3 size={15} /> <span>Reabrir para editar</span>
                 </button>
@@ -665,10 +678,23 @@ export function EncounterPage(){
         <FinishEncounterModal
           patientName={encounter.patientName}
           patientEmail={encounter.patientEmail}
+          deliveryOnly={encounter.status==='COMPLETED'&&!correctionOpen}
           loading={saving}
           onClose={()=>setFinishModalOpen(false)}
           onConfirm={handleConfirmFinalize}
         />
+      )}
+      {correctionModalOpen && encounter && (
+        <div className="modal-backdrop" onMouseDown={(event)=>{if(event.target===event.currentTarget)setCorrectionModalOpen(false)}}>
+          <section className="modal" role="dialog" aria-modal="true" aria-labelledby="correction-title">
+            <div className="modal-heading"><div><span className="eyebrow">Retificação auditável</span><h2 id="correction-title">Abrir correção do prontuário</h2></div><button className="icon-button" onClick={()=>setCorrectionModalOpen(false)} aria-label="Fechar"><X size={18}/></button></div>
+            <form onSubmit={confirmReopenEncounter}>
+              <p>O atendimento continuará finalizado. A justificativa, o profissional e todas as versões alteradas permanecerão registrados.</p>
+              <label>Justificativa clínica<textarea value={correctionReason} onChange={(event)=>setCorrectionReason(event.target.value)} minLength={10} maxLength={1000} required placeholder="Descreva objetivamente o dado que precisa ser corrigido e o motivo."/></label>
+              <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>setCorrectionModalOpen(false)}>Cancelar</button><button className="primary-button" disabled={saving||correctionReason.trim().length<10}>{saving?'Abrindo...':'Abrir correção'}</button></div>
+            </form>
+          </section>
+        </div>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
-import { CheckCircle2, CircleDollarSign, Clock3, Plus, WalletCards, X } from 'lucide-react';import{useCallback,useEffect,useMemo,useState,type FormEvent}from'react';import{api}from'../lib/api';
-type Tx={id:string;patientId:string;patientName:string;description:string;amount:string;dueDate:string;paidAt?:string|null;paymentMethod?:string|null;status:'PENDING'|'PAID'|'OVERDUE'|'CANCELLED';notes?:string|null};type Patient={id:string;name:string};const today=new Date().toISOString().slice(0,10);
+import { CheckCircle2, CircleDollarSign, Clock3, Plus, RotateCcw, WalletCards, X } from 'lucide-react';import{useCallback,useEffect,useMemo,useState,type FormEvent}from'react';import{api}from'../lib/api';
+type Tx={id:string;patientId:string;patientName:string;description:string;amount:string;dueDate:string;paidAt?:string|null;paymentMethod?:string|null;status:'PENDING'|'PAID'|'OVERDUE'|'CANCELLED'|'REFUNDED';notes?:string|null;refundedAt?:string|null;refundReason?:string|null};type Patient={id:string;name:string};const today=new Date().toISOString().slice(0,10);
 export function FinancePage() {
   const [items, setItems] = useState<Tx[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -7,6 +7,8 @@ export function FinancePage() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [refunding, setRefunding] = useState<Tx | null>(null);
+  const [refundReason, setRefundReason] = useState('');
   const [form, setForm] = useState({
     patientId: '',
     description: 'Consulta nutricional',
@@ -69,11 +71,36 @@ export function FinancePage() {
   }
 
   async function markPaid(t: Tx) {
-    await api(`/api/finance/${t.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status: 'PAID', paidAt: new Date().toISOString() }),
-    });
-    await load();
+    try {
+      setError('');
+      await api(`/api/finance/${t.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'PAID', paidAt: new Date().toISOString() }),
+      });
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível confirmar o recebimento.');
+    }
+  }
+
+  async function refund(e: FormEvent) {
+    e.preventDefault();
+    if (!refunding) return;
+    setSaving(true);
+    setError('');
+    try {
+      await api(`/api/finance/${refunding.id}/refund`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: refundReason }),
+      });
+      setRefunding(null);
+      setRefundReason('');
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível registrar o estorno.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -142,9 +169,14 @@ export function FinancePage() {
                 <span className={`status ${t.status === 'PAID' ? 'active' : ''}`}>
                   {label(t.status)}
                 </span>
-                {t.status !== 'PAID' && t.status !== 'CANCELLED' && (
+                {t.status !== 'PAID' && t.status !== 'CANCELLED' && t.status !== 'REFUNDED' && (
                   <button className="secondary-button" onClick={() => void markPaid(t)}>
                     <CheckCircle2 size={16} /> Receber
+                  </button>
+                )}
+                {t.status === 'PAID' && (
+                  <button className="secondary-button" onClick={() => { setRefunding(t); setRefundReason(''); }}>
+                    <RotateCcw size={16} /> Estornar
                   </button>
                 )}
               </article>
@@ -247,7 +279,19 @@ export function FinancePage() {
           </section>
         </div>
       )}
+      {refunding && (
+        <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setRefunding(null); }}>
+          <section className="modal" role="dialog" aria-modal="true" aria-labelledby="refund-title">
+            <div className="modal-heading"><div><span className="eyebrow">Ação financeira auditável</span><h2 id="refund-title">Registrar estorno</h2></div><button className="icon-button" onClick={() => setRefunding(null)} aria-label="Fechar"><X size={18}/></button></div>
+            <form onSubmit={refund}>
+              <p>O lançamento de <strong>{money(Number(refunding.amount))}</strong> para {refunding.patientName} permanecerá no histórico como estornado.</p>
+              <label>Motivo do estorno<textarea value={refundReason} onChange={(e)=>setRefundReason(e.target.value)} minLength={3} maxLength={1000} required placeholder="Ex.: pagamento devolvido após cancelamento acordado com o paciente."/></label>
+              <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>setRefunding(null)}>Voltar</button><button className="primary-button" disabled={saving||refundReason.trim().length<3}>{saving?'Registrando...':'Confirmar estorno'}</button></div>
+            </form>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
-const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const label=(s:Tx['status'])=>({PENDING:'Pendente',PAID:'Pago',OVERDUE:'Vencido',CANCELLED:'Cancelado'}[s]);
+const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const label=(s:Tx['status'])=>({PENDING:'Pendente',PAID:'Pago',OVERDUE:'Vencido',CANCELLED:'Cancelado',REFUNDED:'Estornado'}[s]);

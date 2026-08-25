@@ -45,7 +45,7 @@ test('troca o destaque por acesso neutro depois da confirmação', async ({ page
   await page.goto('/portal');
 
   await expect(page.getByRole('link', { name: 'Confirmar presença' })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'Ver consultas' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ver detalhes' })).toBeVisible();
 });
 
 test('mantém privacidade dentro do menu Mais no mobile', async ({ page }) => {

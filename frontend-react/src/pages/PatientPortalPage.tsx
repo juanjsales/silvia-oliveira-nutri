@@ -1310,6 +1310,7 @@ function Evolution({ rows }: { rows: Any[] }) {
 }
 
 function Finance({ rows }: { rows: Any[] }) {
+  const statusLabel:Record<string,string>={PENDING:'Pendente',PAID:'Pago',OVERDUE:'Vencido',CANCELLED:'Cancelado',REFUNDED:'Estornado'};
   return (
     <section className="portal-full-view portal-finance-view">
       <Cards
@@ -1318,9 +1319,10 @@ function Finance({ rows }: { rows: Any[] }) {
           <>
             <strong>{r.description}</strong>
             <span>
-              {Number(r.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · {r.status}
+              {Number(r.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · {statusLabel[r.status]||r.status}
             </span>
             <small>Vencimento: {new Date(`${r.dueDate}T12:00`).toLocaleDateString('pt-BR')}</small>
+            {r.status==='REFUNDED'&&r.refundedAt&&<small>Estorno registrado em {new Date(r.refundedAt).toLocaleDateString('pt-BR')}.</small>}
           </>
         )}
       />

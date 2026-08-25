@@ -73,3 +73,19 @@ test('access rotates stale session credentials before issuing a new join token',
   assert.ok(statements.some(sql=>sql.includes('ended_at=CASE')&&sql.includes('GREATEST(teleconsultation_sessions.expires_at')));
   await app.close();
 });
+
+test('patient teleconsultation acknowledgement is scoped and persisted before joining', async()=>{
+  let persisted=false;
+  const database={query:async(sql:string)=>{
+    if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'PATIENT',patient_id:patientId}]};
+    if(sql.includes('SELECT patient_id FROM appointments'))return{rows:[{patient_id:patientId}]};
+    if(sql.includes('INSERT INTO teleconsultation_consents'))persisted=true;
+    return{rows:[]};
+  },connect:async()=>{throw new Error('unused')},end:async()=>{}};
+  const app=await buildApp(env,database as never);
+  const response=await app.inject({method:'POST',url:`/api/video/appointments/${appointmentId}/consent`,cookies:{nutri_session:'token'},payload:{acknowledged:true}});
+  assert.equal(response.statusCode,200);
+  assert.equal(response.json().data.acknowledged,true);
+  assert.equal(persisted,true);
+  await app.close();
+});

@@ -124,10 +124,12 @@ test.describe('teleconsulta responsiva isolada', () => {
 
       const split = page.locator('.video-consultation');
       const pip = page.locator('.persistent-video-container.pip-mode');
-      const frameContainer = split.locator('.video-frame');
-      const iframe = split.locator('iframe[title="Teleconsulta Nutricional"]');
+      const dockedPlayer = page.locator('.persistent-video-container.docked-overlay');
+      const frameContainer = dockedPlayer.locator('.persistent-video-frame');
+      const iframe = dockedPlayer.locator('iframe[title="Teleconsulta Nutricional"]');
 
       await expect(split).toBeVisible();
+      await expect(dockedPlayer).toBeVisible();
       await expect(iframe).toBeVisible();
       await expect(pip).toHaveCount(0);
       await expect(page.locator('iframe[title="Teleconsulta Nutricional"]')).toHaveCount(1);
@@ -135,7 +137,7 @@ test.describe('teleconsulta responsiva isolada', () => {
       await expectInsideViewport(page, '.video-broadcast-bar');
 
       const [splitBox, containerBox, iframeBox] = await Promise.all([
-        split.boundingBox(),
+        dockedPlayer.boundingBox(),
         frameContainer.boundingBox(),
         iframe.boundingBox(),
       ]);
@@ -165,7 +167,7 @@ test.describe('teleconsulta responsiva isolada', () => {
         'controles ou rodapé ultrapassaram a largura do split',
       ).toBeLessThanOrEqual(splitOverflow.clientWidth + 1);
 
-      await split.getByRole('button', { name: /Lâminas A4/i }).click();
+      await page.getByRole('button', { name: /Lâminas A4/i }).first().click();
       const laminasBackdrop = page.locator('.laminas-modal-backdrop');
       const laminasModal = page.locator('.laminas-interactive-modal');
       await expect(laminasModal).toBeVisible();
