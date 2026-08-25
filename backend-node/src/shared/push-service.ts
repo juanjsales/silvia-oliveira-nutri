@@ -1,10 +1,10 @@
 import webpush from 'web-push';
 import type { Pool, PoolClient } from 'pg';
 
-// Chaves VAPID estáveis para o consultório da Dra. Silvia
+// Chaves VAPID estáveis da instalação. Em produção, configure-as no ambiente.
 const DEFAULT_VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || 'BMx4R9tG9LzYpW9k_K7XvN2q_5fW5V_8Q3T1j7m9c5B1k4V8X6Z9Y2Q1m8W7k5Z3b9V4X8Q2m7W9k4V8X6Z9Y2Q';
 const DEFAULT_VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || '1A8f9X2m7W9k4V8X6Z9Y2Q1m8W7k5Z3b9V4X8Q2m7W8';
-const DEFAULT_VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:contato@silviaoliveiranutri.com.br';
+const DEFAULT_VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:contato@localhost.invalid';
 
 export function getVapidPublicKey(): string {
   return process.env.VAPID_PUBLIC_KEY || DEFAULT_VAPID_PUBLIC;

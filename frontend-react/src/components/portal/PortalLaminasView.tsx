@@ -16,6 +16,7 @@ import { useState, useMemo } from 'react';
 import { NUTRITIONAL_LAMINAS, type NutritionalLamina } from '../../lib/nutritionalLaminas';
 import { getLaminaSources } from '../../lib/laminaSources';
 import { LaminaVisualInfographic } from '../LaminaVisualInfographic';
+import { useClinic } from '../../contexts/ClinicContext';
 
 const iconMap: Record<string, any> = {
   Salad,
@@ -29,6 +30,7 @@ const iconMap: Record<string, any> = {
 };
 
 export function PortalLaminasView() {
+  const clinic = useClinic();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [activeLamina, setActiveLamina] = useState<NutritionalLamina | null>(null);
@@ -106,7 +108,7 @@ export function PortalLaminasView() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>${lamina.title} - Dra. Silvia Oliveira Lemos</title>
+        <title>${lamina.title} - ${clinic.professionalName}</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; color: #183b2b; }
           .header { border-bottom: 2px solid #25633b; padding-bottom: 16px; margin-bottom: 24px; }
@@ -122,7 +124,7 @@ export function PortalLaminasView() {
       <body>
         <div class="header">
           <h1>${lamina.title}</h1>
-          <p>Dra. Silvia Oliveira Lemos · Nutricionista Clínica e Funcional</p>
+          <p>${clinic.professionalName} · ${clinic.specialty}${clinic.crn ? ` · ${clinic.crn}` : ''}</p>
         </div>
         <div class="summary">${lamina.summary}</div>
         ${diagramHtml}
@@ -133,7 +135,7 @@ export function PortalLaminasView() {
           ${getLaminaSources(lamina).map((source) => `<p><b>${source.institution}.</b> ${source.title}. ${source.year}.<br>${source.url}</p>`).join('')}
         </ul>
         <div class="footer">
-          Material educativo exclusivo · Consultório Nutricional Dra. Silvia Oliveira Lemos
+          Material educativo exclusivo · ${clinic.clinicName}
         </div>
         <script>
           window.onload = function() { window.print(); }
@@ -154,7 +156,7 @@ export function PortalLaminasView() {
           </div>
           <div>
             <h2>Lâminas & Guias Educativos</h2>
-            <p>Infográficos e orientações visuais preparadas pela Dra. Silvia para seu dia a dia.</p>
+            <p>Infográficos e orientações visuais preparados por {clinic.professionalName} para seu dia a dia.</p>
           </div>
         </div>
 

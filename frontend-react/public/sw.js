@@ -83,7 +83,7 @@ self.addEventListener('fetch', (event) => {
 // ── WEB PUSH NOTIFICATIONS ──
 self.addEventListener('push', (event) => {
   let data = {
-    title: 'Consultório Dra. Silvia Oliveira',
+    title: 'Consultório Nutricional',
     body: 'Você possui uma nova notificação do consultório.',
     icon: '/favicon.svg',
     badge: '/favicon.svg',
@@ -145,4 +145,3 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
-

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teleconsulta Nutricional · Dra. Silvia Oliveira Lemos</title>
+    <title>Teleconsulta Nutricional</title>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
@@ -677,7 +677,7 @@
     <!-- CABEÇALHO -->
     <header class="call-header" id="callHeader">
         <div class="call-brand">
-            <div class="brand-icon-wrap" title="Dra. Silvia Oliveira Lemos" style="width:34px; height:34px; border-radius:50%; overflow:hidden; border:none; padding:0; background:transparent; display:flex; align-items:center; justify-content:center;">
+            <div class="brand-icon-wrap" title="Consultório Nutricional" style="width:34px; height:34px; border-radius:50%; overflow:hidden; border:none; padding:0; background:transparent; display:flex; align-items:center; justify-content:center;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
                     <circle cx="50" cy="50" r="48" fill="#203528" stroke="#8ca481" stroke-width="3"/>
                     <path d="M 50 18 Q 72 40 50 82 Q 28 40 50 18 Z" fill="#8ca481" />
@@ -690,7 +690,7 @@
             </div>
             <div>
                 <div class="call-title" id="headerTitle">Teleconsulta Nutricional</div>
-                <div style="font-size:0.7rem; color:var(--text-muted)" id="headerSub">Dra. Silvia Oliveira Lemos · CRN-1 12345</div>
+                <div style="font-size:0.7rem; color:var(--text-muted)" id="headerSub">Consultório Nutricional</div>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:10px">
@@ -1246,8 +1246,24 @@
             attempt();
         }
 
+        async function loadClinicIdentity() {
+            try {
+                const response = await fetch('/api/settings/public', { credentials: 'same-origin' });
+                const payload = await response.json();
+                return payload?.data || {};
+            } catch (_) {
+                return {};
+            }
+        }
+
         // ── INICIALIZAÇÃO PRINCIPAL AUTORIZADA PELO SERVIDOR ──
         window.onload = async () => {
+            const clinic = await loadClinicIdentity();
+            const professionalName = clinic.professionalName || 'Sua nutricionista';
+            const clinicName = clinic.clinicName || 'Consultório Nutricional';
+            document.title = `Teleconsulta Nutricional · ${clinicName}`;
+            document.querySelector('.brand-icon-wrap')?.setAttribute('title', clinicName);
+            document.getElementById('headerSub').textContent = [professionalName, clinic.crn].filter(Boolean).join(' · ');
             let authorized;
             try {
                 setStatus('Validando acesso seguro...');
@@ -1271,7 +1287,7 @@
             if (isModerator) {
                 myPeerId = `nutri_${cleanRoom}`;
                 targetPeerId = `pac_${cleanRoom}`;
-                document.getElementById('localNameText').textContent = 'Dra. Silvia';
+                document.getElementById('localNameText').textContent = professionalName;
                 document.getElementById('remoteNameText').textContent = 'Paciente';
                 document.getElementById('waitingTitle').textContent = 'Aguardando o Paciente...';
                 document.getElementById('waitingDesc').textContent = 'Assim que o paciente acessar o portal, a teleconsulta iniciará imediatamente.';
@@ -1281,9 +1297,9 @@
                 myPeerId = `pac_${cleanRoom}`;
                 targetPeerId = `nutri_${cleanRoom}`;
                 document.getElementById('localNameText').textContent = 'Você';
-                document.getElementById('remoteNameText').textContent = 'Dra. Silvia Oliveira Lemos';
+                document.getElementById('remoteNameText').textContent = professionalName;
                 document.getElementById('waitingTitle').textContent = 'Aguardando a Nutricionista...';
-                document.getElementById('waitingDesc').textContent = 'Dra. Silvia já está conectando seu prontuário para iniciar o atendimento.';
+                document.getElementById('waitingDesc').textContent = `${professionalName} está conectando seu prontuário para iniciar o atendimento.`;
             }
 
             setStatus('Iniciando câmera...');

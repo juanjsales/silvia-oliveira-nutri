@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NUTRITIONAL_LAMINAS, type NutritionalLamina } from '../lib/nutritionalLaminas';
+import { useClinic } from '../contexts/ClinicContext';
 
 const iconMap: Record<string, any> = {
   Salad,
@@ -56,6 +57,7 @@ export function FinishEncounterModal({
   loading = false,
   deliveryOnly = false,
 }: FinishEncounterModalProps) {
+  const clinic = useClinic();
   const [sendEmail, setSendEmail] = useState(true);
   const [emailRecipient, setEmailRecipient] = useState(patientEmail || '');
   const [includePlan, setIncludePlan] = useState(true);
@@ -269,7 +271,7 @@ export function FinishEncounterModal({
               {/* Mensagem Personalizada da Nutricionista */}
               <section className="finish-section">
                 <label className="custom-message-label">
-                  <span>💬 Mensagem ou Recado Personalizado da Dra. Silvia (opcional):</span>
+                  <span>💬 Mensagem ou recado personalizado de {clinic.professionalName} (opcional):</span>
                   <textarea
                     rows={2}
                     value={customMessage}

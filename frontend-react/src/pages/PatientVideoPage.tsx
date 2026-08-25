@@ -26,6 +26,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useClinic } from '../contexts/ClinicContext';
 import { useTeleconsultation } from '../contexts/TeleconsultationContext';
 import { useToast } from '../components/ToastNotification';
 import { useConfirm } from '../components/ConfirmDialog';
@@ -61,6 +62,7 @@ type BroadcastData = {
 };
 
 export function PatientVideoPage() {
+  const clinic = useClinic();
   const confirm = useConfirm();
   const { id } = useParams();
   const { user } = useAuth();
@@ -155,7 +157,7 @@ export function PatientVideoPage() {
             sessionStorage.removeItem(`in_call_${id}`);
             setEntered(false);
             endCall();
-            setError(msg.includes('finalizada') ? 'Esta consulta foi finalizada pela Dra. Silvia.' : 'A teleconsulta foi encerrada pela nutricionista.');
+            setError(msg.includes('finalizada') ? `Esta consulta foi finalizada por ${clinic.professionalName}.` : 'A teleconsulta foi encerrada pela nutricionista.');
           }
         });
     }, 1500);
@@ -208,7 +210,7 @@ export function PatientVideoPage() {
 
             showToast({
               title: '✨ Material Transmitido!',
-              message: `Dra. Silvia compartilhou: ${tabLabels[res.data.activeTab] || 'Novo conteúdo'}.`,
+              message: `${clinic.professionalName} compartilhou: ${tabLabels[res.data.activeTab] || 'Novo conteúdo'}.`,
               type: 'success',
               duration: 5000,
             });
@@ -328,7 +330,7 @@ export function PatientVideoPage() {
             <span className="video-waiting-indicator"><span className="spinner" /></span>
             <span className="eyebrow">Atendimento protegido</span>
             <h2>Sua sala estará disponível em instantes</h2>
-            <p>A Dra. Silvia está preparando a consulta. Você não precisa atualizar a página: a entrada será liberada automaticamente.</p>
+            <p>{clinic.professionalName} está preparando a consulta. Você não precisa atualizar a página: a entrada será liberada automaticamente.</p>
             <div className="video-access-actions">
               <Link className="secondary-button" to="/portal">
                 Aguardar pelo portal
@@ -340,7 +342,7 @@ export function PatientVideoPage() {
             <CheckCircle2 />
             <span className="eyebrow">Atendimento encerrado</span>
             <h2>Consulta concluída</h2>
-            <p>As orientações e os documentos disponibilizados pela Dra. Silvia podem ser consultados no seu portal.</p>
+            <p>As orientações e os documentos disponibilizados por {clinic.professionalName} podem ser consultados no seu portal.</p>
             <Link className="primary-button" to="/portal">
               Acessar meu portal
             </Link>
@@ -764,7 +766,7 @@ export function PatientVideoPage() {
                               🍃 {broadcast.laminaData.title}
                             </h3>
                             <p style={{ margin: 0, fontSize: '0.78rem', color: '#52b788', fontWeight: 700, textTransform: 'uppercase' }}>
-                              Dra. Silvia Oliveira Lemos · Nutrição Clínica
+                              {clinic.professionalName} · {clinic.specialty}
                             </p>
                           </div>
                         </div>

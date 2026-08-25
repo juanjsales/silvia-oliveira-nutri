@@ -5,6 +5,7 @@ import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from '../.
 import { loadSmtpConfig, smtpTransport } from '../../integrations/configured-email.js';
 import { buildHtmlEmail } from '../../integrations/email.js';
 import { assertLoginAllowed, clearLoginFailures, recordLoginFailure } from '../../shared/login-rate-limit.js';
+import { loadClinicIdentity } from '../../shared/clinic-identity.js';
 
 const loginSchema = z.object({ identifier: z.string().trim().min(3), password: z.string().min(1) });
 const recoverySchema = z.object({ identifier: z.string().trim().min(3) });
@@ -79,6 +80,7 @@ export async function authRoutes(app: FastifyInstance) {
       const rawToken = createOpaqueToken();
       const resetLink = `${app.env.APP_URL}/redefinir-senha?token=${encodeURIComponent(rawToken)}`;
       const expiresAt = new Date(Date.now() + app.env.PASSWORD_RESET_TTL_MINUTES * 60_000);
+      const identity = await loadClinicIdentity(app.db);
 
       const html = buildHtmlEmail({
         title: 'Redefinição de Senha',
@@ -88,12 +90,13 @@ export async function authRoutes(app: FastifyInstance) {
         ctaText: 'Criar Nova Senha',
         ctaUrl: resetLink,
         footerNote: `Este link é temporário e expira em ${app.env.PASSWORD_RESET_TTL_MINUTES} minutos. Se você não realizou esta solicitação, desconsidere este e-mail.`,
+        identity,
       });
 
       await mailer.sendMail({
         from: smtp.from,
         to: user.email,
-        subject: 'Redefinição de senha — Portal Nutricional Dra. Silvia Oliveira',
+        subject: `Redefinição de senha — ${identity.clinicName}`,
         text: `Defina uma nova senha acessando: ${resetLink}\n\nO link expira em ${app.env.PASSWORD_RESET_TTL_MINUTES} minutos.`,
         html,
       });

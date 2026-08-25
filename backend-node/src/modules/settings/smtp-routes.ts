@@ -4,6 +4,7 @@ import { audit } from '../../shared/audit.js';
 import { encryptSecret } from '../../shared/secret.js';
 import { loadSmtpConfig, smtpTransport } from '../../integrations/configured-email.js';
 import { buildHtmlEmail } from '../../integrations/email.js';
+import { loadClinicIdentity } from '../../shared/clinic-identity.js';
 
 const smtpPutSchema = z.object({
   host: z.string().trim().min(2).max(255),
@@ -93,10 +94,11 @@ export async function smtpSettingsRoutes(app: FastifyInstance) {
     }
 
     try {
+      const identity = await loadClinicIdentity(app.db);
       const html = buildHtmlEmail({
         title: 'Serviço de E-mail Configurado com Sucesso',
         badge: 'Teste de Conexão',
-        recipientName: 'Dra. Silvia Oliveira Lemos',
+        recipientName: identity.professionalName,
         lead: 'A integração SMTP do seu consultório nutricional está ativa e operando com sucesso.',
         details: [
           { label: 'Servidor Host', value: config.host },
@@ -105,12 +107,13 @@ export async function smtpSettingsRoutes(app: FastifyInstance) {
           { label: 'Segurança', value: config.secure ? 'SSL/TLS (Porta 465)' : 'STARTTLS (Porta 587)' },
         ],
         footerNote: 'Todos os e-mails automáticos de confirmação de consulta, lembretes e liberação de acesso aos pacientes serão entregues a partir desta conta.',
+        identity,
       });
 
       await smtpTransport(config).sendMail({
         from: config.from,
         to,
-        subject: 'Teste de e-mail — Consultório Dra. Silvia Oliveira',
+        subject: `Teste de e-mail — ${identity.clinicName}`,
         text: 'A configuração SMTP do consultório está funcionando perfeitamente! Os e-mails de agendamento e lembretes aos pacientes estão ativos.',
         html,
       });

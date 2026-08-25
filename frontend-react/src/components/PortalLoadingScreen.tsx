@@ -1,4 +1,5 @@
 import { BrandWelcomeScreen } from './BrandWelcomeScreen';
+import { useClinic } from '../contexts/ClinicContext';
 
 type PortalLoadingScreenProps = {
   message?: string;
@@ -15,9 +16,10 @@ export function PortalLoadingScreen({
   onRetry,
   onExit,
 }: PortalLoadingScreenProps) {
+  const clinic = useClinic();
   return (
     <BrandWelcomeScreen
-      title="Dra. Silvia Oliveira Lemos"
+      title={clinic.clinicName}
       subtitle={message}
       badge="Espaço de Cuidado & Bem-Estar"
       error={error}

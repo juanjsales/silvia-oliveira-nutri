@@ -426,7 +426,7 @@ export function SmtpSettings() {
                 type="text"
                 value={form.from}
                 onChange={(e) => setForm({ ...form, from: e.target.value })}
-                placeholder="Ex: Dra. Silvia Oliveira <consultorio@gmail.com>"
+                placeholder="Ex: Nome da nutricionista <consultorio@gmail.com>"
                 required
               />
               <small style={{ color: "#94a3b8", fontSize: "0.72rem", marginTop: 4 }}>
@@ -585,7 +585,7 @@ export function SmtpSettings() {
             <div className="email-meta-header">
               <div className="meta-line">
                 <span className="meta-label">De:</span>
-                <span className="meta-value from">{form.from || "Dra. Silvia Oliveira <consultorio@gmail.com>"}</span>
+                <span className="meta-value from">{form.from || "Consultório Nutricional <consultorio@gmail.com>"}</span>
               </div>
               <div className="meta-line">
                 <span className="meta-label">Para:</span>

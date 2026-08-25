@@ -12,8 +12,8 @@ export interface BrandWelcomeScreenProps {
 }
 
 export function BrandWelcomeScreen({
-  title = 'Dra. Silvia Oliveira Lemos',
-  subtitle = 'Nutrição Clínica & Esportiva · Saúde Integrativa',
+  title = 'Consultório Nutricional',
+  subtitle = 'Nutrição e saúde',
   badge = 'Espaço de Cuidado & Bem-Estar',
   fading = false,
   error = false,

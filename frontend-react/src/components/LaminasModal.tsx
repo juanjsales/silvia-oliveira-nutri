@@ -24,6 +24,7 @@ import { createPortal } from 'react-dom';
 import { NUTRITIONAL_LAMINAS, type NutritionalLamina } from '../lib/nutritionalLaminas';
 import { getLaminaSources } from '../lib/laminaSources';
 import { LaminaVisualInfographic } from './LaminaVisualInfographic';
+import { useClinic } from '../contexts/ClinicContext';
 
 const iconMap: Record<string, ComponentType<{ size?: number; color?: string; style?: React.CSSProperties; className?: string }>> = {
   Salad,
@@ -44,6 +45,7 @@ type Props = {
 };
 
 export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Props) {
+  const clinic = useClinic();
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [search, setSearch] = useState('');
   const [activeLamina, setActiveLamina] = useState<NutritionalLamina>(
@@ -277,8 +279,8 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
         <div class="a4-sheet">
           <div class="header">
             <div>
-              <h1 class="clinic-name">Dra. Silvia Oliveira Lemos</h1>
-              <p class="clinic-subtitle">Nutrição Clínica & Funcional · CRN-3 12345</p>
+              <h1 class="clinic-name">${clinic.professionalName}</h1>
+              <p class="clinic-subtitle">${clinic.specialty}${clinic.crn ? ` · ${clinic.crn}` : ''}</p>
             </div>
             <span class="category-badge">${lamina.categoryLabel}</span>
           </div>
@@ -332,7 +334,7 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
       lamina.tips.map((t, i) => `▫️ *Passo ${i + 1}:* ${t}`).join('\n') +
       `\n\n*Fontes:*\n` +
       getLaminaSources(lamina).map((s) => `• ${s.institution} — ${s.title} (${s.year}): ${s.url}`).join('\n') +
-      `\n\n_Dra. Silvia Oliveira Lemos · Nutrição Clínica_`;
+      `\n\n_${clinic.professionalName} · ${clinic.specialty}_`;
 
     navigator.clipboard
       .writeText(text)
@@ -821,7 +823,7 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
                       letterSpacing: '0.5px',
                     }}
                   >
-                    Dra. Silvia Oliveira Lemos · Nutrição Clínica & Funcional
+                    {clinic.professionalName} · {clinic.specialty}
                   </p>
                 </div>
                 <span
@@ -950,7 +952,7 @@ export function LaminasModal({ isOpen, onClose, patientName, onBroadcast }: Prop
                 }}
               >
                 <span>Material Educativo Oficial para Consulta</span>
-                <span>Dra. Silvia Oliveira Lemos</span>
+                <span>{clinic.professionalName}</span>
               </div>
             </div>
           </div>

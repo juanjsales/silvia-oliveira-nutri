@@ -15,6 +15,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
+import { useClinic } from '../../contexts/ClinicContext';
 
 type DiaryRow = {
   id?: string;
@@ -35,6 +36,7 @@ interface PortalDiaryViewProps {
 }
 
 export function PortalDiaryView({ rows = [], submit }: PortalDiaryViewProps) {
+  const clinic = useClinic();
   const todayIso = new Date().toISOString().slice(0, 10);
   const [selectedDate, setSelectedDate] = useState(todayIso);
   const [saving, setSaving] = useState(false);
@@ -122,7 +124,7 @@ export function PortalDiaryView({ rows = [], submit }: PortalDiaryViewProps) {
             <Sparkles size={13} /> Acompanhamento Diário & Hábitos
           </span>
           <h2>Diário de Alimentação & Bem-Estar</h2>
-          <p>Registre suas refeições, sensações e hidratação para que a Dra. Silvia acompanhe sua rotina.</p>
+          <p>Registre suas refeições, sensações e hidratação para que {clinic.professionalName} acompanhe sua rotina.</p>
         </div>
 
         {stats && (

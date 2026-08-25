@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { api } from '../lib/api';
 
 export type ClinicIdentity = { clinicName:string; professionalName:string; crn?:string|null; specialty:string; phone?:string|null; email?:string|null; city?:string|null; logoUrl?:string|null; primaryColor:string; secondaryColor:string };
-const fallback:ClinicIdentity={clinicName:'Dra. Silvia Oliveira Lemos',professionalName:'Dra. Silvia Oliveira Lemos',crn:'CRN-4 25104731',specialty:'Nutrição Clínica & Esportiva',phone:'5521987385146',email:null,city:'Rio de Janeiro',logoUrl:null,primaryColor:'#203528',secondaryColor:'#8ca481'};
+const fallback:ClinicIdentity={clinicName:'Consultório Nutricional',professionalName:'Sua nutricionista',crn:null,specialty:'Nutrição e Saúde',phone:null,email:null,city:null,logoUrl:null,primaryColor:'#203528',secondaryColor:'#8ca481'};
 type Value=ClinicIdentity&{refresh:()=>Promise<void>};
 const ClinicContext=createContext<Value|null>(null);
 
@@ -11,7 +11,7 @@ export function ClinicProvider({children}:{children:ReactNode}){
   const refresh=useCallback(async()=>{try{const response=await api<{data?:Partial<ClinicIdentity>}>('/api/settings/public');if(response.data)setIdentity(current=>({...current,...response.data}))}catch(error){console.error('Não foi possível carregar a identidade do consultório.',error)}},[]);
   useEffect(()=>{void refresh()},[refresh]);
   useEffect(()=>{const update=()=>{void refresh()};window.addEventListener('clinic-settings-updated',update);return()=>window.removeEventListener('clinic-settings-updated',update)},[refresh]);
-  useEffect(()=>{document.title=identity.clinicName;document.documentElement.style.setProperty('--brand-primary',identity.primaryColor);document.documentElement.style.setProperty('--brand-secondary',identity.secondaryColor)},[identity]);
+  useEffect(()=>{document.title=identity.clinicName;document.documentElement.style.setProperty('--brand-primary',identity.primaryColor);document.documentElement.style.setProperty('--brand-secondary',identity.secondaryColor);const description=`Atendimento nutricional com ${identity.professionalName}${identity.city?` em ${identity.city}`:''}.`;document.querySelector('meta[name="description"]')?.setAttribute('content',description);document.querySelector('meta[property="og:title"]')?.setAttribute('content',identity.clinicName);document.querySelector('meta[property="og:description"]')?.setAttribute('content',description)},[identity]);
   const value=useMemo(()=>({...identity,refresh}),[identity,refresh]);
   return <ClinicContext.Provider value={value}>{children}</ClinicContext.Provider>
 }
