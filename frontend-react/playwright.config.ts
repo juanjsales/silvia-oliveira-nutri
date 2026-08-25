@@ -26,7 +26,7 @@ export default defineConfig({
       timeout: 10_000,
     },
     {
-      command: `node node_modules/vite/bin/vite.js --mode e2e --host ${host} --port ${appPort} --strictPort`,
+      command: `npm run dev -- --mode e2e --host ${host} --port ${appPort} --strictPort`,
       url: `http://${host}:${appPort}`,
       reuseExistingServer: false,
       timeout: 60_000,
