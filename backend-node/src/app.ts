@@ -81,7 +81,8 @@ export async function buildApp(env: AppEnv, db: Database) {
   });
   app.get('/api/settings/public', async () => ({
     data: (await db.query(`SELECT clinic_name AS "clinicName", professional_name AS "professionalName",
-      crn, specialty, phone, email, city, logo_url AS "logoUrl", primary_color AS "primaryColor",
+      crn, specialty, phone, email, city, logo_url AS "logoUrl", portrait_url AS "portraitUrl",
+      full_body_url AS "fullBodyUrl", consultation_image_url AS "consultationImageUrl", primary_color AS "primaryColor",
       secondary_color AS "secondaryColor" FROM clinic_settings WHERE singleton=true`)).rows[0]
   }));
   app.get('/api/privacy/public-notice', async () => {

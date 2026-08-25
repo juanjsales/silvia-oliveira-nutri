@@ -37,6 +37,9 @@ type Settings = {
   address: string;
   city: string;
   logoUrl: string;
+  portraitUrl: string;
+  fullBodyUrl: string;
+  consultationImageUrl: string;
   primaryColor: string;
   secondaryColor: string;
   inPersonPrice: number;
@@ -57,6 +60,9 @@ const defaults: Settings = {
   address: "",
   city: "",
   logoUrl: "",
+  portraitUrl: "",
+  fullBodyUrl: "",
+  consultationImageUrl: "",
   primaryColor: "#203528",
   secondaryColor: "#8ca481",
   inPersonPrice: 280,
@@ -66,6 +72,15 @@ const defaults: Settings = {
   followupMessage: "",
   documentFooter: "",
 };
+
+const normalizeSettings = (data: Partial<Settings>): Settings => ({
+  ...defaults,
+  ...data,
+  logoUrl: data.logoUrl || "",
+  portraitUrl: data.portraitUrl || "",
+  fullBodyUrl: data.fullBodyUrl || "",
+  consultationImageUrl: data.consultationImageUrl || "",
+});
 
 type SettingsTab = "CLINIC" | "PRICING" | "MESSAGES" | "EMAIL" | "SECURITY" | "SUPPORT";
 
@@ -88,7 +103,7 @@ export function SettingsPage() {
 
   const loadSettings = () => {
     api<{ data: Settings }>("/api/settings")
-      .then((r) => setForm({ ...defaults, ...r.data }))
+      .then((r) => setForm(normalizeSettings(r.data)))
       .catch((c) =>
         setError(
           c instanceof Error ? c.message : "Erro ao carregar configurações."
@@ -119,9 +134,12 @@ export function SettingsPage() {
           address: form.address || undefined,
           city: form.city || undefined,
           logoUrl: form.logoUrl || undefined,
+          portraitUrl: form.portraitUrl || undefined,
+          fullBodyUrl: form.fullBodyUrl || undefined,
+          consultationImageUrl: form.consultationImageUrl || undefined,
         }),
       });
-      setForm({ ...defaults, ...result.data });
+      setForm(normalizeSettings(result.data));
       setNotice("Configurações salvas e atualizadas com sucesso!");
       window.dispatchEvent(new CustomEvent("clinic-settings-updated"));
       setTimeout(() => setNotice(""), 5000);
@@ -355,6 +373,23 @@ export function SettingsPage() {
                   placeholder="https://..."
                 />
               </label>
+              <label>
+                Foto principal da landing page
+                <input type="url" value={form.portraitUrl} onChange={(e) => set("portraitUrl", e.target.value)} placeholder="https://.../foto-principal.webp" />
+              </label>
+              <label>
+                Foto da seção “Sobre”
+                <input type="url" value={form.fullBodyUrl} onChange={(e) => set("fullBodyUrl", e.target.value)} placeholder="https://.../foto-sobre.webp" />
+              </label>
+              <label>
+                Foto da seção “Como funciona”
+                <input type="url" value={form.consultationImageUrl} onChange={(e) => set("consultationImageUrl", e.target.value)} placeholder="https://.../consulta.webp" />
+              </label>
+              {(form.portraitUrl || form.fullBodyUrl || form.consultationImageUrl) && (
+                <div className="wide clinic-image-preview" aria-label="Pré-visualização das imagens da landing page">
+                  {[form.portraitUrl, form.fullBodyUrl, form.consultationImageUrl].filter(Boolean).map((url, index) => <img key={url} src={url} alt={`Pré-visualização ${index + 1}`} />)}
+                </div>
+              )}
             </div>
           </section>
 

@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api } from '../lib/api';
 
-export type ClinicIdentity = { clinicName:string; professionalName:string; crn?:string|null; specialty:string; phone?:string|null; email?:string|null; city?:string|null; logoUrl?:string|null; primaryColor:string; secondaryColor:string };
-const fallback:ClinicIdentity={clinicName:'Consultório Nutricional',professionalName:'Sua nutricionista',crn:null,specialty:'Nutrição e Saúde',phone:null,email:null,city:null,logoUrl:null,primaryColor:'#203528',secondaryColor:'#8ca481'};
+export type ClinicIdentity = { clinicName:string; professionalName:string; crn?:string|null; specialty:string; phone?:string|null; email?:string|null; city?:string|null; logoUrl?:string|null; portraitUrl?:string|null; fullBodyUrl?:string|null; consultationImageUrl?:string|null; primaryColor:string; secondaryColor:string };
+const fallback:ClinicIdentity={clinicName:'Consultório Nutricional',professionalName:'Sua nutricionista',crn:null,specialty:'Nutrição e Saúde',phone:null,email:null,city:null,logoUrl:null,portraitUrl:null,fullBodyUrl:null,consultationImageUrl:null,primaryColor:'#203528',secondaryColor:'#8ca481'};
 type Value=ClinicIdentity&{refresh:()=>Promise<void>};
 const ClinicContext=createContext<Value|null>(null);
 
