@@ -76,7 +76,7 @@ if (identifier && password) {
   await request('/api/finance/summary', { cookie });
   const today = new Date().toISOString().slice(0, 10);
   await request(`/api/appointments?from=${today}&to=${today}`, { cookie });
-  await request('/api/auth/logout', { cookie, method: 'POST' });
+  await request('/api/auth/logout', { cookie, method: 'POST', expected: 204 });
   await request('/api/auth/me', { cookie, expected: 401 });
   console.log('✓ Sessão administrativa, readiness, módulos essenciais e logout');
 } else {
