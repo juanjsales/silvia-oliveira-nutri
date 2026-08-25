@@ -88,6 +88,14 @@ export function PatientPortalPage() {
   const { showToast, dismissToastByKey } = useToast();
   const navigate = useNavigate();
   const { activeCall, isCallActiveFor, restoreCall } = useTeleconsultation();
+  const changeTab = useCallback((nextTab: Tab) => {
+    setTab(nextTab);
+    setNotifOpen(false);
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.scrollingElement?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    });
+  }, []);
 
   const load = useCallback(
     () => {
@@ -176,10 +184,10 @@ export function PatientPortalPage() {
   }, [fontScale, contrast]);
 
   useEffect(() => {
-    const handler = (event: Event) => setTab((event as CustomEvent<Tab>).detail);
+    const handler = (event: Event) => changeTab((event as CustomEvent<Tab>).detail);
     window.addEventListener('portal:tab', handler);
     return () => window.removeEventListener('portal:tab', handler);
-  }, []);
+  }, [changeTab]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -353,7 +361,7 @@ export function PatientPortalPage() {
           <button
             type="button"
             className="portal-icon-btn"
-            onClick={() => setTab('perfil')}
+            onClick={() => changeTab('perfil')}
             title="Meu Perfil & Senha"
           >
             <UserRound size={18} />
@@ -407,7 +415,7 @@ export function PatientPortalPage() {
       {/* ── BARRA DE NAVEGAÇÃO NATIVA (DESKTOP PILLS + MOBILE BOTTOM BAR) ── */}
       <PortalBottomNav
         currentTab={tab}
-        onChangeTab={(newTab) => setTab(newTab)}
+        onChangeTab={changeTab}
         unreadCount={unreadNotifs.length}
       />
 
@@ -421,7 +429,7 @@ export function PatientPortalPage() {
 
       <PortalContent
         tab={tab}
-        setTab={setTab}
+        setTab={changeTab}
         data={data}
         submit={submit}
         reload={load}
