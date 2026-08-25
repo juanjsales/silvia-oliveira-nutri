@@ -239,7 +239,6 @@ export async function appointmentRoutes(app: FastifyInstance) {
       await client.query(`DELETE FROM teleconsultation_sessions WHERE source_id = $1`, [id]);
       await client.query(`DELETE FROM patient_notifications WHERE entity_id = $1 OR dedupe_key = 'appointment:'||$1::text OR dedupe_key LIKE '%'||$1::text||'%'`, [id]);
       await client.query(`DELETE FROM professional_notifications WHERE entity_id = $1 OR dedupe_key = 'appointment:'||$1::text OR dedupe_key LIKE '%'||$1::text||'%'`, [id]);
-      await client.query(`DELETE FROM appointment_reminders WHERE appointment_id = $1`, [id]);
       await client.query(`DELETE FROM appointment_email_events WHERE appointment_id = $1`, [id]);
       await client.query(`DELETE FROM appointment_email_outbox WHERE appointment_id = $1`, [id]);
       await client.query(`DELETE FROM teleconsultation_consents WHERE source_id = $1`, [id]);
@@ -257,6 +256,11 @@ export async function appointmentRoutes(app: FastifyInstance) {
       return reply.code(204).send();
     } catch (error) {
       await client.query('ROLLBACK');
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23503') {
+        return reply.code(409).send({
+          error: 'Este agendamento possui informações vinculadas e não pode ser descartado. Cancele a consulta para preservar o histórico.'
+        });
+      }
       throw error;
     } finally {
       client.release();

@@ -180,11 +180,13 @@ test('an appointment without a linked encounter can be discarded',async()=>{
   const appointmentId='00000000-0000-4000-8000-000000000005';
   let discarded=false;
   let emailOutboxCleared=false;
+  let queriedUnknownReminderTable=false;
   const client={query:async(sql:string)=>{
     if(sql.includes('SELECT id, patient_id, status FROM appointments'))return{rows:[{id:appointmentId,patient_id:'00000000-0000-4000-8000-000000000002',status:'WAITING'}]};
     if(sql.includes('EXISTS(SELECT 1 FROM clinical_encounters'))return{rows:[{has_encounter:false,has_checkin:false,has_paid_transaction:false}]};
     if(sql.includes('DELETE FROM appointments'))discarded=true;
     if(sql.includes('DELETE FROM appointment_email_outbox'))emailOutboxCleared=true;
+    if(sql.includes('appointment_reminders'))queriedUnknownReminderTable=true;
     return{rows:[]};
   },release:()=>{}};
   const db={query:async(sql:string)=>{
@@ -196,6 +198,7 @@ test('an appointment without a linked encounter can be discarded',async()=>{
   assert.equal(response.statusCode,204);
   assert.equal(discarded,true);
   assert.equal(emailOutboxCleared,true);
+  assert.equal(queriedUnknownReminderTable,false);
   await app.close();
 });
 
@@ -213,5 +216,24 @@ test('an appointment with clinical history cannot be discarded',async()=>{
   const response=await app.inject({method:'DELETE',url:`/api/appointments/${appointmentId}`,cookies:{nutri_session:'token'}});
   assert.equal(response.statusCode,409);
   assert.equal(discarded,false);
+  await app.close();
+});
+
+test('a concurrent appointment dependency returns a safe conflict instead of an internal error',async()=>{
+  const appointmentId='00000000-0000-4000-8000-000000000005';
+  let rolledBack=false;
+  const client={query:async(sql:string)=>{
+    if(sql.includes('SELECT id, patient_id, status FROM appointments'))return{rows:[{id:appointmentId,patient_id:'00000000-0000-4000-8000-000000000002',status:'WAITING'}]};
+    if(sql.includes('EXISTS(SELECT 1 FROM clinical_encounters'))return{rows:[{has_encounter:false,has_checkin:false,has_paid_transaction:false}]};
+    if(sql.includes('DELETE FROM appointments'))throw Object.assign(new Error('foreign key violation'),{code:'23503'});
+    if(sql==='ROLLBACK')rolledBack=true;
+    return{rows:[]};
+  },release:()=>{}};
+  const db={query:async(sql:string)=>sql.includes('FROM sessions s')?{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]}:{rows:[]},connect:async()=>client,end:async()=>{}};
+  const app=await buildApp(env,db as never);
+  const response=await app.inject({method:'DELETE',url:`/api/appointments/${appointmentId}`,cookies:{nutri_session:'token'}});
+  assert.equal(response.statusCode,409);
+  assert.match(response.json().error,/informações vinculadas/);
+  assert.equal(rolledBack,true);
   await app.close();
 });
