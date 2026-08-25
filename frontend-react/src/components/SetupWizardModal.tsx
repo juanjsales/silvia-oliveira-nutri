@@ -3,21 +3,22 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Copy,
   ExternalLink,
   Mail,
+  Image as ImageIcon,
+  MapPin,
   Palette,
   Phone,
   Rocket,
-  Save,
   Send,
   Sparkles,
   Stethoscope,
   X,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api } from "../lib/api";
 import { capitalizePersonName } from "../lib/formatters";
+import { useConfirm } from "./ConfirmDialog";
 
 type WizardData = {
   clinicName: string;
@@ -27,15 +28,24 @@ type WizardData = {
   phone: string;
   email: string;
   city: string;
+  address: string;
+  logoUrl: string;
+  portraitUrl: string;
+  fullBodyUrl: string;
+  consultationImageUrl: string;
   primaryColor: string;
   secondaryColor: string;
   inPersonPrice: number;
   onlinePrice: number;
   defaultDurationMinutes: number;
+  reminderMessage: string;
+  followupMessage: string;
+  documentFooter: string;
   // SMTP
   smtpEnabled: boolean;
   smtpUser: string;
   smtpPass: string;
+  smtpPasswordConfigured: boolean;
 };
 
 const COLOR_PRESETS = [
@@ -45,6 +55,9 @@ const COLOR_PRESETS = [
   { name: "Lavanda & Eucalipto", primary: "#221d2e", secondary: "#9e91b8" },
   { name: "Esmeralda Vibrante", primary: "#0d2b1d", secondary: "#34d399" },
 ];
+const comparable = (value: WizardData) => JSON.stringify({ ...value, smtpPass: undefined, hasDraftPassword: Boolean(value.smtpPass) });
+const validEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const validOptionalUrl = (value: string) => !value.trim() || (() => { try { return new URL(value).protocol === "https:"; } catch { return false; } })();
 
 export function SetupWizardModal({
   isOpen,
@@ -56,11 +69,14 @@ export function SetupWizardModal({
   onCompleted: () => void;
 }) {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
   const [testEmailSuccess, setTestEmailSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [copiedLink, setCopiedLink] = useState(false);
+  const baselineRef = useRef("");
+  const closeRequestRef = useRef<() => void>(() => undefined);
+  const confirm = useConfirm();
 
   const [data, setData] = useState<WizardData>({
     clinicName: "",
@@ -70,56 +86,115 @@ export function SetupWizardModal({
     phone: "",
     email: "",
     city: "",
+    address: "",
+    logoUrl: "",
+    portraitUrl: "",
+    fullBodyUrl: "",
+    consultationImageUrl: "",
     primaryColor: "#203528",
     secondaryColor: "#8ca481",
     inPersonPrice: 280,
     onlinePrice: 250,
     defaultDurationMinutes: 60,
+    reminderMessage: "Sua consulta está confirmada. Em caso de imprevisto, avise com antecedência.",
+    followupMessage: "Olá! Como você está se adaptando às orientações combinadas na consulta?",
+    documentFooter: "Documento emitido eletronicamente pelo consultório nutricional.",
     smtpEnabled: false,
     smtpUser: "",
     smtpPass: "",
+    smtpPasswordConfigured: false,
   });
 
   useEffect(() => {
     if (!isOpen) return;
-    api<{ data: any }>("/api/settings")
-      .then((r) => {
-        if (r.data) {
-          setData((prev) => ({
-            ...prev,
-            clinicName: r.data.clinicName || "",
-            professionalName: r.data.professionalName || "",
-            crn: r.data.crn || "",
-            specialty: r.data.specialty || "Nutrição Clínica & Esportiva",
-            phone: r.data.phone || "",
-            email: r.data.email || "",
-            city: r.data.city || "",
-            primaryColor: r.data.primaryColor || "#203528",
-            secondaryColor: r.data.secondaryColor || "#8ca481",
-            inPersonPrice: r.data.inPersonPrice || 280,
-            onlinePrice: r.data.onlinePrice || 250,
-            defaultDurationMinutes: r.data.defaultDurationMinutes || 60,
-          }));
-        }
-      })
-      .catch(() => {});
+    let active = true;
+    baselineRef.current = "";
+    setStep(1); setError(""); setTestEmailSuccess(false); setLoading(true);
+    Promise.all([
+      api<{ data: Partial<WizardData> }>("/api/settings"),
+      api<{ data: { enabled?: boolean; user?: string; passwordConfigured?: boolean } }>("/api/settings/smtp"),
+    ]).then(([settings, smtp]) => {
+      if (!active) return;
+      setData((previous) => {
+        const next: WizardData = {
+          ...previous,
+          ...settings.data,
+          clinicName: settings.data.clinicName || "",
+          professionalName: settings.data.professionalName || "",
+          crn: settings.data.crn || "",
+          specialty: settings.data.specialty || "Nutrição Clínica & Esportiva",
+          phone: settings.data.phone || "",
+          email: settings.data.email || "",
+          city: settings.data.city || "",
+          address: settings.data.address || "",
+          logoUrl: settings.data.logoUrl || "",
+          portraitUrl: settings.data.portraitUrl || "",
+          fullBodyUrl: settings.data.fullBodyUrl || "",
+          consultationImageUrl: settings.data.consultationImageUrl || "",
+          inPersonPrice: settings.data.inPersonPrice ?? 280,
+          onlinePrice: settings.data.onlinePrice ?? 250,
+          defaultDurationMinutes: settings.data.defaultDurationMinutes ?? 60,
+          smtpEnabled: Boolean(smtp.data?.enabled),
+          smtpUser: smtp.data?.user || "",
+          smtpPass: "",
+          smtpPasswordConfigured: Boolean(smtp.data?.passwordConfigured),
+        };
+        baselineRef.current = comparable(next);
+        return next;
+      });
+    }).catch((cause) => {
+      if (active) setError(cause instanceof Error ? cause.message : "Não foi possível carregar as configurações atuais.");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [isOpen]);
 
-    api<{ data: any }>("/api/settings/smtp")
-      .then((r) => {
-        if (r.data) {
-          setData((prev) => ({
-            ...prev,
-            smtpEnabled: Boolean(r.data.enabled),
-            smtpUser: r.data.user || "",
-          }));
-        }
-      })
-      .catch(() => {});
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeRequestRef.current();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
+  const dirty = Boolean(baselineRef.current) && comparable(data) !== baselineRef.current;
+  async function requestClose() {
+    if (saving || testingEmail) return;
+    if (dirty && !(await confirm({ title: "Sair sem salvar?", message: "As alterações feitas no assistente serão descartadas.", confirmLabel: "Descartar alterações", tone: "warning" }))) return;
+    setData((current) => ({ ...current, smtpPass: "" }));
+    onClose();
+  }
+  closeRequestRef.current = () => { void requestClose(); };
+
+  function validateStep(target = step) {
+    if (target === 1) {
+      if (data.professionalName.trim().length < 2) return "Informe o nome completo da nutricionista.";
+      if (data.crn.trim().length < 2) return "Informe o número do CRN.";
+      if (!data.specialty.trim()) return "Informe a especialidade ou foco clínico.";
+      if (data.email && !validEmail(data.email)) return "Informe um e-mail profissional válido.";
+      if (![data.logoUrl, data.portraitUrl, data.fullBodyUrl, data.consultationImageUrl].every(validOptionalUrl)) return "As imagens devem usar endereços HTTPS válidos.";
+    }
+    if (target === 2) {
+      if (data.inPersonPrice < 0 || data.onlinePrice < 0) return "Os valores das consultas não podem ser negativos.";
+      if (data.defaultDurationMinutes < 15) return "A duração da consulta deve ser de pelo menos 15 minutos.";
+    }
+    if (target === 3 && data.smtpEnabled) {
+      if (!validEmail(data.smtpUser)) return "Informe o e-mail que será usado nos envios.";
+      if (!data.smtpPass && !data.smtpPasswordConfigured) return "Informe a senha de aplicativo para ativar os e-mails.";
+    }
+    return "";
+  }
+
   async function handleFinish() {
+    const validationError = validateStep(1) || validateStep(2) || validateStep(3);
+    if (validationError) { setError(validationError); return; }
     setSaving(true);
     setError("");
     try {
@@ -134,17 +209,25 @@ export function SetupWizardModal({
           specialty: data.specialty,
           phone: data.phone || undefined,
           email: data.email || undefined,
+          address: data.address || undefined,
           city: data.city || undefined,
+          logoUrl: data.logoUrl || undefined,
+          portraitUrl: data.portraitUrl || undefined,
+          fullBodyUrl: data.fullBodyUrl || undefined,
+          consultationImageUrl: data.consultationImageUrl || undefined,
           primaryColor: data.primaryColor,
           secondaryColor: data.secondaryColor,
           inPersonPrice: Number(data.inPersonPrice),
           onlinePrice: Number(data.onlinePrice),
           defaultDurationMinutes: Number(data.defaultDurationMinutes),
+          reminderMessage: data.reminderMessage,
+          followupMessage: data.followupMessage,
+          documentFooter: data.documentFooter,
         }),
       });
 
-      // 2. Salvar SMTP se preenchido
-      if (data.smtpEnabled && data.smtpUser && data.smtpPass) {
+      // 2. Atualizar SMTP preservando a senha já configurada quando não houver uma nova.
+      if (data.smtpUser && (data.smtpPasswordConfigured || data.smtpPass)) {
         const cleanEmail = data.smtpUser.trim().toLowerCase();
         const cleanPass = data.smtpPass.replace(/\s+/g, "");
         await api("/api/settings/smtp", {
@@ -154,14 +237,16 @@ export function SetupWizardModal({
             port: 587,
             secure: false,
             user: cleanEmail,
-            password: cleanPass,
+            password: cleanPass || undefined,
             from: `${profName || "Consultório"} <${cleanEmail}>`,
-            enabled: true,
+            enabled: data.smtpEnabled,
           }),
         });
       }
 
       window.dispatchEvent(new CustomEvent("clinic-settings-updated"));
+      baselineRef.current = comparable({ ...data, professionalName: profName, smtpPass: "", smtpPasswordConfigured: data.smtpPasswordConfigured || Boolean(data.smtpPass) });
+      setData((current) => ({ ...current, professionalName: profName, smtpPass: "", smtpPasswordConfigured: current.smtpPasswordConfigured || Boolean(current.smtpPass) }));
       onCompleted();
       onClose();
     } catch (err) {
@@ -174,31 +259,21 @@ export function SetupWizardModal({
   async function testEmail() {
     const cleanEmail = data.smtpUser.trim().toLowerCase();
     const cleanPass = data.smtpPass.replace(/\s+/g, "");
-    if (!cleanEmail || !cleanPass) {
-      setError("Preencha o e-mail do Gmail e a Senha de App de 16 letras antes de testar.");
+    if (!validEmail(cleanEmail) || (!cleanPass && !data.smtpPasswordConfigured)) {
+      setError("Informe um e-mail válido e uma senha de aplicativo antes de testar.");
       return;
     }
     setTestingEmail(true);
     setError("");
     setTestEmailSuccess(false);
     try {
-      // Salvar temporariamente para testar
-      await api("/api/settings/smtp", {
-        method: "PUT",
-        body: JSON.stringify({
-          host: "smtp.gmail.com",
-          port: 587,
-          secure: false,
-          user: cleanEmail,
-          password: cleanPass,
-          from: `${data.professionalName || data.clinicName || "Consultório"} <${cleanEmail}>`,
-          enabled: true,
-        }),
-      });
-
-      const res = await api<{ message: string }>("/api/settings/smtp/test", {
+      const endpoint = cleanPass ? "/api/settings/smtp/test-draft" : "/api/settings/smtp/test";
+      await api<{ message: string }>(endpoint, {
         method: "POST",
-        body: JSON.stringify({ to: cleanEmail }),
+        body: JSON.stringify(cleanPass ? {
+          host: "smtp.gmail.com", port: 587, secure: false, user: cleanEmail, password: cleanPass,
+          from: `${data.professionalName || data.clinicName || "Consultório"} <${cleanEmail}>`, to: cleanEmail,
+        } : { to: cleanEmail }),
       });
 
       setTestEmailSuccess(true);
@@ -210,8 +285,8 @@ export function SetupWizardModal({
   }
 
   return (
-    <div className="setup-wizard-backdrop" onClick={onClose}>
-      <div className="setup-wizard-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="setup-wizard-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) void requestClose(); }}>
+      <section className="setup-wizard-modal" role="dialog" aria-modal="true" aria-labelledby="setup-wizard-title" aria-busy={loading || saving} onMouseDown={(e) => e.stopPropagation()}>
         {/* HEADER DO WIZARD */}
         <header className="setup-wizard-header">
           <div className="wizard-title-wrap">
@@ -219,11 +294,11 @@ export function SetupWizardModal({
               <Sparkles size={20} />
             </div>
             <div>
-              <h3>Assistente de Configuração do Consultório</h3>
-              <p>Configure seu espaço clínico em menos de 2 minutos</p>
+              <h3 id="setup-wizard-title">Assistente de Configuração do Consultório</h3>
+              <p>Revise identidade, atendimento e comunicações com segurança</p>
             </div>
           </div>
-          <button className="wizard-close-btn" onClick={onClose} aria-label="Fechar">
+          <button type="button" className="wizard-close-btn" onClick={() => void requestClose()} aria-label="Fechar assistente" autoFocus>
             <X size={18} />
           </button>
         </header>
@@ -248,10 +323,11 @@ export function SetupWizardModal({
 
         {/* CORPO DO FORMULÁRIO */}
         <div className="wizard-body">
+          {loading && <div className="wizard-loading" role="status"><span className="spinner"/><strong>Carregando configurações atuais...</strong></div>}
           {error && <div className="form-error" style={{ marginBottom: 16 }}>{error}</div>}
 
           {/* ── PASSO 1: IDENTIDADE ── */}
-          {step === 1 && (
+          {!loading && step === 1 && (
             <div className="wizard-step-content">
               <div className="wizard-step-intro">
                 <Stethoscope size={22} className="intro-icon" />
@@ -313,6 +389,27 @@ export function SetupWizardModal({
                     onChange={(e) => setData({ ...data, city: e.target.value })}
                   />
                 </label>
+
+                <label>
+                  E-mail profissional
+                  <input type="email" placeholder="contato@consultorio.com.br" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} />
+                </label>
+
+                <label className="wide">
+                  <span className="wizard-label-icon"><MapPin size={14}/> Endereço do consultório</span>
+                  <input type="text" placeholder="Rua, número, complemento e bairro" value={data.address} onChange={(e) => setData({ ...data, address: e.target.value })} />
+                </label>
+
+                <details className="wizard-visual-details wide">
+                  <summary><ImageIcon size={16}/> Logo e imagens da página pública <span>Opcional</span></summary>
+                  <div className="wizard-visual-grid">
+                    <label>Logotipo<input type="url" placeholder="https://.../logo.svg" value={data.logoUrl} onChange={(e) => setData({ ...data, logoUrl: e.target.value })}/></label>
+                    <label>Foto principal<input type="url" placeholder="https://.../foto-principal.webp" value={data.portraitUrl} onChange={(e) => setData({ ...data, portraitUrl: e.target.value })}/></label>
+                    <label>Foto da seção Sobre<input type="url" placeholder="https://.../foto-sobre.webp" value={data.fullBodyUrl} onChange={(e) => setData({ ...data, fullBodyUrl: e.target.value })}/></label>
+                    <label>Foto da consulta<input type="url" placeholder="https://.../consulta.webp" value={data.consultationImageUrl} onChange={(e) => setData({ ...data, consultationImageUrl: e.target.value })}/></label>
+                  </div>
+                  <small>Use endereços HTTPS. Campos vazios mantêm as imagens padrão do sistema.</small>
+                </details>
               </div>
 
               <div className="preset-palettes-box">
@@ -338,7 +435,7 @@ export function SetupWizardModal({
           )}
 
           {/* ── PASSO 2: CONSULTAS & VALORES ── */}
-          {step === 2 && (
+          {!loading && step === 2 && (
             <div className="wizard-step-content">
               <div className="wizard-step-intro">
                 <Phone size={22} className="intro-icon" />
@@ -399,19 +496,19 @@ export function SetupWizardModal({
               </div>
 
               <div className="wizard-tip-box">
-                <strong>💡 Dica do Sistema:</strong> A teleconsulta com câmera HD ponta a ponta (WebRTC) já está 100% ativa no seu sistema, sem você precisar pagar nada por servidores de vídeo.
+                <strong>Teleconsulta integrada:</strong> O sistema utiliza WebRTC para chamadas entre os participantes. A qualidade de áudio e vídeo depende da conexão e das permissões do dispositivo.
               </div>
             </div>
           )}
 
           {/* ── PASSO 3: E-MAILS & SMTP ── */}
-          {step === 3 && (
+          {!loading && step === 3 && (
             <div className="wizard-step-content">
               <div className="wizard-step-intro">
                 <Mail size={22} className="intro-icon" />
                 <div>
                   <h4>Envio de E-mails Automáticos</h4>
-                  <p>Envie confirmações de consulta, lembretes e link do portal aos pacientes direto pelo seu Gmail (100% gratuito).</p>
+                  <p>Conecte uma conta de envio para confirmações, lembretes e orientações. O teste não armazena uma nova senha.</p>
                 </div>
               </div>
 
@@ -439,7 +536,7 @@ export function SetupWizardModal({
                         type="email"
                         placeholder="seunome@gmail.com"
                         value={data.smtpUser}
-                        onChange={(e) => setData({ ...data, smtpUser: e.target.value })}
+                        onChange={(e) => { setTestEmailSuccess(false); setData({ ...data, smtpUser: e.target.value }); }}
                       />
                     </label>
 
@@ -447,9 +544,9 @@ export function SetupWizardModal({
                       Senha de App do Google (16 letras)
                       <input
                         type="password"
-                        placeholder="ex: abcd efgh ijkl mnop"
+                        placeholder={data.smtpPasswordConfigured ? "Senha já protegida · preencha somente para trocar" : "ex: abcd efgh ijkl mnop"}
                         value={data.smtpPass}
-                        onChange={(e) => setData({ ...data, smtpPass: e.target.value })}
+                        onChange={(e) => { setTestEmailSuccess(false); setData({ ...data, smtpPass: e.target.value }); }}
                       />
                     </label>
 
@@ -467,10 +564,10 @@ export function SetupWizardModal({
                         type="button"
                         className="secondary-button"
                         onClick={testEmail}
-                        disabled={testingEmail || !data.smtpUser || !data.smtpPass}
+                      disabled={testingEmail || !data.smtpUser || (!data.smtpPass && !data.smtpPasswordConfigured)}
                         style={{ fontSize: "0.82rem", padding: "8px 14px" }}
                       >
-                        <Send size={14} /> {testingEmail ? "Enviando teste..." : "Testar E-mail Agora"}
+                        <Send size={14} /> {testingEmail ? "Enviando teste..." : "Testar conexão"}
                       </button>
                       {testEmailSuccess && (
                         <span style={{ color: "#34d399", fontSize: "0.82rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -503,7 +600,7 @@ export function SetupWizardModal({
               <ChevronLeft size={16} /> Voltar
             </button>
           ) : (
-            <button type="button" className="ghost-button" onClick={onClose}>
+            <button type="button" className="ghost-button" onClick={() => void requestClose()}>
               Cancelar
             </button>
           )}
@@ -514,10 +611,8 @@ export function SetupWizardModal({
                 type="button"
                 className="primary-button"
                 onClick={() => {
-                  if (step === 1 && !data.professionalName) {
-                    setError("Informe o nome da nutricionista para continuar.");
-                    return;
-                  }
+                  const validationError = validateStep(step);
+                  if (validationError) { setError(validationError); return; }
                   setError("");
                   setStep(step + 1);
                 }}
@@ -537,7 +632,7 @@ export function SetupWizardModal({
             )}
           </div>
         </footer>
-      </div>
+      </section>
     </div>
   );
 }

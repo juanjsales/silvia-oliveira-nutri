@@ -15,6 +15,10 @@ const smtpPutSchema = z.object({
   from: z.string().trim().min(3).max(255),
   enabled: z.boolean().default(false)
 });
+const smtpDraftTestSchema = z.object({
+  host: z.string().trim().min(2).max(255), port: z.coerce.number().int().min(1).max(65535), secure: z.boolean().default(false),
+  user: z.string().trim().min(1).max(255), password: z.string().trim().min(1).max(500), from: z.string().trim().min(3).max(255), to: z.email(),
+});
 
 export async function smtpSettingsRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAdmin);
@@ -123,6 +127,30 @@ export async function smtpSettingsRoutes(app: FastifyInstance) {
       return reply.code(502).send({
         error: err?.message || 'Falha ao autenticar no servidor SMTP. Verifique o e-mail e a senha de app.'
       });
+    }
+  });
+
+  app.post('/test-draft', async (request, reply) => {
+    const body = smtpDraftTestSchema.parse(request.body);
+    const password = body.password.replace(/\s+/g, '');
+    try {
+      const identity = await loadClinicIdentity(app.db);
+      const config = { host: body.host, port: body.port, secure: body.secure, user: body.user, pass: password, from: body.from };
+      await smtpTransport(config).sendMail({
+        from: body.from,
+        to: body.to,
+        subject: `Teste de e-mail — ${identity.clinicName}`,
+        text: 'A conexão de e-mail foi validada. As credenciais somente serão armazenadas quando você concluir o assistente.',
+        html: buildHtmlEmail({
+          title: 'Conexão de E-mail Validada', badge: 'Teste sem salvamento', recipientName: identity.professionalName,
+          lead: 'A conexão SMTP foi testada com sucesso. As credenciais somente serão armazenadas quando o assistente for concluído.',
+          details: [{ label: 'Servidor', value: body.host }, { label: 'Remetente', value: body.from }], identity,
+        }),
+      });
+      return { message: `E-mail de teste enviado com sucesso para ${body.to}.` };
+    } catch (err: any) {
+      app.log.error({ err }, 'Falha ao testar configuração SMTP temporária');
+      return reply.code(502).send({ error: err?.message || 'Falha ao autenticar no servidor SMTP.' });
     }
   });
 }
