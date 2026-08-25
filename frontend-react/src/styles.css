@@ -1354,6 +1354,24 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 }
 
 /* Cards de consulta orientados pelo estado do fluxo clínico. */
+.agenda-page{display:flex;flex-direction:column;gap:18px}
+.agenda-page .page-intro,.agenda-page .panel{margin:0}
+.agenda-intro{align-items:flex-end;padding:4px 2px 2px}
+.agenda-intro h2{margin:5px 0 6px;font:700 clamp(1.45rem,2.2vw,2rem)/1.1 var(--font-display);color:#18382a}
+.agenda-intro p{margin:0;max-width:690px;color:#6e7e74}
+.agenda-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.agenda-summary article{display:flex;align-items:center;gap:12px;min-width:0;padding:16px;background:#fff;border:1px solid #dfe6e1;border-radius:16px;box-shadow:0 5px 18px rgba(24,56,42,.045)}
+.agenda-summary article>svg{width:38px;height:38px;padding:9px;flex:0 0 auto;border-radius:11px;background:#edf6f0;color:#277249}
+.agenda-summary article:nth-child(2)>svg{background:#fbf3df;color:#9a7227}.agenda-summary article:nth-child(3)>svg{background:#e8f5ed;color:#238552}.agenda-summary article:nth-child(4)>svg{background:#eef1f5;color:#536b7a}
+.agenda-summary article div{display:flex;min-width:0;flex-direction:column}.agenda-summary small{overflow:hidden;color:#75867c;font-size:.68rem;white-space:nowrap;text-overflow:ellipsis}.agenda-summary strong{font:700 1.25rem/1.25 var(--font-display);color:#17382a}
+.agenda-requests{border-color:#e8d8ae;background:linear-gradient(135deg,#fffdf8,#fff)}
+.agenda-requests .panel-heading p,.agenda-day-heading p{margin:5px 0 0;color:#7a887f;font-size:.72rem}.agenda-requests .panel-heading>strong{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#f2e6c7;color:#735a20}
+.agenda-requests article{grid-template-columns:auto minmax(0,1fr) auto!important}.request-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#f7efd9;color:#806528}.request-icon svg{width:19px}.request-actions{display:flex;gap:8px}
+.calendar-panel,.day-panel{border-radius:20px}.calendar-panel{position:sticky;top:92px}.calendar-heading{padding-bottom:14px;border-bottom:1px solid #edf0ed}.calendar-heading .icon-button{border:1px solid #e0e6e1;background:#fafbfa}.calendar-grid button{transition:background .15s,color .15s,transform .15s}.calendar-grid button:hover{transform:translateY(-1px)}
+.agenda-day-heading{margin-bottom:14px}.agenda-day-heading h3{text-transform:capitalize}.agenda-day-heading>.icon-button{width:40px;height:40px;border-radius:12px;background:#173f2e;color:#fff;border:0}.agenda-day-heading>.icon-button:hover{background:#0f3324;color:#fff}
+.agenda-toolbar{display:grid;grid-template-columns:minmax(180px,1fr) 190px;gap:9px;margin:-2px 0 16px;padding-bottom:16px;border-bottom:1px solid #e9eeea}.agenda-toolbar label{position:relative}.agenda-toolbar svg{position:absolute;z-index:1;left:11px;top:50%;transform:translateY(-50%);color:#708177}.agenda-toolbar input,.agenda-toolbar select{height:40px;padding:8px 12px 8px 34px;background:#fafbfa;border-radius:11px;font-size:.73rem}.agenda-toolbar select{padding-right:28px}
+.appointment-whatsapp{color:#258754!important}
+.appointment-time-preview{grid-column:1/-1;display:flex;align-items:center;gap:11px;padding:12px 14px;border:1px solid #cee2d4;border-radius:12px;background:#f3f9f5;color:#225c3a}.appointment-time-preview>svg{width:34px;height:34px;padding:8px;border-radius:9px;background:#def0e3}.appointment-time-preview div{display:grid;grid-template-columns:auto auto;align-items:baseline;column-gap:10px}.appointment-time-preview small{grid-column:1/-1;color:#718278;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em}.appointment-time-preview strong{font-size:.85rem}.appointment-time-preview span{color:#6b7e72;font-size:.7rem}.field-hint{display:block;margin:2px 0 7px;color:#829087;font-size:.66rem;font-weight:400}
 .appointment-list{gap:12px}
 .appointment-card{
   position:relative;
@@ -1427,6 +1445,7 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 .appointment-card.response-confirmed .appointment-info small{color:#2f7e4b;font-weight:700}
 .appointment-card.response-reschedule_requested{border-color:#e9c889}
 @media(max-width:760px){
+  .agenda-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.agenda-requests article{grid-template-columns:auto minmax(0,1fr)!important}.request-actions{grid-column:1/-1;justify-content:flex-end}.agenda-toolbar{grid-template-columns:1fr}
   .appointment-card{grid-template-columns:86px minmax(0,1fr);grid-template-areas:"time info" "status status" "actions actions";gap:10px 12px;padding:14px 14px 14px 17px}
   .appointment-time{justify-content:flex-start;padding-right:12px}
   .appointment-status{justify-self:start;min-width:0}
@@ -1434,6 +1453,7 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   .appointment-actions .start-care{flex:1 1 150px}
 }
 @media(max-width:420px){
+  .agenda-summary{grid-template-columns:1fr}.agenda-intro{align-items:stretch}.agenda-intro .primary-button{width:100%;justify-content:center}.calendar-panel{position:static}.appointment-time-preview div{grid-template-columns:1fr}.appointment-time-preview span{margin-top:2px}
   .appointment-card{grid-template-columns:1fr;grid-template-areas:"time" "info" "status" "actions"}
   .appointment-time{padding:0 0 8px;border-right:0;border-bottom:1px solid #e1e8e3;flex-direction:row;align-items:center;justify-content:space-between}
   .appointment-info strong,.appointment-info span,.appointment-info small{white-space:normal}
@@ -6986,3 +7006,46 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 .public-privacy-page{min-height:100vh;background:#f3f5f1;padding:clamp(24px,5vw,72px) 20px;color:#183a2a}.public-privacy-shell{max-width:1120px;margin:auto}.public-privacy-shell>header{margin:28px 0;padding:clamp(28px,5vw,58px);border-radius:28px;background:#173c2b;color:white}.public-privacy-shell>header span{display:flex;align-items:center;gap:9px;text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;font-weight:800;color:#9fe0bd}.public-privacy-shell>header h1{margin:18px 0 10px;font-size:clamp(2.2rem,6vw,4.3rem)}.public-privacy-shell>header p{max-width:720px;color:#d6e6dc;line-height:1.7}.public-privacy-shell>header small{display:block;margin-top:20px;color:#a9c5b4}.public-privacy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.public-privacy-grid article{padding:28px;border:1px solid #d7e0d8;border-radius:22px;background:#fff;box-shadow:0 12px 34px #1d38290a}.public-privacy-grid article>svg{color:#2b8059}.public-privacy-grid h2{margin:16px 0 12px;font-size:1.35rem}.public-privacy-grid h3{margin:18px 0 7px;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}.public-privacy-grid p,.public-privacy-grid li{color:#52675b;line-height:1.65}.public-privacy-grid ul{padding-left:20px}.public-privacy-grid .primary-button{display:inline-flex;margin-top:10px;text-decoration:none}.public-privacy-shell>aside{margin-top:18px;padding:18px;border-radius:14px;background:#e8eee9;color:#52675b;font-size:.85rem}.home-privacy a{display:inline-block;margin-top:8px;color:inherit;font-weight:800}
 @media(max-width:720px){.public-privacy-grid{grid-template-columns:1fr}.public-privacy-shell>header,.public-privacy-grid article{border-radius:18px;padding:24px}}
 .privacy-governance-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.privacy-governance-form h3,.privacy-governance-form button{grid-column:1/-1}.privacy-governance-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.privacy-governance h3{display:flex;align-items:center;gap:8px}.privacy-governance article{display:flex;flex-direction:column;gap:5px;margin:8px 0;padding:14px;border:1px solid #dce5de;border-radius:13px;background:#fbfcfb}.privacy-governance article p{margin:0;color:#52675b}.privacy-governance article small,.privacy-governance article span{color:#738178}.privacy-governance details{margin-top:10px;border:1px dashed #a9bbae;border-radius:13px;padding:13px}.privacy-governance summary{display:flex;gap:8px;align-items:center;cursor:pointer;font-weight:800}.privacy-governance details form{display:grid;gap:9px;margin-top:14px}.privacy-governance details input,.privacy-governance details textarea{width:100%;padding:11px;border:1px solid #ccd8cf;border-radius:9px}.privacy-governance details textarea{min-height:84px}@media(max-width:760px){.privacy-governance-form,.privacy-governance-columns{grid-template-columns:1fr}.privacy-governance-form h3,.privacy-governance-form button{grid-column:auto}}
+
+/* Agenda: contrato visual único para controles e formulário. */
+.agenda-page .agenda-toolbar label{display:flex;align-items:center;min-width:0;margin:0;font-size:inherit;font-weight:400}
+.agenda-page .agenda-toolbar input,
+.agenda-page .agenda-toolbar select{
+  width:100%;height:44px;min-height:44px;margin:0;padding:0 40px 0 38px;
+  border:1px solid #d6dfd8;border-radius:12px;background-color:#fff;
+  color:#1d392b;font-size:.76rem;font-weight:500;line-height:1;
+  box-shadow:0 1px 2px rgba(18,49,35,.025);outline:0;
+  transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease;
+}
+.agenda-page .agenda-toolbar input::placeholder{color:#89978e;font-weight:400}
+.agenda-page .agenda-toolbar input:hover,
+.agenda-page .agenda-toolbar select:hover{border-color:#b8c8bd;background:#fdfefd}
+.agenda-page .agenda-toolbar input:focus,
+.agenda-page .agenda-toolbar select:focus{border-color:#568169;background:#fff;box-shadow:0 0 0 3px rgba(64,119,84,.13)}
+.agenda-page .agenda-toolbar svg{left:13px;pointer-events:none}
+.agenda-page .agenda-toolbar label:last-child svg{z-index:2}
+.agenda-page .modal form{display:flex;flex-direction:column;gap:0}
+.agenda-page .modal .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 14px}
+.agenda-page .modal .form-grid>label{display:flex;flex-direction:column;gap:7px;min-width:0;margin:0;color:#294437;font-size:.72rem;font-weight:750;line-height:1.35}
+.agenda-page .modal .form-grid>label.full{grid-column:1/-1}
+.agenda-page .modal :is(input:not([type='checkbox']):not([type='radio']),select,textarea){
+  display:block;width:100%;min-width:0;margin:0;padding:11px 13px;
+  border:1px solid #d4ddd6;border-radius:11px;background:#fcfdfc;color:#1c3428;
+  font-size:.8rem;font-weight:500;line-height:1.35;outline:0;
+  box-shadow:0 1px 2px rgba(17,45,32,.02);
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.agenda-page .modal :is(input:not([type='checkbox']):not([type='radio']),select){height:46px;min-height:46px}
+.agenda-page .modal textarea{min-height:92px;resize:vertical}
+.agenda-page .modal :is(input,select,textarea):hover:not(:disabled){border-color:#b5c6ba;background:#fff}
+.agenda-page .modal :is(input,select,textarea):focus{border-color:#568169;background:#fff;box-shadow:0 0 0 3px rgba(64,119,84,.13)}
+.agenda-page .modal .input-with-icon input{padding-left:41px}
+.agenda-page .modal .input-with-icon svg{left:13px;z-index:1;pointer-events:none}
+.agenda-page .modal .field-hint{margin:0 0 1px;color:#7c8c82;font-size:.64rem;font-weight:450}
+.agenda-page .modal .modal-actions{margin-top:22px;padding-top:18px;border-top:1px solid #e8ede9}
+@media(max-width:600px){
+  .agenda-page .modal .form-grid{grid-template-columns:1fr;gap:14px}
+  .agenda-page .modal .form-grid>label.full{grid-column:auto}
+  .agenda-page .agenda-toolbar input,.agenda-page .agenda-toolbar select,
+  .agenda-page .modal :is(input:not([type='checkbox']):not([type='radio']),select,textarea){font-size:16px!important}
+}
