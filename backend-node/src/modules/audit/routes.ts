@@ -34,6 +34,6 @@ export async function auditRoutes(app: FastifyInstance) {
       actorUserId: request.auth!.userId,
       metadata: { action: query.action, entityType: query.entityType, entityId: query.entityId, resultCount: result.rows.length },
     });
-    return { data: result.rows, nextCursor: result.rows.at(-1)?.id ?? null };
+    return { data: result.rows, nextCursor: result.rows[result.rows.length - 1]?.id ?? null };
   });
 }

@@ -395,7 +395,7 @@ export async function videoRoutes(app: FastifyInstance) {
          FROM teleconsultation_events WHERE session_id=$1 AND sequence>$2 ORDER BY sequence ASC LIMIT $3`,
       [sessionId, after, limit],
     );
-    return { data: { events: events.rows, nextCursor: events.rows.at(-1)?.sequence || String(after) } };
+    return { data: { events: events.rows, nextCursor: events.rows[events.rows.length - 1]?.sequence || String(after) } };
   });
 
   // Salvar o estado de apresentação ao vivo (controlado pela nutricionista)
