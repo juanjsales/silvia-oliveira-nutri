@@ -10,6 +10,16 @@
   "crons": [
     { "path": "/api/cron/appointment-reminders", "schedule": "0 11 * * *" }
   ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        { "type": "host", "value": "silvia-oliveira-nutri-v2.vercel.app" }
+      ],
+      "destination": "https://silviaoliveira.vercel.app/:path*",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/videocall.html",

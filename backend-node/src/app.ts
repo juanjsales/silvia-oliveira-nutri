@@ -38,9 +38,18 @@ export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
   app.decorate('env', env);
   app.decorate('db', db);
+  const allowedOrigins = new Set([
+    new URL(env.FRONTEND_ORIGIN).origin,
+    new URL(env.APP_URL).origin,
+    ...(env.LEGACY_APP_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean).map(value => new URL(value).origin),
+  ]);
   await app.register(helmet);
   await app.register(cookie);
-  await app.register(cors, { origin: env.FRONTEND_ORIGIN, credentials: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] });
+  await app.register(cors, {
+    origin: (origin, callback) => callback(null, !origin || allowedOrigins.has(origin)),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  });
   await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
   app.addHook('onRequest', async (request, reply) => {
     if (!request.url.startsWith('/api/')) return;
@@ -48,10 +57,9 @@ export async function buildApp(env: AppEnv, db: Database) {
     reply.header('Pragma', 'no-cache');
     if (env.NODE_ENV !== 'production' || !['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) return;
     const origin = request.headers.origin;
-    const allowed = new Set([new URL(env.FRONTEND_ORIGIN).origin, new URL(env.APP_URL).origin]);
     // Browser mutations must originate from the configured application. Requests
     // without Origin remain available to trusted server-to-server integrations.
-    if (origin && !allowed.has(origin)) return reply.code(403).send({ error: 'Origem da solicitação não autorizada.' });
+    if (origin && !allowedOrigins.has(origin)) return reply.code(403).send({ error: 'Origem da solicitação não autorizada.' });
   });
   // Authentication decorators must live on the root instance so sibling route
   // plugins can use them. Registering this function as a regular Fastify plugin

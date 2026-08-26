@@ -32,6 +32,13 @@ export function validateProductionEnv(env) {
   for (const name of ['FRONTEND_ORIGIN', 'APP_URL']) {
     if (present(env[name]) && !validUrl(env[name], ['https:'])) failures.push(`${name} deve ser uma URL HTTPS sem credenciais.`);
   }
+  if (present(env.LEGACY_APP_ORIGINS)) {
+    for (const origin of env.LEGACY_APP_ORIGINS.split(',').map((value) => value.trim()).filter(Boolean)) {
+      if (!validUrl(origin, ['https:']) || new URL(origin).origin !== origin.replace(/\/$/, '')) {
+        failures.push(`LEGACY_APP_ORIGINS contém origem inválida: ${origin}.`);
+      }
+    }
+  }
   for (const name of ['APP_ENCRYPTION_KEY', 'CRON_SECRET']) {
     if (present(env[name]) && env[name].length < 32) failures.push(`${name} deve ter pelo menos 32 caracteres.`);
   }

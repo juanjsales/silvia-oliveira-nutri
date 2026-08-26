@@ -34,6 +34,17 @@ test('production rejects browser mutations from an untrusted origin', async () =
   await app.close();
 });
 
+test('canonical and explicitly configured legacy origins remain synchronized', async () => {
+  const { db } = database();
+  const app = await buildApp({ ...env, APP_URL: 'https://canonical.example', LEGACY_APP_ORIGINS: 'https://legacy.example' }, db as never);
+  for (const origin of ['https://canonical.example', 'https://nutri.example', 'https://legacy.example']) {
+    const response = await app.inject({ method: 'POST', url: '/api/auth/logout', headers: { origin }, cookies: { nutri_session: 'token' } });
+    assert.notEqual(response.statusCode, 403, origin);
+    assert.equal(response.headers['access-control-allow-origin'], origin);
+  }
+  await app.close();
+});
+
 test('sensitive API responses disable browser and intermediary caching', async () => {
   const { db } = database();
   const app = await buildApp(env, db as never);

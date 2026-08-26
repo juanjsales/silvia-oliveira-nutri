@@ -33,6 +33,6 @@ jobs:
       NODE_ENV: production
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
-      FRONTEND_ORIGIN: https://silvia-oliveira-nutri-v2.vercel.app
-      APP_URL: https://silvia-oliveira-nutri-v2.vercel.app
+      FRONTEND_ORIGIN: https://silviaoliveira.vercel.app
+      APP_URL: https://silviaoliveira.vercel.app
       SMTP_FROM: migration@localhost.invalid

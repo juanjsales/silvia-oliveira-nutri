@@ -6,7 +6,7 @@
   
   <!-- Página Inicial / Landing Page Oficial -->
   <url>
-    <loc>https://silvia-oliveira-nutri-v2.vercel.app/</loc>
+    <loc>https://silviaoliveira.vercel.app/</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -14,7 +14,7 @@
 
   <!-- Área do Paciente / Login -->
   <url>
-    <loc>https://silvia-oliveira-nutri-v2.vercel.app/login</loc>
+    <loc>https://silviaoliveira.vercel.app/login</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -22,7 +22,7 @@
 
   <!-- Política de Privacidade & LGPD -->
   <url>
-    <loc>https://silvia-oliveira-nutri-v2.vercel.app/privacidade</loc>
+    <loc>https://silviaoliveira.vercel.app/privacidade</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -30,7 +30,7 @@
 
   <!-- Recuperação de Acesso -->
   <url>
-    <loc>https://silvia-oliveira-nutri-v2.vercel.app/recuperar-senha</loc>
+    <loc>https://silviaoliveira.vercel.app/recuperar-senha</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>

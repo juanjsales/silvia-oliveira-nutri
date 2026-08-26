@@ -5,7 +5,7 @@ on:
       base_url:
         description: URL completa do deploy a homologar
         required: true
-        default: https://silvia-oliveira-nutri-v2.vercel.app
+        default: https://silviaoliveira.vercel.app
 permissions:
   contents: read
 

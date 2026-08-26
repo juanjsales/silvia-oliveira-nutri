@@ -22,6 +22,7 @@ Após aplicar as migrações e publicar, execute manualmente o workflow `Product
 | `DATABASE_URL` | Conexão da aplicação ao pool transacional do PostgreSQL. |
 | `FRONTEND_ORIGIN` | Origem HTTPS exata permitida pelo CORS. |
 | `APP_URL` | URL HTTPS pública usada nos links enviados por e-mail. |
+| `LEGACY_APP_ORIGINS` | Origens HTTPS antigas, separadas por vírgula, aceitas temporariamente durante migração de domínio. |
 | `SMTP_FROM` | Remetente padrão; é obrigatório mesmo quando o SMTP fica armazenado no banco. |
 | `APP_ENCRYPTION_KEY` | Segredo aleatório com pelo menos 32 caracteres para proteger credenciais SMTP armazenadas. |
 | `CRON_SECRET` | Segredo aleatório com pelo menos 32 caracteres usado pelo cron de lembretes. |

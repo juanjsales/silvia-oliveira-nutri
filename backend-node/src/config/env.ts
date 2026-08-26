@@ -11,6 +11,7 @@ const envSchema = z.object({
   DB_CONNECTION_TIMEOUT_MS: z.coerce.number().int().min(1000).max(30000).default(10000),
   DB_IDLE_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(10000),
   FRONTEND_ORIGIN: z.string().url(),
+  LEGACY_APP_ORIGINS: z.string().optional(),
   SESSION_COOKIE_NAME: z.string().min(1).default('nutri_session'),
   SESSION_TTL_HOURS: z.coerce.number().int().positive().max(168).default(6),
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().max(120).default(30),
@@ -38,6 +39,14 @@ const envSchema = z.object({
   VAPID_PRIVATE_KEY: z.string().min(20).optional(),
   VAPID_SUBJECT: z.string().regex(/^(mailto:|https:)/).optional()
 }).superRefine((env, context) => {
+  for (const [index, value] of (env.LEGACY_APP_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean).entries()) {
+    try {
+      const url = new URL(value);
+      if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) throw new Error();
+    } catch {
+      context.addIssue({ code: 'custom', path: ['LEGACY_APP_ORIGINS', index], message: 'Cada origem legada deve ser uma origem HTTPS sem caminho.' });
+    }
+  }
   const turnValues = [env.WEBRTC_TURN_URL, env.WEBRTC_TURN_USERNAME, env.WEBRTC_TURN_CREDENTIAL];
   if (turnValues.some(Boolean) && !turnValues.every(Boolean)) {
     context.addIssue({ code: 'custom', path: ['WEBRTC_TURN_URL'], message: 'TURN exige URL, usuário e credencial em conjunto.' });

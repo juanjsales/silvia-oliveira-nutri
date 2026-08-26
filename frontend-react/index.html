@@ -17,10 +17,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="canonical" href="https://silvia-oliveira-nutri-v2.vercel.app/" />
+    <link rel="canonical" href="https://silviaoliveira.vercel.app/" />
     <title>Consultório Nutricional</title>
   </head>
   <body>
+    <script>
+      if (window.location.hostname === 'silvia-oliveira-nutri-v2.vercel.app') {
+        window.location.replace('https://silviaoliveira.vercel.app' + window.location.pathname + window.location.search + window.location.hash);
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nutri-portal-v5';
+const CACHE_NAME = 'nutri-portal-v6';
 const ASSETS_TO_CACHE = [
   '/',
   '/portal',

@@ -27,6 +27,12 @@ test('rejects partial optional integrations', () => {
   assert.ok(failures.some((failure) => failure.includes('SUPABASE_URL')));
 });
 
+test('accepts canonical and legacy HTTPS origins but rejects paths', () => {
+  assert.deepEqual(validateProductionEnv({ ...valid, LEGACY_APP_ORIGINS: 'https://old.example.com,https://preview.example.com' }), []);
+  const failures = validateProductionEnv({ ...valid, LEGACY_APP_ORIGINS: 'https://old.example.com/portal' });
+  assert.ok(failures.some((failure) => failure.includes('LEGACY_APP_ORIGINS')));
+});
+
 test('diagnostics never contain secret values', () => {
   const summary = redactedEnvironmentSummary({ CRON_SECRET: 'do-not-print-this', DATABASE_URL: valid.DATABASE_URL });
   assert.equal(summary.join(' ').includes('do-not-print-this'), false);

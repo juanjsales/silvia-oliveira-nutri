@@ -33,4 +33,4 @@ Disallow: /configuracoes/
 Disallow: /api/
 
 # Sitemap Oficial para o Google Search Console
-Sitemap: https://silvia-oliveira-nutri-v2.vercel.app/sitemap.xml
+Sitemap: https://silviaoliveira.vercel.app/sitemap.xml
