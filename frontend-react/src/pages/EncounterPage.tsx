@@ -246,40 +246,47 @@ function Recall24hEditor({data,onChange,disabled}:{data:SectionData;onChange:(fi
 
 function AnthropometryGuide({data}:{data:SectionData}){
  const[activeRegion,setActiveRegion]=useState('');
+ const[bodyView,setBodyView]=useState<'front'|'back'>('front');
  const landmarks=[
-  {id:'neck',title:'Pescoço',detail:'Base do pescoço',fields:['neck']},
-  {id:'chest',title:'Tórax',detail:'Linha do tórax',fields:['chest']},
-  {id:'arms',title:'Braços D/E',detail:'Ponto médio do braço',fields:['arm','armLeft']},
-  {id:'forearms',title:'Antebraços D/E',detail:'Maior circunferência',fields:['forearmRight','forearmLeft']},
-  {id:'waist',title:'Cintura',detail:'Menor circunferência',fields:['waist']},
-  {id:'abdomen',title:'Abdômen',detail:'Linha umbilical',fields:['abdomen']},
-  {id:'hip',title:'Quadril',detail:'Maior protuberância',fields:['hip']},
-  {id:'thighs',title:'Coxas D/E',detail:'Ponto padronizado',fields:['thighRight','thighLeft']},
-  {id:'calves',title:'Panturrilhas D/E',detail:'Maior circunferência',fields:['calf','calfLeft']},
+  {id:'neck',title:'Pescoço',detail:'Base do pescoço',fields:['neck'],view:'front'},
+  {id:'chest',title:'Tórax',detail:'Linha do tórax',fields:['chest'],view:'front'},
+  {id:'arms',title:'Braços D/E',detail:'Ponto médio do braço',fields:['arm','armLeft'],view:'front'},
+  {id:'forearms',title:'Antebraços D/E',detail:'Maior circunferência',fields:['forearmRight','forearmLeft'],view:'front'},
+  {id:'waist',title:'Cintura',detail:'Menor circunferência',fields:['waist'],view:'front'},
+  {id:'abdomen',title:'Abdômen',detail:'Linha umbilical',fields:['abdomen'],view:'front'},
+  {id:'hip',title:'Quadril',detail:'Maior protuberância',fields:['hip'],view:'back'},
+  {id:'thighs',title:'Coxas D/E',detail:'Ponto padronizado',fields:['thighRight','thighLeft'],view:'front'},
+  {id:'calves',title:'Panturrilhas D/E',detail:'Maior circunferência',fields:['calf','calfLeft'],view:'back'},
+  {id:'bicipital',title:'Dobra bicipital',detail:'Face anterior do braço',fields:['bicipitalFold'],view:'front',unit:'mm'},
+  {id:'tricipital',title:'Dobra tricipital',detail:'Face posterior do braço',fields:['tricipitalFold'],view:'back',unit:'mm'},
+  {id:'suprailiac',title:'Dobra suprailíaca',detail:'Acima da crista ilíaca',fields:['suprailiacFold'],view:'front',unit:'mm'},
+  {id:'subscapular',title:'Dobra subescapular',detail:'Abaixo da escápula',fields:['subscapularFold'],view:'back',unit:'mm'},
  ];
  const selectRegion=(region:typeof landmarks[number])=>{
   setActiveRegion(region.id);
+  setBodyView(region.view as 'front'|'back');
   const input=document.getElementById(`clinical-assessment-${region.fields[0]}`) as HTMLInputElement|null;
   input?.scrollIntoView({behavior:'smooth',block:'center'});window.setTimeout(()=>input?.focus({preventScroll:true}),350);
  };
  const measure=(fields:string[])=>fields.map(field=>String(data[field]||'').trim()).filter(Boolean);
  return <aside className="anthropometry-guide" aria-labelledby="anthropometry-guide-title">
-  <header><div><span className="eyebrow">Guia visual</span><h3 id="anthropometry-guide-title">Pontos de medição</h3></div><Scale size={20}/></header>
-  <div className="body-map-wrap">
+  <header><div><span className="eyebrow">Guia visual interativo</span><h3 id="anthropometry-guide-title">Pontos de medição</h3></div><Scale size={20}/></header>
+  <div className="body-view-switch" role="group" aria-label="Vista do corpo"><button type="button" className={bodyView==='front'?'active':''} onClick={()=>{setBodyView('front');setActiveRegion('')}}>Frente</button><button type="button" className={bodyView==='back'?'active':''} onClick={()=>{setBodyView('back');setActiveRegion('')}}>Costas</button></div>
+  <div className={`body-map-wrap view-${bodyView}`} data-view={bodyView==='front'?'Vista frontal':'Vista posterior'}>
    <span className="body-side body-side-left">D</span><span className="body-side body-side-right">E</span>
    <svg className="body-map" viewBox="0 0 240 470" role="img" aria-labelledby="body-map-title body-map-desc">
-    <title id="body-map-title">Mapa corporal antropométrico frontal</title><desc id="body-map-desc">Silhueta humana neutra com linhas nas regiões do pescoço, braços, antebraços, tórax, cintura, abdômen, quadril, coxas e panturrilhas.</desc>
+    <title id="body-map-title">Mapa corporal antropométrico — {bodyView==='front'?'vista frontal':'vista posterior'}</title><desc id="body-map-desc">Silhueta humana neutra e interativa com pontos de perimetria e dobras cutâneas.</desc>
     <g className="body-silhouette">
-     <circle cx="120" cy="42" r="27"/><path d="M95 73 Q120 61 145 73 L163 130 151 228 164 279 151 304 145 447 120 447 114 313 107 447 82 447 77 304 64 279 77 228 66 130Z"/>
-     <path d="M70 95 39 190 51 198 86 133M170 95l31 95-12 8-35-65" fill="none" strokeWidth="19" strokeLinecap="round"/>
+     <path d="M120 13c-17 0-29 13-29 31 0 14 7 25 18 30l-3 13c-20 3-36 11-46 24-8 11-11 28-15 46l-16 79c-2 12 4 21 13 23 10 2 18-5 20-16l15-67 5 69c1 15-3 34-8 54-5 22-4 52-1 78l5 70c1 12 8 20 18 20 11 0 18-9 18-21l1-94h10l1 94c0 12 7 21 18 21 10 0 17-8 18-20l5-70c3-26 4-56-1-78-5-20-9-39-8-54l5-69 15 67c2 11 10 18 20 16 9-2 15-11 13-23l-16-79c-4-18-7-35-15-46-10-13-26-21-46-24l-3-13c11-5 18-16 18-30 0-18-12-31-29-31Z"/>
+     <path className="body-detail" d={bodyView==='front'?"M94 116c15 8 37 8 52 0M92 196c17 8 39 8 56 0M86 242c21 10 47 10 68 0M120 88v145M98 291c10 7 34 7 44 0":"M102 90c5 6 31 6 36 0M86 125c21-11 47-11 68 0M91 184c17 8 41 8 58 0M88 243c20 13 44 13 64 0M120 91v142M98 292c10 7 34 7 44 0"}/>
     </g>
     <g className="body-landmarks">
-     <path d="M97 76h46"/><path d="M78 126h84"/><path d="M72 171h-32M168 171h32"/><path d="M58 218h-25M182 218h25"/><path d="M78 203h84"/><path d="M75 232h90"/><path d="M72 269h96"/><path d="M79 321h31M130 321h31"/><path d="M79 392h30M131 392h30"/>
+     {bodyView==='front'?<><path d="M101 86h38"/><path d="M79 132h82"/><path d="M73 168H48M167 168h25"/><path d="M60 218H38M180 218h22"/><path d="M84 197h72"/><path d="M80 225h80"/><path d="M82 300h31M127 300h31"/></>:<><path d="M82 132h76"/><path d="M75 245h90"/><path d="M82 382h31M127 382h31"/></>}
     </g>
    </svg>
-   {landmarks.map(region=><button key={region.id} type="button" className={`body-hotspot body-hotspot-${region.id}${activeRegion===region.id?' active':''}`} onClick={()=>selectRegion(region)} aria-label={`Preencher ${region.title}`} title={`Ir para ${region.title}`}><span/></button>)}
+   {landmarks.filter(region=>region.view===bodyView).map(region=><button key={region.id} type="button" className={`body-hotspot body-hotspot-${region.id}${activeRegion===region.id?' active':''}`} onClick={()=>selectRegion(region)} aria-label={`Preencher ${region.title}`} title={`Ir para ${region.title}`}><span/></button>)}
   </div>
-  <div className="anthropometry-landmarks">{landmarks.map(region=>{const values=measure(region.fields);const difference=values.length===2?Math.abs(Number(values[0])-Number(values[1])).toFixed(1):'';return <button type="button" className={activeRegion===region.id?'active':''} key={region.id} onClick={()=>selectRegion(region)}><strong>{region.title}</strong><span>{values.length?`${values.join(' / ')} cm${difference?` · Δ ${difference}`:''}`:region.detail}</span></button>})}</div>
+  <div className="anthropometry-landmarks">{landmarks.map(region=>{const values=measure(region.fields);const difference=values.length===2?Math.abs(Number(values[0])-Number(values[1])).toFixed(1):'';return <button type="button" className={activeRegion===region.id?'active':''} key={region.id} onClick={()=>selectRegion(region)}><strong>{region.title}</strong><span>{values.length?`${values.join(' / ')} ${'unit' in region?region.unit:'cm'}${difference?` · Δ ${difference}`:''}`:region.detail}</span></button>})}</div>
   <p><strong>Padronize a técnica:</strong> mesma posição, lado identificado e fita sem compressão. Registre o protocolo adotado nas observações.</p>
  </aside>;
 }
