@@ -2,8 +2,7 @@ const secretNames = new Set([
   'APP_ENCRYPTION_KEY',
   'CRON_SECRET',
   'DATABASE_URL',
-  'SMTP_PASS',
-  'SUPABASE_SERVICE_ROLE_KEY'
+  'SMTP_PASS'
 ]);
 
 function present(value) {
@@ -48,13 +47,6 @@ export function validateProductionEnv(env) {
   if (smtpPresent.length > 0 && smtpPresent.length !== smtp.length) {
     failures.push('SMTP_HOST, SMTP_USER e SMTP_PASS devem ser configuradas em conjunto.');
   }
-
-  const storage = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_EXAMS_BUCKET'];
-  const storagePresent = storage.filter((name) => present(env[name]));
-  if (storagePresent.length > 0 && storagePresent.length !== storage.length) {
-    failures.push('SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY e SUPABASE_EXAMS_BUCKET devem ser configuradas em conjunto.');
-  }
-  if (present(env.SUPABASE_URL) && !validUrl(env.SUPABASE_URL, ['https:'])) failures.push('SUPABASE_URL deve ser uma URL HTTPS sem credenciais.');
 
   return failures;
 }

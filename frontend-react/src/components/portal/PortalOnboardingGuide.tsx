@@ -5,7 +5,6 @@ import {
   Circle,
   ClipboardList,
   Compass,
-  FileUp,
   Sparkles,
   Utensils,
 } from 'lucide-react';
@@ -15,7 +14,6 @@ interface PortalOnboardingGuideProps {
   onNavigateTab: (tab: PortalTab) => void;
   hasAppointment?: boolean;
   hasCheckin?: boolean;
-  hasExams?: boolean;
   hasPlan?: boolean;
   professionalName?: string;
 }
@@ -24,7 +22,6 @@ export function PortalOnboardingGuide({
   onNavigateTab,
   hasAppointment = false,
   hasCheckin = false,
-  hasExams = false,
   hasPlan = false,
   professionalName = 'sua nutricionista',
 }: PortalOnboardingGuideProps) {
@@ -52,17 +49,6 @@ export function PortalOnboardingGuide({
       icon: ClipboardList,
     },
     {
-      id: 'exams',
-      title: 'Anexar exames recentes',
-      description: hasExams
-        ? 'Exames laboratoriais enviados com sucesso.'
-        : 'Se você possui exames de sangue ou laudos recentes, envie-os em PDF ou foto para avaliação.',
-      tab: 'exames' as PortalTab,
-      completed: hasExams,
-      actionText: hasExams ? 'Ver exames' : 'Enviar arquivos',
-      icon: FileUp,
-    },
-    {
       id: 'plan',
       title: 'Receber seu plano alimentar',
       description: hasPlan
@@ -76,7 +62,7 @@ export function PortalOnboardingGuide({
     },
   ];
 
-  const completedCount = [hasAppointment, hasCheckin, hasExams, hasPlan].filter(Boolean).length;
+  const completedCount = [hasAppointment, hasCheckin, hasPlan].filter(Boolean).length;
   const progressPercent = Math.round((completedCount / steps.length) * 100);
 
   return (

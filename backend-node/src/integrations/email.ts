@@ -171,7 +171,7 @@ export async function sendAppointmentEmail(
     ],
     ctaText: 'Acessar Meu Portal',
     ctaUrl: `${env.APP_URL}/portal`,
-    footerNote: 'Recomendamos acessar seu portal com antecedência para preencher o pré-checkin e anexar exames recentes.',
+    footerNote: 'Recomendamos acessar seu portal com antecedência para preencher o pré-check-in e ter em mãos os resultados de exames recentes.',
     identity,
   });
 

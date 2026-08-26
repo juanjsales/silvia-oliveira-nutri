@@ -18,7 +18,6 @@ import './nutrition-enhancements.css';
 import './document-professional.css';
 import './messages.css';
 import './follow-up.css';
-import './patient-exams.css';
 import './login.css';
 import './forms.css';
 

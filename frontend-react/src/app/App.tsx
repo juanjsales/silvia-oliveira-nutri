@@ -28,7 +28,6 @@ const PasswordRecoveryPage = lazy(() => import('../pages/PasswordRecoveryPage').
 const PasswordResetPage = lazy(() => import('../pages/PasswordResetPage').then(module => ({ default: module.PasswordResetPage })));
 const PatientAppointmentsPage = lazy(() => import('../pages/PatientAppointmentsPage').then(module => ({ default: module.PatientAppointmentsPage })));
 const PatientDocumentPage = lazy(() => import('../pages/PatientDocumentPage').then(module => ({ default: module.PatientDocumentPage })));
-const PatientExamsPage = lazy(() => import('../pages/PatientExamsPage').then(module => ({ default: module.PatientExamsPage })));
 const PatientPlanPage = lazy(() => import('../pages/PatientPlanPage').then(module => ({ default: module.PatientPlanPage })));
 const PatientVideoPage = lazy(() => import('../pages/PatientVideoPage').then(module => ({ default: module.PatientVideoPage })));
 const PatientsPage = lazy(() => import('../pages/PatientsPage').then(module => ({ default: module.PatientsPage })));
@@ -87,7 +86,6 @@ export function App() {
               <Route path="atendimentos" element={<EncounterPage />} />
               <Route path="mensagens" element={<MessagesPage />} />
               <Route path="acompanhamento" element={<FollowUpPage />} />
-              <Route path="exames" element={<PatientExamsPage />} />
               <Route path="planos" element={<NutritionLibraryPage />} />
               <Route path="planos/:id" element={<MealPlanEditorPage />} />
               <Route path="documentos" element={<DocumentsPage />} />

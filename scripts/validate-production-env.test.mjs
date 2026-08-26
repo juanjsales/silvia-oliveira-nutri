@@ -21,10 +21,9 @@ test('rejects insecure public URLs and short secrets', () => {
   assert.ok(failures.some((failure) => failure.includes('CRON_SECRET')));
 });
 
-test('rejects partial optional integrations', () => {
-  const failures = validateProductionEnv({ ...valid, SMTP_HOST: 'smtp.example.com', SUPABASE_URL: 'https://project.supabase.co' });
+test('rejects a partial SMTP integration', () => {
+  const failures = validateProductionEnv({ ...valid, SMTP_HOST: 'smtp.example.com' });
   assert.ok(failures.some((failure) => failure.includes('SMTP_HOST')));
-  assert.ok(failures.some((failure) => failure.includes('SUPABASE_URL')));
 });
 
 test('accepts canonical and legacy HTTPS origins but rejects paths', () => {

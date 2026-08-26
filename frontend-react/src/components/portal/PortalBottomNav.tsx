@@ -2,7 +2,6 @@ import {
   BookOpen,
   CalendarDays,
   CreditCard,
-  FlaskConical,
   Goal,
   LineChart,
   Menu,
@@ -23,7 +22,6 @@ export type PortalTab =
   | "checkin"
   | "jornada"
   | "diario"
-  | "exames"
   | "evolucao"
   | "laminas"
   | "mensagens"
@@ -55,7 +53,6 @@ export function PortalBottomNav({
     { key: "compras", label: "Lista de Compras", icon: ShoppingBasket },
     { key: "agenda", label: "Agenda", icon: CalendarDays },
     { key: "mensagens", label: "Mensagens", icon: MessageCircle },
-    { key: "exames", label: "Exames", icon: FlaskConical },
     { key: "metas", label: "Metas", icon: Goal },
     { key: "financeiro", label: "Financeiro", icon: CreditCard },
     { key: "perfil", label: "Meu Perfil", icon: UserRound },
@@ -226,21 +223,6 @@ export function PortalBottomNav({
                 <div>
                   <strong>Mensagens</strong>
                   <small>Falar com a nutricionista</small>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                className="more-menu-btn"
-                onClick={() => {
-                  onChangeTab("exames");
-                  setShowMoreModal(false);
-                }}
-              >
-                <FlaskConical size={20} style={{ color: "#7c3aed" }} />
-                <div>
-                  <strong>Exames</strong>
-                  <small>Laudos e PDFs</small>
                 </div>
               </button>
 

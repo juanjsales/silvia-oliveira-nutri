@@ -30,12 +30,10 @@ export async function settingsRoutes(app: FastifyInstance) {
     const stored = smtp.rows[0];
     const environmentEmail = Boolean(app.env.SMTP_HOST && app.env.SMTP_USER && app.env.SMTP_PASS);
     const configuredEmail = Boolean((stored?.enabled && stored.host && stored.user && stored.from && stored.passwordConfigured && app.env.APP_ENCRYPTION_KEY) || environmentEmail);
-    const storageReady = Boolean(app.env.SUPABASE_URL && app.env.SUPABASE_SERVICE_ROLE_KEY && app.env.SUPABASE_EXAMS_BUCKET);
     const checks = [
       {key:'database',label:'Banco e migrações',ready:schema.ready,required:true,detail:schema.ready?'Estrutura do banco atualizada.':`Execute ${schema.requiredMigration}.`},
       {key:'email',label:'E-mails automáticos',ready:configuredEmail,required:true,detail:configuredEmail?'SMTP ativo e com credenciais protegidas.':'Configure e teste o SMTP abaixo.'},
       {key:'video',label:'Teleconsulta Nativa P2P',ready:true,required:true,detail:'WebRTC P2P nativo ativo e operacional.'},
-      {key:'storage',label:'Exames privados',ready:storageReady,required:false,detail:storageReady?'Storage privado do Supabase configurado.':'Configure as variáveis do Storage para receber exames.'},
       {key:'push',label:'Notificações no dispositivo',ready:Boolean(app.env.VAPID_PUBLIC_KEY&&app.env.VAPID_PRIVATE_KEY&&app.env.VAPID_SUBJECT),required:false,detail:app.env.VAPID_PUBLIC_KEY?'Web Push próprio configurado, sem fornecedor externo.':'Gere as chaves internas com npm run push:keys e configure-as no ambiente.'},
       {key:'encryption',label:'Proteção de segredos',ready:Boolean(app.env.APP_ENCRYPTION_KEY),required:true,detail:app.env.APP_ENCRYPTION_KEY?'Chave de criptografia configurada.':'Defina APP_ENCRYPTION_KEY na Vercel.'},
     ];

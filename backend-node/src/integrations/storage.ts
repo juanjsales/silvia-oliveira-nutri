@@ -1,2 +1,0 @@
-import{createClient}from'@supabase/supabase-js';import type{AppEnv}from'../config/env.js';
-export function examStorage(env:AppEnv){if(!env.SUPABASE_URL||!env.SUPABASE_SERVICE_ROLE_KEY)throw new Error('Supabase Storage não configurado.');return createClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}}).storage.from(env.SUPABASE_EXAMS_BUCKET||'patient-exams')}

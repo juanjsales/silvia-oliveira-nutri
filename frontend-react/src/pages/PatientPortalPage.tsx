@@ -10,7 +10,6 @@ import {
   CreditCard,
   Droplets,
   FileText,
-  FlaskConical,
   Goal,
   KeyRound,
   LineChart,
@@ -57,7 +56,6 @@ const tabs: [Tab, string, React.ComponentType<{ size?: number } | Any>][] = [
   ['plano', 'Meu Plano', Utensils],
   ['diario', 'Diário', Salad],
   ['laminas', 'Lâminas & Guias', BookOpen],
-  ['exames', 'Exames', FlaskConical],
   ['evolucao', 'Evolução', LineChart],
   ['mensagens', 'Mensagens', MessageCircle],
   ['agenda', 'Agenda', CalendarDays],
@@ -462,7 +460,6 @@ function PortalContent({
   if (tab === 'checkin') return <PreCheckin appointments={data.appointments} />;
   if (tab === 'perfil') return <Profile data={data.patient} submit={submit} />;
   if (tab === 'diario') return <PortalDiaryView rows={data.diary || []} submit={submit} addQuickWater={addQuickWater} />;
-  if (tab === 'exames') return <Exams rows={data.exams} submit={submit} />;
   if (tab === 'mensagens') return <Messages rows={data.messages} submit={submit} />;
   if (tab === 'agenda') return <Agenda appointments={data.appointments} requests={data.requests} submit={submit} />;
   if (tab === 'metas') return <Goals rows={data.goals} reload={reload} />;
@@ -511,7 +508,6 @@ function PortalHome({
 
   const isNewPatient = !latestPlan || data.appointments?.length === 0;
   const hasAppointment = Boolean(nextAppointment || data.appointments?.some((a: Any) => a.status === 'COMPLETED' || a.status === 'CONFIRMED' || a.status === 'WAITING'));
-  const hasExams = Boolean(data.exams?.length > 0);
   const hasPlan = Boolean(latestPlan && latestPlan.status === 'PUBLISHED');
   const hasCheckin = Boolean(data.checkins?.length > 0);
 
@@ -526,7 +522,6 @@ function PortalHome({
           onNavigateTab={setTab}
           hasAppointment={hasAppointment}
           hasCheckin={hasCheckin}
-          hasExams={hasExams}
           hasPlan={hasPlan}
           professionalName={data.settings?.professionalName}
         />
@@ -1007,88 +1002,6 @@ function Diary({ rows, submit }: { rows: Any[]; submit: any }) {
               Água: {r.waterLiters || '—'} L · Adesão: {r.adherence ?? '—'}%
             </span>
             <p>{r.mealNotes || r.symptoms}</p>
-          </>
-        )}
-      />
-    </PortalTwo>
-  );
-}
-
-function Exams({ rows, submit }: { rows: Any[]; submit: any }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  async function upload(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget,
-      d = new FormData(form),
-      file = d.get('file');
-    if (!(file instanceof File) || !file.size) return;
-    setBusy(true);
-    setError('');
-    try {
-      const signed = await api<{ data: { path: string; signedUrl: string } }>(`/api/portal/exams/upload-url`, {
-        method: 'POST',
-        body: JSON.stringify({ fileName: file.name, mimeType: file.type, size: file.size }),
-      });
-      const uploadBody = new FormData();
-      uploadBody.append('cacheControl', '3600');
-      uploadBody.append('', file);
-      const sent = await fetch(signed.data.signedUrl, { method: 'PUT', headers: { 'x-upsert': 'false' }, body: uploadBody });
-      if (!sent.ok) throw new Error('Falha ao transferir o arquivo.');
-      await submit('/api/portal/exams', {
-        title: v(d, 'title'),
-        examDate: v(d, 'date') || undefined,
-        filePath: signed.data.path,
-        mimeType: file.type,
-        fileSize: file.size,
-        notes: v(d, 'notes'),
-      });
-      form.reset();
-    } catch (c) {
-      setError(c instanceof Error ? c.message : 'Não foi possível enviar o exame.');
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function open(id: string) {
-    const r = await api<{ data: { url: string } }>(`/api/portal/exams/${id}/url`);
-    window.open(r.data.url, '_blank', 'noopener,noreferrer');
-  }
-  return (
-    <PortalTwo>
-      <form className="portal-form panel" onSubmit={upload}>
-        <h2>Enviar exame</h2>
-        <label>
-          Título
-          <input name="title" required />
-        </label>
-        <label>
-          Data
-          <input name="date" type="date" />
-        </label>
-        <label className="wide">
-          Arquivo privado
-          <input name="file" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required />
-          <small>PDF ou imagem, até 10 MB.</small>
-        </label>
-        <label className="wide">
-          Observações
-          <textarea name="notes" />
-        </label>
-        {error && <div className="form-error">{error}</div>}
-        <button className="primary-button" disabled={busy}>
-          <Save size={16} /> {busy ? 'Enviando...' : 'Enviar com segurança'}
-        </button>
-      </form>
-      <Cards
-        rows={rows}
-        render={(r: Any) => (
-          <>
-            <strong>{r.title}</strong>
-            <span>{r.status === 'REVIEWED' ? 'Revisado' : 'Enviado'}</span>
-            <button className="secondary-button" onClick={() => void open(r.id)}>
-              Abrir arquivo
-            </button>
           </>
         )}
       />

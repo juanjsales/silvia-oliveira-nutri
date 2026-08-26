@@ -28,7 +28,6 @@ import { emailDeliveryRoutes } from './modules/email-deliveries/routes.js';
 import { clinicalCoreRoutes } from './modules/clinical-core/routes.js';
 import { messageRoutes } from './modules/messages/routes.js';
 import { followUpRoutes } from './modules/follow-up/routes.js';
-import { patientExamRoutes } from './modules/patient-exams/routes.js';
 import { notificationRoutes } from './modules/notifications/routes.js';
 import { auditRoutes } from './modules/audit/routes.js';
 import { PRIVACY_NOTICE_VERSION } from './shared/privacy-notice.js';
@@ -135,7 +134,6 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(clinicalCoreRoutes, { prefix: '/api/clinical' });
   await app.register(messageRoutes, { prefix: '/api/messages' });
   await app.register(followUpRoutes, { prefix: '/api/follow-up' });
-  await app.register(patientExamRoutes, { prefix: '/api/patient-exams' });
   await app.register(notificationRoutes, { prefix: '/api/notifications' });
   await app.register(auditRoutes, { prefix: '/api/audit' });
   await app.register(publicDataRoutes, { prefix: '/api/public-data' });
