@@ -15,6 +15,8 @@ type Food = {
   protein: number;
   fat: number;
   fiber: number;
+  external?: boolean;
+  verificationNotice?: string;
 };
 type Ingredient = {
   name: string;
@@ -92,7 +94,11 @@ export function NutritionLibraryPage() {
     try {
       if (tab === 'foods') {
         const r = await api<{ data: Food[] }>(`/api/nutrition/foods${query ? `?q=${encodeURIComponent(query)}` : ''}`);
-        setFoods(r.data);
+        if (query.trim().length >= 3 && r.data.length < 8) {
+          const external = await api<{ data: Food[] }>(`/api/nutrition/foods/external?q=${encodeURIComponent(query.trim())}`).catch(() => ({ data: [] }));
+          const localNames = new Set(r.data.map(item => item.name.toLocaleLowerCase('pt-BR')));
+          setFoods([...r.data, ...external.data.filter(item => !localNames.has(item.name.toLocaleLowerCase('pt-BR')))]);
+        } else setFoods(r.data);
       } else if (tab === 'recipes') {
         const r = await api<{ data: Recipe[] }>(`/api/nutrition/recipes${query ? `?q=${encodeURIComponent(query)}` : ''}`);
         setRecipes(r.data);
@@ -111,7 +117,7 @@ export function NutritionLibraryPage() {
   }, [tab, query]);
 
   useEffect(() => {
-    const timer = setTimeout(() => void load(), query ? 300 : 0);
+    const timer = setTimeout(() => void load(), query ? (tab === 'foods' ? 1100 : 300) : 0);
     return () => clearTimeout(timer);
   }, [load, query]);
 
@@ -149,7 +155,7 @@ export function NutritionLibraryPage() {
         <div>
           <span className="eyebrow">Catálogo & Modelos</span>
           <h2>Planos e Receitas</h2>
-          <p>Pesquise alimentos TACO, reutilize receitas e transforme modelos em planos individualizados.</p>
+          <p>Pesquise primeiro na TACO e, quando necessário, consulte produtos complementares identificados pelo Open Food Facts.</p>
         </div>
         <button type="button" className="primary-button" onClick={() => setTab('templates')}>
           <FilePlus2 size={18} /> Criar plano
@@ -181,7 +187,7 @@ export function NutritionLibraryPage() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={tab === 'foods' ? 'Buscar alimentos TACO (ex: arroz, frango, aveia)...' : 'Buscar receita ou ingrediente...'}
+              placeholder={tab === 'foods' ? 'Buscar alimento ou produto (ex: arroz, frango, aveia)...' : 'Buscar receita ou ingrediente...'}
             />
             {query && (
               <button
@@ -214,6 +220,7 @@ export function NutritionLibraryPage() {
               </div>
               <h3>{food.name}</h3>
               <p>Referência: {food.referenceUnit}</p>
+              {food.external && <p className="food-verification-notice">{food.verificationNotice}</p>}
               <div className="macro-grid">
                 <span>
                   <strong>{Number(food.kcal).toFixed(0)}</strong> kcal
@@ -446,4 +453,3 @@ export function NutritionLibraryPage() {
     </div>
   );
 }
-

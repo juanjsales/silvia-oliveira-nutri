@@ -7029,3 +7029,5 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   .agenda-page .agenda-toolbar input,.agenda-page .agenda-toolbar select,
   .agenda-page .modal :is(input:not([type='checkbox']):not([type='radio']),select,textarea){font-size:16px!important}
 }
+.field-action-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}.field-action-row>.secondary-button{min-height:46px;white-space:nowrap}.field-action-row>input{min-width:0}@media(max-width:520px){.field-action-row{grid-template-columns:1fr}.field-action-row>.secondary-button{width:100%;justify-content:center}}
+.food-verification-notice{margin:8px 0!important;padding:8px 10px;border-left:3px solid #c6922f;border-radius:6px;background:#fff8e8;color:#70541d!important;font-size:.68rem!important;line-height:1.4}

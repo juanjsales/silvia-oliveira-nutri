@@ -1,23 +1,22 @@
 import webpush from 'web-push';
 import type { Pool, PoolClient } from 'pg';
 
-// Chaves VAPID estáveis da instalação. Em produção, configure-as no ambiente.
-const DEFAULT_VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || 'BMx4R9tG9LzYpW9k_K7XvN2q_5fW5V_8Q3T1j7m9c5B1k4V8X6Z9Y2Q1m8W7k5Z3b9V4X8Q2m7W9k4V8X6Z9Y2Q';
-const DEFAULT_VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || '1A8f9X2m7W9k4V8X6Z9Y2Q1m8W7k5Z3b9V4X8Q2m7W8';
-const DEFAULT_VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:contato@localhost.invalid';
+const vapidConfigured = Boolean(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY && process.env.VAPID_SUBJECT);
 
-export function getVapidPublicKey(): string {
-  return process.env.VAPID_PUBLIC_KEY || DEFAULT_VAPID_PUBLIC;
+export function getVapidPublicKey(): string | null {
+  return vapidConfigured ? process.env.VAPID_PUBLIC_KEY! : null;
 }
 
-try {
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || DEFAULT_VAPID_SUBJECT,
-    getVapidPublicKey(),
-    process.env.VAPID_PRIVATE_KEY || DEFAULT_VAPID_PRIVATE
-  );
-} catch (err) {
-  console.warn('[WebPush] Falha ao configurar VAPID:', err);
+if (vapidConfigured) {
+  try {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT!,
+      process.env.VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!
+    );
+  } catch {
+    console.warn('[WebPush] Configuração VAPID inválida; notificações do dispositivo permanecerão desativadas.');
+  }
 }
 
 export type PushPayload = {
@@ -39,6 +38,7 @@ export async function sendPushToPatient(
   patientId: string,
   payload: PushPayload
 ): Promise<{ sent: number; failed: number }> {
+  if (!vapidConfigured) return { sent: 0, failed: 0 };
   try {
     const result = await db.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
       `SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE patient_id = $1`,

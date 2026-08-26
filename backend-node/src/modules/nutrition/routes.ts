@@ -2,12 +2,14 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
 import { restorePlanNutrition } from './plan-content.js';
+import { searchOpenFoodFacts } from '../../shared/public-data.js';
 
 const jsonValue:z.ZodType<unknown>=z.lazy(()=>z.union([z.string().max(20000),z.number(),z.boolean(),z.null(),z.array(jsonValue).max(200),z.record(z.string().max(100),jsonValue)]));
 
 export async function nutritionRoutes(app:FastifyInstance){
  app.addHook('preHandler',app.requireAdmin);
  app.get('/foods',async request=>{const {q,category}=z.object({q:z.string().trim().max(100).optional(),category:z.string().trim().max(80).optional()}).parse(request.query);const term=q?`%${q}%`:null;const result=await app.db.query(`SELECT id,legacy_id AS "legacyId",name,category,source,reference_unit AS "referenceUnit",kcal,carbohydrate,protein,fat,fiber FROM foods WHERE active=true AND ($1::text IS NULL OR name ILIKE $1) AND ($2::text IS NULL OR category=$2) ORDER BY name LIMIT 80`,[term,category||null]);return{data:result.rows}});
+ app.get('/foods/external',async request=>{const {q}=z.object({q:z.string().trim().min(3).max(100)}).parse(request.query);return{data:await searchOpenFoodFacts(q),meta:{source:'Open Food Facts',collaborative:true,clinicalVerificationRequired:true}}});
  app.get('/food-categories',async()=>{const result=await app.db.query('SELECT category, count(*)::int AS count FROM foods WHERE active=true GROUP BY category ORDER BY category');return{data:result.rows}});
  app.get('/recipes',async request=>{const {q,category}=z.object({q:z.string().trim().max(100).optional(),category:z.string().trim().max(80).optional()}).parse(request.query);const result=await app.db.query(`SELECT r.id,r.legacy_id AS "legacyId",r.title,r.category,r.preparation_time AS "preparationTime",r.yield_text AS "yieldText",r.instructions,
  COALESCE(json_agg(json_build_object('id',i.id,'foodId',i.food_id,'name',i.name_snapshot,'amount',i.amount_text,'kcal',i.kcal::float8,'carbohydrate',i.carbohydrate::float8,'protein',i.protein::float8,'fat',i.fat::float8) ORDER BY i.position) FILTER(WHERE i.id IS NOT NULL),'[]') AS ingredients

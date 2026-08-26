@@ -6,6 +6,7 @@ import {
   KeyRound,
   LockKeyhole,
   Mail,
+  MapPin,
   MessageCircle,
   Palette,
   Save,
@@ -26,6 +27,7 @@ import { StorageMaintenancePanel } from "../components/StorageMaintenancePanel";
 import { PasswordInput } from "../components/PasswordInput";
 import { SetupWizardModal } from "../components/SetupWizardModal";
 import { capitalizePersonName } from "../lib/formatters";
+import { addressLine, formatPostalCode, lookupPostalCode } from "../lib/postalCode";
 
 type Settings = {
   clinicName: string;
@@ -97,6 +99,8 @@ export function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [postalCode, setPostalCode] = useState("");
+  const [lookingUpPostalCode, setLookingUpPostalCode] = useState(false);
 
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
@@ -115,6 +119,21 @@ export function SettingsPage() {
   useEffect(() => {
     loadSettings();
   }, []);
+
+  async function fillAddressFromPostalCode() {
+    setLookingUpPostalCode(true);
+    setError("");
+    try {
+      const { data } = await lookupPostalCode(postalCode);
+      const suggestedAddress = addressLine(data);
+      setForm((current) => ({ ...current, address: suggestedAddress || current.address, city: `${data.city} - ${data.state}` }));
+      setNotice(`Endereço localizado pela base ${data.source}. Confira número e complemento antes de salvar.`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível consultar o CEP.");
+    } finally {
+      setLookingUpPostalCode(false);
+    }
+  }
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -347,6 +366,15 @@ export function SettingsPage() {
                   onChange={(e) => set("email", e.target.value)}
                   placeholder="contato@consultorio.com"
                 />
+              </label>
+              <label>
+                CEP
+                <span className="field-action-row">
+                  <input inputMode="numeric" autoComplete="postal-code" value={postalCode} onChange={(e) => setPostalCode(formatPostalCode(e.target.value))} placeholder="00000-000" />
+                  <button type="button" className="secondary-button" onClick={() => void fillAddressFromPostalCode()} disabled={lookingUpPostalCode || postalCode.replace(/\D/g, "").length !== 8}>
+                    <MapPin size={16}/>{lookingUpPostalCode ? "Consultando..." : "Buscar"}
+                  </button>
+                </span>
               </label>
               <label className="wide">
                 Endereço do Consultório

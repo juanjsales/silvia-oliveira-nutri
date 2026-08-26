@@ -32,6 +32,7 @@ import { patientExamRoutes } from './modules/patient-exams/routes.js';
 import { notificationRoutes } from './modules/notifications/routes.js';
 import { auditRoutes } from './modules/audit/routes.js';
 import { PRIVACY_NOTICE_VERSION } from './shared/privacy-notice.js';
+import { publicDataRoutes } from './modules/public-data/routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
@@ -129,6 +130,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(patientExamRoutes, { prefix: '/api/patient-exams' });
   await app.register(notificationRoutes, { prefix: '/api/notifications' });
   await app.register(auditRoutes, { prefix: '/api/audit' });
+  await app.register(publicDataRoutes, { prefix: '/api/public-data' });
 
   return app;
 }

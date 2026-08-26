@@ -18,6 +18,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { api } from "../lib/api";
 import { capitalizePersonName } from "../lib/formatters";
+import { addressLine, formatPostalCode, lookupPostalCode } from "../lib/postalCode";
 import { useConfirm } from "./ConfirmDialog";
 
 type WizardData = {
@@ -72,6 +73,8 @@ export function SetupWizardModal({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
+  const [postalCode, setPostalCode] = useState("");
+  const [lookingUpPostalCode, setLookingUpPostalCode] = useState(false);
   const [testEmailSuccess, setTestEmailSuccess] = useState(false);
   const [error, setError] = useState("");
   const baselineRef = useRef("");
@@ -190,6 +193,23 @@ export function SetupWizardModal({
       if (!data.smtpPass && !data.smtpPasswordConfigured) return "Informe a senha de aplicativo para ativar os e-mails.";
     }
     return "";
+  }
+
+  async function fillAddressFromPostalCode() {
+    setLookingUpPostalCode(true);
+    setError("");
+    try {
+      const { data: address } = await lookupPostalCode(postalCode);
+      setData((current) => ({
+        ...current,
+        address: addressLine(address) || current.address,
+        city: `${address.city} - ${address.state}`,
+      }));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível consultar o CEP.");
+    } finally {
+      setLookingUpPostalCode(false);
+    }
   }
 
   async function handleFinish() {
@@ -378,6 +398,16 @@ export function SetupWizardModal({
                     value={data.specialty}
                     onChange={(e) => setData({ ...data, specialty: e.target.value })}
                   />
+                </label>
+
+                <label>
+                  CEP
+                  <span className="field-action-row">
+                    <input inputMode="numeric" autoComplete="postal-code" placeholder="00000-000" value={postalCode} onChange={(e) => setPostalCode(formatPostalCode(e.target.value))}/>
+                    <button type="button" className="secondary-button" onClick={() => void fillAddressFromPostalCode()} disabled={lookingUpPostalCode || postalCode.replace(/\D/g, "").length !== 8}>
+                      <MapPin size={15}/>{lookingUpPostalCode ? "Buscando..." : "Buscar"}
+                    </button>
+                  </span>
                 </label>
 
                 <label>

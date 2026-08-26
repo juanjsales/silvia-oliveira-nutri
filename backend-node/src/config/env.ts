@@ -33,7 +33,10 @@ const envSchema = z.object({
   WEBRTC_SIGNALING_HOST: z.string().min(1).optional(),
   WEBRTC_SIGNALING_PORT: z.coerce.number().int().min(1).max(65535).optional(),
   WEBRTC_SIGNALING_PATH: z.string().regex(/^\//).optional(),
-  WEBRTC_SIGNALING_SECURE: z.union([z.boolean(), z.enum(['true', 'false']).transform(value => value === 'true')]).optional()
+  WEBRTC_SIGNALING_SECURE: z.union([z.boolean(), z.enum(['true', 'false']).transform(value => value === 'true')]).optional(),
+  VAPID_PUBLIC_KEY: z.string().min(40).optional(),
+  VAPID_PRIVATE_KEY: z.string().min(20).optional(),
+  VAPID_SUBJECT: z.string().regex(/^(mailto:|https:)/).optional()
 }).superRefine((env, context) => {
   const turnValues = [env.WEBRTC_TURN_URL, env.WEBRTC_TURN_USERNAME, env.WEBRTC_TURN_CREDENTIAL];
   if (turnValues.some(Boolean) && !turnValues.every(Boolean)) {
@@ -41,6 +44,10 @@ const envSchema = z.object({
   }
   if (!env.WEBRTC_SIGNALING_HOST && (env.WEBRTC_SIGNALING_PORT || env.WEBRTC_SIGNALING_PATH || env.WEBRTC_SIGNALING_SECURE !== undefined)) {
     context.addIssue({ code: 'custom', path: ['WEBRTC_SIGNALING_HOST'], message: 'Host de signaling é obrigatório quando suas opções são configuradas.' });
+  }
+  const vapidValues = [env.VAPID_PUBLIC_KEY, env.VAPID_PRIVATE_KEY, env.VAPID_SUBJECT];
+  if (vapidValues.some(Boolean) && !vapidValues.every(Boolean)) {
+    context.addIssue({ code: 'custom', path: ['VAPID_PUBLIC_KEY'], message: 'Web Push exige VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY e VAPID_SUBJECT em conjunto.' });
   }
 });
 
