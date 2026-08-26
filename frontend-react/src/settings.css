@@ -6,3 +6,4 @@
 .settings-section header p,.settings-grid label,.smtp-actions>span,.smtp-test label,.readiness-summary span,.readiness-grid article span,.readiness-grid article small,.incident-list article span,.incident-list article small,.privacy-admin-list span,.privacy-admin-list small{font-size:.8125rem;line-height:1.45}
 .settings-grid{gap:16px}.settings-section>header{margin-bottom:20px}.readiness-summary,.readiness-grid article{border-radius:12px}.settings-page button,.settings-page .icon-button{min-height:42px}.settings-page .icon-button{min-width:42px}
 @media(max-width:640px){.settings-page button{min-height:44px}.settings-section>header{gap:10px;padding-bottom:14px}.readiness-summary,.readiness-grid article{padding:12px}}
+.settings-page{width:100%;max-width:none;margin:0}.settings-page>form,.settings-page>.settings-section{width:100%}.settings-nav-tabs{max-width:100%}

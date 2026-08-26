@@ -169,8 +169,7 @@ const steps:Step[]=[
   {key:'foodRoutine',label:'Rotina alimentar atual',type:'textarea',group:'Inquérito alimentar',groupDescription:'Organização, comportamento e relação com os alimentos.'},{key:'whoCooks',label:'Quem cozinha?',group:'Inquérito alimentar'},{key:'whoShops',label:'Quem faz as compras?',group:'Inquérito alimentar'},{key:'mealLocations',label:'Local das refeições durante a semana e no fim de semana',type:'textarea',group:'Inquérito alimentar'},{key:'previousDiet',label:'Já seguiu alguma dieta? Como foi?',type:'textarea',group:'Inquérito alimentar'},{key:'recentWeightChange',label:'Alteração recente de peso e motivo',type:'textarea',group:'Inquérito alimentar'},{key:'liquidsWithMeals',label:'Consome líquidos nas refeições? Quais e quanto?',group:'Inquérito alimentar'},{key:'anxietyEating',label:'Quando fica ansioso(a), como muda sua alimentação?',type:'select',options:['Come mais','Come menos','Sem alteração','Não se aplica'],group:'Inquérito alimentar'},{key:'sweetenerUse',label:'Uso de adoçante: tipo e quantidade',group:'Inquérito alimentar'},{key:'hungerTime',label:'Horário do dia em que sente mais fome',group:'Inquérito alimentar'},{key:'flavorPreference',label:'Preferência de sabor',type:'select',options:['Doce','Salgado','Ambos','Sem preferência'],group:'Inquérito alimentar'},{key:'foodPreferences',label:'Preferências alimentares',type:'textarea',group:'Inquérito alimentar'},{key:'foodAversions',label:'Aversões alimentares',type:'textarea',group:'Inquérito alimentar'},{key:'bingeEatingHistory',label:'Compulsão alimentar: frequência, gatilhos e contexto',type:'textarea',group:'Inquérito alimentar'},
   {key:'physicalExamGeneral',label:'Impressão geral do exame físico',type:'textarea',group:'Avaliação Física',groupDescription:'Registre a condição observada e os achados relevantes em cada região.'},{key:'physicalFace',label:'Face',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalEyes',label:'Olhos',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalOralCavity',label:'Cavidade oral e dentes',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalTongue',label:'Língua',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalHair',label:'Cabelos',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalSkin',label:'Pele',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalNails',label:'Unhas',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalMusculoskeletal',label:'Sistema musculoesquelético',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalAbdomen',label:'Abdômen',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalLowerLimbs',label:'Membros inferiores',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalIntestinalNoises',label:'Ruídos intestinais',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalUrinary',label:'Aspectos urinários',type:'select',options:['Normal','Alterado','Não avaliado'],group:'Avaliação Física'},{key:'physicalExamNotes',label:'Observações do exame físico',type:'textarea',placeholder:'Descreva alterações, localização, intensidade e conduta relacionada',group:'Avaliação Física'},
   {key:'objective',label:'Objetivo do acompanhamento',type:'textarea',group:'Síntese clínica',groupDescription:'Conclusão profissional após a coleta.'},{key:'diagnosticSummary',label:'Diagnóstico e conduta inicial',type:'textarea',group:'Síntese clínica'}]},
- {key:'recall24h',label:'Recordatório 24h',description:'Consumo alimentar do dia anterior',fields:[
-  {key:'wakeTime',label:'Horário que acordou',type:'time'},{key:'breakfast',label:'Café da manhã',type:'textarea',placeholder:'Horário, alimentos e quantidades'},{key:'morningSnack',label:'Lanche da manhã',type:'textarea'},{key:'lunch',label:'Almoço',type:'textarea'},{key:'afternoonSnack',label:'Lanche da tarde',type:'textarea'},{key:'dinner',label:'Jantar',type:'textarea'},{key:'supper',label:'Ceia',type:'textarea'},{key:'otherIntake',label:'Outros consumos e observações',type:'textarea'}]},
+ {key:'recall24h',label:'Recordatório 24h',description:'Linha do tempo alimentar do dia anterior'},
  {key:'assessment',label:'Avaliação corporal',description:'Antropometria, bioimpedância e energia',fields:[
   {key:'clinicalProfile',label:'Perfil de avaliação',type:'select',options:['Adulto','Gestante','Pediatria']},{key:'assessmentDate',label:'Data da avaliação',type:'date'},{key:'sex',label:'Sexo para cálculo energético',type:'select',options:['Feminino','Masculino']},{key:'age',label:'Idade',type:'number',suffix:'anos'},{key:'weight',label:'Peso',type:'number',suffix:'kg'},{key:'height',label:'Altura',type:'number',suffix:'cm'},
   {key:'prePregnancyWeight',label:'Peso pré-gestacional',type:'number',suffix:'kg',profiles:['Gestante']},{key:'gestationalWeek',label:'Semana gestacional',type:'number',suffix:'sem',profiles:['Gestante']},{key:'pregnancyNumber',label:'Número de gestações',type:'number',profiles:['Gestante']},{key:'pregnancySymptoms',label:'Sintomas e intercorrências gestacionais',type:'textarea',profiles:['Gestante']},
@@ -191,6 +190,57 @@ const steps:Step[]=[
   {key:'positiveResults',label:'Resultados positivos',type:'textarea'},{key:'mainDifficulties',label:'Maiores dificuldades',type:'textarea'},{key:'nextGoal',label:'Meta para o próximo período',type:'textarea'},{key:'desiredPlanAdjustment',label:'Ajustes desejados no plano',type:'textarea'},{key:'additionalNotes',label:'Observações do retorno',type:'textarea'}]},
  {key:'review',label:'Revisão',description:'Conferência e finalização'}
 ];
+
+type RecallMeal={id:string;name:string;time:string;content:string};
+const defaultRecallMeals:RecallMeal[]=[
+ {id:'breakfast',name:'Café da manhã',time:'',content:''},
+ {id:'morningSnack',name:'Lanche da manhã',time:'',content:''},
+ {id:'lunch',name:'Almoço',time:'',content:''},
+ {id:'afternoonSnack',name:'Lanche da tarde',time:'',content:''},
+ {id:'dinner',name:'Jantar',time:'',content:''},
+ {id:'supper',name:'Ceia',time:'',content:''},
+];
+
+function readRecallMeals(data:SectionData):RecallMeal[]{
+ try{
+  const parsed=JSON.parse(String(data.mealsJson||''));
+  if(Array.isArray(parsed)&&parsed.length)return parsed.filter(item=>item&&typeof item==='object').map((item,index)=>({id:String(item.id||`meal-${index}`),name:String(item.name||'Refeição'),time:String(item.time||''),content:String(item.content||'')}));
+ }catch{/* Compatibilidade com recordatórios anteriores. */}
+ return defaultRecallMeals.map(meal=>({...meal,content:String(data[meal.id]||'')}));
+}
+
+function Recall24hEditor({data,onChange,disabled}:{data:SectionData;onChange:(field:string,value:string)=>void;disabled:boolean}){
+ const meals=readRecallMeals(data);
+ const update=(next:RecallMeal[])=>onChange('mealsJson',JSON.stringify(next));
+ const patchMeal=(index:number,patch:Partial<RecallMeal>)=>update(meals.map((meal,i)=>i===index?{...meal,...patch}:meal));
+ const addAt=(index:number)=>{
+  const next=[...meals];
+  next.splice(index,0,{id:`meal-${Date.now()}`,name:'Nova refeição',time:'',content:''});
+  update(next);
+ };
+ return <div className="recall-editor">
+  <div className="recall-day-meta">
+   <label>Horário em que acordou<input type="time" value={String(data.wakeTime||'')} onChange={event=>onChange('wakeTime',event.target.value)} disabled={disabled}/></label>
+   <label>Data recordada<input type="date" value={String(data.recallDate||'')} onChange={event=>onChange('recallDate',event.target.value)} disabled={disabled}/></label>
+  </div>
+  <div className="recall-timeline">
+   {meals.map((meal,index)=><div className="recall-meal-wrap" key={meal.id}>
+    <button type="button" className="recall-insert" onClick={()=>addAt(index)} disabled={disabled}><Plus size={14}/> Adicionar refeição aqui</button>
+    <article className="recall-meal-card">
+     <div className="recall-meal-index"><UtensilsCrossed size={17}/><span>{index+1}</span></div>
+     <div className="recall-meal-fields">
+      <label>Refeição<input value={meal.name} onChange={event=>patchMeal(index,{name:event.target.value})} placeholder="Ex.: Lanche pós-treino" disabled={disabled}/></label>
+      <label>Horário<input type="time" value={meal.time} onChange={event=>patchMeal(index,{time:event.target.value})} disabled={disabled}/></label>
+      <label className="wide">Alimentos, bebidas e quantidades<textarea rows={3} value={meal.content} onChange={event=>patchMeal(index,{content:event.target.value})} placeholder="Descreva alimentos, preparações, marcas e quantidades consumidas" disabled={disabled}/></label>
+     </div>
+     <button type="button" className="icon-button recall-remove" onClick={()=>update(meals.filter((_,i)=>i!==index))} disabled={disabled||meals.length===1} aria-label={`Remover ${meal.name}`} title="Remover refeição"><Trash2 size={16}/></button>
+    </article>
+   </div>)}
+   <button type="button" className="recall-insert recall-insert-end" onClick={()=>addAt(meals.length)} disabled={disabled}><Plus size={15}/> Adicionar refeição ao final</button>
+  </div>
+  <label className="recall-notes">Outros consumos e observações<textarea rows={3} value={String(data.otherIntake||'')} onChange={event=>onChange('otherIntake',event.target.value)} placeholder="Beliscos, água, bebidas, suplementos e circunstâncias relevantes" disabled={disabled}/></label>
+ </div>;
+}
 
 function missingClinicalCore(sections:Encounter['sections']){
  const missing:string[]=[];
@@ -551,7 +601,7 @@ export function EncounterPage(){
         <ClinicalSnapshot encounter={encounter} reload={()=>void loadEncounter(encounter.id)}/>
         <details className="history-drawer"><summary>Histórico e evolução do paciente</summary><PatientHistory patientId={encounter.patientId}/></details>
         
-        <section className="panel clinical-workspace">
+        <section className={`panel clinical-workspace clinical-step-${current.key}`}>
           <div className="clinical-title">
             <div>
               <span className="eyebrow">Etapa {active+1} de {steps.length}</span>
@@ -573,6 +623,8 @@ export function EncounterPage(){
             <LabsList encounterId={encounter.id} initial={encounter.labs||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>
           ) : current.key==='supplements' ? (
             <SupplementsList encounterId={encounter.id} initial={encounter.supplements||[]} locked={encounter.status==='COMPLETED'} reload={()=>void loadEncounter(encounter.id)}/>
+          ) : current.key==='recall24h' ? (
+            <Recall24hEditor data={drafts.recall24h||{}} onChange={(field,value)=>change('recall24h',field,value)} disabled={!canEdit}/>
           ) : (
             <>
               <div className={`clinical-form${fieldGroups.some(group=>group.name)?' grouped':''}`}>

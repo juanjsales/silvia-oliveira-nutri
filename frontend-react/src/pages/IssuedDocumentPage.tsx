@@ -278,13 +278,19 @@ function Summary({ doc }: { doc: Doc }) {
       {sectionOrder.map(([key, title]) => {
         const sec = sections[key];
         if (!sec || typeof sec !== 'object') return null;
-        const entries = Object.entries(sec).filter(([, v]) => v != null && v !== '');
-        if (!entries.length) return null;
+        const entries = Object.entries(sec).filter(([field, v]) => field !== 'mealsJson' && v != null && v !== '');
+        const recallMeals = key === 'recall24h' ? parseRecallMeals(sec.mealsJson) : [];
+        if (!entries.length && !recallMeals.length) return null;
 
         return (
           <section key={key} className="clinical-doc-section">
             <h2>{title}</h2>
             <div className="clinical-doc-grid">
+              {recallMeals.map((meal, index) => (
+                <div key={`${meal.name}-${index}`} className="clinical-doc-item">
+                  <strong>{meal.time ? `${meal.time} · ` : ''}{meal.name}:</strong> <span>{meal.content || 'Não informado'}</span>
+                </div>
+              ))}
               {entries.map(([k, v]) => (
                 <div key={k} className="clinical-doc-item">
                   <strong>{translateField(k)}:</strong> <span>{formatValue(k, v)}</span>
@@ -327,6 +333,13 @@ function Summary({ doc }: { doc: Doc }) {
       <Signature doc={doc} />
     </section>
   );
+}
+
+function parseRecallMeals(value:unknown):Array<{name:string;time:string;content:string}>{
+  try{
+    const parsed=JSON.parse(String(value||''));
+    return Array.isArray(parsed)?parsed.map(item=>({name:String(item?.name||'Refeição'),time:String(item?.time||''),content:String(item?.content||'')})):[];
+  }catch{return[];}
 }
 
 function Signature({ doc }: { doc: Doc }) {

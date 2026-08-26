@@ -584,13 +584,13 @@ export function PatientsPage() {
             if (e.target === e.currentTarget) setDialogOpen(false);
           }}
         >
-          <section className="modal" style={{ maxWidth: 620 }}>
+          <section className="modal patient-record-modal" role="dialog" aria-modal="true">
             <ModalHead
               eyebrow="Ficha Cadastral"
               title={editing ? "Editar Dados do Paciente" : "Novo Paciente"}
               close={() => setDialogOpen(false)}
             />
-            <form onSubmit={save}>
+            <form onSubmit={save} className="patient-record-form">
               <div className="form-grid">
                 <label className="full">
                   Nome Completo *
