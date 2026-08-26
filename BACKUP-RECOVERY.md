@@ -28,7 +28,7 @@ O backup PostgreSQL contém somente os metadados do Storage, não os PDFs e imag
 4. Descriptografe para uma pasta temporária usando `backup-crypto.mjs decrypt`.
 5. Restaure `roles.sql`, `schema.sql` e `data.sql` seguindo a documentação oficial do Supabase.
 6. Restaure separadamente os objetos do bucket de exames.
-7. Configure novamente secrets, SMTP, Daily e URLs; eles não pertencem ao dump.
+7. Configure novamente secrets internos, SMTP e URLs; eles não pertencem ao dump.
 8. Execute migrações, `/health` e o smoke test antes de trocar a produção.
 
 Uma restauração é uma operação destrutiva e deve ser feita somente após confirmação explícita do destino.
