@@ -1,6 +1,9 @@
 import { loadEnvFile } from 'node:process';
 import { z } from 'zod';
 
+const optionalText = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess(value => typeof value === 'string' && value.trim() === '' ? undefined : value, schema.optional());
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
@@ -17,8 +20,8 @@ const envSchema = z.object({
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().max(120).default(30),
   APP_URL: z.string().url(),
   SUPABASE_URL: z.string().url().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
-  SUPABASE_EXAMS_BUCKET: z.string().min(2).optional(),
+  SUPABASE_SERVICE_ROLE_KEY: optionalText(z.string().min(20)),
+  SUPABASE_EXAMS_BUCKET: optionalText(z.string().min(2)),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().positive().default(587),
   SMTP_SECURE: z.preprocess(v => v === true || v === 'true', z.boolean()).default(false),
@@ -26,7 +29,7 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().min(1),
   APP_ENCRYPTION_KEY: z.string().min(32).optional(),
-  CRON_SECRET: z.string().min(32).optional(),
+  CRON_SECRET: optionalText(z.string().min(32)),
   WEBRTC_STUN_URLS: z.string().min(1).optional(),
   WEBRTC_TURN_URL: z.string().regex(/^turns?:/).optional(),
   WEBRTC_TURN_USERNAME: z.string().min(1).optional(),

@@ -4,3 +4,4 @@ test('environment applies secure operational defaults',()=>{const env=loadEnv(ba
 test('environment rejects incomplete configuration',()=>{assert.throws(()=>loadEnv({NODE_ENV:'test'}),/DATABASE_URL/)});
 test('environment rejects invalid public origins',()=>{assert.throws(()=>loadEnv({...base,FRONTEND_ORIGIN:'not-a-url'}),/FRONTEND_ORIGIN/)});
 test('environment validates every legacy origin',()=>{assert.equal(loadEnv({...base,LEGACY_APP_ORIGINS:'https://old.example.com'}).LEGACY_APP_ORIGINS,'https://old.example.com');assert.throws(()=>loadEnv({...base,LEGACY_APP_ORIGINS:'https://old.example.com/path'}),/LEGACY_APP_ORIGINS/)});
+test('environment treats empty optional integrations as unconfigured',()=>{const env=loadEnv({...base,SUPABASE_SERVICE_ROLE_KEY:'',SUPABASE_EXAMS_BUCKET:'',CRON_SECRET:''});assert.equal(env.SUPABASE_SERVICE_ROLE_KEY,undefined);assert.equal(env.SUPABASE_EXAMS_BUCKET,undefined);assert.equal(env.CRON_SECRET,undefined)});
