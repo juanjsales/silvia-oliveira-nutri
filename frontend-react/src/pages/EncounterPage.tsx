@@ -175,7 +175,9 @@ const steps:Step[]=[
   {key:'prePregnancyWeight',label:'Peso pré-gestacional',type:'number',suffix:'kg',profiles:['Gestante']},{key:'gestationalWeek',label:'Semana gestacional',type:'number',suffix:'sem',profiles:['Gestante']},{key:'pregnancyNumber',label:'Número de gestações',type:'number',profiles:['Gestante']},{key:'pregnancySymptoms',label:'Sintomas e intercorrências gestacionais',type:'textarea',profiles:['Gestante']},
   {key:'birthWeight',label:'Peso ao nascer',type:'number',suffix:'kg',profiles:['Pediatria']},{key:'gestationalAgeAtBirth',label:'Idade gestacional ao nascer',type:'number',suffix:'sem',profiles:['Pediatria']},{key:'headCircumference',label:'Perímetro cefálico',type:'number',suffix:'cm',profiles:['Pediatria']},{key:'caregiver',label:'Responsável e vínculo',profiles:['Pediatria']},{key:'breastfeeding',label:'Aleitamento',type:'select',options:['Exclusivo','Misto','Encerrado','Não realizado'],profiles:['Pediatria']},{key:'foodIntroduction',label:'Introdução alimentar e desenvolvimento',type:'textarea',profiles:['Pediatria']},
   {key:'bodyFat',label:'Gordura corporal',type:'number',suffix:'%'},{key:'leanMass',label:'Massa magra',type:'number',suffix:'kg'},{key:'muscleMass',label:'Massa muscular',type:'number',suffix:'kg'},{key:'visceralFat',label:'Gordura visceral',type:'number'},{key:'bodyWater',label:'Água corporal',type:'number',suffix:'%'},{key:'metabolicAge',label:'Idade metabólica',type:'number'},
-  {key:'neck',label:'Pescoço',type:'number',suffix:'cm'},{key:'arm',label:'Braço',type:'number',suffix:'cm'},{key:'chest',label:'Tórax',type:'number',suffix:'cm'},{key:'waist',label:'Cintura',type:'number',suffix:'cm'},{key:'abdomen',label:'Abdômen',type:'number',suffix:'cm'},{key:'hip',label:'Quadril',type:'number',suffix:'cm'},{key:'calf',label:'Panturrilha',type:'number',suffix:'cm'},
+  {key:'neck',label:'Pescoço',type:'number',suffix:'cm'},{key:'chest',label:'Tórax',type:'number',suffix:'cm'},{key:'waist',label:'Cintura',type:'number',suffix:'cm'},{key:'abdomen',label:'Abdômen',type:'number',suffix:'cm'},{key:'hip',label:'Quadril',type:'number',suffix:'cm'},
+  {key:'arm',label:'Braço direito',type:'number',suffix:'cm'},{key:'armLeft',label:'Braço esquerdo',type:'number',suffix:'cm'},{key:'forearmRight',label:'Antebraço direito',type:'number',suffix:'cm'},{key:'forearmLeft',label:'Antebraço esquerdo',type:'number',suffix:'cm'},
+  {key:'thighRight',label:'Coxa direita',type:'number',suffix:'cm'},{key:'thighLeft',label:'Coxa esquerda',type:'number',suffix:'cm'},{key:'calf',label:'Panturrilha direita',type:'number',suffix:'cm'},{key:'calfLeft',label:'Panturrilha esquerda',type:'number',suffix:'cm'},
   {key:'activityFactor',label:'Fator de atividade',type:'select',options:['1.2 - Sedentário','1.375 - Leve','1.55 - Moderado','1.725 - Intenso','1.9 - Extremamente ativo']},{key:'bicipitalFold',label:'Dobra bicipital',type:'number',suffix:'mm'},{key:'tricipitalFold',label:'Dobra tricipital',type:'number',suffix:'mm'},{key:'suprailiacFold',label:'Dobra suprailíaca',type:'number',suffix:'mm'},{key:'subscapularFold',label:'Dobra subescapular',type:'number',suffix:'mm'},{key:'assessmentNotes',label:'Observações da avaliação',type:'textarea'}]},
  {key:'exams',label:'Exames',description:'Resultados e interpretação laboratorial',fields:[{key:'examDate',label:'Data dos exames',type:'date'},{key:'markers',label:'Marcadores e resultados',type:'textarea',placeholder:'Ex.: Glicemia 92 mg/dL; Ferritina 45 ng/mL'},{key:'referenceRanges',label:'Valores de referência',type:'textarea'},{key:'interpretation',label:'Interpretação clínica',type:'textarea'},{key:'pendingExams',label:'Exames a solicitar ou acompanhar',type:'textarea'}]},
  {key:'conduct',label:'Conduta',description:'Diagnóstico nutricional e próximos passos',fields:[{key:'diagnosticImpression',label:'Impressão diagnóstica nutricional',type:'textarea'},{key:'goals',label:'Metas acordadas',type:'textarea'},{key:'guidance',label:'Orientações e estratégia alimentar',type:'textarea'},{key:'followUp',label:'Prazo e plano de acompanhamento',type:'textarea'}]},
@@ -240,6 +242,31 @@ function Recall24hEditor({data,onChange,disabled}:{data:SectionData;onChange:(fi
   </div>
   <label className="recall-notes">Outros consumos e observações<textarea rows={3} value={String(data.otherIntake||'')} onChange={event=>onChange('otherIntake',event.target.value)} placeholder="Beliscos, água, bebidas, suplementos e circunstâncias relevantes" disabled={disabled}/></label>
  </div>;
+}
+
+function AnthropometryGuide(){
+ const landmarks=[
+  ['Pescoço','Base do pescoço'],['Tórax','Linha do tórax'],['Braços D/E','Ponto médio do braço'],['Antebraços D/E','Maior circunferência'],
+  ['Cintura','Menor circunferência'],['Abdômen','Linha umbilical'],['Quadril','Maior protuberância'],['Coxas D/E','Ponto padronizado'],['Panturrilhas D/E','Maior circunferência'],
+ ];
+ return <aside className="anthropometry-guide" aria-labelledby="anthropometry-guide-title">
+  <header><div><span className="eyebrow">Guia visual</span><h3 id="anthropometry-guide-title">Pontos de medição</h3></div><Scale size={20}/></header>
+  <div className="body-map-wrap">
+   <span className="body-side body-side-left">D</span><span className="body-side body-side-right">E</span>
+   <svg className="body-map" viewBox="0 0 240 470" role="img" aria-labelledby="body-map-title body-map-desc">
+    <title id="body-map-title">Mapa corporal antropométrico frontal</title><desc id="body-map-desc">Silhueta humana neutra com linhas nas regiões do pescoço, braços, antebraços, tórax, cintura, abdômen, quadril, coxas e panturrilhas.</desc>
+    <g className="body-silhouette">
+     <circle cx="120" cy="42" r="27"/><path d="M95 73 Q120 61 145 73 L163 130 151 228 164 279 151 304 145 447 120 447 114 313 107 447 82 447 77 304 64 279 77 228 66 130Z"/>
+     <path d="M70 95 39 190 51 198 86 133M170 95l31 95-12 8-35-65" fill="none" strokeWidth="19" strokeLinecap="round"/>
+    </g>
+    <g className="body-landmarks">
+     <path d="M97 76h46"/><path d="M78 126h84"/><path d="M72 171h-32M168 171h32"/><path d="M58 218h-25M182 218h25"/><path d="M78 203h84"/><path d="M75 232h90"/><path d="M72 269h96"/><path d="M79 321h31M130 321h31"/><path d="M79 392h30M131 392h30"/>
+    </g>
+   </svg>
+  </div>
+  <div className="anthropometry-landmarks">{landmarks.map(([title,detail])=><div key={title}><strong>{title}</strong><span>{detail}</span></div>)}</div>
+  <p><strong>Padronize a técnica:</strong> mesma posição, lado identificado e fita sem compressão. Registre o protocolo adotado nas observações.</p>
+ </aside>;
 }
 
 function missingClinicalCore(sections:Encounter['sections']){
@@ -627,6 +654,8 @@ export function EncounterPage(){
             <Recall24hEditor data={drafts.recall24h||{}} onChange={(field,value)=>change('recall24h',field,value)} disabled={!canEdit}/>
           ) : (
             <>
+              <div className={current.key==='assessment'?'assessment-editor-layout':undefined}>
+              {current.key==='assessment'&&<AnthropometryGuide/>}
               <div className={`clinical-form${fieldGroups.some(group=>group.name)?' grouped':''}`}>
                 {fieldGroups.map(group=>(
                   <section className="clinical-field-group" key={group.name||'default'}>
@@ -653,6 +682,7 @@ export function EncounterPage(){
                     </div>
                   </section>
                 ))}
+              </div>
               </div>
               {current.key==='assessment'&&(bmi||whr||bmr)&& (
                 <div className="bmi-result assessment-results">
