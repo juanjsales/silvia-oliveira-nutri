@@ -21,7 +21,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Validate database secret
+        run: |
+          if [ -z "$MIGRATION_DATABASE_URL" ] && [ -z "$DATABASE_URL" ]; then
+            echo "::error::Configure MIGRATION_DATABASE_URL (preferencial) ou DATABASE_URL no environment production."
+            exit 1
+          fi
+      - run: npm ci --include=dev
       - name: Check current schema
         continue-on-error: true
         run: npm --workspace backend-node run db:status
