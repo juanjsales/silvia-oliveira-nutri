@@ -244,11 +244,25 @@ function Recall24hEditor({data,onChange,disabled}:{data:SectionData;onChange:(fi
  </div>;
 }
 
-function AnthropometryGuide(){
+function AnthropometryGuide({data}:{data:SectionData}){
+ const[activeRegion,setActiveRegion]=useState('');
  const landmarks=[
-  ['Pescoço','Base do pescoço'],['Tórax','Linha do tórax'],['Braços D/E','Ponto médio do braço'],['Antebraços D/E','Maior circunferência'],
-  ['Cintura','Menor circunferência'],['Abdômen','Linha umbilical'],['Quadril','Maior protuberância'],['Coxas D/E','Ponto padronizado'],['Panturrilhas D/E','Maior circunferência'],
+  {id:'neck',title:'Pescoço',detail:'Base do pescoço',fields:['neck']},
+  {id:'chest',title:'Tórax',detail:'Linha do tórax',fields:['chest']},
+  {id:'arms',title:'Braços D/E',detail:'Ponto médio do braço',fields:['arm','armLeft']},
+  {id:'forearms',title:'Antebraços D/E',detail:'Maior circunferência',fields:['forearmRight','forearmLeft']},
+  {id:'waist',title:'Cintura',detail:'Menor circunferência',fields:['waist']},
+  {id:'abdomen',title:'Abdômen',detail:'Linha umbilical',fields:['abdomen']},
+  {id:'hip',title:'Quadril',detail:'Maior protuberância',fields:['hip']},
+  {id:'thighs',title:'Coxas D/E',detail:'Ponto padronizado',fields:['thighRight','thighLeft']},
+  {id:'calves',title:'Panturrilhas D/E',detail:'Maior circunferência',fields:['calf','calfLeft']},
  ];
+ const selectRegion=(region:typeof landmarks[number])=>{
+  setActiveRegion(region.id);
+  const input=document.getElementById(`clinical-assessment-${region.fields[0]}`) as HTMLInputElement|null;
+  input?.scrollIntoView({behavior:'smooth',block:'center'});window.setTimeout(()=>input?.focus({preventScroll:true}),350);
+ };
+ const measure=(fields:string[])=>fields.map(field=>String(data[field]||'').trim()).filter(Boolean);
  return <aside className="anthropometry-guide" aria-labelledby="anthropometry-guide-title">
   <header><div><span className="eyebrow">Guia visual</span><h3 id="anthropometry-guide-title">Pontos de medição</h3></div><Scale size={20}/></header>
   <div className="body-map-wrap">
@@ -263,8 +277,9 @@ function AnthropometryGuide(){
      <path d="M97 76h46"/><path d="M78 126h84"/><path d="M72 171h-32M168 171h32"/><path d="M58 218h-25M182 218h25"/><path d="M78 203h84"/><path d="M75 232h90"/><path d="M72 269h96"/><path d="M79 321h31M130 321h31"/><path d="M79 392h30M131 392h30"/>
     </g>
    </svg>
+   {landmarks.map(region=><button key={region.id} type="button" className={`body-hotspot body-hotspot-${region.id}${activeRegion===region.id?' active':''}`} onClick={()=>selectRegion(region)} aria-label={`Preencher ${region.title}`} title={`Ir para ${region.title}`}><span/></button>)}
   </div>
-  <div className="anthropometry-landmarks">{landmarks.map(([title,detail])=><div key={title}><strong>{title}</strong><span>{detail}</span></div>)}</div>
+  <div className="anthropometry-landmarks">{landmarks.map(region=>{const values=measure(region.fields);const difference=values.length===2?Math.abs(Number(values[0])-Number(values[1])).toFixed(1):'';return <button type="button" className={activeRegion===region.id?'active':''} key={region.id} onClick={()=>selectRegion(region)}><strong>{region.title}</strong><span>{values.length?`${values.join(' / ')} cm${difference?` · Δ ${difference}`:''}`:region.detail}</span></button>})}</div>
   <p><strong>Padronize a técnica:</strong> mesma posição, lado identificado e fita sem compressão. Registre o protocolo adotado nas observações.</p>
  </aside>;
 }
@@ -655,7 +670,7 @@ export function EncounterPage(){
           ) : (
             <>
               <div className={current.key==='assessment'?'assessment-editor-layout':undefined}>
-              {current.key==='assessment'&&<AnthropometryGuide/>}
+              {current.key==='assessment'&&<AnthropometryGuide data={drafts.assessment||{}}/>}
               <div className={`clinical-form${fieldGroups.some(group=>group.name)?' grouped':''}`}>
                 {fieldGroups.map(group=>(
                   <section className="clinical-field-group" key={group.name||'default'}>
@@ -673,7 +688,7 @@ export function EncounterPage(){
                                 {field.options?.map(option=><option key={option}>{option}</option>)}
                               </select>
                             ) : (
-                              <input type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={!canEdit}/>
+                              <input id={`clinical-${key}-${field.key}`} type={field.type||'text'} step={field.type==='number'?'0.1':undefined} value={String(drafts[key]?.[field.key]||'')} onChange={e=>change(key,field.key,e.target.value)} placeholder={field.placeholder} disabled={!canEdit}/>
                             )}
                             {field.suffix&&<span>{field.suffix}</span>}
                           </div>
