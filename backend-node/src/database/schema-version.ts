@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '042_appointment_email_expiration.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '044_rbac_foundation.sql';
 
 export async function schemaStatus(db: Database) {
   try {
