@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["canonicalProduction", "product"],
+  "properties": {
+    "canonicalProduction": {
+      "type": "object",
+      "required": ["branch", "environment", "owner", "host", "automaticPromotion"]
+    },
+    "product": {
+      "type": "object",
+      "required": ["branch", "allowedEnvironments", "canonicalProductionPromotion", "productionDatabaseAccess"]
+    }
+  }
+}

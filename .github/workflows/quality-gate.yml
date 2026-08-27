@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - codex/product-platform
       - codex/evolucao-seguranca-arquitetura
   pull_request:
 

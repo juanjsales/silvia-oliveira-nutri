@@ -1,5 +1,17 @@
 # Checklist de release
 
+## Isolamento entre clínica e produto
+
+A política versionada em `.github/deployment-policy.json` é obrigatória e validada por `npm run deploy:policy` no quality gate:
+
+- `main` é exclusivamente a produção real da clínica Silvia e o único ponto autorizado a usar o environment `production` e o domínio `silviaoliveira.vercel.app`;
+- `codex/product-platform` aceita somente deploys de `preview` ou `staging`, com banco e credenciais próprios de homologação;
+- a branch do produto não pode ser promovida automaticamente ao domínio canônico nem acessar o banco de produção;
+- os workflows manuais de migração e smoke produtivos possuem guarda de branch e só executam a partir da `main`;
+- qualquer promoção futura exige revisão humana, plano de migração específico e alteração explícita desta política em PR.
+
+Na Vercel, configure o projeto de homologação do produto separadamente e mantenha o domínio canônico associado apenas ao projeto clínico. Esta política é uma trava no repositório; as proteções de branch, environments e projetos também devem permanecer habilitadas nos provedores.
+
 ## Verificações automatizadas
 
 Antes de publicar, execute:

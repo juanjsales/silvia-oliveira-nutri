@@ -1,0 +1,16 @@
+{
+  "$schema": "./deployment-policy.schema.json",
+  "canonicalProduction": {
+    "branch": "main",
+    "environment": "production",
+    "owner": "clinica-silvia",
+    "host": "silviaoliveira.vercel.app",
+    "automaticPromotion": false
+  },
+  "product": {
+    "branch": "codex/product-platform",
+    "allowedEnvironments": ["preview", "staging"],
+    "canonicalProductionPromotion": "forbidden",
+    "productionDatabaseAccess": "forbidden"
+  }
+}
