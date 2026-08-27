@@ -12,17 +12,21 @@ export function appointmentEmailKey(appointmentId:string,eventType:AppointmentEm
   return createHash('sha256').update(`${appointmentId}:${eventType}:${revision}`).digest('hex');
 }
 
-export async function enqueueAppointmentEmail(db:Queryable,input:{appointmentId:string;eventType:AppointmentEmailType;recipient:string;payload:unknown;deduplicationKey:string}){
-  const result=await db.query(`INSERT INTO appointment_email_outbox(appointment_id,event_type,recipient,payload,deduplication_key)
-    VALUES($1,$2,lower(trim($3)),$4,$5) ON CONFLICT(deduplication_key) DO UPDATE SET
+export async function enqueueAppointmentEmail(db:Queryable,input:{appointmentId:string;eventType:AppointmentEmailType;recipient:string;payload:unknown;deduplicationKey:string;deliverBefore:Date|string}){
+  const result=await db.query(`INSERT INTO appointment_email_outbox(appointment_id,event_type,recipient,payload,deduplication_key,deliver_before)
+    VALUES($1,$2,lower(trim($3)),$4,$5,$6) ON CONFLICT(deduplication_key) DO UPDATE SET
     deduplication_key=excluded.deduplication_key
-    RETURNING id,status`,[input.appointmentId,input.eventType,input.recipient,input.payload,input.deduplicationKey]);
+    RETURNING id,status`,[input.appointmentId,input.eventType,input.recipient,input.payload,input.deduplicationKey,input.deliverBefore]);
   return result.rows[0] as {id:string;status:string};
 }
 
 export async function processAppointmentEmail(app:{db:Database;env:AppEnv;log:{error:(details:unknown,message:string)=>void}},id:string){
+  const expired=await app.db.query(`UPDATE appointment_email_outbox SET status='FAILED',processing_started_at=NULL,
+    last_error='Prazo de entrega expirado; mensagem não enviada.'
+    WHERE id=$1 AND deliver_before<=now() AND status IN('PENDING','FAILED','PROCESSING') RETURNING id`,[id]);
+  if(expired.rows[0])return{processed:true,sent:false};
   const claimed=await app.db.query<any>(`UPDATE appointment_email_outbox SET status='PROCESSING',attempts=attempts+1,attempted_at=now(),processing_started_at=now()
-    WHERE id=$1 AND attempts<max_attempts AND next_attempt_at<=now()
+    WHERE id=$1 AND attempts<max_attempts AND next_attempt_at<=now() AND deliver_before>now()
       AND (status IN('PENDING','FAILED') OR (status='PROCESSING' AND processing_started_at<now()-interval '15 minutes'))
     RETURNING id,appointment_id AS "appointmentId",event_type AS "eventType",recipient,payload,attempts,max_attempts`,[id]);
   const item=claimed.rows[0];
@@ -57,9 +61,12 @@ export async function processAppointmentEmail(app:{db:Database;env:AppEnv;log:{e
 }
 
 export async function processPendingAppointmentEmails(app:{db:Database;env:AppEnv;log:{error:(details:unknown,message:string)=>void}},limit=25){
+  await app.db.query(`UPDATE appointment_email_outbox SET status='FAILED',processing_started_at=NULL,
+    last_error='Prazo de entrega expirado; mensagem não enviada.'
+    WHERE deliver_before<=now() AND status IN('PENDING','FAILED','PROCESSING')`);
   const pending=await app.db.query<{id:string}>(`SELECT id FROM appointment_email_outbox
     WHERE (status IN('PENDING','FAILED') OR (status='PROCESSING' AND processing_started_at<now()-interval '15 minutes'))
-      AND attempts<max_attempts AND next_attempt_at<=now()
+      AND attempts<max_attempts AND next_attempt_at<=now() AND deliver_before>now()
     ORDER BY next_attempt_at,created_at LIMIT $1`,[limit]);
   let sent=0,failed=0;
   for(const row of pending.rows){const result=await processAppointmentEmail(app,row.id);if(result.sent)sent++;else if(result.processed)failed++}

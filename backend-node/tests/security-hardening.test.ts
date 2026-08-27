@@ -7,7 +7,7 @@ const env: AppEnv = {
   NODE_ENV: 'production', PORT: 3000, HOST: '127.0.0.1', DATABASE_URL: 'postgres://test',
   DB_POOL_MAX: 2, DB_CONNECTION_TIMEOUT_MS: 10000, DB_IDLE_TIMEOUT_MS: 10000,
   FRONTEND_ORIGIN: 'https://nutri.example', SESSION_COOKIE_NAME: 'nutri_session', SESSION_TTL_HOURS: 6,
-  PASSWORD_RESET_TTL_MINUTES: 30, APP_URL: 'https://nutri.example', SMTP_PORT: 587,
+  PASSWORD_RESET_TTL_MINUTES: 30, PATIENT_INVITATION_TTL_HOURS: 24, APP_URL: 'https://nutri.example', SMTP_PORT: 587,
   SMTP_SECURE: false, SMTP_FROM: 'test@example.com',
 };
 

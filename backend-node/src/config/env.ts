@@ -18,6 +18,7 @@ const envSchema = z.object({
   SESSION_COOKIE_NAME: z.string().min(1).default('nutri_session'),
   SESSION_TTL_HOURS: z.coerce.number().int().positive().max(168).default(6),
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().max(120).default(30),
+  PATIENT_INVITATION_TTL_HOURS: z.coerce.number().int().positive().max(168).default(24),
   APP_URL: z.string().url(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().positive().default(587),

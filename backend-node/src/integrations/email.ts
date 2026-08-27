@@ -132,11 +132,11 @@ export async function sendPatientInvitationEmail(
     lead: 'Você recebeu acesso exclusivo ao seu Portal Nutricional para acompanhar plano alimentar, evolução, diário e teleconsultas.',
     ctaText: 'Criar Minha Senha & Entrar',
     ctaUrl: link,
-    footerNote: `Este link de segurança é individual e expira em ${env.PASSWORD_RESET_TTL_MINUTES} minutos. Se não solicitou, por favor desconsidere.`,
+    footerNote: `Este link de segurança é individual e expira em ${env.PATIENT_INVITATION_TTL_HOURS} horas. Se não solicitou, por favor desconsidere.`,
     identity,
   });
 
-  const text = `Olá, ${input.name}.\n\nVocê recebeu acesso ao Portal Nutricional de ${identity.professionalName}.\n\nPara escolher sua senha e ativar sua conta, acesse:\n${link}\n\nO link expira em ${env.PASSWORD_RESET_TTL_MINUTES} minutos.`;
+  const text = `Olá, ${input.name}.\n\nVocê recebeu acesso ao Portal Nutricional de ${identity.professionalName}.\n\nPara escolher sua senha e ativar sua conta, acesse:\n${link}\n\nO link expira em ${env.PATIENT_INVITATION_TTL_HOURS} horas.`;
 
   await smtpTransport(config).sendMail({
     from: config.from,

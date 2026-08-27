@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import type { AppEnv } from '../src/config/env.js';
 import { appointmentEmailKey, enqueueAppointmentEmail, processAppointmentEmail, processPendingAppointmentEmails } from '../src/shared/appointment-email-outbox.js';
 
-const env: AppEnv = {NODE_ENV:'test',PORT:3000,HOST:'127.0.0.1',DATABASE_URL:'postgres://test',DB_POOL_MAX:2,DB_CONNECTION_TIMEOUT_MS:10000,DB_IDLE_TIMEOUT_MS:10000,FRONTEND_ORIGIN:'http://localhost:5173',SESSION_COOKIE_NAME:'nutri_session',SESSION_TTL_HOURS:6,PASSWORD_RESET_TTL_MINUTES:30,APP_URL:'http://localhost:5173',SMTP_PORT:587,SMTP_SECURE:false,SMTP_FROM:'test@example.com'};
+const env: AppEnv = {NODE_ENV:'test',PORT:3000,HOST:'127.0.0.1',DATABASE_URL:'postgres://test',DB_POOL_MAX:2,DB_CONNECTION_TIMEOUT_MS:10000,DB_IDLE_TIMEOUT_MS:10000,FRONTEND_ORIGIN:'http://localhost:5173',SESSION_COOKIE_NAME:'nutri_session',SESSION_TTL_HOURS:6,PASSWORD_RESET_TTL_MINUTES:30,PATIENT_INVITATION_TTL_HOURS:24,APP_URL:'http://localhost:5173',SMTP_PORT:587,SMTP_SECURE:false,SMTP_FROM:'test@example.com'};
 
 test('deduplication key is stable per appointment event revision', () => {
   assert.equal(appointmentEmailKey('appointment','RESCHEDULED','revision'), appointmentEmailKey('appointment','RESCHEDULED','revision'));
@@ -13,10 +13,12 @@ test('deduplication key is stable per appointment event revision', () => {
 test('enqueue uses an atomic unique-key upsert and normalizes the recipient', async () => {
   let captured: {sql:string;params?:unknown[]} | undefined;
   const db = { query: async (sql:string,params?:unknown[]) => { captured=params?{sql,params}:{sql}; return {rows:[{id:'delivery',status:'PENDING'}]}; } };
-  const delivery = await enqueueAppointmentEmail(db,{appointmentId:'appointment',eventType:'SCHEDULED',recipient:' PATIENT@EXAMPLE.COM ',payload:{name:'Patient'},deduplicationKey:'key'});
+  const deadline='2026-08-16T09:00:00-03:00';
+  const delivery = await enqueueAppointmentEmail(db,{appointmentId:'appointment',eventType:'SCHEDULED',recipient:' PATIENT@EXAMPLE.COM ',payload:{name:'Patient'},deduplicationKey:'key',deliverBefore:deadline});
   assert.deepEqual(delivery,{id:'delivery',status:'PENDING'});
   assert.match(captured!.sql,/ON CONFLICT\(deduplication_key\)/);
   assert.match(captured!.sql,/lower\(trim\(\$3\)\)/);
+  assert.equal(captured!.params?.[5],deadline);
 });
 
 test('a failed delivery is retained with backoff instead of being lost', async () => {
@@ -41,4 +43,18 @@ test('pending worker also reclaims deliveries left processing after a crash', as
   assert.deepEqual(result,{scheduled:0,sent:0,failed:0});
   assert.match(selection,/status='PROCESSING'/);
   assert.match(selection,/15 minutes/);
+  assert.match(selection,/deliver_before>now\(\)/);
+});
+
+test('an expired delivery is failed without being claimed or sent', async () => {
+  const statements:string[]=[];
+  const db={query:async(sql:string)=>{
+    statements.push(sql);
+    if(sql.includes("last_error='Prazo de entrega expirado"))return{rows:[{id:'delivery'}]};
+    return{rows:[]};
+  }};
+  const result=await processAppointmentEmail({db:db as never,env,log:{error:()=>{}}},'delivery');
+  assert.deepEqual(result,{processed:true,sent:false});
+  assert.equal(statements.length,1);
+  assert.doesNotMatch(statements[0]!,/attempts=attempts\+1/);
 });

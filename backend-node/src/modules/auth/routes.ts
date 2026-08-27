@@ -80,6 +80,7 @@ export async function authRoutes(app: FastifyInstance) {
       const rawToken = createOpaqueToken();
       const resetLink = `${app.env.APP_URL}/redefinir-senha?token=${encodeURIComponent(rawToken)}`;
       const expiresAt = new Date(Date.now() + app.env.PASSWORD_RESET_TTL_MINUTES * 60_000);
+      const tokenHash = hashToken(rawToken);
       const identity = await loadClinicIdentity(app.db);
 
       const html = buildHtmlEmail({
@@ -93,18 +94,27 @@ export async function authRoutes(app: FastifyInstance) {
         identity,
       });
 
-      await mailer.sendMail({
-        from: smtp.from,
-        to: user.email,
-        subject: `Redefinição de senha — ${identity.clinicName}`,
-        text: `Defina uma nova senha acessando: ${resetLink}\n\nO link expira em ${app.env.PASSWORD_RESET_TTL_MINUTES} minutos.`,
-        html,
-      });
       await app.db.query('DELETE FROM password_reset_tokens WHERE user_id = $1 AND used_at IS NULL', [user.id]);
       await app.db.query(
         'INSERT INTO password_reset_tokens(user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
-        [user.id, hashToken(rawToken), expiresAt]
+        [user.id, tokenHash, expiresAt]
       );
+      try {
+        await mailer.sendMail({
+          from: smtp.from,
+          to: user.email,
+          subject: `Redefinição de senha — ${identity.clinicName}`,
+          text: `Defina uma nova senha acessando: ${resetLink}\n\nO link expira em ${app.env.PASSWORD_RESET_TTL_MINUTES} minutos.`,
+          html,
+        });
+      } catch (error) {
+        try {
+          await app.db.query('DELETE FROM password_reset_tokens WHERE user_id = $1 AND token_hash = $2', [user.id, tokenHash]);
+        } catch (cleanupError) {
+          app.log.error({ cleanupError, userId: user.id }, 'Falha ao remover token de recuperação cujo e-mail não foi enviado');
+        }
+        throw error;
+      }
       await audit(app.db, 'PASSWORD_RECOVERY_SENT', 'user', { entityId: user.id });
     }
     return { message: 'Se a conta existir, enviaremos as instruções de recuperação.' };
