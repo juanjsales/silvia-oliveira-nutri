@@ -45,9 +45,15 @@ test('modo mock nunca chama provider mesmo com flag global', () => {
 });
 
 test('staging exige opt-in explícito para executar provider externo', () => {
-  const request = { ...safe, mode: 'staging', executeExternalProvider: true };
+  const request = { ...safe, mode: 'staging', operationId: 'operation-demo', executeExternalProvider: true };
   assert.ok(validateProvisioningRequest(request, { env, policy }).some((item) => item.includes('ALLOW_EXTERNAL_PROVIDER_PROVISIONING')));
   assert.deepEqual(validateProvisioningRequest(request, {
-    env: { ...env, ALLOW_EXTERNAL_PROVIDER_PROVISIONING: 'true' }, policy
+    env: { ...env, ALLOW_EXTERNAL_PROVIDER_PROVISIONING: 'true', PROVIDER_EXECUTION_CONFIRMATION: 'staging:operation-demo' }, policy
   }), []);
+});
+
+test('provider real exige três opt-ins independentes e vinculados à operação',()=>{
+  const request={...safe,mode:'staging',operationId:'op-123',executeExternalProvider:true};
+  const failures=validateProvisioningRequest(request,{env:{...env,ALLOW_EXTERNAL_PROVIDER_PROVISIONING:'true',PROVIDER_EXECUTION_CONFIRMATION:'staging:outra'},policy});
+  assert.ok(failures.some(item=>item.includes('staging:<operationId>')));
 });

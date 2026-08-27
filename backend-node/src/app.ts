@@ -33,12 +33,14 @@ import { auditRoutes } from './modules/audit/routes.js';
 import { PRIVACY_NOTICE_VERSION } from './shared/privacy-notice.js';
 import { publicDataRoutes } from './modules/public-data/routes.js';
 import { platformRoutes } from './modules/platform/routes.js';
+import { vercelRoutes } from './modules/platform/vercel-routes.js';
+import { disabledVercelProvider, type VercelProvider } from './integrations/vercel-provider.js';
 import { staffRoutes } from './modules/staff/routes.js';
 import { licenseRoutes } from './modules/license/routes.js';
 import { isLicenseWriteExempt, loadLicenseState } from './modules/license/service.js';
 import { audit } from './shared/audit.js';
 
-export async function buildApp(env: AppEnv, db: Database) {
+export async function buildApp(env: AppEnv, db: Database, integrations: { vercel?: VercelProvider } = {}) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
   app.decorate('env', env);
   app.decorate('db', db);
@@ -150,6 +152,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(auditRoutes, { prefix: '/api/audit' });
   await app.register(publicDataRoutes, { prefix: '/api/public-data' });
   await app.register(platformRoutes, { prefix: '/api/platform' });
+  await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??disabledVercelProvider),{prefix:'/api/platform/vercel'});
   await app.register(staffRoutes, { prefix: '/api/staff' });
   await app.register(licenseRoutes, { prefix: '/api/license' });
 

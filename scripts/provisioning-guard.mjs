@@ -31,6 +31,12 @@ export function validateProvisioningRequest(request, { env = process.env, policy
   if (externalRequested && normalize(env.DEPLOYMENT_ENVIRONMENT) !== 'staging') {
     failures.push('Provider externo só pode executar com DEPLOYMENT_ENVIRONMENT=staging.');
   }
+  if (externalRequested) {
+    const expectedConfirmation = request?.operationId ? `staging:${request.operationId}` : '';
+    if (!expectedConfirmation || clean(env.PROVIDER_EXECUTION_CONFIRMATION) !== expectedConfirmation) {
+      failures.push('Provider externo exige confirmação vinculada à operação no formato staging:<operationId>.');
+    }
+  }
   return [...new Set(failures)];
 }
 

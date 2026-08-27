@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '049_installation_license.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '050_vercel_oauth_foundation.sql';
 
 export async function schemaStatus(db: Database) {
   try {

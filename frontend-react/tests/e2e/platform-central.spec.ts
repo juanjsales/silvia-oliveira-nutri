@@ -50,3 +50,10 @@ test('shows deterministic empty and error states', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Não foi possível carregar a central' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Tentar novamente' })).toBeVisible();
 });
+
+test('explains why Vercel is unavailable when integration is not configured', async ({ page }) => {
+  await authenticateOperator(page);
+  await page.goto('/plataforma/tenants/tenant-aurora?mockVercel=unavailable');
+  await expect(page.getByRole('heading', { name: 'Integração ainda não configurada' })).toBeVisible();
+  await expect(page.getByText('Nenhum token deve ser informado nesta tela.')).toBeVisible();
+});
