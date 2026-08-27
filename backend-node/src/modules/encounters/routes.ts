@@ -228,7 +228,7 @@ export async function encounterRoutes(app: FastifyInstance) {
 
     const saved = await app.db.query<{section_key:string}>('SELECT section_key FROM clinical_sections WHERE encounter_id=$1', [id]);
     const missing=missingClinicalCore(saved.rows.map(row=>row.section_key));
-    if(!body.deliveryOnly && missing.length && body.force === false)return reply.code(400).send({error:`Complete o registro clínico antes de finalizar: ${missing.join(', ')}.`});
+    if(!body.deliveryOnly && missing.length && body.force !== true)return reply.code(400).send({error:`Complete o registro clínico antes de finalizar: ${missing.join(', ')}.`});
     
     let financeCreated = false;
     let emailSent = false;

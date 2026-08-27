@@ -13,7 +13,7 @@ Esse comando valida a sequência das migrações, a versão esperada do schema, 
 
 O build da Vercel executa `npm run release:env` antes de compilar. A validação reprova URLs inseguras, segredos curtos e integrações parcialmente configuradas; ela informa apenas os nomes das variáveis, nunca seus valores.
 
-Após aplicar as migrações e publicar, execute manualmente o workflow `Production smoke test`. Ele exige autenticação administrativa, confirma o schema, a readiness operacional, os módulos essenciais e a revogação da sessão no logout.
+Após aplicar as migrações e publicar, execute manualmente o workflow `Production smoke test`. Ele aceita somente o domínio canônico, exige autenticação administrativa, reproduz a origem enviada pelo navegador e confirma schema, readiness operacional, atributos seguros do cookie, módulos essenciais e revogação da sessão no logout.
 
 ## Variáveis obrigatórias na Vercel
 
@@ -34,7 +34,7 @@ Configuração condicional:
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` e `SUPABASE_EXAMS_BUCKET`: obrigatórias em conjunto para upload privado de exames. O recurso é opcional para a readiness geral.
 - `VITE_API_URL`: deixe vazia no deploy de mesma origem da Vercel; informe somente se a API estiver em outra origem.
 
-Variáveis com defaults seguros que normalmente não precisam ser definidas: `NODE_ENV`, `PORT`, `HOST`, `DB_POOL_MAX`, `DB_CONNECTION_TIMEOUT_MS`, `DB_IDLE_TIMEOUT_MS`, `SESSION_COOKIE_NAME`, `SESSION_TTL_HOURS` e `PASSWORD_RESET_TTL_MINUTES`.
+Variáveis com defaults seguros que normalmente não precisam ser definidas: `NODE_ENV`, `PORT`, `HOST`, `DB_POOL_MAX`, `DB_CONNECTION_TIMEOUT_MS`, `DB_IDLE_TIMEOUT_MS`, `SESSION_COOKIE_NAME`, `SESSION_TTL_HOURS`, `PASSWORD_RESET_TTL_MINUTES` e `PATIENT_INVITATION_TTL_HOURS`.
 
 ## Secrets obrigatórios no environment `production` do GitHub
 
@@ -45,4 +45,8 @@ Variáveis com defaults seguros que normalmente não precisam ser definidas: `NO
 | `SMOKE_ADMIN_IDENTIFIER` | Smoke; e-mail ou CPF de uma conta administrativa dedicada. |
 | `SMOKE_ADMIN_PASSWORD` | Smoke; senha da conta administrativa dedicada. |
 
+A conta do smoke deve ser exclusiva para homologação, possuir papel administrativo e usar uma senha própria armazenada apenas como secret do environment `production`. Não reutilize a conta pessoal da nutricionista. O workflow falha — em vez de ignorar a etapa autenticada — quando uma das duas credenciais estiver ausente.
+
 Não use banco de produção em `E2E_DATABASE_URL`. O teste clínico só aceita nomes de conexão que indiquem explicitamente teste, testing ou homologação.
+
+No GitHub Environment `production`, configure preferencialmente `MIGRATION_DATABASE_URL` com a conexão direta ou Session Pooler compatível com DDL. O workflow aceita `DATABASE_URL` como fallback e valida o schema antes e depois de aplicar as migrações. Na Vercel, `CRON_SECRET` deve ter pelo menos 32 caracteres; o agendador envia automaticamente esse valor como `Authorization: Bearer ...` para os endpoints protegidos.

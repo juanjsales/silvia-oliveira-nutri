@@ -37,3 +37,4 @@ jobs:
           SMOKE_ADMIN_PASSWORD: ${{ secrets.SMOKE_ADMIN_PASSWORD }}
           STRICT_SMOKE_AUTH: "true"
           SMOKE_TIMEOUT_MS: "15000"
+          SMOKE_ALLOWED_HOSTS: "silviaoliveira.vercel.app"

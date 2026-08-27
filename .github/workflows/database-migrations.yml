@@ -37,8 +37,10 @@ jobs:
         run: npm --workspace backend-node run db:status
     env:
       NODE_ENV: production
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+      # loadEnv exige DATABASE_URL. A conexão direta continua preferencial para DDL,
+      # mas qualquer um dos dois secrets torna o workflow executável de forma coerente.
+      DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.MIGRATION_DATABASE_URL }}
+      MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL || secrets.DATABASE_URL }}
       FRONTEND_ORIGIN: https://silviaoliveira.vercel.app
       APP_URL: https://silviaoliveira.vercel.app
       SMTP_FROM: migration@localhost.invalid

@@ -75,7 +75,8 @@ export async function appointmentRoutes(app: FastifyInstance) {
         const queued = await enqueueAppointmentEmail(client, {
           appointmentId: id, eventType: 'SCHEDULED', recipient: patient.rows[0].email,
           payload: { name: patient.rows[0].name, date: body.date, time: body.time, type: body.type, durationMinutes: body.durationMinutes },
-          deduplicationKey: appointmentEmailKey(id, 'SCHEDULED', 'created')
+          deduplicationKey: appointmentEmailKey(id, 'SCHEDULED', 'created'),
+          deliverBefore: `${body.date}T${body.time}:00-03:00`
         });
         deliveryId = queued.id;
       }
@@ -160,6 +161,7 @@ export async function appointmentRoutes(app: FastifyInstance) {
          body.durationMinutes??a.duration_minutes,body.type??a.appointment_type,body.price??a.price,
          body.status??a.status,body.notes??a.notes,body.meetingUrl??a.meeting_url,id,scheduleChanged]);
       if (scheduleChanged || body.status === 'CANCELLED') {
+        await client.query(`UPDATE professional_notifications SET status='RESOLVED',resolved_at=COALESCE(resolved_at,now()),read_at=COALESCE(read_at,now()),updated_at=now() WHERE dedupe_key='appointment-reschedule:'||$1 AND status='ACTIVE'`,[id]);
         await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)
           SELECT patient_id,CASE WHEN status='CANCELLED' THEN 'Consulta cancelada' ELSE 'Novo horário da consulta' END,
           CASE WHEN status='CANCELLED' THEN 'Sua consulta foi cancelada pelo consultório.' ELSE 'Sua consulta foi atualizada para '||to_char(appointment_date,'DD/MM/YYYY')||' às '||to_char(appointment_time,'HH24:MI')||'. Confirme o novo horário no portal.' END,
@@ -172,7 +174,8 @@ export async function appointmentRoutes(app: FastifyInstance) {
           const queued = await enqueueAppointmentEmail(client, {
             appointmentId: id, eventType, recipient: target.email,
             payload: { name: target.name, date: target.date, time: target.time, type: target.type },
-            deduplicationKey: appointmentEmailKey(id,eventType,updated.rows[0]!.revision.toISOString())
+            deduplicationKey: appointmentEmailKey(id,eventType,updated.rows[0]!.revision.toISOString()),
+            deliverBefore: eventType === 'CANCELLED' ? new Date(Date.now()+7*24*60*60*1000) : `${target.date}T${target.time}:00-03:00`
           });
           deliveryId = queued.id;
         }

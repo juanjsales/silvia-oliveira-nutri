@@ -129,6 +129,24 @@ test('finalizing without email accepts an empty recipient from an older client',
   await app.close();
 });
 
+test('finalizing an incomplete encounter requires an explicit force override',async()=>{
+  const patientId='00000000-0000-4000-8000-000000000002';
+  const encounterId='00000000-0000-4000-8000-000000000003';
+  let completionAttempted=false;
+  const client={query:async(sql:string)=>{if(sql.includes("UPDATE clinical_encounters SET status='COMPLETED'"))completionAttempted=true;return{rows:[]}},release:()=>{}};
+  const db={query:async(sql:string)=>{
+    if(sql.includes('FROM sessions s'))return{rows:[{user_id:'00000000-0000-4000-8000-000000000001',role:'ADMIN',patient_id:null}]};
+    if(sql.includes('SELECT section_key FROM clinical_sections'))return{rows:[]};
+    return{rows:[]};
+  },connect:async()=>client,end:async()=>{}};
+  const app=await buildApp(env,db as never);
+  const response=await app.inject({method:'POST',url:`/api/encounters/${encounterId}/finalize`,cookies:{nutri_session:'token'},payload:{sendEmail:false}});
+  assert.equal(response.statusCode,400);
+  assert.match(response.json().error,/Complete o registro clínico/);
+  assert.equal(completionAttempted,false);
+  await app.close();
+});
+
 test('a notification schema failure does not prevent encounter completion',async()=>{
   const patientId='00000000-0000-4000-8000-000000000002';
   const encounterId='00000000-0000-4000-8000-000000000003';

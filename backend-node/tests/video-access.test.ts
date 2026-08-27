@@ -8,9 +8,9 @@ const patientId = '00000000-0000-4000-8000-000000000002';
 const appointmentId = '00000000-0000-4000-8000-000000000003';
 const sessionId = '00000000-0000-4000-8000-000000000004';
 
-function db(appointment: Record<string, unknown>) {
+function db(appointment: Record<string, unknown>, role:'ADMIN'|'PATIENT'='PATIENT') {
   return { query: async (sql: string) => {
-    if (sql.includes('FROM sessions s')) return { rows:[{ user_id:'00000000-0000-4000-8000-000000000001', role:'PATIENT', patient_id:patientId }] };
+    if (sql.includes('FROM sessions s')) return { rows:[{ user_id:'00000000-0000-4000-8000-000000000001', role, patient_id:role==='PATIENT'?patientId:null }] };
     if (sql.includes('FROM appointments a')) return { rows:[appointment] };
     if (sql.includes('INSERT INTO teleconsultation_sessions')) return { rows:[{ sessionId, state:'WAITING_PROFESSIONAL', expiresAt:new Date(Date.now() + 3600000) }] };
     return { rows:[] };
@@ -41,6 +41,19 @@ test('patient waits until the nutritionist starts the appointment', async () => 
   assert.match(response.json().error, /nutricionista iniciar/);
   await app.close();
 });
+
+for (const terminalStatus of ['CANCELLED','NO_SHOW'] as const) {
+  test(`video access rejects a ${terminalStatus} appointment for patient and professional`, async () => {
+    const now = new Date();
+    const appointment={patientId,patientName:'Paciente',status:terminalStatus,encounterStatus:null,startsAt:new Date(now.getTime()-60000),endsAt:new Date(now.getTime()+3600000),videoRoomToken:'secret'};
+    const patientApp=await buildApp(env,db(appointment,'PATIENT') as never);
+    assert.equal((await inject(patientApp)).statusCode,409);
+    await patientApp.close();
+    const professionalApp=await buildApp(env,db(appointment,'ADMIN') as never);
+    assert.equal((await inject(professionalApp)).statusCode,409);
+    await professionalApp.close();
+  });
+}
 
 test('access issues an opaque fragment token without leaking role, name or canonical room', async () => {
   const now = new Date();

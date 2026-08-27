@@ -1,10 +1,6 @@
-const base = (process.env.SMOKE_BASE_URL || '').replace(/\/$/, '');
-const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 15_000);
+import { assertSecureSessionCookie, parseSmokeConfig } from './production-smoke-config.mjs';
 
-if (!base) throw new Error('Defina SMOKE_BASE_URL com a URL publicada.');
-if (!Number.isInteger(timeoutMs) || timeoutMs < 1_000 || timeoutMs > 60_000) {
-  throw new Error('SMOKE_TIMEOUT_MS deve ser um inteiro entre 1000 e 60000.');
-}
+const { base, origin, timeoutMs, identifier, password, authenticated } = parseSmokeConfig();
 
 async function request(path, { expected = 200, cookie, method = 'GET', body } = {}) {
   const response = await fetch(`${base}${path}`, {
@@ -13,6 +9,7 @@ async function request(path, { expected = 200, cookie, method = 'GET', body } = 
     signal: AbortSignal.timeout(timeoutMs),
     headers: {
       accept: 'application/json',
+      origin,
       ...(cookie ? { cookie } : {}),
       ...(body ? { 'content-type': 'application/json' } : {})
     },
@@ -49,16 +46,9 @@ console.log('✓ Identidade do consultório');
 await request('/api/auth/me', { expected: 401 });
 console.log('✓ Proteção de sessão anônima');
 
-const identifier = process.env.SMOKE_ADMIN_IDENTIFIER?.trim();
-const password = process.env.SMOKE_ADMIN_PASSWORD;
-if (process.env.STRICT_SMOKE_AUTH === 'true' && (!identifier || !password?.trim())) {
-  throw new Error('Credenciais de homologação obrigatórias ausentes. Configure SMOKE_ADMIN_IDENTIFIER e SMOKE_ADMIN_PASSWORD no environment production.');
-}
-
-if (identifier && password) {
+if (authenticated) {
   const login = await request('/api/auth/login', { method: 'POST', body: { identifier, password } });
-  const cookie = (login.response.headers.get('set-cookie') || '').split(';')[0];
-  if (!cookie) throw new Error('Login não criou uma sessão segura.');
+  const cookie = assertSecureSessionCookie(login.response.headers.get('set-cookie'));
 
   const session = await request('/api/auth/me', { cookie });
   if (session.payload?.user?.role !== 'ADMIN') throw new Error('A credencial do smoke não pertence a um administrador.');

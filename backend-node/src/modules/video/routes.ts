@@ -207,7 +207,7 @@ export async function videoRoutes(app: FastifyInstance) {
       return reply.code(409).send({ error: 'Esta consulta já foi finalizada pela nutricionista.' });
     }
 
-    if (['CANCELLED', 'ABSENT'].includes(status)) {
+    if (['CANCELLED', 'NO_SHOW'].includes(status)) {
       return reply.code(409).send({ error: 'Esta consulta foi cancelada.' });
     }
 

@@ -79,6 +79,7 @@ requireText(smokeWorkflow, [
   'environment: production',
   'RELEASE_REQUIRE_ENV: "true"',
   'STRICT_SMOKE_AUTH: "true"',
+  'SMOKE_ALLOWED_HOSTS: "silviaoliveira.vercel.app"',
   'secrets.SMOKE_ADMIN_IDENTIFIER',
   'secrets.SMOKE_ADMIN_PASSWORD'
 ], 'Workflow de smoke autenticado e protegido');
