@@ -79,3 +79,25 @@ test('prioriza a sala ao vivo mesmo se a confirmação estiver pendente', async 
   await expect(page.getByRole('link', { name: 'Entrar na Sala Virtual' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Confirmar presença' })).toHaveCount(0);
 });
+
+test('oferece ajuda para imprevistos usando somente substituições do plano', async ({ page }) => {
+  await mockPortal(page, 'CONFIRMED', {
+    plans: [{
+      id: 'plan-1',
+      status: 'PUBLISHED',
+      content: { meals: [{
+        title: 'Refeição do momento',
+        time: '12:00',
+        items: [{ name: 'Banana', amountText: '1 unidade', substitutions: ['1 fatia de mamão'] }],
+      }] },
+    }],
+  });
+  await page.goto('/portal');
+
+  await expect(page.getByText('Trocas liberadas')).toBeVisible();
+  await page.getByRole('button', { name: /Meu dia saiu do planejado/ }).click();
+  await expect(page.getByRole('dialog', { name: 'O que mudou no seu dia?' })).toBeVisible();
+  await page.getByRole('button', { name: 'Não encontrei um alimento' }).click();
+  await expect(page.getByText('1 fatia de mamão')).toBeVisible();
+  await expect(page.getByText(/somente opções já autorizadas/i)).toHaveCount(0);
+});

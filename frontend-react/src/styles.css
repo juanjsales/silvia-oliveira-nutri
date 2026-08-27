@@ -3064,6 +3064,27 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   color: #ffffff !important;
   border-color: #25d366 !important;
 }
+.market-mode-button { border-color: #bdd5c4 !important; color: #21593c !important; }
+
+.shopping-planner, .shopping-add-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  margin-bottom: 14px;
+  border: 1px solid #dfe8e1;
+  border-radius: 14px;
+  background: #fff;
+}
+.shopping-planner > div:first-child, .shopping-add-form > div:first-child { display: flex; flex: 1; min-width: 180px; flex-direction: column; gap: 2px; }
+.shopping-planner strong, .shopping-add-form strong { color: #294b38; font-size: .8rem; }
+.shopping-planner span, .shopping-add-form span { color: #718077; font-size: .67rem; }
+.shopping-days { display: inline-flex; gap: 4px; padding: 3px; border-radius: 10px; background: #f0f4f1; }
+.shopping-days button { min-height: 36px; padding: 7px 12px; border: 0; border-radius: 8px; background: transparent; color: #52655a; font-size: .72rem; font-weight: 800; cursor: pointer; }
+.shopping-days button.active { color: #fff; background: #286144; }
+.shopping-add-form label { flex: 1; }
+.shopping-add-form input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cfdbd2; border-radius: 10px; font-size: .78rem; }
+.shopping-add-form .primary-button { min-height: 42px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 
 .shopping-progress-box {
   display: grid;
@@ -3179,11 +3200,13 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 
 .shopping-item-row + .shopping-item-row { border-top: 1px solid #eef2ef; }
 .shopping-item-row input { position: absolute; opacity: 0; pointer-events: none; }
+.shopping-item-check { display: grid; place-items: center; cursor: pointer; }
 .shopping-checkbox { width: 22px; height: 22px; flex: 0 0 22px; display: grid; place-items: center; border: 1.5px solid #b9cbbf; border-radius: 7px; background: #fff; color: #fff; transition: .15s ease; }
 .shopping-item-row.checked .shopping-checkbox { border-color: #2c7950; background: #2c7950; }
 .shopping-item-row:focus-within { outline: 3px solid rgba(44,121,80,.18); outline-offset: 1px; }
 .item-name { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 2px; }
 .item-name strong { color: inherit; font-size: .82rem; line-height: 1.35; }
+.item-name em { margin-left: 6px; padding: 2px 6px; border-radius: 999px; background: #edf4ef; color: #397054; font-size: .55rem; font-style: normal; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .item-name small { color: #76877d; font-size: .68rem; line-height: 1.35; text-decoration: none; }
 
 .shopping-item-row:hover {
@@ -3197,6 +3220,22 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 .shopping-item-row.checked .item-name strong {
   text-decoration: line-through;
 }
+.shopping-item-row.pantry { background: #f7f8f5; color: #718077; }
+.shopping-item-row.pantry .shopping-checkbox { background: #edf1ed; }
+.pantry-button, .row-icon-button { min-height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; border: 1px solid #d9e2dc; border-radius: 8px; background: #fff; color: #607168; font-size: .62rem; font-weight: 800; cursor: pointer; }
+.pantry-button.active { border-color: #a9c8b2; background: #e9f4ec; color: #286144; }
+.row-icon-button { width: 32px; padding: 0; }
+.row-icon-button.danger { color: #a44b4b; }
+
+body.shopping-market-open { overflow: hidden; }
+.shopping-list-panel.market-mode { position: fixed; z-index: 1000; inset: 0; overflow-y: auto; border: 0; border-radius: 0; padding: clamp(16px, 3vw, 38px); background: #f8fbf8; }
+.shopping-list-panel.market-mode .shopping-title-wrap p,
+.shopping-list-panel.market-mode .shopping-eyebrow,
+.shopping-list-panel.market-mode .shopping-add-form { display: none; }
+.shopping-list-panel.market-mode .shopping-categories-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.shopping-list-panel.market-mode .shopping-item-row { min-height: 64px; }
+.shopping-list-panel.market-mode .shopping-checkbox { width: 30px; height: 30px; flex-basis: 30px; }
+.shopping-list-panel.market-mode .item-name strong { font-size: 1rem; }
 
 .item-done-check {
   margin-left: auto;
@@ -3206,24 +3245,34 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
 @media (max-width: 720px) {
   .shopping-header { align-items: flex-start; }
   .shopping-title-wrap { align-items: flex-start; }
-  .shopping-actions-bar { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .shopping-actions-bar { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .shopping-actions-bar button { min-width: 0; justify-content: center; padding-inline: 8px; }
   .shopping-actions-bar .icon-button { width: 100%; }
   .shopping-progress-box { grid-template-columns: auto minmax(0,1fr) auto; padding: 14px; }
   .progress-labels { flex-direction: column; gap: 1px; margin-bottom: 5px; }
-  .shopping-filter-bar { width: 100%; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .shopping-filter-bar { width: 100%; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); }
   .shopping-filter-bar button { justify-content: center; padding-inline: 5px; }
   .shopping-categories-grid { grid-template-columns: 1fr; gap: 12px; }
+  .shopping-planner, .shopping-add-form { align-items: stretch; flex-wrap: wrap; }
+  .shopping-add-form > div:first-child { flex-basis: 100%; }
+  .shopping-add-form label { min-width: calc(50% - 6px); }
+  .shopping-list-panel.market-mode .shopping-categories-grid { grid-template-columns: 1fr; }
+  .pantry-button span { display: none; }
 }
 
 @media (max-width: 430px) {
   .shopping-actions-bar { grid-template-columns: 1fr 1fr; }
-  .shopping-actions-bar .wa-share-btn { grid-column: 1 / -1; }
+  .shopping-actions-bar .wa-share-btn { grid-column: auto; }
   .shopping-progress-icon { display: none; }
   .shopping-progress-box { grid-template-columns: minmax(0,1fr) auto; }
   .shopping-progress-box > b { grid-column: 2; }
   .progress-track { grid-column: 1; }
   .shopping-filter-bar button { flex-direction: column; gap: 2px; font-size: .68rem; }
+  .shopping-planner { align-items: stretch; flex-direction: column; }
+  .shopping-days { display: grid; grid-template-columns: repeat(3,1fr); }
+  .shopping-add-form label { min-width: 100%; }
+  .shopping-item-row { gap: 7px; }
+  .row-icon-button { width: 30px; min-width: 30px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════

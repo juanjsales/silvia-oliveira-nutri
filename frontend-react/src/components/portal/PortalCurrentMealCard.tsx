@@ -1,5 +1,5 @@
-import { ArrowRight, Clock, Salad, Sparkles, Utensils } from "lucide-react";
-import { useMemo } from "react";
+import { ArrowRight, ArrowRightLeft, Clock, Compass, MessageCircle, Sparkles, Utensils, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 type MealItem = {
   name?: string;
@@ -10,6 +10,8 @@ type MealItem = {
   amountText?: string;
   unit?: string;
   unidade?: string;
+  substitutions?: string[];
+  substituicoes?: string[];
 };
 
 type Meal = {
@@ -71,6 +73,18 @@ export function PortalCurrentMealCard({
   plan?: Plan | null;
   onOpenMealPlan: () => void;
 }) {
+  const [rescueOpen, setRescueOpen] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!rescueOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setRescueOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [rescueOpen]);
+
   const currentMealInfo = useMemo(() => {
     const now = new Date();
     const currentHour = now.getHours();
@@ -175,7 +189,8 @@ export function PortalCurrentMealCard({
       .map((it) => {
         const name = it.name || it.nome || "";
         const portion = getItemPortion(it);
-        return { name, portion };
+        const substitutions = it.substitutions || it.substituicoes || [];
+        return { name, portion, substitutions };
       })
       .filter((it) => Boolean(it.name));
 
@@ -186,11 +201,21 @@ export function PortalCurrentMealCard({
     };
   }, [plan]);
 
+  const availableSwaps = currentMealInfo.items.flatMap((item) =>
+    item.substitutions.map((option) => ({ food: item.name, option })),
+  );
+  const scenarios = [
+    { id: "missing", label: "Não encontrei um alimento" },
+    { id: "different", label: "Quero variar hoje" },
+    { id: "time", label: "Estou sem tempo" },
+    { id: "outside", label: "Vou comer fora" },
+  ];
+
   return (
     <div className="current-meal-card">
       <div className="current-meal-head">
         <div className="meal-badge-time">
-          <Clock size={12} /> Refeição Sugerida · {currentMealInfo.periodTag}
+          <Clock size={12} /> Agora · {currentMealInfo.periodTag}
         </div>
         <div className="meal-header-info">
           <div className="meal-title-row">
@@ -202,6 +227,28 @@ export function PortalCurrentMealCard({
           <p>O que seu plano alimentar orienta para este momento:</p>
         </div>
       </div>
+
+      {availableSwaps.length > 0 && (
+        <section className="meal-swap-preview" aria-label="Substituições liberadas para esta refeição">
+          <div className="meal-swap-preview-head">
+            <span><ArrowRightLeft size={14} /> Trocas liberadas</span>
+            <small>{availableSwaps.length} {availableSwaps.length === 1 ? "opção" : "opções"}</small>
+          </div>
+          {availableSwaps.slice(0, 2).map((swap, index) => (
+            <p key={`${swap.food}-${index}`}><strong>{swap.food}</strong><ArrowRight size={12} />{swap.option}</p>
+          ))}
+        </section>
+      )}
+
+      <button
+        type="button"
+        className="day-rescue-btn"
+        onClick={() => { setSelectedScenario(null); setRescueOpen(true); }}
+      >
+        <Compass size={17} />
+        <span><strong>Meu dia saiu do planejado</strong><small>Encontre uma saída dentro do seu plano</small></span>
+        <ArrowRight size={15} />
+      </button>
 
       <div className="meal-items-preview-list">
         {currentMealInfo.items.length > 0 ? (
@@ -231,6 +278,57 @@ export function PortalCurrentMealCard({
         <span>Ver Plano Alimentar Completo</span>
         <ArrowRight size={15} />
       </button>
+
+      {rescueOpen && (
+        <div className="day-rescue-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) setRescueOpen(false);
+        }}>
+          <section className="day-rescue-dialog" role="dialog" aria-modal="true" aria-labelledby="day-rescue-title">
+            <header>
+              <span className="day-rescue-icon"><Sparkles size={18} /></span>
+              <div><small>Apoio para a vida real</small><h2 id="day-rescue-title">O que mudou no seu dia?</h2></div>
+              <button type="button" onClick={() => setRescueOpen(false)} aria-label="Fechar"><X size={20} /></button>
+            </header>
+
+            {!selectedScenario ? (
+              <div className="day-rescue-scenarios">
+                <p>Escolha uma situação. Mostraremos somente opções já autorizadas no seu plano.</p>
+                {scenarios.map((scenario) => (
+                  <button key={scenario.id} type="button" onClick={() => setSelectedScenario(scenario.id)}>
+                    {scenario.label}<ArrowRight size={15} />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="day-rescue-result" aria-live="polite">
+                <button type="button" className="day-rescue-back" onClick={() => setSelectedScenario(null)}>← Escolher outra situação</button>
+                <span className="day-rescue-meal-label">Para {currentMealInfo.mealName}</span>
+                {availableSwaps.length > 0 ? (
+                  <>
+                    <h3>Estas são as trocas registradas pela sua nutricionista</h3>
+                    <div className="day-rescue-swap-list">
+                      {availableSwaps.map((swap, index) => (
+                        <div key={`${swap.food}-${swap.option}-${index}`}><strong>{swap.food}</strong><ArrowRightLeft size={15} /><span>{swap.option}</span></div>
+                      ))}
+                    </div>
+                    <p className="day-rescue-safety">Mantenha as quantidades e orientações descritas no plano. Em caso de dúvida, confirme com sua nutricionista.</p>
+                  </>
+                ) : (
+                  <div className="day-rescue-no-swap">
+                    <MessageCircle size={22} />
+                    <h3>Não há uma troca liberada para esta refeição</h3>
+                    <p>Para cuidar da sua prescrição, não sugerimos alimentos fora do plano. Consulte o plano completo ou converse com sua nutricionista.</p>
+                  </div>
+                )}
+                <div className="day-rescue-actions">
+                  <button type="button" className="see-full-plan-btn" onClick={() => { setRescueOpen(false); onOpenMealPlan(); }}>Abrir meu plano</button>
+                  <button type="button" className="day-rescue-close" onClick={() => setRescueOpen(false)}>Entendi</button>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
 }

@@ -43,6 +43,7 @@ import { PortalMealPlanView } from '../components/portal/PortalMealPlanView';
 import { PortalLaminasView } from '../components/portal/PortalLaminasView';
 import { PortalDiaryView } from '../components/portal/PortalDiaryView';
 import { PortalOnboardingGuide } from '../components/portal/PortalOnboardingGuide';
+import { PortalDailyCheckin } from '../components/portal/PortalDailyCheckin';
 import { useToast } from '../components/ToastNotification';
 import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
 import { formatAppointmentSchedule } from '../lib/formatters';
@@ -516,6 +517,7 @@ function PortalHome({
 
   return (
     <div className="portal-today-dashboard">
+      <PortalDailyCheckin initial={data.dailyCheckin} onSaved={reload} />
       {/* ── GUIA DE PRIMEIROS PASSOS PARA PACIENTE EM INÍCIO DE JORNADA ── */}
       {!hasPlan && (
         <PortalOnboardingGuide

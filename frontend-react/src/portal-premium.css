@@ -937,6 +937,135 @@
   padding: 4px 0;
 }
 
+.meal-swap-preview {
+  display: grid;
+  gap: 7px;
+  padding: 12px 14px;
+  border: 1px solid #eadfbd;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fffdf7, #faf6e9);
+}
+
+.meal-swap-preview-head,
+.meal-swap-preview-head span,
+.meal-swap-preview p {
+  display: flex;
+  align-items: center;
+}
+
+.meal-swap-preview-head { justify-content: space-between; gap: 10px; }
+.meal-swap-preview-head span { gap: 6px; color: #755b25; font-size: .75rem; font-weight: 800; }
+.meal-swap-preview-head small { color: #887650; font-size: .68rem; }
+.meal-swap-preview p { gap: 7px; margin: 0; color: #5c5543; font-size: .75rem; line-height: 1.4; }
+.meal-swap-preview p strong { color: #453918; }
+.meal-swap-preview p svg { flex: 0 0 auto; color: #9a7b34; }
+
+.day-rescue-btn {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 13px;
+  border: 1px solid #c9dfd1;
+  border-radius: 14px;
+  background: #f1f8f4;
+  color: #1d5a3b;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+}
+
+.day-rescue-btn:hover { transform: translateY(-1px); background: #e8f4ed; border-color: #9fc6ad; }
+.day-rescue-btn > svg { flex: 0 0 auto; }
+.day-rescue-btn span { display: grid; gap: 2px; }
+.day-rescue-btn strong { font-size: .8rem; }
+.day-rescue-btn small { color: #5d7668; font-size: .69rem; }
+
+.day-rescue-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 30, 20, .58);
+  backdrop-filter: blur(5px);
+}
+
+.day-rescue-dialog {
+  width: min(560px, 100%);
+  max-height: min(720px, calc(100dvh - 40px));
+  overflow-y: auto;
+  border: 1px solid #dbe8df;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(12, 42, 27, .28);
+}
+
+.day-rescue-dialog > header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #e6eee8;
+  background: linear-gradient(135deg, #f5faf7, #fff);
+}
+
+.day-rescue-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 13px; background: #dff0e5; color: #1d6340; }
+.day-rescue-dialog header small { color: #537261; font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.day-rescue-dialog header h2 { margin: 2px 0 0; color: #173b2b; font: 700 1.28rem/1.2 'Playfair Display', serif; }
+.day-rescue-dialog header button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 12px; background: #eef4f0; color: #385848; cursor: pointer; }
+.day-rescue-dialog button:focus-visible { outline: 3px solid rgba(37, 126, 78, .3); outline-offset: 2px; }
+
+.day-rescue-scenarios, .day-rescue-result { display: grid; gap: 11px; padding: 22px; }
+.day-rescue-scenarios > p { margin: 0 0 3px; color: #607368; font-size: .82rem; line-height: 1.5; }
+.day-rescue-scenarios > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 50px;
+  padding: 12px 15px;
+  border: 1px solid #dce8df;
+  border-radius: 13px;
+  background: #fbfdfc;
+  color: #244b36;
+  font-family: inherit;
+  font-size: .83rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.day-rescue-scenarios > button:hover { background: #edf7f1; border-color: #adceb9; }
+.day-rescue-back { justify-self: start; padding: 5px 0; border: 0; background: transparent; color: #34694c; font-family: inherit; font-size: .75rem; font-weight: 700; cursor: pointer; }
+.day-rescue-meal-label { justify-self: start; padding: 5px 9px; border-radius: 999px; background: #eaf4ed; color: #286044; font-size: .7rem; font-weight: 800; }
+.day-rescue-result h3 { margin: 2px 0; color: #203f30; font-size: .98rem; }
+.day-rescue-swap-list { display: grid; gap: 8px; }
+.day-rescue-swap-list > div { display: grid; grid-template-columns: minmax(0, .8fr) auto minmax(0, 1fr); align-items: center; gap: 9px; padding: 11px 13px; border: 1px solid #e4eadf; border-radius: 12px; background: #fafbf7; font-size: .78rem; line-height: 1.4; }
+.day-rescue-swap-list svg { color: #8b7135; }
+.day-rescue-safety { margin: 2px 0; padding: 10px 12px; border-radius: 10px; background: #fff9e9; color: #6c5d39; font-size: .73rem; line-height: 1.5; }
+.day-rescue-no-swap { display: grid; justify-items: center; gap: 7px; padding: 22px; border-radius: 14px; background: #f6f9f7; color: #386049; text-align: center; }
+.day-rescue-no-swap h3, .day-rescue-no-swap p { margin: 0; }
+.day-rescue-no-swap p { color: #64766b; font-size: .8rem; line-height: 1.5; }
+.day-rescue-actions { display: flex; gap: 9px; margin-top: 4px; }
+.day-rescue-actions > button { flex: 1; justify-content: center; }
+.day-rescue-close { min-height: 44px; border: 1px solid #d4e1d8; border-radius: 12px; background: #fff; color: #345641; font-family: inherit; font-size: .8rem; font-weight: 750; cursor: pointer; }
+
+@media (max-width: 520px) {
+  .day-rescue-backdrop { align-items: end; padding: 0; }
+  .day-rescue-dialog { max-height: 88dvh; border-radius: 24px 24px 0 0; }
+  .day-rescue-dialog > header, .day-rescue-scenarios, .day-rescue-result { padding: 18px; }
+  .day-rescue-swap-list > div { grid-template-columns: minmax(0, 1fr) auto; }
+  .day-rescue-swap-list > div span { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day-rescue-btn { transition: none; }
+  .day-rescue-backdrop { backdrop-filter: none; }
+}
+
 .see-full-plan-btn {
   display: inline-flex;
   align-items: center;
@@ -3362,3 +3491,6 @@ body:has(.patient-portal-v2 .modal-backdrop) .portal-floating-actions {
     padding: 18px;
   }
 }
+
+/* Check-in diário: curto, acolhedor e confortável para uso com uma mão. */
+.portal-daily-checkin{padding:20px;border:1px solid #dce7dc;border-radius:20px;background:linear-gradient(135deg,#fff 30%,#f1f7ef);box-shadow:0 12px 32px #173b2b0a}.portal-daily-checkin header,.daily-checkin-title{display:flex;align-items:center;gap:12px}.portal-daily-checkin header>span,.daily-checkin-title>span{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#e2f1e4;color:#296440;flex:none}.portal-daily-checkin strong{color:#173b2b}.portal-daily-checkin p{margin:3px 0 0;color:var(--muted);font-size:.78rem}.daily-checkin-options{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:16px}.daily-checkin-options button{min-height:72px;padding:10px 7px;border:1px solid var(--line);border-radius:14px;background:#fff;color:#31533e;font-weight:750;cursor:pointer}.daily-checkin-options button span{display:block;font-size:1.35rem;margin-bottom:5px}.daily-checkin-options button.selected{border-color:#4a8060;background:#e8f3e9;box-shadow:inset 0 0 0 1px #4a8060}.daily-checkin-detail{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px}.daily-checkin-detail label{grid-column:1/-1;color:#31533e;font-size:.75rem;font-weight:750}.daily-checkin-detail label small{font-weight:400;color:var(--muted)}.daily-checkin-detail input{width:100%;border:1px solid var(--line);border-radius:11px;padding:0 12px}.daily-checkin-detail button,.portal-daily-checkin.is-complete>button{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:11px;padding:0 15px;background:#285d3c;color:#fff;font-weight:750;cursor:pointer}.portal-daily-checkin.is-complete{display:flex;justify-content:space-between;align-items:center}.portal-daily-checkin.is-complete>button{background:transparent;color:#285d3c;border:1px solid #b8cfbe}.daily-checkin-error{color:#a33!important}.spin{animation:spin .8s linear infinite}@media(max-width:600px){.daily-checkin-options{grid-template-columns:repeat(2,1fr)}.daily-checkin-detail{grid-template-columns:1fr}.portal-daily-checkin.is-complete{align-items:flex-start;flex-direction:column;gap:12px}.portal-daily-checkin.is-complete>button{width:100%}}
