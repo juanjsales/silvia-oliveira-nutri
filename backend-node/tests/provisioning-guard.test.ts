@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{validateProvisioningIntent,assertProvisioningIntent}from'../src/shared/provisioning-guard.js';
+const operationId='00000000-0000-4000-8000-000000000051';
+const intent={operationId,executeExternalProvider:true,identifiers:['clinica-ficticia-staging']};
+const env={DEPLOYMENT_ENVIRONMENT:'staging',ALLOW_EXTERNAL_PROVIDER_PROVISIONING:true,PROVIDER_EXECUTION_CONFIRMATION:`staging:${operationId}`,PROTECTED_PRODUCTION_PROJECT_ID:'silviaoliveira',PROTECTED_PRODUCTION_DATABASE_ID:'prod-db-ref'};
+test('homologação exige todos os opt-ins e identificadores protegidos',()=>{assert.deepEqual(validateProvisioningIntent(intent,env),[]);for(const key of ['DEPLOYMENT_ENVIRONMENT','ALLOW_EXTERNAL_PROVIDER_PROVISIONING','PROVIDER_EXECUTION_CONFIRMATION','PROTECTED_PRODUCTION_PROJECT_ID','PROTECTED_PRODUCTION_DATABASE_ID']as const){const changed={...env,[key]:undefined};assert.notDeepEqual(validateProvisioningIntent(intent,changed),[],key)}});
+test('produção e identificadores da clínica real são recusados',()=>{assert.throws(()=>assertProvisioningIntent({...intent,identifiers:['silviaoliveira']},env),error=>Boolean(error&&typeof error==='object'&&'code'in error&&error.code==='PROVISIONING_BLOCKED'));assert.notDeepEqual(validateProvisioningIntent(intent,{...env,DEPLOYMENT_ENVIRONMENT:'production'}),[])});
+test('confirmação é vinculada à operação exata',()=>{assert.notDeepEqual(validateProvisioningIntent(intent,{...env,PROVIDER_EXECUTION_CONFIRMATION:'staging:outra-operacao'}),[])});
