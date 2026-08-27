@@ -45,6 +45,16 @@ test('canonical and explicitly configured legacy origins remain synchronized', a
   await app.close();
 });
 
+test('the exact Vercel deployment origin is trusted without allowing foreign previews', async () => {
+  const { db } = database();
+  const app = await buildApp({ ...env, VERCEL_URL: 'current-preview.vercel.app' }, db as never);
+  const accepted = await app.inject({ method: 'POST', url: '/api/auth/logout', headers: { origin: 'https://current-preview.vercel.app' }, cookies: { nutri_session: 'token' } });
+  assert.notEqual(accepted.statusCode, 403);
+  const denied = await app.inject({ method: 'POST', url: '/api/auth/logout', headers: { origin: 'https://other-preview.vercel.app' }, cookies: { nutri_session: 'token' } });
+  assert.equal(denied.statusCode, 403);
+  await app.close();
+});
+
 test('sensitive API responses disable browser and intermediary caching', async () => {
   const { db } = database();
   const app = await buildApp(env, db as never);

@@ -52,6 +52,7 @@ export async function buildApp(env: AppEnv, db: Database, integrations: { vercel
   const allowedOrigins = new Set([
     new URL(env.FRONTEND_ORIGIN).origin,
     new URL(env.APP_URL).origin,
+    ...(env.VERCEL_URL ? [`https://${env.VERCEL_URL}`] : []),
     ...(env.LEGACY_APP_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean).map(value => new URL(value).origin),
   ]);
   await app.register(helmet);

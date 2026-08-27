@@ -14,6 +14,7 @@ const envSchema = z.object({
   DB_CONNECTION_TIMEOUT_MS: z.coerce.number().int().min(1000).max(30000).default(10000),
   DB_IDLE_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(10000),
   FRONTEND_ORIGIN: z.string().url(),
+  VERCEL_URL: optionalText(z.string().regex(/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i)),
   LEGACY_APP_ORIGINS: z.string().optional(),
   SESSION_COOKIE_NAME: z.string().min(1).default('nutri_session'),
   SESSION_TTL_HOURS: z.coerce.number().int().positive().max(168).default(6),
