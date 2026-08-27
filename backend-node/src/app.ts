@@ -34,14 +34,17 @@ import { PRIVACY_NOTICE_VERSION } from './shared/privacy-notice.js';
 import { publicDataRoutes } from './modules/public-data/routes.js';
 import { platformRoutes } from './modules/platform/routes.js';
 import { vercelRoutes } from './modules/platform/vercel-routes.js';
+import { previewRoutes, type PreviewSmokeRunner } from './modules/platform/preview-routes.js';
 import { disabledVercelProvider, type VercelProvider } from './integrations/vercel-provider.js';
 import { VercelHttpProvider } from './integrations/vercel-http-provider.js';
 import { staffRoutes } from './modules/staff/routes.js';
 import { licenseRoutes } from './modules/license/routes.js';
 import { isLicenseWriteExempt, loadLicenseState } from './modules/license/service.js';
 import { audit } from './shared/audit.js';
+import { supabaseRoutes } from './modules/platform/supabase-routes.js';
+import { createGuidedSupabaseVerifier, type GuidedSupabaseVerifier } from './integrations/supabase-provider.js';
 
-export async function buildApp(env: AppEnv, db: Database, integrations: { vercel?: VercelProvider } = {}) {
+export async function buildApp(env: AppEnv, db: Database, integrations: { vercel?: VercelProvider; supabase?: GuidedSupabaseVerifier; previewSmoke?: PreviewSmokeRunner } = {}) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
   app.decorate('env', env);
   app.decorate('db', db);
@@ -155,6 +158,8 @@ export async function buildApp(env: AppEnv, db: Database, integrations: { vercel
   await app.register(platformRoutes, { prefix: '/api/platform' });
   const configuredVercel=env.VERCEL_OAUTH_CLIENT_ID&&env.VERCEL_OAUTH_CLIENT_SECRET&&env.VERCEL_OAUTH_REDIRECT_URI&&env.VERCEL_INTEGRATION_SLUG?new VercelHttpProvider({clientId:env.VERCEL_OAUTH_CLIENT_ID,clientSecret:env.VERCEL_OAUTH_CLIENT_SECRET,redirectUri:env.VERCEL_OAUTH_REDIRECT_URI,integrationSlug:env.VERCEL_INTEGRATION_SLUG}):disabledVercelProvider;
   await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform/vercel'});
+  await app.register(async scoped=>previewRoutes(scoped,integrations.vercel??configuredVercel,integrations.previewSmoke),{prefix:'/api/platform/vercel'});
+  await app.register(async scoped=>supabaseRoutes(scoped,integrations.supabase??createGuidedSupabaseVerifier()),{prefix:'/api/platform/supabase'});
   await app.register(staffRoutes, { prefix: '/api/staff' });
   await app.register(licenseRoutes, { prefix: '/api/license' });
 

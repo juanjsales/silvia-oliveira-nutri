@@ -36,6 +36,7 @@ const envSchema = z.object({
   PROVIDER_EXECUTION_CONFIRMATION: optionalText(z.string().min(12)),
   PROTECTED_PRODUCTION_PROJECT_ID: optionalText(z.string().min(3)),
   PROTECTED_PRODUCTION_DATABASE_ID: optionalText(z.string().min(3)),
+  PREVIEW_ARTIFACT_PUBLIC_KEY: optionalText(z.string().min(32)),
   CRON_SECRET: optionalText(z.string().min(32)),
   WEBRTC_STUN_URLS: z.string().min(1).optional(),
   WEBRTC_TURN_URL: z.string().regex(/^turns?:/).optional(),
