@@ -91,7 +91,9 @@ export async function staffRoutes(app: FastifyInstance) {
   });
 
   await app.register(async protectedRoutes => {
-    protectedRoutes.addHook('preHandler', app.requirePermission('staff:manage'));
+    protectedRoutes.addHook('preHandler', app.requireExplicitPermission('staff:manage'));
+
+    protectedRoutes.post('/:id/activate',async(request,reply)=>{const{id}=idSchema.parse(request.params);const client=await app.db.connect();try{await client.query('BEGIN');const row=(await client.query<{id:string;userId:string;roleCode:string}>(`SELECT sp.id,sp.user_id AS "userId",r.code AS "roleCode" FROM staff_profiles sp JOIN user_roles ur ON ur.user_id=sp.user_id JOIN roles r ON r.id=ur.role_id WHERE sp.id=$1 AND sp.status='SUSPENDED' AND r.code IN('NUTRITIONIST','RECEPTIONIST') FOR UPDATE`,[id])).rows[0];if(!row){await client.query('ROLLBACK');return reply.code(409).send({error:'Perfil inexistente, já ativo ou sem papel profissional válido.'})}await client.query(`UPDATE users SET role=$2::user_role,active=true,updated_at=now() WHERE id=$1 AND active=false`,[row.userId,row.roleCode]);await client.query(`UPDATE staff_profiles SET status='ACTIVE',activated_at=now(),activated_by=$2,updated_at=now() WHERE id=$1`,[id,request.auth!.userId]);await client.query(`UPDATE sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL`,[row.userId]);await audit(client,'STAFF_MEMBER_ACTIVATED','staff_profile',{actorUserId:request.auth!.userId,entityId:id,metadata:{userId:row.userId,roleCode:row.roleCode}});await client.query('COMMIT');return{data:{id,userId:row.userId,status:'ACTIVE',roleCode:row.roleCode}}}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}});
 
     protectedRoutes.get('/', async () => {
     const [members, invites] = await Promise.all([

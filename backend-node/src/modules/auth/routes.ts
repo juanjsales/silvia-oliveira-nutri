@@ -17,7 +17,7 @@ export async function authRoutes(app: FastifyInstance) {
     const identifier = body.identifier.toLowerCase();
     await assertLoginAllowed(app.db,identifier,request.ip);
     const cpf = identifier.replace(/\D/g, '');
-    const result = await app.db.query<{ id: string; email: string; password_hash: string; role: 'ADMIN' | 'PATIENT'; name: string | null }>(
+    const result = await app.db.query<{ id: string; email: string; password_hash: string; role: 'ADMIN' | 'PATIENT' | 'NUTRITIONIST' | 'RECEPTIONIST'; name: string | null }>(
       `SELECT u.id, u.email, u.password_hash, u.role, p.name
        FROM users u LEFT JOIN patients p ON p.user_id = u.id
        WHERE u.active = true AND (u.email = $1 OR p.cpf = $2) LIMIT 1`,

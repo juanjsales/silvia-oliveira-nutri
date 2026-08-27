@@ -88,7 +88,7 @@ async function sessionSnapshot(app: FastifyInstance, sessionId: string): Promise
   return result.rows[0] || null;
 }
 
-function canReadSession(auth: { role: 'ADMIN' | 'PATIENT'; patientId: string | null }, session: SessionSnapshot) {
+function canReadSession(auth: { role: 'ADMIN' | 'PATIENT' | 'NUTRITIONIST' | 'RECEPTIONIST'; patientId: string | null }, session: SessionSnapshot) {
   return auth.role === 'ADMIN' || (auth.role === 'PATIENT' && auth.patientId === session.patientId);
 }
 

@@ -13,7 +13,7 @@ export async function authPlugin(app: FastifyInstance) {
     if (!token) return reply.code(401).send({ error: 'Sessão necessária.' });
 
     const result = await app.db.query<{
-      session_id: string; user_id: string; role: 'ADMIN' | 'PATIENT'; patient_id: string | null;
+      session_id: string; user_id: string; role: 'ADMIN' | 'PATIENT' | 'NUTRITIONIST' | 'RECEPTIONIST'; patient_id: string | null;
     }>(
       `SELECT s.id AS session_id, u.id AS user_id, u.role, p.id AS patient_id
        FROM sessions s
@@ -79,6 +79,13 @@ export async function authPlugin(app: FastifyInstance) {
       return reply.code(403).send({ error: 'Você não possui permissão para esta ação.' });
     }
   });
+
+  app.decorate('hasExplicitPermission', async (request: FastifyRequest, permission: string) => {
+    if (!request.auth) return false;
+    try { const result=await app.db.query<{allowed:boolean}>(`SELECT EXISTS(SELECT 1 FROM user_roles ur JOIN role_permissions rp ON rp.role_id=ur.role_id JOIN permissions p ON p.id=rp.permission_id WHERE ur.user_id=$1 AND p.code=$2) AS allowed`,[request.auth.userId,permission]);return result.rows[0]?.allowed===true; }
+    catch(error){if(isMissingRbacSchema(error))return false;throw error;}
+  });
+  app.decorate('requireExplicitPermission',(permission:string)=>async(request:FastifyRequest,reply:FastifyReply)=>{await app.authenticate(request,reply);if(reply.sent)return;if(!await app.hasExplicitPermission(request,permission))return reply.code(403).send({error:'Você não possui permissão explícita para esta ação.'})});
 
   app.decorate('requireAdmin', async (request: FastifyRequest, reply: FastifyReply) => {
     await app.authenticate(request, reply);

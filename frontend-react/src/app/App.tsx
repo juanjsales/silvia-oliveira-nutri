@@ -35,6 +35,8 @@ const PlanDocumentPage = lazy(() => import('../pages/PlanDocumentPage').then(mod
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
 const PublicPrivacyPage = lazy(() => import('../pages/PublicPrivacyPage').then(module => ({ default: module.PublicPrivacyPage })));
 const SettingsPage = lazy(() => import('../pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const PlatformPage = lazy(() => import('../pages/PlatformPage').then(module => ({ default: module.PlatformPage })));
+const PlatformTenantPage = lazy(() => import('../pages/PlatformPage').then(module => ({ default: module.PlatformTenantPage })));
 
 function RouteFallback() {
   const location = useLocation();
@@ -68,6 +70,8 @@ export function App() {
             <Route path="portal/documento/:id" element={<PatientDocumentPage />} />
           </Route>
           <Route element={<RoleRoute role="ADMIN" />}>
+            <Route path="plataforma" element={<PlatformPage />} />
+            <Route path="plataforma/tenants/:tenantId" element={<PlatformTenantPage />} />
             <Route
               path="embed/planos/:id"
               element={

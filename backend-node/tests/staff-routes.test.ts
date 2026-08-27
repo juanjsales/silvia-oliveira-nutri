@@ -14,13 +14,14 @@ const env: AppEnv = {
 const actorId = '00000000-0000-4000-8000-000000000001';
 const inviteId = '00000000-0000-4000-8000-000000000020';
 
-function database(role: 'ADMIN'|'PATIENT', options: { insert?: boolean; cancel?: boolean } = {}) {
+function database(role: 'ADMIN'|'PATIENT', options: { insert?: boolean; cancel?: boolean; permission?:boolean } = {}) {
   const calls: {sql:string;params:unknown[]}[] = [];
   return {
     calls,
     query: async (sql:string, params:unknown[] = []) => {
       calls.push({sql,params});
       if (sql.includes('FROM sessions s')) return {rows:[{session_id:inviteId,user_id:actorId,role,patient_id:null}]};
+      if(sql.includes('FROM user_roles ur')&&sql.includes('p.code=$2'))return{rows:[{allowed:options.permission??role==='ADMIN'}]};
       if (sql.includes('FROM staff_profiles sp')) return {rows:[{id:actorId,email:'owner@example.com',roles:['CLINIC_OWNER']}]};
       if (sql.includes('FROM staff_invites si')) return {rows:[]};
       if (sql.includes('INSERT INTO staff_invites')) return {rows:options.insert === false ? [] : [{id:inviteId,email:params[0],displayName:params[1],roleCode:params[2],status:'PENDING',expiresAt:new Date(),createdAt:new Date()}]};
@@ -47,15 +48,17 @@ test('staff endpoints require authentication and staff:manage permission', async
   await patientApp.close();
 });
 
-test('legacy ADMIN can list staff without querying RBAC permissions', async () => {
+test('legacy ADMIN lists staff only through its explicit CLINIC_OWNER permission', async () => {
   const db = database('ADMIN');
   const app = await buildApp(env, db as never);
   const response = await app.inject({method:'GET',url:'/api/staff',cookies:{nutri_session:'token'}});
   assert.equal(response.statusCode, 200);
   assert.equal(response.json().data.members.length, 1);
-  assert.equal(db.calls.some(call=>call.sql.includes('FROM user_roles ur') && call.sql.includes('p.code')), false);
+  assert.equal(db.calls.some(call=>call.sql.includes('FROM user_roles ur') && call.sql.includes('p.code')), true);
   await app.close();
 });
+
+test('legacy ADMIN without an explicit RBAC assignment has no staff bypass',async()=>{const app=await buildApp(env,database('ADMIN',{permission:false}) as never);assert.equal((await app.inject({method:'GET',url:'/api/staff',cookies:{nutri_session:'token'}})).statusCode,403);await app.close()});
 
 test('prepares a normalized expiring invite, audits it and never exposes its secret', async () => {
   const db = database('ADMIN');
