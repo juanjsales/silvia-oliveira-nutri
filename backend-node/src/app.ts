@@ -32,6 +32,7 @@ import { notificationRoutes } from './modules/notifications/routes.js';
 import { auditRoutes } from './modules/audit/routes.js';
 import { PRIVACY_NOTICE_VERSION } from './shared/privacy-notice.js';
 import { publicDataRoutes } from './modules/public-data/routes.js';
+import { platformRoutes } from './modules/platform/routes.js';
 import { staffRoutes } from './modules/staff/routes.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
@@ -138,6 +139,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(notificationRoutes, { prefix: '/api/notifications' });
   await app.register(auditRoutes, { prefix: '/api/audit' });
   await app.register(publicDataRoutes, { prefix: '/api/public-data' });
+  await app.register(platformRoutes, { prefix: '/api/platform' });
   await app.register(staffRoutes, { prefix: '/api/staff' });
 
   return app;

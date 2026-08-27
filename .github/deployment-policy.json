@@ -13,6 +13,12 @@
     "canonicalProductionPromotion": "forbidden",
     "productionDatabaseAccess": "forbidden",
     "requiredEnvironmentMarker": "staging",
-    "forbiddenIdentifiers": ["silviaoliveira.vercel.app", "clinica-silvia"]
+    "forbiddenIdentifiers": [
+      "silviaoliveira.vercel.app",
+      "silvia-oliveira-nutri-v2.vercel.app",
+      "clinica-silvia",
+      "silvia-oliveira-nutri-v2",
+      "prj_2W7zhayuDMyqhVcRIx6NByap6mWi"
+    ]
   }
 }
