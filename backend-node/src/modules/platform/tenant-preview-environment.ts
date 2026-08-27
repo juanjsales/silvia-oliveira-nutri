@@ -2,20 +2,21 @@ export const PREVIEW_PUBLIC_KEYS=['APP_URL','FRONTEND_ORIGIN','SESSION_COOKIE_NA
 export const PREVIEW_SECRET_KEYS=['DATABASE_URL','MIGRATION_DATABASE_URL','APP_ENCRYPTION_KEY','CRON_SECRET','SMTP_PASS']as const;
 type PublicKey=typeof PREVIEW_PUBLIC_KEYS[number];type SecretKey=typeof PREVIEW_SECRET_KEYS[number];
 export type PreviewEnvironmentInput={key:PublicKey|SecretKey;target:'preview';value?:string;secretRef?:string};
-export type SecretResolver=(reference:string)=>Promise<string>;
+export type SecretResolver=(input:{tenantId:string;reference:string;key:SecretKey})=>Promise<string>;
 const publicKeys=new Set<string>(PREVIEW_PUBLIC_KEYS),secretKeys=new Set<string>(PREVIEW_SECRET_KEYS);
-const secretRef=/^vault:\/\/[a-z0-9][a-z0-9/_-]{2,200}$/i;
+const escaped=(value:string)=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 
-export async function resolvePreviewEnvironment(input:PreviewEnvironmentInput[],options:{resolveSecret:SecretResolver;forbiddenIdentifiers:string[];installationId:string}){
+export async function resolvePreviewEnvironment(input:PreviewEnvironmentInput[],options:{tenantId:string;resolveSecret:SecretResolver;forbiddenIdentifiers:string[];installationId:string}){
   const failures:string[]=[],seen=new Set<string>(),resolved:Array<{key:string;value:string;target:['preview'];type:'encrypted'}>=[];
+  const tenantSecretRef=new RegExp(`^vault://tenant/${escaped(options.tenantId)}/[a-z0-9][a-z0-9/_-]{1,160}$`,'i');
   for(const item of input){
     if(!publicKeys.has(item.key)&&!secretKeys.has(item.key)){failures.push(`ENV_KEY_FORBIDDEN:${item.key}`);continue}
     if(seen.has(item.key)){failures.push(`ENV_KEY_DUPLICATE:${item.key}`);continue}seen.add(item.key);
     if(item.target!=='preview'){failures.push(`ENV_TARGET_FORBIDDEN:${item.key}`);continue}
     const isSecret=secretKeys.has(item.key);
-    if(isSecret&&(!item.secretRef||item.value!==undefined||!secretRef.test(item.secretRef))){failures.push(`ENV_SECRET_REFERENCE_REQUIRED:${item.key}`);continue}
+    if(isSecret&&(!item.secretRef||item.value!==undefined||!tenantSecretRef.test(item.secretRef))){failures.push(`ENV_SECRET_REFERENCE_REQUIRED:${item.key}`);continue}
     if(!isSecret&&(item.value===undefined||item.secretRef!==undefined)){failures.push(`ENV_PUBLIC_VALUE_REQUIRED:${item.key}`);continue}
-    let value:string;try{value=isSecret?await options.resolveSecret(item.secretRef!):item.value!}catch{failures.push(`ENV_SECRET_UNAVAILABLE:${item.key}`);continue}
+    let value:string;try{value=isSecret?await options.resolveSecret({tenantId:options.tenantId,reference:item.secretRef!,key:item.key as SecretKey}):item.value!}catch{failures.push(`ENV_SECRET_UNAVAILABLE:${item.key}`);continue}
     if(!value){failures.push(`ENV_VALUE_EMPTY:${item.key}`);continue}
     const normalized=value.toLowerCase();if(options.forbiddenIdentifiers.some(identifier=>normalized.includes(identifier.toLowerCase()))){failures.push(`ENV_PRODUCTION_IDENTIFIER:${item.key}`);continue}
     if(item.key==='INSTALLATION_ID'&&value!==options.installationId){failures.push('ENV_INSTALLATION_MISMATCH:INSTALLATION_ID');continue}

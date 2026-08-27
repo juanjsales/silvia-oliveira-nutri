@@ -35,6 +35,7 @@ import { publicDataRoutes } from './modules/public-data/routes.js';
 import { platformRoutes } from './modules/platform/routes.js';
 import { vercelRoutes } from './modules/platform/vercel-routes.js';
 import { previewRoutes, type PreviewSmokeRunner } from './modules/platform/preview-routes.js';
+import { onboardingLifecycleRoutes } from './modules/platform/onboarding-lifecycle-routes.js';
 import { disabledVercelProvider, type VercelProvider } from './integrations/vercel-provider.js';
 import { VercelHttpProvider } from './integrations/vercel-http-provider.js';
 import { staffRoutes } from './modules/staff/routes.js';
@@ -159,6 +160,7 @@ export async function buildApp(env: AppEnv, db: Database, integrations: { vercel
   const configuredVercel=env.VERCEL_OAUTH_CLIENT_ID&&env.VERCEL_OAUTH_CLIENT_SECRET&&env.VERCEL_OAUTH_REDIRECT_URI&&env.VERCEL_INTEGRATION_SLUG?new VercelHttpProvider({clientId:env.VERCEL_OAUTH_CLIENT_ID,clientSecret:env.VERCEL_OAUTH_CLIENT_SECRET,redirectUri:env.VERCEL_OAUTH_REDIRECT_URI,integrationSlug:env.VERCEL_INTEGRATION_SLUG}):disabledVercelProvider;
   await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform/vercel'});
   await app.register(async scoped=>previewRoutes(scoped,integrations.vercel??configuredVercel,integrations.previewSmoke),{prefix:'/api/platform/vercel'});
+  await app.register(async scoped=>onboardingLifecycleRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform'});
   await app.register(async scoped=>supabaseRoutes(scoped,integrations.supabase??createGuidedSupabaseVerifier()),{prefix:'/api/platform/supabase'});
   await app.register(staffRoutes, { prefix: '/api/staff' });
   await app.register(licenseRoutes, { prefix: '/api/license' });

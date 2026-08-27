@@ -16,5 +16,5 @@ export function createFakeSupabaseProvider():SupabaseProvider&{calls:string[]}{c
 
 export type GuidedSupabaseReference={projectRef:string;organizationSlug:string;region:string};
 export interface GuidedSupabaseVerifier{verifyReference(input:GuidedSupabaseReference):Promise<{verified:boolean;projectRef:string}>}
-export function createGuidedSupabaseVerifier():GuidedSupabaseVerifier{return{async verifyReference(input){return{verified:/^[a-z0-9-]{6,40}$/.test(input.projectRef)&&/^[a-z0-9-]{2,80}$/.test(input.organizationSlug)&&/^[a-z0-9-]{2,40}$/.test(input.region),projectRef:input.projectRef}}}}
+export function createGuidedSupabaseVerifier():GuidedSupabaseVerifier{return{async verifyReference(input){return{verified:false,projectRef:input.projectRef}}}}
 export function createFakeGuidedSupabaseVerifier(result=true):GuidedSupabaseVerifier&{calls:GuidedSupabaseReference[]}{const calls:GuidedSupabaseReference[]=[];return{calls,async verifyReference(input){calls.push(input);return{verified:result,projectRef:input.projectRef}}}}
