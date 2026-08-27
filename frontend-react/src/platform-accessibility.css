@@ -1,0 +1,31 @@
+/* Keyboard and motion preferences shared by the platform central and onboarding. */
+.platform-root :where(a, button, input):focus-visible,
+.onboarding-page :where(a, button, input):focus-visible {
+  outline: 3px solid #bd6f24;
+  outline-offset: 3px;
+}
+
+.platform-modal input:focus-visible,
+.onboarding-form input:focus-visible,
+.platform-search input:focus-visible {
+  border-color: #39704d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .platform-root *,
+  .onboarding-page * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .platform-badge,
+  .platform-health i,
+  .platform-job-dot,
+  .onboarding-step-icon {
+    forced-color-adjust: auto;
+  }
+}

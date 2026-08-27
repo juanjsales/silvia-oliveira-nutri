@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import {
   AlertTriangle, ArrowLeft, Check, CheckCircle2, ChevronRight, Circle,
   Cloud, Database, LoaderCircle, LockKeyhole, Palette, RefreshCw, Rocket,
-  RotateCcw, ShieldCheck, Stethoscope, Undo2, XCircle,
+  RotateCcw, ShieldCheck, Stethoscope, Undo2, XCircle, Leaf,
 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import {
@@ -49,7 +49,7 @@ export function PlatformOnboardingPage() {
   if (!state) return null;
   if (!state.configured) return <BootstrapOnboarding tenantId={tenantId} busy={busy} error={error} onSubmit={async values=>{setBusy(true);setError('');try{await platformOnboardingApi.initialize(tenantId,values);await load()}catch(cause){setError(cause instanceof Error?cause.message:'Não foi possível preparar o onboarding.')}finally{setBusy(false)}}}/>;
 
-  return <main className="onboarding-page">
+  return <main className="onboarding-page"><div className="onboarding-brandmark"><span><Leaf/></span><strong>KOS <i>NUTRI</i></strong></div>
     <header className="onboarding-header">
       <Link to={`/plataforma/tenants/${tenantId}`} className="platform-back"><ArrowLeft />Voltar ao tenant</Link>
       <div className="onboarding-safety"><ShieldCheck /><span><strong>Ambiente de simulação protegido</strong><small>Sem serviços externos, dados reais ou promoção para produção.</small></span></div>

@@ -11,6 +11,7 @@ import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
 import { BrandWelcomeScreen } from '../components/BrandWelcomeScreen';
 import { PatientPortalPage } from '../pages/PatientPortalPage';
 import { HomePage } from '../pages/HomePage';
+import '../platform-accessibility.css';
 
 const ClinicalOverviewPage = lazy(() => import('../pages/ClinicalOverviewPage').then(module => ({ default: module.ClinicalOverviewPage })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
