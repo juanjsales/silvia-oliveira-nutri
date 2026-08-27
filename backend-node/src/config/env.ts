@@ -27,6 +27,9 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().min(1),
   APP_ENCRYPTION_KEY: z.string().min(32).optional(),
+  VERCEL_OAUTH_CLIENT_ID: optionalText(z.string().min(3)),
+  VERCEL_OAUTH_CLIENT_SECRET: optionalText(z.string().min(12)),
+  VERCEL_OAUTH_REDIRECT_URI: optionalText(z.string().url()),
   CRON_SECRET: optionalText(z.string().min(32)),
   WEBRTC_STUN_URLS: z.string().min(1).optional(),
   WEBRTC_TURN_URL: z.string().regex(/^turns?:/).optional(),
@@ -42,6 +45,8 @@ const envSchema = z.object({
   ,LICENSE_PUBLIC_KEY: z.string().min(32).optional()
   ,INSTALLATION_ID: z.string().min(3).max(160).optional()
 }).superRefine((env, context) => {
+  const vercelOauth=[env.VERCEL_OAUTH_CLIENT_ID,env.VERCEL_OAUTH_CLIENT_SECRET,env.VERCEL_OAUTH_REDIRECT_URI];
+  if(vercelOauth.some(Boolean)&&!vercelOauth.every(Boolean))context.addIssue({code:'custom',path:['VERCEL_OAUTH_CLIENT_ID'],message:'Vercel OAuth exige client ID, client secret e redirect URI em conjunto.'});
   if (Boolean(env.LICENSE_PUBLIC_KEY) !== Boolean(env.INSTALLATION_ID)) {
     context.addIssue({ code: 'custom', path: ['LICENSE_PUBLIC_KEY'], message: 'Licenciamento exige LICENSE_PUBLIC_KEY e INSTALLATION_ID em conjunto.' });
   }

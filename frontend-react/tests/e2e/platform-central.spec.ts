@@ -57,3 +57,15 @@ test('explains why Vercel is unavailable when integration is not configured', as
   await expect(page.getByRole('heading', { name: 'Integração ainda não configurada' })).toBeVisible();
   await expect(page.getByText('Nenhum token deve ser informado nesta tela.')).toBeVisible();
 });
+
+test('advances through the guided onboarding with explicit mock mode', async ({ page }) => {
+  await authenticateOperator(page);
+  await page.goto('/plataforma/tenants/tenant-aurora/onboarding');
+  await expect(page.getByRole('heading', { name: 'Preparar nova clínica' })).toBeVisible();
+  await expect(page.getByLabel('Etapas do onboarding')).toBeVisible();
+  await page.getByRole('button', { name: /Salvar e continuar/ }).click();
+  await expect(page.getByRole('heading', { name: 'Projeto Vercel' })).toBeVisible();
+  await page.getByLabel('Nome do projeto').fill('clinica-aurora');
+  await page.getByRole('button', { name: /Salvar e continuar/ }).click();
+  await expect(page.getByRole('heading', { name: 'Banco Supabase' })).toBeVisible();
+});

@@ -37,6 +37,7 @@ const PublicPrivacyPage = lazy(() => import('../pages/PublicPrivacyPage').then(m
 const SettingsPage = lazy(() => import('../pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const PlatformPage = lazy(() => import('../pages/PlatformPage').then(module => ({ default: module.PlatformPage })));
 const PlatformTenantPage = lazy(() => import('../pages/PlatformPage').then(module => ({ default: module.PlatformTenantPage })));
+const PlatformOnboardingPage = lazy(() => import('../pages/PlatformOnboardingPage').then(module => ({ default: module.PlatformOnboardingPage })));
 
 function RouteFallback() {
   const location = useLocation();
@@ -72,6 +73,7 @@ export function App() {
           <Route element={<RoleRoute role="ADMIN" />}>
             <Route path="plataforma" element={<PlatformPage />} />
             <Route path="plataforma/tenants/:tenantId" element={<PlatformTenantPage />} />
+            <Route path="plataforma/tenants/:tenantId/onboarding" element={<PlatformOnboardingPage />} />
             <Route
               path="embed/planos/:id"
               element={

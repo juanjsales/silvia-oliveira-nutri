@@ -35,6 +35,7 @@ import { publicDataRoutes } from './modules/public-data/routes.js';
 import { platformRoutes } from './modules/platform/routes.js';
 import { vercelRoutes } from './modules/platform/vercel-routes.js';
 import { disabledVercelProvider, type VercelProvider } from './integrations/vercel-provider.js';
+import { VercelHttpProvider } from './integrations/vercel-http-provider.js';
 import { staffRoutes } from './modules/staff/routes.js';
 import { licenseRoutes } from './modules/license/routes.js';
 import { isLicenseWriteExempt, loadLicenseState } from './modules/license/service.js';
@@ -152,7 +153,8 @@ export async function buildApp(env: AppEnv, db: Database, integrations: { vercel
   await app.register(auditRoutes, { prefix: '/api/audit' });
   await app.register(publicDataRoutes, { prefix: '/api/public-data' });
   await app.register(platformRoutes, { prefix: '/api/platform' });
-  await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??disabledVercelProvider),{prefix:'/api/platform/vercel'});
+  const configuredVercel=env.VERCEL_OAUTH_CLIENT_ID&&env.VERCEL_OAUTH_CLIENT_SECRET&&env.VERCEL_OAUTH_REDIRECT_URI?new VercelHttpProvider({clientId:env.VERCEL_OAUTH_CLIENT_ID,clientSecret:env.VERCEL_OAUTH_CLIENT_SECRET,redirectUri:env.VERCEL_OAUTH_REDIRECT_URI}):disabledVercelProvider;
+  await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform/vercel'});
   await app.register(staffRoutes, { prefix: '/api/staff' });
   await app.register(licenseRoutes, { prefix: '/api/license' });
 
