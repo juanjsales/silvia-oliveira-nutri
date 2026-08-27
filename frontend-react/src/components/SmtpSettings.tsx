@@ -56,6 +56,7 @@ type EmailTemplateKey =
 export function SmtpSettings() {
   const confirm = useConfirm();
   const [form, setForm] = useState(initial);
+  const [savedEnabled, setSavedEnabled] = useState(false);
   const [password, setPassword] = useState("");
   const [testEmail, setTestEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -70,9 +71,11 @@ export function SmtpSettings() {
       .then((r) => {
         if (r.data && r.data.user) {
           setForm({ ...initial, ...r.data });
+          setSavedEnabled(Boolean(r.data.enabled));
           setTestEmail(r.data.user || r.data.from || "");
         } else {
           setForm(initial);
+          setSavedEnabled(false);
         }
       })
       .catch((c) =>
@@ -105,6 +108,7 @@ export function SmtpSettings() {
       });
       setMessage(r.message);
       setPassword("");
+      setSavedEnabled(form.enabled);
       setForm((x) => ({
         ...x,
         passwordConfigured: x.passwordConfigured || Boolean(cleanPass),
@@ -130,6 +134,7 @@ export function SmtpSettings() {
       });
       setMessage(r.message);
       setForm(initial);
+      setSavedEnabled(false);
       setPassword("");
       setTestEmail("");
     } catch (c) {
@@ -150,10 +155,19 @@ export function SmtpSettings() {
     setError("");
     setMessage("");
     try {
-      const r = await api<{ message: string }>("/api/settings/smtp/test", {
-        method: "POST",
-        body: JSON.stringify({ to: testEmail.trim().toLowerCase() }),
-      });
+      const cleanPassword = password.replace(/\s+/g, "");
+      if (!cleanPassword && (!form.passwordConfigured || !savedEnabled)) {
+        setError("Ative o envio e salve a configuração antes de testar, ou informe novamente a senha de aplicativo para um teste temporário.");
+        return;
+      }
+      const endpoint = cleanPassword ? "/api/settings/smtp/test-draft" : "/api/settings/smtp/test";
+      const body = cleanPassword ? {
+        host: form.host.trim(), port: form.port, secure: form.secure,
+        user: form.user.trim().toLowerCase(), password: cleanPassword,
+        from: form.from.trim() || form.user.trim().toLowerCase(),
+        to: testEmail.trim().toLowerCase(),
+      } : { to: testEmail.trim().toLowerCase() };
+      const r = await api<{ message: string }>(endpoint, { method: "POST", body: JSON.stringify(body) });
       setMessage(r.message);
     } catch (c) {
       setError(c instanceof Error ? c.message : "Falha no teste de envio.");
@@ -525,11 +539,12 @@ export function SmtpSettings() {
               type="button"
               className="secondary-button"
               onClick={test}
-              disabled={busy || !testEmail}
+              disabled={busy || !testEmail || (!password && (!form.passwordConfigured || !savedEnabled))}
               style={{ alignSelf: "flex-end" }}
             >
               <Send size={15} /> {busy ? "Testando..." : "Enviar Teste"}
             </button>
+            {!password && (!form.passwordConfigured || !savedEnabled) && <small className="smtp-test-hint">Para usar a configuração armazenada, ative o envio e clique em “Salvar E-mail”. Para testar antes de salvar, informe a senha de aplicativo.</small>}
           </div>
         )}
       </section>
