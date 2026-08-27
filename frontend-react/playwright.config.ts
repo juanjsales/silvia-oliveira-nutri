@@ -27,6 +27,8 @@ export default defineConfig({
     },
     {
       command: `npm run dev -- --mode e2e --host ${host} --port ${appPort} --strictPort`,
+      env: { ...process.env, VITE_PLATFORM_USE_MOCK: 'true' },
+      env: { ...process.env, VITE_PLATFORM_USE_MOCK: 'true' },
       url: `http://${host}:${appPort}`,
       reuseExistingServer: false,
       timeout: 60_000,

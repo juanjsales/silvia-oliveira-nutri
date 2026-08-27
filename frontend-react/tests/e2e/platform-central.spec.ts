@@ -24,9 +24,22 @@ test('lists tenants and opens the technical detail', async ({ page }) => {
   await expect(page.getByText('Nutri Horizonte')).toBeVisible();
   await page.getByText('Clínica Aurora').click();
   await expect(page).toHaveURL(/\/plataforma\/tenants\/tenant-aurora$/);
-  await expect(page.getByRole('heading', { name: 'Visão técnica' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Onboarding' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Jobs e histórico' })).toBeVisible();
   await expect(page.getByText('Release validada e promovida.')).toBeVisible();
+});
+
+test('starts the assisted onboarding without an external integration', async ({ page }) => {
+  await authenticateOperator(page);
+  await page.goto('/plataforma');
+  await page.getByRole('button', { name: 'Novo tenant' }).click();
+  await expect(page.getByRole('heading', { name: 'Nova nutricionista' })).toBeVisible();
+  await page.getByLabel('Nome da clínica').fill('Clínica Teste');
+  await page.getByLabel('Identificador').fill('clinica-teste');
+  await page.getByLabel('E-mail administrativo').fill('owner@example.test');
+  await page.getByRole('button', { name: 'Criar rascunho' }).click();
+  await expect(page.getByRole('heading', { name: 'Clínica Teste' })).toBeVisible();
+  await expect(page.getByText('Operação manual')).toBeVisible();
 });
 
 test('shows deterministic empty and error states', async ({ page }) => {

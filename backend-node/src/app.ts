@@ -34,6 +34,9 @@ import { PRIVACY_NOTICE_VERSION } from './shared/privacy-notice.js';
 import { publicDataRoutes } from './modules/public-data/routes.js';
 import { platformRoutes } from './modules/platform/routes.js';
 import { staffRoutes } from './modules/staff/routes.js';
+import { licenseRoutes } from './modules/license/routes.js';
+import { isLicenseWriteExempt, loadLicenseState } from './modules/license/service.js';
+import { audit } from './shared/audit.js';
 
 export async function buildApp(env: AppEnv, db: Database) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
@@ -66,6 +69,13 @@ export async function buildApp(env: AppEnv, db: Database) {
   // plugins can use them. Registering this function as a regular Fastify plugin
   // would encapsulate the decorators inside its own scope.
   await authPlugin(app);
+  app.addHook('preHandler',async(request,reply)=>{
+    if(!request.url.startsWith('/api/')||!['POST','PUT','PATCH','DELETE'].includes(request.method)||isLicenseWriteExempt(request.method,request.url))return;
+    const license=await loadLicenseState(db,env.LICENSE_PUBLIC_KEY,env.INSTALLATION_ID);
+    if(license.permissions.includes('write'))return;
+    try{await audit(db,'LICENSE_WRITE_BLOCKED','installation_license',{entityId:'singleton',metadata:{state:license.state,method:request.method,route:request.routeOptions.url||'unknown'}})}catch{app.log.error({requestId:request.id},'Falha ao auditar bloqueio de licença')}
+    return reply.code(423).send({error:'Instalação em modo somente leitura. Consultas e exportação de dados continuam disponíveis.',code:'LICENSE_READ_ONLY',licenseState:license.state});
+  });
 
   app.setErrorHandler(async (error, request, reply) => {
     if (error instanceof ZodError || (typeof error === 'object' && error !== null && 'issues' in error && Array.isArray(error.issues))) {
@@ -141,6 +151,7 @@ export async function buildApp(env: AppEnv, db: Database) {
   await app.register(publicDataRoutes, { prefix: '/api/public-data' });
   await app.register(platformRoutes, { prefix: '/api/platform' });
   await app.register(staffRoutes, { prefix: '/api/staff' });
+  await app.register(licenseRoutes, { prefix: '/api/license' });
 
   return app;
 }

@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '047_staff_activation_rbac.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '049_installation_license.sql';
 
 export async function schemaStatus(db: Database) {
   try {

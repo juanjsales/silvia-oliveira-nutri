@@ -1,98 +1,19 @@
-export type TenantStatus = 'DRAFT' | 'PROVISIONING' | 'AWAITING_ACCEPTANCE' | 'ACTIVE' | 'SUSPENDED' | 'OFFBOARDING' | 'ARCHIVED';
-export type JobStatus = 'PENDING' | 'RUNNING' | 'WAITING_INPUT' | 'WAITING_APPROVAL' | 'FAILED_RETRYABLE' | 'FAILED_MANUAL' | 'CANCELLED' | 'SUCCEEDED';
-export type JobKind = 'INITIAL_PROVISION' | 'UPDATE' | 'RECONCILE';
-
-export type TenantSummary = {
-  id: string;
-  displayName: string;
-  slug: string;
-  status: TenantStatus;
-  plan: string;
-  region: string;
-  appVersion: string | null;
-  health: 'healthy' | 'attention' | 'unknown';
-  updatedAt: string;
+import { api } from './api';
+export type TenantStatus='DRAFT'|'READY'|'PROVISIONING'|'ACTIVE'|'SUSPENDED'|'FAILED'|'ARCHIVED';
+export type JobStatus='PENDING'|'RUNNING'|'SUCCEEDED'|'FAILED'; export type JobOperation='PROVISION_TENANT'|'REPAIR_TENANT';
+export type TenantSummary={id:string;slug:string;displayName:string;contactEmail:string;status:TenantStatus;plan:string;region:string;appVersion:string|null;health:'healthy'|'attention'|'unknown';createdAt:string;updatedAt:string};
+export type ProvisioningJob={id:string;tenantId:string;operation:JobOperation;status:JobStatus;attemptCount:number;availableAt:string;startedAt:string|null;completedAt:string|null;createdAt:string;resultSummary:{message?:string;checks?:string[]}};
+export type TenantDetail=TenantSummary&{jobs:ProvisioningJob[]}; export type CreateTenantInput={slug:string;name:string;contactEmail:string}; export type QueueJobInput={operation:JobOperation;databaseRegion?:string;hostingRegion?:string};
+export interface PlatformApiClient{listTenants(signal?:AbortSignal):Promise<TenantSummary[]>;getTenant(id:string,signal?:AbortSignal):Promise<TenantDetail>;createTenant(input:CreateTenantInput):Promise<{id:string;status:TenantStatus}>;queueJob(id:string,input:QueueJobInput):Promise<{id:string;status:JobStatus}>;startJob(id:string):Promise<void>;completeJob(id:string,outcome:'SUCCEEDED'|'FAILED',message?:string):Promise<void>}
+type ApiTenant={id:string;slug:string;name:string;contactEmail:string;status:TenantStatus;createdAt:string;updatedAt:string}; type ApiJob={id:string;tenantId:string;operation:JobOperation;status:JobStatus;attemptCount:number;availableAt:string;startedAt:string|null;completedAt:string|null;createdAt:string;resultSummary?:{message?:string;checks?:string[]}};
+const key=(prefix:string)=>`${prefix}:${Date.now()}:${crypto.randomUUID()}`; const mapTenant=(x:ApiTenant):TenantSummary=>({...x,displayName:x.name,plan:'A definir',region:'A definir',appVersion:null,health:x.status==='FAILED'?'attention':x.status==='ACTIVE'?'healthy':'unknown'});
+export const remotePlatformApi:PlatformApiClient={
+ async listTenants(signal){return(await api<{data:ApiTenant[]}>('/api/platform/tenants',{signal})).data.map(mapTenant)},
+ async getTenant(id,signal){const[t,j]=await Promise.all([api<{data:ApiTenant[]}>('/api/platform/tenants',{signal}),api<{data:ApiJob[]}>('/api/platform/jobs',{signal})]);const tenant=t.data.find(x=>x.id===id);if(!tenant)throw new Error('Tenant não encontrado.');return{...mapTenant(tenant),jobs:j.data.filter(x=>x.tenantId===id).map(x=>({...x,resultSummary:x.resultSummary??{}}))}},
+ async createTenant(input){return(await api<{data:{id:string;status:TenantStatus}}>('/api/platform/tenants',{method:'POST',body:JSON.stringify({...input,idempotencyKey:key('tenant:create')})})).data},
+ async queueJob(id,input){const{operation,...request}=input;return(await api<{data:{id:string;status:JobStatus}}>(`/api/platform/tenants/${id}/jobs`,{method:'POST',body:JSON.stringify({operation,request,idempotencyKey:key('job:create')})})).data},
+ async startJob(id){await api(`/api/platform/jobs/${id}/start`,{method:'POST'})},async completeJob(id,outcome,message){await api(`/api/platform/jobs/${id}/complete`,{method:'POST',body:JSON.stringify({outcome,summary:message?{message}:{}})})}
 };
-
-export type ProvisioningJob = {
-  id: string;
-  kind: JobKind;
-  phase: string;
-  status: JobStatus;
-  attempt: number;
-  release: string;
-  startedAt: string;
-  finishedAt: string | null;
-  summary: string;
-};
-
-export type TenantDetail = TenantSummary & {
-  contact: { name: string; email: string };
-  domain: string | null;
-  schemaVersion: number | null;
-  resources: Array<{ provider: 'Supabase' | 'Vercel'; label: string; status: 'verified' | 'pending' }>;
-  jobs: ProvisioningJob[];
-};
-
-export interface PlatformApiClient {
-  listTenants(signal?: AbortSignal): Promise<TenantSummary[]>;
-  getTenant(tenantId: string, signal?: AbortSignal): Promise<TenantDetail>;
-}
-
-const tenants: TenantDetail[] = [
-  {
-    id: 'tenant-aurora', displayName: 'Clínica Aurora', slug: 'clinica-aurora-a19c', status: 'ACTIVE', plan: 'Profissional',
-    region: 'São Paulo', appVersion: '1.0.0', health: 'healthy', updatedAt: '2026-08-27T13:42:00Z',
-    contact: { name: 'Marina Costa', email: 'marina@example.test' }, domain: 'aurora.example.test', schemaVersion: 45,
-    resources: [{ provider: 'Supabase', label: 'aurora-hml', status: 'verified' }, { provider: 'Vercel', label: 'aurora-app', status: 'verified' }],
-    jobs: [
-      { id: 'job-a2', kind: 'UPDATE', phase: 'COMPLETED', status: 'SUCCEEDED', attempt: 1, release: '1.0.0', startedAt: '2026-08-27T13:36:00Z', finishedAt: '2026-08-27T13:42:00Z', summary: 'Release validada e promovida.' },
-      { id: 'job-a1', kind: 'INITIAL_PROVISION', phase: 'COMPLETED', status: 'SUCCEEDED', attempt: 1, release: '0.9.0', startedAt: '2026-08-20T14:10:00Z', finishedAt: '2026-08-20T14:24:00Z', summary: 'Provisionamento inicial concluído.' }
-    ]
-  },
-  {
-    id: 'tenant-horizonte', displayName: 'Nutri Horizonte', slug: 'nutri-horizonte-75fe', status: 'PROVISIONING', plan: 'Essencial',
-    region: 'São Paulo', appVersion: null, health: 'unknown', updatedAt: '2026-08-27T14:08:00Z',
-    contact: { name: 'Paula Nunes', email: 'paula@example.test' }, domain: null, schemaVersion: 45,
-    resources: [{ provider: 'Supabase', label: 'horizonte-hml', status: 'verified' }, { provider: 'Vercel', label: 'Aguardando vínculo', status: 'pending' }],
-    jobs: [
-      { id: 'job-h1', kind: 'INITIAL_PROVISION', phase: 'PROVISIONING_APP', status: 'WAITING_INPUT', attempt: 1, release: '1.0.0', startedAt: '2026-08-27T14:01:00Z', finishedAt: null, summary: 'Aguardando referência do projeto Vercel.' }
-    ]
-  },
-  {
-    id: 'tenant-sereno', displayName: 'Espaço Sereno', slug: 'espaco-sereno-3bc1', status: 'AWAITING_ACCEPTANCE', plan: 'Profissional',
-    region: 'São Paulo', appVersion: '1.0.0', health: 'attention', updatedAt: '2026-08-27T12:18:00Z',
-    contact: { name: 'Renata Lima', email: 'renata@example.test' }, domain: 'sereno.example.test', schemaVersion: 45,
-    resources: [{ provider: 'Supabase', label: 'sereno-hml', status: 'verified' }, { provider: 'Vercel', label: 'sereno-app', status: 'verified' }],
-    jobs: [
-      { id: 'job-s1', kind: 'INITIAL_PROVISION', phase: 'AWAITING_ACCEPTANCE', status: 'WAITING_APPROVAL', attempt: 1, release: '1.0.0', startedAt: '2026-08-27T11:52:00Z', finishedAt: null, summary: 'Gates técnicos concluídos; aceite pendente.' }
-    ]
-  }
-];
-
-const wait = (signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
-  const timer = window.setTimeout(resolve, 420);
-  signal?.addEventListener('abort', () => { window.clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')); }, { once: true });
-});
-
-function mockMode() {
-  return new URLSearchParams(window.location.search).get('mockState');
-}
-
-export const localPlatformApi: PlatformApiClient = {
-  async listTenants(signal) {
-    await wait(signal);
-    if (mockMode() === 'error') throw new Error('A central local não respondeu. Tente novamente.');
-    if (mockMode() === 'empty') return [];
-    return tenants.map(({ contact: _contact, domain: _domain, schemaVersion: _schema, resources: _resources, jobs: _jobs, ...summary }) => summary);
-  },
-  async getTenant(tenantId, signal) {
-    await wait(signal);
-    if (mockMode() === 'error') throw new Error('Não foi possível carregar este tenant.');
-    const tenant = tenants.find(item => item.id === tenantId);
-    if (!tenant) throw new Error('Tenant não encontrado.');
-    return tenant;
-  }
-};
-
-export const platformApi: PlatformApiClient = localPlatformApi;
+const now='2026-08-27T13:42:00Z';let mockTenants:TenantSummary[]=[{id:'tenant-aurora',slug:'clinica-aurora-a19c',displayName:'Clínica Aurora',contactEmail:'marina@example.test',status:'ACTIVE',plan:'Profissional',region:'São Paulo',appVersion:'1.0.0',health:'healthy',createdAt:now,updatedAt:now},{id:'tenant-horizonte',slug:'nutri-horizonte-75fe',displayName:'Nutri Horizonte',contactEmail:'paula@example.test',status:'PROVISIONING',plan:'Essencial',region:'São Paulo',appVersion:null,health:'unknown',createdAt:now,updatedAt:now}];let mockJobs:ProvisioningJob[]=[{id:'job-a2',tenantId:'tenant-aurora',operation:'PROVISION_TENANT',status:'SUCCEEDED',attemptCount:1,availableAt:now,startedAt:now,completedAt:now,createdAt:now,resultSummary:{message:'Release validada e promovida.'}}];const wait=()=>new Promise<void>(r=>window.setTimeout(r,180));const mode=()=>new URLSearchParams(location.search).get('mockState');
+export const localPlatformApi:PlatformApiClient={async listTenants(){await wait();if(mode()==='error')throw new Error('A central local não respondeu. Tente novamente.');return mode()==='empty'?[]:mockTenants},async getTenant(id){await wait();if(mode()==='error')throw new Error('Não foi possível carregar este tenant.');const t=mockTenants.find(x=>x.id===id);if(!t)throw new Error('Tenant não encontrado.');return{...t,jobs:mockJobs.filter(x=>x.tenantId===id)}},async createTenant(input){await wait();const t:TenantSummary={id:crypto.randomUUID(),slug:input.slug,displayName:input.name,contactEmail:input.contactEmail,status:'DRAFT',plan:'A definir',region:'A definir',appVersion:null,health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};mockTenants=[t,...mockTenants];return{id:t.id,status:t.status}},async queueJob(tenantId,input){const j:ProvisioningJob={id:crypto.randomUUID(),tenantId,operation:input.operation,status:'PENDING',attemptCount:0,availableAt:new Date().toISOString(),startedAt:null,completedAt:null,createdAt:new Date().toISOString(),resultSummary:{}};mockJobs=[j,...mockJobs];return{id:j.id,status:j.status}},async startJob(id){const j=mockJobs.find(x=>x.id===id);if(!j||j.status!=='PENDING')throw new Error('Job indisponível.');j.status='RUNNING';j.startedAt=new Date().toISOString();j.attemptCount++},async completeJob(id,outcome,message){const j=mockJobs.find(x=>x.id===id);if(!j||j.status!=='RUNNING')throw new Error('Job fora do estado RUNNING.');j.status=outcome;j.completedAt=new Date().toISOString();j.resultSummary={message}}};
+export const platformApi:PlatformApiClient=import.meta.env.DEV&&import.meta.env.VITE_PLATFORM_USE_MOCK==='true'?localPlatformApi:remotePlatformApi;

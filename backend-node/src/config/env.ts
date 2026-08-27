@@ -39,7 +39,12 @@ const envSchema = z.object({
   VAPID_PUBLIC_KEY: z.string().min(40).optional(),
   VAPID_PRIVATE_KEY: z.string().min(20).optional(),
   VAPID_SUBJECT: z.string().regex(/^(mailto:|https:)/).optional()
+  ,LICENSE_PUBLIC_KEY: z.string().min(32).optional()
+  ,INSTALLATION_ID: z.string().min(3).max(160).optional()
 }).superRefine((env, context) => {
+  if (Boolean(env.LICENSE_PUBLIC_KEY) !== Boolean(env.INSTALLATION_ID)) {
+    context.addIssue({ code: 'custom', path: ['LICENSE_PUBLIC_KEY'], message: 'Licenciamento exige LICENSE_PUBLIC_KEY e INSTALLATION_ID em conjunto.' });
+  }
   for (const [index, value] of (env.LEGACY_APP_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean).entries()) {
     try {
       const url = new URL(value);
