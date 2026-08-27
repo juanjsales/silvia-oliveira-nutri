@@ -47,7 +47,7 @@ export function PlatformOnboardingPage() {
   if (loading) return <main className="onboarding-page"><div className="vercel-loading" role="status"><LoaderCircle />Carregando onboarding…</div></main>;
   if (error && !state) return <main className="onboarding-page"><div className="platform-state"><AlertTriangle /><h1>Onboarding indisponível</h1><p>{error}</p><button className="platform-primary" onClick={load}><RefreshCw />Tentar novamente</button></div></main>;
   if (!state) return null;
-  if (!state.configured) return <main className="onboarding-page"><Link to={`/plataforma/tenants/${tenantId}`} className="platform-back"><ArrowLeft />Voltar ao tenant</Link><section className="platform-state"><AlertTriangle /><h1>Onboarding ainda não configurado</h1><p>{state.message}</p><small>O fluxo permanece bloqueado de forma segura. Procure a administração técnica.</small></section></main>;
+  if (!state.configured) return <BootstrapOnboarding tenantId={tenantId} busy={busy} error={error} onSubmit={async values=>{setBusy(true);setError('');try{await platformOnboardingApi.initialize(tenantId,values);await load()}catch(cause){setError(cause instanceof Error?cause.message:'Não foi possível preparar o onboarding.')}finally{setBusy(false)}}}/>;
 
   return <main className="onboarding-page">
     <header className="onboarding-header">
@@ -72,6 +72,11 @@ export function PlatformOnboardingPage() {
       </section>
     </div>
   </main>;
+}
+
+function BootstrapOnboarding({tenantId,busy,error,onSubmit}:{tenantId:string;busy:boolean;error:string;onSubmit:(values:{clinicName:string;professionalName:string;contactEmail:string;ownerName:string;ownerEmail:string})=>Promise<void>}){
+  const[values,setValues]=useState({clinicName:'',professionalName:'',contactEmail:'',ownerName:'',ownerEmail:''});
+  return <main className="onboarding-page"><Link to={`/plataforma/tenants/${tenantId}`} className="platform-back"><ArrowLeft/>Voltar ao tenant</Link><header className="onboarding-header"><div className="onboarding-safety"><ShieldCheck/><span><strong>Preparação segura</strong><small>Nenhum projeto externo será criado nesta etapa.</small></span></div><span className="platform-eyebrow">Primeiro passo</span><h1>Preparar onboarding</h1><p>Identifique a clínica e sua responsável para abrir o fluxo guiado.</p></header><section className="platform-panel onboarding-card"><form className="onboarding-form" onSubmit={event=>{event.preventDefault();void onSubmit(values)}}><h2>Responsáveis pela instalação</h2><p>Use dados administrativos. Não informe pacientes ou conteúdo clínico.</p>{([['clinicName','Nome da clínica','text'],['professionalName','Nome da nutricionista','text'],['contactEmail','E-mail administrativo','email'],['ownerName','Nome da proprietária','text'],['ownerEmail','E-mail da proprietária','email']] as const).map(([key,label,type])=><label key={key}>{label}<input required type={type} value={values[key]} onChange={event=>setValues({...values,[key]:event.target.value})}/></label>)}{error&&<div className="platform-form-error" role="alert">{error}</div>}<button className="platform-primary" disabled={busy}>{busy?<><LoaderCircle className="activity-spinner"/>Preparando…</>:<>Preparar fluxo<ChevronRight/></>}</button></form></section></main>
 }
 
 function Step({ state, selected, busy, act }: { state: OnboardingState; selected: OnboardingStep; busy: boolean; act: (fn: () => Promise<OnboardingState>) => Promise<void> }) {
