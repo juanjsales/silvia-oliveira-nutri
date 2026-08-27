@@ -7,6 +7,8 @@ declare module 'fastify' {
     env: AppEnv;
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
     requireAdmin: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    hasPermission: (request: FastifyRequest, permission: string) => Promise<boolean>;
+    requirePermission: (permission: string) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
   interface FastifyRequest {
     auth: { sessionId: string; userId: string; role: 'ADMIN' | 'PATIENT'; patientId: string | null } | null;

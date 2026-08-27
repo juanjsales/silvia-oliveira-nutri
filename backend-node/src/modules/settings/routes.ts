@@ -23,7 +23,7 @@ const select = `SELECT clinic_name AS "clinicName",professional_name AS "profess
   followup_message AS "followupMessage",document_footer AS "documentFooter",updated_at AS "updatedAt" FROM clinic_settings WHERE singleton=true`;
 
 export async function settingsRoutes(app: FastifyInstance) {
-  app.addHook('preHandler', app.requireAdmin);
+  app.addHook('preHandler', app.requirePermission('settings:manage'));
   app.get('/', async () => ({ data: (await app.db.query(select)).rows[0] }));
   app.get('/readiness', async () => {
     const [schema, smtp] = await Promise.all([schemaStatus(app.db), app.db.query<{enabled:boolean;host:string|null;user:string|null;from:string|null;passwordConfigured:boolean}>(`SELECT smtp_enabled AS enabled,smtp_host AS host,smtp_user AS "user",smtp_from AS "from",smtp_password_encrypted IS NOT NULL AS "passwordConfigured" FROM clinic_settings WHERE singleton=true`)]);

@@ -98,6 +98,6 @@ test('oferece ajuda para imprevistos usando somente substituições do plano', a
   await page.getByRole('button', { name: /Meu dia saiu do planejado/ }).click();
   await expect(page.getByRole('dialog', { name: 'O que mudou no seu dia?' })).toBeVisible();
   await page.getByRole('button', { name: 'Não encontrei um alimento' }).click();
-  await expect(page.getByText('1 fatia de mamão')).toBeVisible();
+  await expect(page.getByText('1 fatia de mamão', { exact: true })).toBeVisible();
   await expect(page.getByText(/somente opções já autorizadas/i)).toHaveCount(0);
 });
