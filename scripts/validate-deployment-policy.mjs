@@ -22,6 +22,10 @@ export function validateDeploymentPolicy(policy) {
   }
   if (product?.canonicalProductionPromotion !== 'forbidden') failures.push('A promoção do produto ao domínio canônico deve ser proibida.');
   if (product?.productionDatabaseAccess !== 'forbidden') failures.push('A branch do produto não pode acessar o banco de produção.');
+  if (product?.requiredEnvironmentMarker !== 'staging') failures.push('O produto deve exigir marcação explícita de staging.');
+  if (!Array.isArray(product?.forbiddenIdentifiers) || !product.forbiddenIdentifiers.includes(production?.host) || !product.forbiddenIdentifiers.includes(production?.owner)) {
+    failures.push('Host e proprietário da produção devem constar nos identificadores proibidos do staging.');
+  }
   if (production?.branch === product?.branch) failures.push('As branches de produção clínica e produto devem ser distintas.');
 
   return failures;

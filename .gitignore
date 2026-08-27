@@ -15,5 +15,6 @@ frontend-react/vite.config.d.ts
 
 .vercel
 .env*
+!**/.env*.example
 backups/
 *.backup.enc

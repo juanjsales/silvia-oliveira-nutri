@@ -7,6 +7,7 @@
     "build": "npm --workspace frontend-react run build",
     "release:preflight": "node scripts/release-preflight.mjs",
     "deploy:policy": "node scripts/validate-deployment-policy.mjs",
+    "staging:env": "node scripts/validate-staging-env.mjs",
     "release:env": "node scripts/validate-production-env.mjs",
     "test:release": "node --test scripts/*.test.mjs",
     "push:keys": "node scripts/generate-vapid-keys.mjs",

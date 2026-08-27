@@ -9,7 +9,9 @@ const validPolicy = () => ({
   },
   product: {
     branch: 'codex/product-platform', allowedEnvironments: ['preview', 'staging'],
-    canonicalProductionPromotion: 'forbidden', productionDatabaseAccess: 'forbidden'
+    canonicalProductionPromotion: 'forbidden', productionDatabaseAccess: 'forbidden',
+    requiredEnvironmentMarker: 'staging',
+    forbiddenIdentifiers: ['silviaoliveira.vercel.app', 'clinica-silvia']
   }
 });
 
