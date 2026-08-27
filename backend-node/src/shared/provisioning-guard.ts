@@ -1,9 +1,9 @@
 type GuardEnvironment = {
-  DEPLOYMENT_ENVIRONMENT?: string;
-  ALLOW_EXTERNAL_PROVIDER_PROVISIONING?: boolean;
-  PROVIDER_EXECUTION_CONFIRMATION?: string;
-  PROTECTED_PRODUCTION_PROJECT_ID?: string;
-  PROTECTED_PRODUCTION_DATABASE_ID?: string;
+  DEPLOYMENT_ENVIRONMENT?: string | undefined;
+  ALLOW_EXTERNAL_PROVIDER_PROVISIONING?: boolean | undefined;
+  PROVIDER_EXECUTION_CONFIRMATION?: string | undefined;
+  PROTECTED_PRODUCTION_PROJECT_ID?: string | undefined;
+  PROTECTED_PRODUCTION_DATABASE_ID?: string | undefined;
 };
 
 export type ProvisioningIntent = {
