@@ -1,0 +1,81 @@
+name: Publish signed clinical artifact
+
+on:
+  push:
+    branches:
+      - codex/clinical-product-base
+    paths:
+      - clinical-release.json
+      - frontend-react/**
+      - scripts/clinical-artifact-release.mjs
+      - scripts/prebuilt-artifact.mjs
+      - package-lock.json
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic version without prefix (example: 1.0.0)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: clinical-artifact-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/codex/clinical-product-base'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLINICAL_ARTIFACT_PRIVATE_KEY: ${{ secrets.CLINICAL_ARTIFACT_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/clinical-product-base
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Resolve immutable version
+        id: release
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [ -z "$VERSION" ]; then VERSION="$(node -p "JSON.parse(require('fs').readFileSync('clinical-release.json')).version")"; fi
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][a-zA-Z0-9.-]+)?$ ]]
+          test -n "$CLINICAL_ARTIFACT_PRIVATE_KEY"
+          if git ls-remote --exit-code --tags origin "refs/tags/clinical-v$VERSION" >/dev/null 2>&1; then
+            echo "Release clinical-v$VERSION já existe; nenhuma publicação mutável será feita."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Test and build neutral clinical surface
+        if: steps.release.outputs.publish == 'true'
+        run: |
+          npm run test:release
+          npm --workspace frontend-react run build:clinical
+      - name: Create signed prebuilt package and public catalog
+        if: steps.release.outputs.publish == 'true'
+        shell: bash
+        run: |
+          mkdir -p release
+          node scripts/clinical-artifact-release.mjs build --dist frontend-react/dist --output release/clinical-artifact.json --release-id "clinical-${{ steps.release.outputs.version }}" --source-commit "$GITHUB_SHA"
+          node scripts/clinical-artifact-release.mjs catalog --artifact release/clinical-artifact.json --output release/release-catalog.json --download-url "https://github.com/${GITHUB_REPOSITORY}/releases/download/clinical-v${{ steps.release.outputs.version }}/clinical-artifact.json"
+      - name: Publish immutable GitHub release
+        if: steps.release.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "clinical-v${{ steps.release.outputs.version }}" release/clinical-artifact.json release/release-catalog.json --target "$GITHUB_SHA" --title "Clinical product ${{ steps.release.outputs.version }}" --notes "Signed neutral clinical build. Source commit: $GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        if: steps.release.outputs.publish == 'true'
+        with:
+          name: clinical-${{ steps.release.outputs.version }}-audit-copy
+          path: release/
+          if-no-files-found: error
+          retention-days: 30

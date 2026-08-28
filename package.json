@@ -10,6 +10,7 @@
     "staging:env": "node scripts/validate-staging-env.mjs",
     "release:env": "node scripts/validate-production-env.mjs",
     "test:release": "node --test scripts/*.test.mjs",
+    "artifact:clinical": "node scripts/clinical-artifact-release.mjs",
     "push:keys": "node scripts/generate-vapid-keys.mjs",
     "typecheck": "npm --workspace backend-node run typecheck && npm --workspace frontend-react run typecheck",
     "test": "npm --workspace backend-node test",
