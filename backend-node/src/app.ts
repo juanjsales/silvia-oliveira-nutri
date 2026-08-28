@@ -157,12 +157,16 @@ export async function buildApp(env: AppEnv, db: Database, integrations: { vercel
   await app.register(notificationRoutes, { prefix: '/api/notifications' });
   await app.register(auditRoutes, { prefix: '/api/audit' });
   await app.register(publicDataRoutes, { prefix: '/api/public-data' });
-  await app.register(platformRoutes, { prefix: '/api/platform' });
-  const configuredVercel=env.VERCEL_OAUTH_CLIENT_ID&&env.VERCEL_OAUTH_CLIENT_SECRET&&env.VERCEL_OAUTH_REDIRECT_URI&&env.VERCEL_INTEGRATION_SLUG?new VercelHttpProvider({clientId:env.VERCEL_OAUTH_CLIENT_ID,clientSecret:env.VERCEL_OAUTH_CLIENT_SECRET,redirectUri:env.VERCEL_OAUTH_REDIRECT_URI,integrationSlug:env.VERCEL_INTEGRATION_SLUG}):disabledVercelProvider;
-  await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform/vercel'});
-  await app.register(async scoped=>previewRoutes(scoped,integrations.vercel??configuredVercel,integrations.previewSmoke),{prefix:'/api/platform/vercel'});
-  await app.register(async scoped=>onboardingLifecycleRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform'});
-  await app.register(async scoped=>supabaseRoutes(scoped,integrations.supabase??createGuidedSupabaseVerifier()),{prefix:'/api/platform/supabase'});
+  // Explicit false is the production tenant boundary. Undefined remains enabled
+  // only for legacy in-process fixtures that construct AppEnv without loadEnv().
+  if (env.CONTROL_PLANE_ENABLED !== false) {
+    await app.register(platformRoutes, { prefix: '/api/platform' });
+    const configuredVercel=env.VERCEL_OAUTH_CLIENT_ID&&env.VERCEL_OAUTH_CLIENT_SECRET&&env.VERCEL_OAUTH_REDIRECT_URI&&env.VERCEL_INTEGRATION_SLUG?new VercelHttpProvider({clientId:env.VERCEL_OAUTH_CLIENT_ID,clientSecret:env.VERCEL_OAUTH_CLIENT_SECRET,redirectUri:env.VERCEL_OAUTH_REDIRECT_URI,integrationSlug:env.VERCEL_INTEGRATION_SLUG}):disabledVercelProvider;
+    await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform/vercel'});
+    await app.register(async scoped=>previewRoutes(scoped,integrations.vercel??configuredVercel,integrations.previewSmoke),{prefix:'/api/platform/vercel'});
+    await app.register(async scoped=>onboardingLifecycleRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform'});
+    await app.register(async scoped=>supabaseRoutes(scoped,integrations.supabase??createGuidedSupabaseVerifier()),{prefix:'/api/platform/supabase'});
+  }
   await app.register(staffRoutes, { prefix: '/api/staff' });
   await app.register(licenseRoutes, { prefix: '/api/license' });
 

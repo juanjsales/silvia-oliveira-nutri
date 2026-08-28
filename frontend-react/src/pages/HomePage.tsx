@@ -2,9 +2,9 @@ import { ArrowRight, CalendarCheck, Check, ChevronRight, CircleHelp, Clock3, Hea
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClinicMark, useClinic } from '../contexts/ClinicContext';
-import portrait from '../../../assets/silvia-foto-oficial.webp';
-import fullBody from '../../../assets/silvia-fullbody.png';
-import consultation from '../../../assets/silvia-consultation.webp';
+const portrait='/brand/default-hero-nutrition.svg';
+const fullBody='/brand/default-about-nutrition.svg';
+const consultation='/brand/default-consultation-nutrition.svg';
 
 const digits=(value?:string|null)=>(value||'').replace(/\D/g,'');
 

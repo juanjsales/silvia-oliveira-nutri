@@ -34,6 +34,7 @@ const envSchema = z.object({
   VERCEL_INTEGRATION_SLUG: optionalText(z.string().regex(/^[a-z0-9-]+$/)),
   DEPLOYMENT_ENVIRONMENT: optionalText(z.enum(['staging', 'production'])),
   ALLOW_EXTERNAL_PROVIDER_PROVISIONING: z.preprocess(v => v === undefined ? undefined : v === true || v === 'true', z.boolean().optional()),
+  CONTROL_PLANE_ENABLED: z.preprocess(v => v === true || v === 'true', z.boolean()).default(false),
   PROVIDER_EXECUTION_CONFIRMATION: optionalText(z.string().min(12)),
   PROTECTED_PRODUCTION_PROJECT_ID: optionalText(z.string().min(3)),
   PROTECTED_PRODUCTION_DATABASE_ID: optionalText(z.string().min(3)),
@@ -79,7 +80,9 @@ const envSchema = z.object({
   }
 });
 
-export type AppEnv = z.infer<typeof envSchema>;
+// Optional at the construction boundary keeps existing typed test fixtures and
+// embedded consumers compatible. loadEnv() always materializes the safe false default.
+export type AppEnv = Omit<z.infer<typeof envSchema>, 'CONTROL_PLANE_ENABLED'> & { CONTROL_PLANE_ENABLED?: boolean };
 
 export function loadEnv(source?: NodeJS.ProcessEnv): AppEnv {
   if (!source) {

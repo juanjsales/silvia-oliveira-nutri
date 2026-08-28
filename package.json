@@ -1,5 +1,5 @@
 {
-  "name": "silvia-oliveira-nutri",
+  "name": "kos-nutri-platform",
   "private": true,
   "type": "module",
   "workspaces": ["frontend-react", "backend-node"],

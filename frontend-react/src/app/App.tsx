@@ -13,6 +13,10 @@ import { PatientPortalPage } from '../pages/PatientPortalPage';
 import { HomePage } from '../pages/HomePage';
 import '../platform-accessibility.css';
 
+// The tenant product is the safe default. Only the separately configured
+// control-plane deployment exposes provisioning screens.
+const controlPlaneEnabled = import.meta.env.VITE_APP_SURFACE === 'control-plane';
+
 const ClinicalOverviewPage = lazy(() => import('../pages/ClinicalOverviewPage').then(module => ({ default: module.ClinicalOverviewPage })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const DocumentsPage = lazy(() => import('../pages/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
@@ -72,9 +76,9 @@ export function App() {
             <Route path="portal/documento/:id" element={<PatientDocumentPage />} />
           </Route>
           <Route element={<RoleRoute role="ADMIN" />}>
-            <Route path="plataforma" element={<PlatformPage />} />
-            <Route path="plataforma/tenants/:tenantId" element={<PlatformTenantPage />} />
-            <Route path="plataforma/tenants/:tenantId/onboarding" element={<PlatformOnboardingPage />} />
+            {controlPlaneEnabled && <Route path="plataforma" element={<PlatformPage />} />}
+            {controlPlaneEnabled && <Route path="plataforma/tenants/:tenantId" element={<PlatformTenantPage />} />}
+            {controlPlaneEnabled && <Route path="plataforma/tenants/:tenantId/onboarding" element={<PlatformOnboardingPage />} />}
             <Route
               path="embed/planos/:id"
               element={
