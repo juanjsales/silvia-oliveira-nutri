@@ -19,7 +19,7 @@ const steps: { id: OnboardingStep; label: string; icon: typeof Cloud }[] = [
   { id: 'SUPABASE', label: 'Supabase', icon: Database },
   { id: 'IDENTITY', label: 'Identidade', icon: Palette },
   { id: 'REVIEW', label: 'Revisão', icon: CheckCircle2 },
-  { id: 'PUBLISH', label: 'Simulação', icon: Rocket },
+  { id: 'PUBLISH', label: 'Publicação', icon: Rocket },
 ];
 
 export function PlatformOnboardingPage() {
@@ -53,7 +53,7 @@ export function PlatformOnboardingPage() {
   return <main className="onboarding-page"><div className="onboarding-brandmark"><span><Leaf/></span><strong>KOS <i>NUTRI</i></strong></div>
     <header className="onboarding-header">
       <Link to={`/plataforma/tenants/${tenantId}`} className="platform-back"><ArrowLeft />Voltar ao tenant</Link>
-      <div className="onboarding-safety"><ShieldCheck /><span><strong>Ambiente de simulação protegido</strong><small>Sem serviços externos, dados reais ou promoção para produção.</small></span></div>
+      <div className="onboarding-safety"><ShieldCheck /><span><strong>Provisionamento protegido</strong><small>As ações externas exigem autorização e passam por preview, validação e confirmação.</small></span></div>
       <span className="platform-eyebrow">Provisionamento guiado</span>
       <h1>Preparar nova clínica</h1>
       <p>Conclua e verifique cada etapa antes de autorizar uma publicação real.</p>
@@ -85,7 +85,7 @@ function Step({ state, selected, busy, act }: { state: OnboardingState; selected
   if (selected === 'VERCEL') return <div className="onboarding-provider-step"><div className="onboarding-provider-intro"><span className="platform-eyebrow">Configuração acompanhada</span><h2>Coloque a clínica no ar</h2><p>Siga uma ação por vez. O sistema sugere o endereço, verifica a disponibilidade e cria a hospedagem automaticamente.</p></div><VercelProvisioningPanel tenantId={state.tenantId} clinicName={state.clinic.name} currentProjectName={state.vercel.projectName} onProjectReady={projectName => act(() => platformOnboardingApi.save(state.tenantId, 'VERCEL', { projectName }))}/></div>;
   if (selected === 'SUPABASE') return <SupabaseGuidedStep state={state} busy={busy} act={act}/>;
   if (selected === 'IDENTITY') return <SimpleForm title="Identidade da clínica" description="Defina a marca apresentada à equipe e aos pacientes." fields={[["brandName", "Nome da marca", state.identity.brandName, "text"], ["primaryColor", "Cor principal", state.identity.primaryColor, "color"], ["ownerEmail", "E-mail da proprietária", state.identity.ownerEmail, "email"]]} busy={busy} submit={v => act(() => platformOnboardingApi.save(state.tenantId, 'IDENTITY', { brandName: v.brandName, primaryColor: v.primaryColor, ownerEmail: v.ownerEmail }))} />;
-  if (selected === 'REVIEW') return <div className="onboarding-review"><h2>Revisão antes de simular</h2><p>Confirme que nenhum dado clínico foi utilizado.</p><dl><div><dt>Clínica</dt><dd>{state.clinic.name}</dd></div><div><dt>Vercel</dt><dd>{state.vercel.projectName}</dd></div><div><dt>Supabase</dt><dd>{state.supabase.projectRef} · {state.supabase.region}</dd></div><div><dt>Identidade</dt><dd>{state.identity.brandName}</dd></div></dl><button className="platform-primary" disabled={busy} onClick={() => act(() => platformOnboardingApi.save(state.tenantId, 'REVIEW', {}))}><CheckCircle2 />Confirmar revisão</button></div>;
+  if (selected === 'REVIEW') return <div className="onboarding-review"><h2>Revisão antes de publicar</h2><p>Confira a infraestrutura, a identidade e confirme que nenhum dado clínico real foi usado na preparação.</p><dl><div><dt>Clínica</dt><dd>{state.clinic.name}</dd></div><div><dt>Vercel</dt><dd>{state.vercel.projectName}</dd></div><div><dt>Supabase</dt><dd>{state.supabase.projectRef} · {state.supabase.region}</dd></div><div><dt>Identidade</dt><dd>{state.identity.brandName}</dd></div></dl><button className="platform-primary" disabled={busy} onClick={() => act(() => platformOnboardingApi.save(state.tenantId, 'REVIEW', {}))}><CheckCircle2 />Confirmar revisão</button></div>;
   return <PublishPanel state={state} busy={busy} act={act} />;
 }
 
@@ -103,18 +103,18 @@ function PublishPanel({ state, busy, act }: { state: OnboardingState; busy: bool
   const isFailed = publication.status === 'FAILED';
   const isRolledBack = publication.status === 'ROLLED_BACK';
   return <div className="onboarding-publish">
-    <div className="onboarding-publish-heading"><span><Rocket /></span><div><small>SIMULAÇÃO PONTA A PONTA</small><h2>{isReady ? 'Preview validado' : isFailed ? 'Recuperação necessária' : isRolledBack ? 'Rollback concluído' : 'Preparar, validar e testar'}</h2><p>{publication.message || 'A simulação percorre todos os gates localmente, sem criar recursos externos.'}</p></div></div>
-    <div className="onboarding-promotion-lock"><LockKeyhole /><span><strong>Promoção para produção desativada</strong><small>Este fluxo termina no preview fake e nunca altera a clínica real.</small></span></div>
-    {busy && <div className="onboarding-running" role="status"><LoaderCircle /><span><strong>Executando gates protegidos…</strong><small>Preparação → artefato → referências → preview → smoke.</small></span></div>}
-    <ol className="onboarding-activity" aria-label="Progresso da simulação">{state.activity.map((item, index) => <li key={item.id} className={`is-${item.status.toLowerCase()}`}><span className="onboarding-activity-index"><ActivityIcon item={item} /></span><div><span>Etapa {index + 1}</span><strong>{item.label}</strong><small>{item.detail}</small></div><em>{item.status === 'SUCCEEDED' ? 'Aprovada' : item.status === 'FAILED' ? 'Falhou' : item.status === 'ROLLED_BACK' ? 'Revertida' : item.status === 'RUNNING' ? 'Executando' : 'Pendente'}</em></li>)}</ol>
+    <div className="onboarding-publish-heading"><span><Rocket /></span><div><small>PUBLICAÇÃO ASSISTIDA</small><h2>{isReady ? 'Site publicado e validado' : isFailed ? 'Recuperação necessária' : isRolledBack ? 'Versão anterior restaurada' : 'Preparar, validar e publicar'}</h2><p>{publication.message || 'O sistema cria um preview isolado, valida o funcionamento e só então libera a publicação.'}</p></div></div>
+    <div className="onboarding-promotion-lock"><LockKeyhole /><span><strong>Publicação com controle de segurança</strong><small>Nenhum preview é promovido sem integridade do artefato, smoke aprovado e confirmação do fluxo.</small></span></div>
+    {busy && <div className="onboarding-running" role="status"><LoaderCircle /><span><strong>Executando validações protegidas…</strong><small>Preparação → artefato → ambiente → preview → smoke → publicação.</small></span></div>}
+    <ol className="onboarding-activity" aria-label="Progresso da publicação">{state.activity.map((item, index) => <li key={item.id} className={`is-${item.status.toLowerCase()}`}><span className="onboarding-activity-index"><ActivityIcon item={item} /></span><div><span>Etapa {index + 1}</span><strong>{item.label}</strong><small>{item.detail}</small></div><em>{item.status === 'SUCCEEDED' ? 'Aprovada' : item.status === 'FAILED' ? 'Falhou' : item.status === 'ROLLED_BACK' ? 'Revertida' : item.status === 'RUNNING' ? 'Executando' : 'Pendente'}</em></li>)}</ol>
     {isFailed && <aside className="onboarding-recovery" role="alert"><AlertTriangle /><div><strong>Falha isolada com segurança</strong><p>Revise a etapa indicada e retome do mesmo ponto. Etapas aprovadas não serão repetidas e nenhum recurso externo foi modificado.</p></div></aside>}
-    {isReady && publication.url && <div className="onboarding-preview-result"><CheckCircle2 /><span><strong>Preview fake disponível</strong><a href={publication.url} target="_blank" rel="noreferrer">{publication.url}</a></span></div>}
+    {isReady && publication.url && <div className="onboarding-preview-result"><CheckCircle2 /><span><strong>Site validado disponível</strong><a href={publication.url} target="_blank" rel="noreferrer">{publication.url}</a></span></div>}
     {isReady && <ClinicDeliveryPanel tenantId={state.tenantId} ownerEmail={state.identity.ownerEmail} previewUrl={publication.url} />}
     {isRolledBack && <aside className="onboarding-recovery is-safe"><ShieldCheck /><div><strong>Estado seguro restaurado</strong><p>O preview e o smoke foram revertidos. Configuração e dados permaneceram preservados.</p></div></aside>}
     <div className="onboarding-actions">
-      {!isReady && !isFailed && <button className="platform-primary" disabled={busy} onClick={() => act(() => platformOnboardingApi.publish(state.tenantId))}><Rocket />{busy ? 'Simulando…' : isRolledBack ? 'Executar nova simulação' : 'Executar simulação completa'}</button>}
+      {!isReady && !isFailed && <button className="platform-primary" disabled={busy} onClick={() => act(() => platformOnboardingApi.publish(state.tenantId))}><Rocket />{busy ? 'Publicando…' : isRolledBack ? 'Publicar nova versão' : 'Validar e publicar'}</button>}
       {isFailed && <button className="platform-primary" disabled={busy} onClick={() => act(() => platformOnboardingApi.retry(state.tenantId))}><RefreshCw />Retomar da falha</button>}
-      {(isReady || isFailed) && <button className="platform-secondary" disabled={busy} onClick={() => act(() => platformOnboardingApi.rollback(state.tenantId))}><RotateCcw />Executar rollback fake</button>}
+      {(isReady || isFailed) && <button className="platform-secondary" disabled={busy} onClick={() => act(() => platformOnboardingApi.rollback(state.tenantId))}><RotateCcw />Restaurar versão segura</button>}
     </div>
   </div>;
 }
