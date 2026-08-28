@@ -32,18 +32,13 @@ import { notificationRoutes } from './modules/notifications/routes.js';
 import { auditRoutes } from './modules/audit/routes.js';
 import { PRIVACY_NOTICE_VERSION } from './shared/privacy-notice.js';
 import { publicDataRoutes } from './modules/public-data/routes.js';
-import { platformRoutes } from './modules/platform/routes.js';
-import { vercelRoutes } from './modules/platform/vercel-routes.js';
-import { previewRoutes, type PreviewSmokeRunner } from './modules/platform/preview-routes.js';
-import { onboardingLifecycleRoutes } from './modules/platform/onboarding-lifecycle-routes.js';
-import { disabledVercelProvider, type VercelProvider } from './integrations/vercel-provider.js';
-import { VercelHttpProvider } from './integrations/vercel-http-provider.js';
+import type { PreviewSmokeRunner } from './modules/platform/preview-routes.js';
+import type { VercelProvider } from './integrations/vercel-provider.js';
 import { staffRoutes } from './modules/staff/routes.js';
 import { licenseRoutes } from './modules/license/routes.js';
 import { isLicenseWriteExempt, loadLicenseState } from './modules/license/service.js';
 import { audit } from './shared/audit.js';
-import { supabaseRoutes } from './modules/platform/supabase-routes.js';
-import { createGuidedSupabaseVerifier, type GuidedSupabaseVerifier } from './integrations/supabase-provider.js';
+import type { GuidedSupabaseVerifier } from './integrations/supabase-provider.js';
 
 export async function buildApp(env: AppEnv, db: Database, integrations: { vercel?: VercelProvider; supabase?: GuidedSupabaseVerifier; previewSmoke?: PreviewSmokeRunner } = {}) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
@@ -160,6 +155,25 @@ export async function buildApp(env: AppEnv, db: Database, integrations: { vercel
   // Explicit false is the production tenant boundary. Undefined remains enabled
   // only for legacy in-process fixtures that construct AppEnv without loadEnv().
   if (env.CONTROL_PLANE_ENABLED !== false) {
+    const [
+      { platformRoutes },
+      { vercelRoutes },
+      { previewRoutes },
+      { onboardingLifecycleRoutes },
+      { supabaseRoutes },
+      { disabledVercelProvider },
+      { VercelHttpProvider },
+      { createGuidedSupabaseVerifier },
+    ] = await Promise.all([
+      import('./modules/platform/routes.js'),
+      import('./modules/platform/vercel-routes.js'),
+      import('./modules/platform/preview-routes.js'),
+      import('./modules/platform/onboarding-lifecycle-routes.js'),
+      import('./modules/platform/supabase-routes.js'),
+      import('./integrations/vercel-provider.js'),
+      import('./integrations/vercel-http-provider.js'),
+      import('./integrations/supabase-provider.js'),
+    ]);
     await app.register(platformRoutes, { prefix: '/api/platform' });
     const configuredVercel=env.VERCEL_OAUTH_CLIENT_ID&&env.VERCEL_OAUTH_CLIENT_SECRET&&env.VERCEL_OAUTH_REDIRECT_URI&&env.VERCEL_INTEGRATION_SLUG?new VercelHttpProvider({clientId:env.VERCEL_OAUTH_CLIENT_ID,clientSecret:env.VERCEL_OAUTH_CLIENT_SECRET,redirectUri:env.VERCEL_OAUTH_REDIRECT_URI,integrationSlug:env.VERCEL_INTEGRATION_SLUG}):disabledVercelProvider;
     await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform/vercel'});
