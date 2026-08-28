@@ -17,5 +17,5 @@ export class VercelHttpProvider implements VercelProvider{
  async getDeployment(i:{accessToken:string;deploymentId:string}&VercelScope){try{const x=await this.call<any>(`/v13/deployments/${encodeURIComponent(i.deploymentId)}`,{},i.accessToken,i);return{id:x.id,url:x.url,status:x.readyState??x.status}}catch(e){if(e instanceof VercelProviderError&&e.code==='NOT_FOUND')return null;throw e}}
  async addDomain(i:{accessToken:string;projectId:string;domain:string}&VercelScope){return this.call<{name:string;verified:boolean}>(`/v10/projects/${encodeURIComponent(i.projectId)}/domains`,{method:'POST',body:JSON.stringify({name:i.domain})},i.accessToken,i)}
  async rollback(i:{accessToken:string;projectId:string;deploymentId:string}&VercelScope){await this.call(`/v10/projects/${encodeURIComponent(i.projectId)}/promote/${encodeURIComponent(i.deploymentId)}`,{method:'POST',body:'{}'},i.accessToken,i)}
- async revoke(i:{accessToken:string}&VercelScope){await this.call('/v2/oauth/access_token',{method:'DELETE'},i.accessToken,i)}
+ async revoke(i:{accessToken:string}&VercelScope){if(!i.configurationId)throw new VercelProviderError('CONFIGURATION_ID_REQUIRED',422);await this.call(`/v1/integrations/configuration/${encodeURIComponent(i.configurationId)}`,{method:'DELETE'},i.accessToken,i)}
 }
