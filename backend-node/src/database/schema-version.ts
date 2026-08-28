@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '052_vercel_team_scope.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '053_supabase_oauth_foundation.sql';
 
 export async function schemaStatus(db: Database) {
   try {

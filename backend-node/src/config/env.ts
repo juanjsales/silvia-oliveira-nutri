@@ -32,6 +32,9 @@ const envSchema = z.object({
   VERCEL_OAUTH_CLIENT_SECRET: optionalText(z.string().min(12)),
   VERCEL_OAUTH_REDIRECT_URI: optionalText(z.string().url()),
   VERCEL_INTEGRATION_SLUG: optionalText(z.string().regex(/^[a-z0-9-]+$/)),
+  SUPABASE_OAUTH_CLIENT_ID: optionalText(z.string().min(3)),
+  SUPABASE_OAUTH_CLIENT_SECRET: optionalText(z.string().min(12)),
+  SUPABASE_OAUTH_REDIRECT_URI: optionalText(z.string().url()),
   DEPLOYMENT_ENVIRONMENT: optionalText(z.enum(['staging', 'production'])),
   ALLOW_EXTERNAL_PROVIDER_PROVISIONING: z.preprocess(v => v === undefined ? undefined : v === true || v === 'true', z.boolean().optional()),
   CONTROL_PLANE_ENABLED: z.preprocess(v => v === true || v === 'true', z.boolean()).default(false),
@@ -56,6 +59,8 @@ const envSchema = z.object({
 }).superRefine((env, context) => {
   const vercelOauth=[env.VERCEL_OAUTH_CLIENT_ID,env.VERCEL_OAUTH_CLIENT_SECRET,env.VERCEL_OAUTH_REDIRECT_URI,env.VERCEL_INTEGRATION_SLUG];
   if(vercelOauth.some(Boolean)&&!vercelOauth.every(Boolean))context.addIssue({code:'custom',path:['VERCEL_OAUTH_CLIENT_ID'],message:'Vercel OAuth exige client ID, client secret, redirect URI e slug da integração em conjunto.'});
+  const supabaseOauth=[env.SUPABASE_OAUTH_CLIENT_ID,env.SUPABASE_OAUTH_CLIENT_SECRET,env.SUPABASE_OAUTH_REDIRECT_URI];
+  if(supabaseOauth.some(Boolean)&&!supabaseOauth.every(Boolean))context.addIssue({code:'custom',path:['SUPABASE_OAUTH_CLIENT_ID'],message:'Supabase OAuth exige client ID, client secret e redirect URI em conjunto.'});
   if (Boolean(env.LICENSE_PUBLIC_KEY) !== Boolean(env.INSTALLATION_ID)) {
     context.addIssue({ code: 'custom', path: ['LICENSE_PUBLIC_KEY'], message: 'Licenciamento exige LICENSE_PUBLIC_KEY e INSTALLATION_ID em conjunto.' });
   }

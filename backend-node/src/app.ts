@@ -38,9 +38,9 @@ import { staffRoutes } from './modules/staff/routes.js';
 import { licenseRoutes } from './modules/license/routes.js';
 import { isLicenseWriteExempt, loadLicenseState } from './modules/license/service.js';
 import { audit } from './shared/audit.js';
-import type { GuidedSupabaseVerifier } from './integrations/supabase-provider.js';
+import type { GuidedSupabaseVerifier, SupabaseProvider } from './integrations/supabase-provider.js';
 
-export async function buildApp(env: AppEnv, db: Database, integrations: { vercel?: VercelProvider; supabase?: GuidedSupabaseVerifier; previewSmoke?: PreviewSmokeRunner } = {}) {
+export async function buildApp(env: AppEnv, db: Database, integrations: { vercel?: VercelProvider; supabase?: GuidedSupabaseVerifier | SupabaseProvider; previewSmoke?: PreviewSmokeRunner } = {}) {
   const app = Fastify({ trustProxy:env.NODE_ENV==='production', logger: { redact: ['req.headers.cookie', 'req.headers.authorization', 'body.password', 'body.token', 'body.joinToken'] } });
   app.decorate('env', env);
   app.decorate('db', db);
@@ -163,7 +163,7 @@ export async function buildApp(env: AppEnv, db: Database, integrations: { vercel
       { supabaseRoutes },
       { disabledVercelProvider },
       { VercelHttpProvider },
-      { createGuidedSupabaseVerifier },
+      { createGuidedSupabaseVerifier, createSupabaseOAuthProvider },
     ] = await Promise.all([
       import('./modules/platform/routes.js'),
       import('./modules/platform/vercel-routes.js'),
@@ -179,7 +179,8 @@ export async function buildApp(env: AppEnv, db: Database, integrations: { vercel
     await app.register(async scoped=>vercelRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform/vercel'});
     await app.register(async scoped=>previewRoutes(scoped,integrations.vercel??configuredVercel,integrations.previewSmoke),{prefix:'/api/platform/vercel'});
     await app.register(async scoped=>onboardingLifecycleRoutes(scoped,integrations.vercel??configuredVercel),{prefix:'/api/platform'});
-    await app.register(async scoped=>supabaseRoutes(scoped,integrations.supabase??createGuidedSupabaseVerifier()),{prefix:'/api/platform/supabase'});
+    const configuredSupabase=createSupabaseOAuthProvider({...(env.SUPABASE_OAUTH_CLIENT_ID?{clientId:env.SUPABASE_OAUTH_CLIENT_ID}:{}),...(env.SUPABASE_OAUTH_CLIENT_SECRET?{clientSecret:env.SUPABASE_OAUTH_CLIENT_SECRET}:{}),...(env.SUPABASE_OAUTH_REDIRECT_URI?{redirectUri:env.SUPABASE_OAUTH_REDIRECT_URI}:{}),allowExternal:env.ALLOW_EXTERNAL_PROVIDER_PROVISIONING===true,http:globalThis.fetch});
+    await app.register(async scoped=>supabaseRoutes(scoped,integrations.supabase??(configuredSupabase.mode==='OAUTH'?configuredSupabase:createGuidedSupabaseVerifier())),{prefix:'/api/platform/supabase'});
   }
   await app.register(staffRoutes, { prefix: '/api/staff' });
   await app.register(licenseRoutes, { prefix: '/api/license' });

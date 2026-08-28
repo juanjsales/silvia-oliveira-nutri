@@ -1,6 +1,13 @@
 import { api } from './api';
 
-export type SupabaseGuide = { configured: boolean; mode: 'GUIDED'; guide: unknown; reference: SupabaseReference | null };
+export type SupabaseGuideInstructions = {
+  steps?: string[];
+  acceptsAccountPassword?: boolean;
+  acceptsDatabaseUrl?: boolean;
+  external?: boolean;
+};
+export type SupabaseConnection = { status: string; projectRef: string; projectName: string; organizationSlug: string; region: string };
+export type SupabaseGuide = { configured: boolean; mode: 'GUIDED'|'OAUTH'; guide: SupabaseGuideInstructions|null; connection?: SupabaseConnection|null; reference: SupabaseReference | null };
 export type SupabaseReference = { projectRef: string; organizationSlug: string; region: string; databaseSecretRef: string; migrationDatabaseSecretRef: string; verified?: boolean };
 export type PreviewStatus = 'PENDING'|'VALIDATING_ARTIFACT'|'WAITING_PREVIEW'|'SMOKE_TESTING'|'READY_TO_PROMOTE'|'KNOWN_GOOD'|'FAILED_RETRYABLE'|'FAILED_MANUAL'|'ROLLED_BACK';
 export type PreviewState = { id: string; tenantId?: string; status: PreviewStatus; progress: number; deploymentId?: string; url?: string; smokePassed?: boolean; attemptCount?: number; lastErrorCode?: string; stateVersion?: number };
@@ -11,6 +18,8 @@ const useMock=import.meta.env.DEV&&import.meta.env.VITE_PLATFORM_USE_MOCK==='tru
 const mockPreviews=new Map<string,PreviewState>();
 export const platformProvisioningApi = {
   async getSupabase(tenantId: string, signal?: AbortSignal) { if(useMock)return{configured:true,mode:'GUIDED' as const,guide:{external:false},reference:null};return (await api<{data: SupabaseGuide}>(`${supabase}/tenants/${tenantId}`, { signal })).data; },
+  async startSupabase(tenantId: string, input: { organizationSlug: string; projectName: string; region: string }) { return (await api<{data:{authorizationUrl:string}}>(`${supabase}/tenants/${tenantId}/start`, { method:'POST', body:JSON.stringify(input) })).data; },
+  async revokeSupabase(tenantId: string) { await api(`${supabase}/tenants/${tenantId}`, { method:'DELETE' }); },
   async linkSupabase(tenantId: string, input: SupabaseReference) { if(useMock)return{...input,verified:true};return (await api<{data: SupabaseReference}>(`${supabase}/tenants/${tenantId}/reference`, { method: 'PUT', body: JSON.stringify(input) })).data; },
   async createPreview(tenantId: string, input: SignedPreviewRequest) { if(useMock){const state:PreviewState={id:`fake-${input.idempotencyKey}`,tenantId,status:'WAITING_PREVIEW',progress:60,url:'https://clinica-exemplo-staging.vercel.app'};mockPreviews.set(state.id,state);return{...state}}return (await api<{data: PreviewState}>(`${vercel}/tenants/${tenantId}/previews`, { method: 'POST', body: JSON.stringify(input) })).data; },
   async getPreview(id: string, signal?: AbortSignal) { if(useMock){const state=mockPreviews.get(id);if(!state)throw new Error('Preview fake não encontrado.');return{...state}}return (await api<{data: PreviewState}>(`${vercel}/previews/${id}`, { signal })).data; },
