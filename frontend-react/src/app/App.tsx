@@ -11,11 +11,6 @@ import { PortalLoadingScreen } from '../components/PortalLoadingScreen';
 import { BrandWelcomeScreen } from '../components/BrandWelcomeScreen';
 import { PatientPortalPage } from '../pages/PatientPortalPage';
 import { HomePage } from '../pages/HomePage';
-import '../platform-accessibility.css';
-
-// The tenant product is the safe default. Only the separately configured
-// control-plane deployment exposes provisioning screens.
-const controlPlaneEnabled = import.meta.env.VITE_APP_SURFACE === 'control-plane';
 
 const ClinicalOverviewPage = lazy(() => import('../pages/ClinicalOverviewPage').then(module => ({ default: module.ClinicalOverviewPage })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
@@ -40,9 +35,6 @@ const PlanDocumentPage = lazy(() => import('../pages/PlanDocumentPage').then(mod
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
 const PublicPrivacyPage = lazy(() => import('../pages/PublicPrivacyPage').then(module => ({ default: module.PublicPrivacyPage })));
 const SettingsPage = lazy(() => import('../pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
-const PlatformPage = lazy(() => import('../pages/PlatformPage').then(module => ({ default: module.PlatformPage })));
-const PlatformTenantPage = lazy(() => import('../pages/PlatformPage').then(module => ({ default: module.PlatformTenantPage })));
-const PlatformOnboardingPage = lazy(() => import('../pages/PlatformOnboardingPage').then(module => ({ default: module.PlatformOnboardingPage })));
 
 function RouteFallback() {
   const location = useLocation();
@@ -76,9 +68,6 @@ export function App() {
             <Route path="portal/documento/:id" element={<PatientDocumentPage />} />
           </Route>
           <Route element={<RoleRoute role="ADMIN" />}>
-            {controlPlaneEnabled && <Route path="plataforma" element={<PlatformPage />} />}
-            {controlPlaneEnabled && <Route path="plataforma/tenants/:tenantId" element={<PlatformTenantPage />} />}
-            {controlPlaneEnabled && <Route path="plataforma/tenants/:tenantId/onboarding" element={<PlatformOnboardingPage />} />}
             <Route
               path="embed/planos/:id"
               element={
