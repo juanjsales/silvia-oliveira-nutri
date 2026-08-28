@@ -2,6 +2,7 @@ import { Activity, ArrowRight, BookOpen, Droplets, Flame, Plus, RefreshCw, Salad
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
+import { availablePlanDays, planMeals } from '../lib/mealPlanSchedule';
 import '../follow-up.css';
 
 type Patient = { id: string; name: string };
@@ -52,7 +53,8 @@ type Macro = { kcal: number; protein: number; carbohydrate: number; fat: number 
 
 function calcPlanTotals(content: Record<string, any> | undefined): { totals: Macro; mealsCount: number; targetText?: string } {
   if (!content) return { totals: { kcal: 0, protein: 0, carbohydrate: 0, fat: 0 }, mealsCount: 0 };
-  const meals = Array.isArray(content.meals) ? content.meals : Array.isArray(content.refeicoes) ? content.refeicoes : [];
+  const meals = planMeals(content) as any[];
+  const days = availablePlanDays(meals);
   const totals = meals.reduce(
     (sum: Macro, meal: any) => {
       const items = Array.isArray(meal.items) ? meal.items : Array.isArray(meal.alimentosList) ? meal.alimentosList : [];
@@ -77,6 +79,12 @@ function calcPlanTotals(content: Record<string, any> | undefined): { totals: Mac
     },
     { kcal: 0, protein: 0, carbohydrate: 0, fat: 0 },
   );
+  if (days.length) {
+    totals.kcal /= days.length;
+    totals.protein /= days.length;
+    totals.carbohydrate /= days.length;
+    totals.fat /= days.length;
+  }
 
   const targets = content.targets || {};
   let targetText: string | undefined;
@@ -88,7 +96,7 @@ function calcPlanTotals(content: Record<string, any> | undefined): { totals: Mac
     targetText = `Meta: ${content.targetKcal} kcal`;
   }
 
-  return { totals, mealsCount: meals.length, targetText };
+  return { totals, mealsCount: days.length ? Math.round(meals.length / days.length) : meals.length, targetText };
 }
 
 const showDate = (v: string) => new Date(`${v}T12:00:00`).toLocaleDateString('pt-BR');

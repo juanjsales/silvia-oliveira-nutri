@@ -1,5 +1,6 @@
 import { ArrowRight, ArrowRightLeft, Clock, Compass, MessageCircle, Sparkles, Utensils, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { currentPlanDay, mealsForDay, planMeals } from "../../lib/mealPlanSchedule";
 
 type MealItem = {
   name?: string;
@@ -15,6 +16,7 @@ type MealItem = {
 };
 
 type Meal = {
+  dayOfWeek?: number;
   id?: string;
   title?: string;
   titulo?: string;
@@ -117,7 +119,8 @@ export function PortalCurrentMealCard({
       return { mealName: defaultSuggestedName, periodTag: defaultPeriodTag, items: [] };
     }
 
-    const meals = plan.content.meals || plan.content.refeicoes || [];
+    const allMeals = planMeals(plan.content as Record<string, unknown>) as Meal[];
+    const meals = mealsForDay(allMeals,currentPlanDay(allMeals,now));
     if (!meals.length) {
       return { mealName: defaultSuggestedName, periodTag: defaultPeriodTag, items: [] };
     }

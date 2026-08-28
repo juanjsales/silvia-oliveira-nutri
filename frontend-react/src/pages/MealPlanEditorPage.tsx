@@ -3,13 +3,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useConfirm } from '../components/ConfirmDialog';
+import { availablePlanDays, currentPlanDay, mealsForDay, planMeals, WEEK_DAYS } from '../lib/mealPlanSchedule';
 
 type Macro = { kcal:number; protein:number; carbohydrate:number; fat:number };
 type Food = { id:string; name:string; category:string; referenceUnit:string; kcal:number; protein:number; carbohydrate:number; fat:number };
 type Recipe = { id:string; title:string; category:string; ingredients:{ name:string; amount:string; kcal:number; protein:number; carbohydrate:number; fat:number }[] };
-type PlanItem = { id:string; foodId?:string; name:string; amount:number; unit:string; amountText?:string; per100?:Macro; macros:Macro };
+type PlanItem = { id:string; foodId?:string; name:string; amount:number; unit:string; amountText?:string; per100?:Macro; macros:Macro; nutritionSource?:string; estimated?:boolean; assumption?:string };
 type Substitution = { option:string; equivalence:string };
-type Meal = { id:string; title:string; time:string; notes:string; substitutions:Substitution[]; items:PlanItem[] };
+type Meal = { id:string; title:string; time:string; dayOfWeek?:number; notes:string; substitutions:Substitution[]; items:PlanItem[] };
 type Targets = { mode:'EXACT'|'RANGE'; kcalMin:string; kcalMax:string; proteinMin:string; proteinMax:string };
 type Plan = { id:string; patientName:string; title:string; objective?:string; status:'DRAFT'|'PUBLISHED'|'ARCHIVED'; content:Record<string,unknown>; sourcePlan?:{id:string;title:string;content:Record<string,unknown>}|null };
 
@@ -28,11 +29,12 @@ function macroFrom(value:unknown, fallback:Record<string,unknown>):Macro {
 }
 
 function normalizeContent(content:Record<string,unknown>):Meal[] {
-  const raw = (Array.isArray(content.meals) ? content.meals : Array.isArray(content.refeicoes) ? content.refeicoes : []) as Record<string,unknown>[];
+  const raw = planMeals(content) as Record<string,unknown>[];
   return raw.map(meal => ({
     id:String(meal.id || uid()),
     title:String(meal.title || meal.titulo || 'Refeição'),
     time:String(meal.time || meal.horario || ''),
+    dayOfWeek:Number.isInteger(Number(meal.dayOfWeek)) ? Number(meal.dayOfWeek) : undefined,
     notes:String(meal.notes || meal.obs || ''),
     substitutions:Array.isArray(meal.substitutions) ? meal.substitutions.map(item => typeof item==='string'?{option:item,equivalence:''}:{option:String((item as Record<string,unknown>).option||''),equivalence:String((item as Record<string,unknown>).equivalence||'')}).filter(item=>item.option||item.equivalence) : [],
     items:((Array.isArray(meal.items) ? meal.items : Array.isArray(meal.alimentosList) ? meal.alimentosList : []) as Record<string,unknown>[]).map(item => {
@@ -44,6 +46,9 @@ function normalizeContent(content:Record<string,unknown>):Meal[] {
         amount:num(item.amount ?? item.qtd) || 100,
         unit:String(item.unit || item.unidade || 'g'),
         amountText:typeof item.amountText === 'string' ? item.amountText : typeof item.qtd === 'string' ? item.qtd : undefined,
+        nutritionSource:typeof item.nutritionSource === 'string' ? item.nutritionSource : undefined,
+        estimated:item.estimated === true,
+        assumption:typeof item.assumption === 'string' ? item.assumption : undefined,
         per100,
         macros:macroFrom(item.macros, item),
       };
@@ -57,7 +62,6 @@ const mealTotals = (meal:Meal) => meal.items.reduce<Macro>((total, item) => ({
   carbohydrate:total.carbohydrate + item.macros.carbohydrate,
   fat:total.fat + item.macros.fat,
 }), emptyMacro());
-const resultTotals=(content:Record<string,unknown>|undefined)=>normalizeContent(content||{}).reduce<Macro>((all,meal)=>{const current=mealTotals(meal);return{kcal:all.kcal+current.kcal,protein:all.protein+current.protein,carbohydrate:all.carbohydrate+current.carbohydrate,fat:all.fat+current.fat}},emptyMacro());
 const signed=(value:number)=>`${value>0?'+':''}${value.toFixed(value%1?1:0)}`;
 
 export function MealPlanEditorPage() {
@@ -80,6 +84,7 @@ export function MealPlanEditorPage() {
   const [patientVisibility,setPatientVisibility]=useState<'FULL'|'SUMMARY'|'HIDDEN'>('SUMMARY');
   const [revisionReason,setRevisionReason]=useState('');
   const [targets,setTargets]=useState<Targets>({mode:'RANGE',kcalMin:'',kcalMax:'',proteinMin:'',proteinMax:''});
+  const [selectedDay,setSelectedDay]=useState<number|null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -89,7 +94,9 @@ export function MealPlanEditorPage() {
       setPlan(result.data);
       setTitle(result.data.title);
       setObjective(result.data.objective || '');
-      setMeals(normalizeContent(result.data.content || {}));
+      const normalizedMeals=normalizeContent(result.data.content || {});
+      setMeals(normalizedMeals);
+      setSelectedDay(currentPlanDay(normalizedMeals));
       setPatientVisibility((result.data.content.patientVisibility as 'FULL'|'SUMMARY'|'HIDDEN')||'SUMMARY');
       setRevisionReason(String(result.data.content.revisionReason||''));
       const savedTargets=(result.data.content.targets&&typeof result.data.content.targets==='object'?result.data.content.targets:{}) as Record<string,unknown>;
@@ -109,11 +116,17 @@ export function MealPlanEditorPage() {
     return () => clearTimeout(timer);
   }, [targetMeal,catalogTab,query]);
 
-  const totals = useMemo(() => meals.reduce<Macro>((all, meal) => {
+  const planDays=useMemo(()=>availablePlanDays(meals),[meals]);
+  const visibleMeals=useMemo(()=>mealsForDay(meals,selectedDay),[meals,selectedDay]);
+  const totals = useMemo(() => visibleMeals.reduce<Macro>((all, meal) => {
     const current = mealTotals(meal);
     return { kcal:all.kcal+current.kcal, protein:all.protein+current.protein, carbohydrate:all.carbohydrate+current.carbohydrate, fat:all.fat+current.fat };
-  }, emptyMacro()), [meals]);
-  const sourceTotals=useMemo(()=>resultTotals(plan?.sourcePlan?.content),[plan]);
+  }, emptyMacro()), [visibleMeals]);
+  const sourceTotals=useMemo(()=>{
+    const sourceMeals=normalizeContent(plan?.sourcePlan?.content||{});
+    const comparable=mealsForDay(sourceMeals,selectedDay);
+    return comparable.reduce<Macro>((all,meal)=>{const current=mealTotals(meal);return{kcal:all.kcal+current.kcal,protein:all.protein+current.protein,carbohydrate:all.carbohydrate+current.carbohydrate,fat:all.fat+current.fat}},emptyMacro());
+  },[plan,selectedDay]);
 
   function updateMeal(mealId:string, patch:Partial<Meal>) { setMeals(current => current.map(meal => meal.id === mealId ? {...meal,...patch} : meal)); setNotice(''); }
   function addFood(food:Food) {
@@ -167,10 +180,11 @@ export function MealPlanEditorPage() {
       <main>
         <section className="panel plan-objective"><label>Objetivo e apresentação<textarea value={objective} onChange={e=>setObjective(e.target.value)} rows={3}/></label>{plan.sourcePlan&&<label>Motivo clínico da alteração<textarea value={revisionReason} onChange={e=>setRevisionReason(e.target.value)} rows={2} placeholder="Ex.: ajuste de proteína após evolução e mudança na rotina de treino"/></label>}<div className="plan-control-grid"><label>Informação nutricional no portal<select value={patientVisibility} onChange={e=>setPatientVisibility(e.target.value as typeof patientVisibility)}><option value="FULL">Completa: kcal e macronutrientes</option><option value="SUMMARY">Resumida: apenas orientações</option><option value="HIDDEN">Oculta: sem números</option></select></label><label>Tipo de meta<select value={targets.mode} onChange={e=>setTargets({...targets,mode:e.target.value as Targets['mode']})}><option value="RANGE">Faixa terapêutica</option><option value="EXACT">Meta de referência</option></select></label><label>Energia mínima<input type="number" min="0" value={targets.kcalMin} onChange={e=>setTargets({...targets,kcalMin:e.target.value})} placeholder="kcal"/></label><label>Energia máxima<input type="number" min="0" value={targets.kcalMax} onChange={e=>setTargets({...targets,kcalMax:e.target.value})} placeholder="kcal"/></label><label>Proteína mínima<input type="number" min="0" value={targets.proteinMin} onChange={e=>setTargets({...targets,proteinMin:e.target.value})} placeholder="g"/></label><label>Proteína máxima<input type="number" min="0" value={targets.proteinMax} onChange={e=>setTargets({...targets,proteinMax:e.target.value})} placeholder="g"/></label></div></section>
         {plan.sourcePlan&&<section className="panel plan-comparison"><div><span className="eyebrow">Comparação com o plano vigente</span><h3>{plan.sourcePlan.title}</h3></div><div className="comparison-macros"><span>Energia<strong>{signed(totals.kcal-sourceTotals.kcal)} kcal</strong><small>{sourceTotals.kcal.toFixed(0)} → {totals.kcal.toFixed(0)}</small></span><span>Proteína<strong>{signed(totals.protein-sourceTotals.protein)} g</strong><small>{sourceTotals.protein.toFixed(1)} → {totals.protein.toFixed(1)}</small></span><span>Carboidrato<strong>{signed(totals.carbohydrate-sourceTotals.carbohydrate)} g</strong><small>{sourceTotals.carbohydrate.toFixed(1)} → {totals.carbohydrate.toFixed(1)}</small></span><span>Gordura<strong>{signed(totals.fat-sourceTotals.fat)} g</strong><small>{sourceTotals.fat.toFixed(1)} → {totals.fat.toFixed(1)}</small></span></div></section>}
-        {meals.map((meal,index) => { const total=mealTotals(meal); return <section className="panel meal-editor" key={meal.id}>
+        {planDays.length>0&&<nav className="plan-day-tabs" aria-label="Dia do plano semanal">{planDays.map(day=><button type="button" key={day.value} className={selectedDay===day.value?'active':''} onClick={()=>setSelectedDay(day.value)}><span>{day.short}</span><small>{day.label}</small></button>)}</nav>}
+        {visibleMeals.map((meal,index) => { const total=mealTotals(meal); return <section className="panel meal-editor" key={meal.id}>
           <header><span>{index+1}</span><input value={meal.title} onChange={e=>updateMeal(meal.id,{title:e.target.value})}/><input type="time" value={meal.time} onChange={e=>updateMeal(meal.id,{time:e.target.value})}/><button className="icon-button" onClick={()=>setMeals(current=>current.filter(item=>item.id!==meal.id))}><Trash2 size={17}/></button></header>
           <div className="meal-items">{meal.items.map(item => <article key={item.id}>
-            <div><strong>{item.name}</strong><small>{item.amountText || `${item.amount} ${item.unit}`}</small></div>
+            <div><strong>{item.name}</strong><small>{item.amountText || `${item.amount} ${item.unit}`}</small>{item.estimated&&<small title={item.assumption}>Estimativa · {item.nutritionSource||'fonte informada no modelo'}</small>}</div>
             {item.per100 ? <label><input type="number" min="0" step="1" value={item.amount} onChange={e=>updateAmount(meal.id,item.id,Number(e.target.value))}/><span>g</span></label> : <span className="fixed-amount">{item.amountText}</span>}
             <div className="item-macros"><span>{item.macros.kcal.toFixed(0)} kcal</span><small>P {item.macros.protein.toFixed(1)} · C {item.macros.carbohydrate.toFixed(1)} · G {item.macros.fat.toFixed(1)}</small></div>
             <button className="icon-button" onClick={()=>updateMeal(meal.id,{items:meal.items.filter(current=>current.id!==item.id)})}><X size={16}/></button>
@@ -179,9 +193,9 @@ export function MealPlanEditorPage() {
           <div className="meal-substitutions"><header><strong>Substituições equivalentes</strong><button type="button" onClick={()=>addSubstitution(meal.id)}><Plus size={14}/> Adicionar opção</button></header>{meal.substitutions.map((item,i)=><label key={i}><span>{i+1}</span><input value={item.option} onChange={e=>updateSubstitution(meal.id,i,{option:e.target.value})} placeholder="Alternativa: batata inglesa cozida"/><input value={item.equivalence} onChange={e=>updateSubstitution(meal.id,i,{equivalence:e.target.value})} placeholder="Equivalência: 130 g, mantém carboidrato"/><button className="icon-button" onClick={()=>removeSubstitution(meal.id,i)}><X size={15}/></button></label>)}</div>
           <footer><input value={meal.notes} onChange={e=>updateMeal(meal.id,{notes:e.target.value})} placeholder="Observações da refeição"/><div><strong>{total.kcal.toFixed(0)} kcal</strong><span>P {total.protein.toFixed(1)}g · C {total.carbohydrate.toFixed(1)}g · G {total.fat.toFixed(1)}g</span></div></footer>
         </section>})}
-        <button className="new-meal-button" onClick={()=>setMeals(current=>[...current,{id:uid(),title:'Nova refeição',time:'',notes:'',substitutions:[],items:[]}])}><Plus size={18}/> Adicionar refeição</button>
+        <button className="new-meal-button" onClick={()=>setMeals(current=>[...current,{id:uid(),title:'Nova refeição',time:'',dayOfWeek:selectedDay??undefined,notes:'',substitutions:[],items:[]}])}><Plus size={18}/> Adicionar refeição{selectedDay!==null?` em ${WEEK_DAYS.find(day=>day.value===selectedDay)?.label}`:''}</button>
       </main>
-      <aside className="plan-summary panel"><span className="eyebrow">Resumo diário</span><h2>{totals.kcal.toFixed(0)} kcal</h2><div><span>Proteínas<strong>{totals.protein.toFixed(1)} g</strong></span><span>Carboidratos<strong>{totals.carbohydrate.toFixed(1)} g</strong></span><span>Gorduras<strong>{totals.fat.toFixed(1)} g</strong></span></div><small>{meals.length} refeições · {meals.reduce((sum,meal)=>sum+meal.items.length,0)} alimentos</small><button className="secondary-button" onClick={()=>setShowPreview(value=>!value)}><BookOpen size={16}/>{showPreview?'Fechar PDF':'Ver PDF lado a lado'}</button></aside>
+      <aside className="plan-summary panel"><span className="eyebrow">Resumo {planDays.length?'do dia':'diário'}</span><h2>{totals.kcal.toFixed(0)} kcal</h2><div><span>Proteínas<strong>{totals.protein.toFixed(1)} g</strong></span><span>Carboidratos<strong>{totals.carbohydrate.toFixed(1)} g</strong></span><span>Gorduras<strong>{totals.fat.toFixed(1)} g</strong></span></div><small>{visibleMeals.length} refeições · {visibleMeals.reduce((sum,meal)=>sum+meal.items.length,0)} alimentos{planDays.length?` · ${planDays.length} dias no modelo`:''}</small><button className="secondary-button" onClick={()=>setShowPreview(value=>!value)}><BookOpen size={16}/>{showPreview?'Fechar PDF':'Ver PDF lado a lado'}</button></aside>
       {showPreview && <aside className="plan-pdf-preview"><iframe src={`/documentos/plano/${id}`} title="Prévia do plano em PDF"/></aside>}
     </div>
     {targetMeal && <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setTargetMeal(null)}}><section className="modal catalog-picker"><div className="modal-heading"><div><span className="eyebrow">Adicionar ao plano</span><h2>Catálogo nutricional</h2></div><button className="icon-button" onClick={()=>setTargetMeal(null)}><X size={20}/></button></div><div className="picker-tabs"><button className={catalogTab==='foods'?'active':''} onClick={()=>setCatalogTab('foods')}>Alimentos TACO</button><button className={catalogTab==='recipes'?'active':''} onClick={()=>setCatalogTab('recipes')}>Receitas</button></div><label className="search-field"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar no catálogo..."/></label><div className="picker-results">{catalogTab==='foods' ? foods.map(food=><button key={food.id} onClick={()=>addFood(food)}><div><strong>{food.name}</strong><small>{food.category} · {food.referenceUnit}</small></div><span>{Number(food.kcal).toFixed(0)} kcal</span><Plus size={17}/></button>) : recipes.map(recipe=><button key={recipe.id} onClick={()=>addRecipe(recipe)}><div><strong>{recipe.title}</strong><small>{recipe.category} · {recipe.ingredients.length} ingredientes</small></div><span>{recipe.ingredients.reduce((sum,item)=>sum+num(item.kcal),0).toFixed(0)} kcal</span><UtensilsCrossed size={17}/></button>)}</div></section></div>}

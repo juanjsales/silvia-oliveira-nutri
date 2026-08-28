@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useConfirm } from "./ConfirmDialog";
+import { planMeals } from "../lib/mealPlanSchedule";
 
 type MealItem = {
   name?: string;
@@ -233,6 +234,7 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [filter, setFilter] = useState<ShoppingFilter>("ALL");
+  const weeklyPlan = planMeals(activePlan?.content || {}).some((meal: any) => Number.isInteger(Number(meal.dayOfWeek)));
 
   useEffect(() => {
     try {
@@ -268,12 +270,15 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
   const classifiedItems = useMemo(() => {
     if (!activePlan?.content) return { hortifruti: [], proteinas: [], laticinios: [], graos: [], outros: [] };
 
-    const meals = activePlan.content.meals || activePlan.content.refeicoes || [];
+    const allMeals = planMeals(activePlan.content) as any[];
+    const today = new Date().getDay();
+    const selectedDays = new Set(Array.from({ length: days }, (_, offset) => (today + offset) % 7));
+    const meals = weeklyPlan ? allMeals.filter(meal => selectedDays.has(Number(meal.dayOfWeek))) : allMeals;
     const allItems = new Map<string, ShoppingItem>();
 
     meals.forEach((m) => {
       const list = m.items || m.alimentosList || [];
-      list.forEach((item) => {
+      list.forEach((item: any) => {
         const raw = item.name || item.nome;
         if (raw && typeof raw === "string") {
           const cleanName = raw.trim();
@@ -281,7 +286,7 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
           const key = cleanName.toLocaleLowerCase("pt-BR");
           const quantity = [item.amount || item.quantidade, item.unit || item.unidade].filter(Boolean).join(" ").trim();
           const current = allItems.get(key) || { name: cleanName, quantities: [] };
-          if (quantity && !current.quantities.includes(quantity)) current.quantities.push(quantity);
+          if (quantity && (weeklyPlan || !current.quantities.includes(quantity))) current.quantities.push(quantity);
           allItems.set(key, current);
         }
       });
@@ -305,7 +310,7 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
     personalItems.forEach((item) => groups[item.category].push({ name: item.name, quantities: item.quantity ? [item.quantity] : [], personal: true }));
     Object.values(groups).forEach((items) => items.sort((a, b) => a.name.localeCompare(b.name, "pt-BR")));
     return groups;
-  }, [activePlan, personalItems]);
+  }, [activePlan, personalItems, days, weeklyPlan]);
 
   const totalItemsCount = useMemo(() => {
     return Object.values(classifiedItems).reduce((acc, list) => acc + list.length, 0);
@@ -366,7 +371,7 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
         text += `*${categoryConfig[cat].label.toUpperCase()}*\n`;
         items.forEach((item) => {
           const key = itemKey(item); const isDone = checkedItems[key] ? "✅" : pantryItems[key] ? "🏠" : "▫️";
-          const quantity = ` — ${item.personal ? (item.quantities.join(" + ") || "sem quantidade") : consolidateShoppingQuantities(item.quantities, days)}`;
+          const quantity = ` — ${item.personal ? (item.quantities.join(" + ") || "sem quantidade") : consolidateShoppingQuantities(item.quantities, weeklyPlan ? 1 : days)}`;
           text += `${isDone} ${item.name}${quantity}\n`;
         });
         text += "\n";
@@ -528,7 +533,7 @@ export function ShoppingListSection({ plans }: { plans: Plan[] }) {
                       />
                       <span className="shopping-checkbox" aria-hidden="true">{isChecked && <Check size={13}/>}</span>
                      </label>
-                      <span className="item-name"><strong>{food.name}{food.personal && <em>pessoal</em>}</strong><small>{food.personal ? (food.quantities.join(" + ") || "Sem quantidade") : consolidateShoppingQuantities(food.quantities, days)}</small></span>
+                      <span className="item-name"><strong>{food.name}{food.personal && <em>pessoal</em>}</strong><small>{food.personal ? (food.quantities.join(" + ") || "Sem quantidade") : consolidateShoppingQuantities(food.quantities, weeklyPlan ? 1 : days)}</small></span>
                       <button type="button" className={`pantry-button ${isPantry ? "active" : ""}`} onClick={() => togglePantry(food)} aria-pressed={isPantry} title={isPantry ? "Remover dos itens que já tenho" : "Marcar como já tenho"}><PackageCheck size={15}/><span>{isPantry ? "Em casa" : "Já tenho"}</span></button>
                       {food.personal && <><button type="button" className="row-icon-button" title={`Editar ${food.name}`} onClick={() => { const item = personalItems.find((entry) => entry.name === food.name); if (item) editPersonal(item); }}><Pencil size={14}/></button><button type="button" className="row-icon-button danger" title={`Remover ${food.name}`} onClick={() => removePersonal(food)}><Minus size={14}/></button></>}
                       {isChecked && <CheckCircle2 size={16} className="item-done-check" aria-hidden="true" />}

@@ -8,6 +8,7 @@ import {
   Utensils,
 } from "lucide-react";
 import { useState } from "react";
+import { availablePlanDays, currentPlanDay, mealsForDay, planMeals } from "../../lib/mealPlanSchedule";
 
 type MealItem = {
   name?: string;
@@ -21,6 +22,7 @@ type MealItem = {
 };
 
 type Meal = {
+  dayOfWeek?: number;
   name?: string;
   nome?: string;
   time?: string;
@@ -54,6 +56,7 @@ const sentenceCase = (value: string) => {
 
 export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
   const [selectedSubMeal, setSelectedSubMeal] = useState<number | null>(null);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   if (!plan?.content) {
     return (
@@ -65,7 +68,10 @@ export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
     );
   }
 
-  const meals = plan.content.meals || plan.content.refeicoes || [];
+  const allMeals = planMeals(plan.content as Record<string, unknown>) as Meal[];
+  const planDays = availablePlanDays(allMeals);
+  const effectiveDay = selectedDay ?? currentPlanDay(allMeals);
+  const meals = mealsForDay(allMeals,effectiveDay);
   const orientations = plan.content.orientations || plan.content.orientacoes || [];
 
   return (
@@ -80,7 +86,7 @@ export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
               {plan.objective || "Siga as orientações e horários sugeridos para atingir suas metas de saúde."}
             </p>
             <div className="portal-plan-meta">
-              <span>{meals.length} {meals.length === 1 ? 'refeição planejada' : 'refeições planejadas'}</span>
+              <span>{planDays.length?`${planDays.length} dias planejados`:`${meals.length} ${meals.length === 1 ? 'refeição planejada' : 'refeições planejadas'}`}</span>
               {plan.content.targetKcal ? <span>Referência: {plan.content.targetKcal} kcal/dia</span> : null}
               {plan.publishedAt ? <span>Atualizado em {new Date(plan.publishedAt).toLocaleDateString('pt-BR')}</span> : null}
             </div>
@@ -106,13 +112,16 @@ export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
           )}
       </section>
 
+      {planDays.length>0&&<nav className="plan-day-tabs portal-plan-day-tabs" aria-label="Escolha o dia do plano">{planDays.map(day=><button type="button" key={day.value} className={effectiveDay===day.value?'active':''} onClick={()=>{setSelectedDay(day.value);setSelectedSubMeal(null)}}><span>{day.short}</span><small>{day.label}</small></button>)}</nav>}
+
       <section className="portal-plan-meals" aria-label="Refeições do plano alimentar">
         {meals.map((meal: any, index: number) => {
           const mealName = sentenceCase(meal.title || meal.titulo || meal.name || meal.nome || `Refeição ${index + 1}`);
           const mealTime = meal.time || meal.horario;
           const items = meal.items || meal.alimentosList || meal.foods || [];
           const notes = meal.notes || meal.obs || meal.observacoes;
-          const hasSubstitutions = items.some((item: MealItem) => (item.substitutions || item.substituicoes || []).length > 0);
+          const mealSubstitutions = Array.isArray(meal.substitutions) ? meal.substitutions : [];
+          const hasSubstitutions = mealSubstitutions.length>0 || items.some((item: MealItem) => (item.substitutions || item.substituicoes || []).length > 0);
           const substitutionsOpen = selectedSubMeal === index;
 
           return (
@@ -164,6 +173,7 @@ export function PortalMealPlanView({ plan }: { plan?: Plan | null }) {
                     <ArrowRightLeft size={16} /> {substitutionsOpen ? 'Ocultar substituições' : 'Ver opções de substituição'}
                   </button>
                   {substitutionsOpen && <div className="portal-plan-substitution-list">
+                    {mealSubstitutions.map((option:any,optionIndex:number)=><div key={`meal-${optionIndex}`}><strong>{typeof option==='string'?option:option.option||'Alternativa'}</strong>{typeof option!=='string'&&option.equivalence&&<span>{option.equivalence}</span>}</div>)}
                     {items.map((item: MealItem, itemIndex: number) => {
                       const options = item.substitutions || item.substituicoes || [];
                       if (!options.length) return null;
