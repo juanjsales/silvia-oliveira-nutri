@@ -67,5 +67,8 @@ test('advances through the guided onboarding with explicit mock mode', async ({ 
   await expect(page.getByRole('heading', { name: 'Projeto Vercel' })).toBeVisible();
   await page.getByLabel('Nome do projeto').fill('clinica-aurora');
   await page.getByRole('button', { name: /Salvar e continuar/ }).click();
-  await expect(page.getByRole('heading', { name: 'Banco Supabase' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Conectar o banco da clínica' })).toBeVisible();
+  await expect(page.getByText('Nunca informe nesta tela:')).toBeVisible();
+  await expect(page.getByLabel('Conexão usada pela aplicação')).toHaveAttribute('readonly', '');
+  await expect(page.getByRole('link', { name: /Abrir painel do Supabase/ })).toHaveAttribute('href', 'https://supabase.com/dashboard/projects');
 });

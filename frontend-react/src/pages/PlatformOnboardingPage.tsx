@@ -8,8 +8,9 @@ import { Link, useParams } from 'react-router-dom';
 import {
   platformOnboardingApi, type Activity, type OnboardingState, type OnboardingStep,
 } from '../lib/platformOnboardingApi';
-import { platformProvisioningApi } from '../lib/platformProvisioningApi';
 import { VercelProvisioningPanel } from '../components/platform/VercelProvisioningPanel';
+import { SupabaseGuidedStep } from '../components/platform/SupabaseGuidedStep';
+import { ClinicDeliveryPanel } from '../components/platform/ClinicDeliveryPanel';
 import '../platform.css';
 
 const steps: { id: OnboardingStep; label: string; icon: typeof Cloud }[] = [
@@ -88,13 +89,6 @@ function Step({ state, selected, busy, act }: { state: OnboardingState; selected
   return <PublishPanel state={state} busy={busy} act={act} />;
 }
 
-function SupabaseGuidedStep({state,busy,act}:{state:OnboardingState;busy:boolean;act:(fn:()=>Promise<OnboardingState>)=>Promise<void>}) {
-  const [values,setValues]=useState({projectRef:state.supabase.projectRef,organizationSlug:'',region:state.supabase.region,databaseSecretRef:`vault://tenant/${state.tenantId}/database-url`,migrationDatabaseSecretRef:`vault://tenant/${state.tenantId}/migration-database-url`});
-  const [working,setWorking]=useState(false),[feedback,setFeedback]=useState('');
-  async function submit(event:FormEvent){event.preventDefault();setWorking(true);setFeedback('');try{await platformProvisioningApi.linkSupabase(state.tenantId,values);setFeedback('Referências verificadas. Concluindo a etapa…');await act(()=>platformOnboardingApi.save(state.tenantId,'SUPABASE',{projectRef:values.projectRef,region:values.region}));}catch(cause){setFeedback(cause instanceof Error?cause.message:'Não foi possível verificar as referências.')}finally{setWorking(false)}}
-  return <form className="onboarding-form onboarding-supabase" onSubmit={submit}><h2>Supabase guiado</h2><p>Crie o projeto na conta da clínica e informe somente referências do cofre. Senhas e URLs de banco nunca são aceitas nesta tela.</p><div className="onboarding-guide-callout"><ShieldCheck/><span><strong>Configuração por referência segura</strong><small>As duas referências precisam pertencer a este tenant.</small></span></div>{([['projectRef','Referência pública do projeto'],['organizationSlug','Organização'],['region','Região'],['databaseSecretRef','Referência da conexão da aplicação'],['migrationDatabaseSecretRef','Referência da conexão de migração']] as const).map(([key,label])=><label key={key}>{label}<input required value={values[key]} onChange={event=>setValues({...values,[key]:event.target.value})}/></label>)}{feedback&&<div className={feedback.startsWith('Referências')?'platform-form-success':'platform-form-error'} role="status">{feedback}</div>}<button className="platform-primary" disabled={busy||working}>{working?'Verificando…':'Verificar e continuar'}<ChevronRight/></button></form>;
-}
-
 function ActivityIcon({ item }: { item: Activity }) {
   if (item.status === 'RUNNING') return <LoaderCircle className="activity-spinner" />;
   if (item.status === 'SUCCEEDED') return <CheckCircle2 />;
@@ -115,6 +109,7 @@ function PublishPanel({ state, busy, act }: { state: OnboardingState; busy: bool
     <ol className="onboarding-activity" aria-label="Progresso da simulação">{state.activity.map((item, index) => <li key={item.id} className={`is-${item.status.toLowerCase()}`}><span className="onboarding-activity-index"><ActivityIcon item={item} /></span><div><span>Etapa {index + 1}</span><strong>{item.label}</strong><small>{item.detail}</small></div><em>{item.status === 'SUCCEEDED' ? 'Aprovada' : item.status === 'FAILED' ? 'Falhou' : item.status === 'ROLLED_BACK' ? 'Revertida' : item.status === 'RUNNING' ? 'Executando' : 'Pendente'}</em></li>)}</ol>
     {isFailed && <aside className="onboarding-recovery" role="alert"><AlertTriangle /><div><strong>Falha isolada com segurança</strong><p>Revise a etapa indicada e retome do mesmo ponto. Etapas aprovadas não serão repetidas e nenhum recurso externo foi modificado.</p></div></aside>}
     {isReady && publication.url && <div className="onboarding-preview-result"><CheckCircle2 /><span><strong>Preview fake disponível</strong><a href={publication.url} target="_blank" rel="noreferrer">{publication.url}</a></span></div>}
+    {isReady && <ClinicDeliveryPanel tenantId={state.tenantId} ownerEmail={state.identity.ownerEmail} previewUrl={publication.url} />}
     {isRolledBack && <aside className="onboarding-recovery is-safe"><ShieldCheck /><div><strong>Estado seguro restaurado</strong><p>O preview e o smoke foram revertidos. Configuração e dados permaneceram preservados.</p></div></aside>}
     <div className="onboarding-actions">
       {!isReady && !isFailed && <button className="platform-primary" disabled={busy} onClick={() => act(() => platformOnboardingApi.publish(state.tenantId))}><Rocket />{busy ? 'Simulando…' : isRolledBack ? 'Executar nova simulação' : 'Executar simulação completa'}</button>}
