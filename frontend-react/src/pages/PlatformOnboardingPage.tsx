@@ -59,6 +59,7 @@ export function PlatformOnboardingPage() {
       <p>Conclua e verifique cada etapa antes de autorizar uma publicação real.</p>
       <div className="onboarding-progress"><progress max="100" value={state.overallProgress} aria-label="Progresso total" /><strong>{state.overallProgress}%</strong></div>
     </header>
+    <OnboardingDiagnostics state={state} />
     <div className="onboarding-layout">
       <nav aria-label="Etapas do onboarding">{steps.map(({ id, label, icon: Icon }) => {
         const status = state.steps[id], locked = status === 'LOCKED';
@@ -69,10 +70,22 @@ export function PlatformOnboardingPage() {
       })}</nav>
       <section className="platform-panel onboarding-card">
         <Step state={state} selected={selected} busy={busy} act={act} />
-        {error && <div className="platform-form-error" role="alert">{error}</div>}
+        {error && <div className="onboarding-inline-error" role="alert"><AlertTriangle/><span><strong>Não foi possível concluir esta ação</strong><small>{error}</small></span><button type="button" className="platform-secondary" onClick={() => { setError(''); void load(); }}><RefreshCw/>Atualizar diagnóstico</button></div>}
       </section>
     </div>
   </main>;
+}
+
+function OnboardingDiagnostics({ state }: { state: OnboardingState }) {
+  const identityReady = Boolean(state.identity.brandName && state.identity.ownerEmail);
+  const publicationReady = state.publication.status === 'READY';
+  const items = [
+    { label: 'Hospedagem', ready: state.vercel.connected, detail: state.vercel.connected ? state.vercel.projectName : 'Aguardando autorização' },
+    { label: 'Banco exclusivo', ready: state.supabase.verified, detail: state.supabase.verified ? state.supabase.projectRef : 'Aguardando verificação' },
+    { label: 'Identidade', ready: identityReady, detail: identityReady ? state.identity.brandName : 'Aguardando configuração' },
+    { label: 'Publicação', ready: publicationReady, detail: publicationReady ? 'Versão validada' : state.publication.status === 'FAILED' ? 'Requer atenção' : 'Ainda não liberada', failed: state.publication.status === 'FAILED' },
+  ];
+  return <section className="onboarding-diagnostics" aria-labelledby="onboarding-diagnostics-title"><header><div><span className="platform-eyebrow">Diagnóstico da instalação</span><h2 id="onboarding-diagnostics-title">O que já está pronto</h2></div><small aria-live="polite">{items.filter(item => item.ready).length} de {items.length} verificações concluídas</small></header><div>{items.map(item => <article key={item.label} className={item.failed ? 'is-failed' : item.ready ? 'is-ready' : 'is-pending'}><span aria-hidden="true">{item.failed ? <AlertTriangle/> : item.ready ? <Check/> : <Circle/>}</span><div><strong>{item.label}</strong><small>{item.detail}</small></div><em>{item.failed ? 'Atenção' : item.ready ? 'Pronto' : 'Pendente'}</em></article>)}</div></section>;
 }
 
 function BootstrapOnboarding({tenantId,busy,error,onSubmit}:{tenantId:string;busy:boolean;error:string;onSubmit:(values:{clinicName:string;professionalName:string;contactEmail:string;ownerName:string;ownerEmail:string})=>Promise<void>}){
