@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '053_supabase_oauth_foundation.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '054_supabase_oauth_recovery.sql';
 
 export async function schemaStatus(db: Database) {
   try {
