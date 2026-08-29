@@ -1,7 +1,7 @@
 import { createHash, sign, verify } from 'node:crypto';
 
 const hash=(data)=>createHash('sha256').update(data).digest('hex');
-const forbiddenPath=/(^|\/)(\.env(?:\.[^/]*)?|src(?:\/|$))|\.(map|ts|tsx|jsx|sql|pem|key)$/i;
+const forbiddenPath=/(^|\/)(\.env(?:\.[^/]*)?)|\.(map|ts|tsx|jsx|sql|pem|key)$/i;
 const secretPattern=/(-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|postgres(?:ql)?:\/\/[^\s]+:[^\s]+@|(?:api[_-]?key|secret|password)\s*[:=]\s*[^\s"']{8,})/i;
 
 export function inspectPrebuiltEntries(entries){
@@ -12,7 +12,8 @@ export function inspectPrebuiltEntries(entries){
     const path=String(entry.path??'').replaceAll('\\','/');const data=Buffer.isBuffer(entry.data)?entry.data:Buffer.from(String(entry.data??''));
     if(!path||path.startsWith('/')||path.includes('../'))failures.push(`Caminho inválido: ${path||'<vazio>'}.`);
     if(paths.has(path))failures.push(`Caminho duplicado no artefato: ${path}.`);else paths.add(path);
-    if(forbiddenPath.test(path))failures.push(`Arquivo não permitido no artefato prebuilt: ${path}.`);
+    const generatedFunctionSource=path.startsWith('.vercel/output/functions/')&&/\.(?:js|cjs|mjs|json|node)$/i.test(path);
+    if(forbiddenPath.test(path)||(/(^|\/)src(?:\/|$)/i.test(path)&&!generatedFunctionSource))failures.push(`Arquivo não permitido no artefato prebuilt: ${path}.`);
     if(secretPattern.test(data.toString('utf8')))failures.push(`Possível segredo encontrado no artefato: ${path}.`);
   }
   return failures;

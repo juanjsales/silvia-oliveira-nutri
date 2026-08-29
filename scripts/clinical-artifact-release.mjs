@@ -17,21 +17,56 @@ async function collectFiles(root, directory = root) {
   return entries;
 }
 
-export async function createClinicalReleasePackage({ distDirectory, releaseId, sourceCommit, privateKey }) {
-  const root = resolve(distDirectory);
-  const entries = await collectFiles(root);
+export function validateVercelBuildOutput(entries) {
+  const failures = [];
+  const totalBytes = entries.reduce((total, entry) => total + Buffer.byteLength(entry.data), 0);
+  if (entries.length > 2000) failures.push('Build excede o limite de 2.000 arquivos do orquestrador.');
+  if (totalBytes > 100 * 1024 * 1024) failures.push('Build excede o limite de 100 MiB descompactados.');
+  if (entries.some(entry => Buffer.byteLength(entry.data) > 25 * 1024 * 1024)) failures.push('Build contém arquivo maior que 25 MiB.');
+  const byPath = new Map(entries.map(entry => [entry.path, entry]));
+  const allowed = /^\.vercel\/output\/(?:config\.json|static\/[^/].*|functions\/[^/].*)$/;
+  for (const entry of entries) if (!allowed.test(entry.path)) failures.push(`Arquivo fora do Build Output API: ${entry.path}.`);
+  const configEntry = byPath.get('.vercel/output/config.json');
+  if (!configEntry) failures.push('Configuração Build Output API ausente.');
+  else {
+    try { if (JSON.parse(configEntry.data.toString('utf8')).version !== 3) failures.push('Build Output API deve usar version 3.'); }
+    catch { failures.push('Configuração Build Output API inválida.'); }
+  }
+  if (!byPath.has('.vercel/output/static/index.html')) failures.push('Frontend clínico compilado ausente.');
+  const functionConfigs = entries.filter(entry => /\.vercel\/output\/functions\/.+\.func\/\.vc-config\.json$/.test(entry.path));
+  if (!functionConfigs.length) failures.push('Função backend compilada ausente.');
+  for (const entry of functionConfigs) {
+    try {
+      const value = JSON.parse(entry.data.toString('utf8'));
+      const functionRoot = entry.path.slice(0, -'.vc-config.json'.length);
+      if (!/^nodejs2[02]\.x$/.test(String(value.runtime ?? ''))) failures.push(`Runtime backend não permitido: ${value.runtime ?? '<vazio>'}.`);
+      if (!value.handler || !byPath.has(`${functionRoot}${value.handler}`)) failures.push(`Handler backend ausente para ${entry.path}.`);
+    } catch { failures.push(`Configuração de função inválida: ${entry.path}.`); }
+  }
+  return failures;
+}
+
+export async function createClinicalReleasePackage({ vercelOutputDirectory, releaseId, sourceCommit, privateKey }) {
+  const root = resolve(vercelOutputDirectory);
+  const rawEntries = await collectFiles(root);
+  const entries = rawEntries
+    .filter(entry => entry.path === 'config.json' || entry.path.startsWith('static/') || entry.path.startsWith('functions/'))
+    .map(entry => ({ ...entry, path: `.vercel/output/${entry.path}` }));
+  const outputFailures = validateVercelBuildOutput(entries);
+  if (outputFailures.length) throw new Error(outputFailures.join(' '));
   const bundle = createSignedArtifactManifest(entries, { releaseId, sourceCommit, privateKey });
   return {
-    format: 'kos-clinical-prebuilt-v1',
+    format: 'kos-clinical-vercel-prebuilt-v2',
+    deployment: { provider: 'vercel', buildOutputApiVersion: 3, includes: ['frontend', 'backend'] },
     bundle,
     entries: entries.map(entry => ({ path: entry.path, data: entry.data.toString('base64') })),
   };
 }
 
 export function verifyClinicalReleasePackage(value, publicKey) {
-  if (value?.format !== 'kos-clinical-prebuilt-v1' || !Array.isArray(value.entries)) return ['Formato do pacote clínico inválido.'];
+  if (value?.format !== 'kos-clinical-vercel-prebuilt-v2' || value?.deployment?.buildOutputApiVersion !== 3 || !Array.isArray(value.entries)) return ['Formato do pacote clínico inválido.'];
   const entries = value.entries.map(entry => ({ path: entry.path, data: Buffer.from(String(entry.data ?? ''), 'base64') }));
-  return verifySignedArtifact(value.bundle, entries, publicKey);
+  return [...validateVercelBuildOutput(entries), ...verifySignedArtifact(value.bundle, entries, publicKey)];
 }
 
 export function createReleaseCatalog({ releasePackage, downloadUrl }) {
@@ -67,10 +102,10 @@ async function runCli() {
   const [command, ...args] = process.argv.slice(2);
   const option = name => { const index = args.indexOf(`--${name}`); return index < 0 ? undefined : args[index + 1]; };
   if (command === 'build') {
-    const dist = option('dist'), output = option('output'), releaseId = option('release-id'), sourceCommit = option('source-commit');
+    const vercelOutput = option('vercel-output'), output = option('output'), releaseId = option('release-id'), sourceCommit = option('source-commit');
     const privateKey = process.env.CLINICAL_ARTIFACT_PRIVATE_KEY;
-    if (!dist || !output || !releaseId || !sourceCommit || !privateKey) throw new Error('Use build com --dist, --output, --release-id, --source-commit e CLINICAL_ARTIFACT_PRIVATE_KEY.');
-    const releasePackage = await createClinicalReleasePackage({ distDirectory: dist, releaseId, sourceCommit, privateKey });
+    if (!vercelOutput || !output || !releaseId || !sourceCommit || !privateKey) throw new Error('Use build com --vercel-output, --output, --release-id, --source-commit e CLINICAL_ARTIFACT_PRIVATE_KEY.');
+    const releasePackage = await createClinicalReleasePackage({ vercelOutputDirectory: vercelOutput, releaseId, sourceCommit, privateKey });
     await mkdir(resolve(output, '..'), { recursive: true });
     await writeFile(output, JSON.stringify(releasePackage));
     console.log(JSON.stringify({ releaseId, digest: releasePackage.bundle.digest, file: basename(output) }));
