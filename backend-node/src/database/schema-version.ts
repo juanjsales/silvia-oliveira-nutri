@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '045_detox_silvia_weekly_template.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '046_add_three_fit_recipes.sql';
 
 export async function schemaStatus(db: Database) {
   try {
