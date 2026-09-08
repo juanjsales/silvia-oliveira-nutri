@@ -91,7 +91,15 @@ export async function smtpSettingsRoutes(app: FastifyInstance) {
 
   app.post('/test', async (request, reply) => {
     const { to } = z.object({ to: z.string().trim().email() }).parse(request.body);
-    const config = await loadSmtpConfig(app.db, app.env);
+    let config;
+    try {
+      config = await loadSmtpConfig(app.db, app.env);
+    } catch (err) {
+      app.log.error({ err }, 'Falha ao carregar credenciais SMTP protegidas');
+      return reply.code(409).send({
+        error: 'A credencial SMTP armazenada não pôde ser aberta. Informe novamente a senha de aplicativo, teste antes de salvar e salve a configuração.'
+      });
+    }
 
     if (!config) {
       return reply.code(409).send({ error: 'SMTP não configurado ou desativado. Salve as credenciais primeiro.' });

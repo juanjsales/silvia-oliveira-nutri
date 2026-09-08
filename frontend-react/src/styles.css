@@ -2382,6 +2382,49 @@ select{width:100%;border:1px solid #dce1da;border-radius:10px;background:#fbfcfa
   line-height: 1.45;
 }
 
+.portal-access-modal {
+  width: min(500px, calc(100vw - 32px));
+  max-height: min(720px, calc(100dvh - 32px));
+  padding: 0;
+  overflow: hidden;
+}
+
+.portal-access-modal > .modal-heading {
+  margin: 0;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #f7faf7, #fff);
+}
+
+.portal-access-form {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px 20px;
+  overflow-y: auto;
+}
+
+.portal-access-form .portal-access-info-box { margin: 0; }
+.portal-access-form .modal-actions { margin: 0; padding-top: 2px; }
+.access-user-badge > div { min-width: 0; }
+.access-user-badge span { display: block; overflow-wrap: anywhere; }
+
+@media (max-width: 600px) {
+  .modal-backdrop:has(.portal-access-modal) { align-items: end; padding: 0; }
+  .portal-access-modal {
+    width: 100%;
+    max-width: none;
+    max-height: 92dvh;
+    border-radius: 22px 22px 0 0;
+  }
+  .portal-access-modal > .modal-heading { padding: 18px 16px 15px; }
+  .portal-access-form { padding: 18px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .portal-access-form .modal-actions { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .portal-access-form .modal-actions button { width: 100%; min-height: 48px; }
+  .portal-access-form .primary-button { order: -1; }
+}
+
 /* ── SETTINGS NAV TABS ── */
 .settings-nav-tabs {
   display: flex;
