@@ -516,13 +516,13 @@ export function PatientsPage() {
             if (e.target === e.currentTarget) setAccessPatient(null);
           }}
         >
-          <section className="modal" style={{ maxWidth: 480 }}>
+          <section className="modal portal-access-modal" role="dialog" aria-modal="true" aria-label={accessPatient.hasPortalAccess ? "Gerenciar acesso ao portal" : "Liberar acesso ao portal"}>
             <ModalHead
               eyebrow="Portal do Paciente"
               title={accessPatient.hasPortalAccess ? "Gerenciar Acesso" : "Liberar Acesso ao Portal"}
               close={() => setAccessPatient(null)}
             />
-            <form onSubmit={provision} style={{ padding: "0 4px" }}>
+            <form className="portal-access-form" onSubmit={provision}>
               <div className="portal-access-info-box">
                 <div className="access-user-badge">
                   <UserRound size={18} />
