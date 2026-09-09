@@ -540,18 +540,19 @@ export function PatientsPage() {
               {accessMessage && (
                 <div
                   className={
-                    accessMessage.includes("sucesso") || accessMessage.includes("enviado")
+                    `portal-access-feedback ${accessMessage.includes("sucesso") || accessMessage.includes("enviado")
                       ? "form-success"
-                      : "form-error"
+                      : "form-error"}`
                   }
-                  style={{ marginBottom: 14 }}
+                  role="status"
+                  aria-live="polite"
                 >
                   <CheckCircle2 size={16} />
                   <span>{accessMessage}</span>
                 </div>
               )}
 
-              <div className="modal-actions">
+              <div className="modal-actions portal-access-actions">
                 <button
                   type="button"
                   className="secondary-button"
