@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
-import { encryptSecret } from '../../shared/secret.js';
+import { decryptSecret, encryptSecret } from '../../shared/secret.js';
 import { loadSmtpConfig, smtpTransport } from '../../integrations/configured-email.js';
 import { buildHtmlEmail } from '../../integrations/email.js';
 import { loadClinicIdentity } from '../../shared/clinic-identity.js';
@@ -27,10 +27,22 @@ export async function smtpSettingsRoutes(app: FastifyInstance) {
     const r = await app.db.query<any>(
       `SELECT smtp_host AS host, smtp_port AS port, smtp_secure AS secure,
               smtp_user AS "user", smtp_from AS "from", smtp_enabled AS enabled,
-              (smtp_password_encrypted IS NOT NULL) AS "passwordConfigured"
+              smtp_password_encrypted AS "encryptedPassword"
        FROM clinic_settings WHERE singleton=true`
     );
-    return { data: r.rows[0] };
+    const row = r.rows[0];
+    let passwordConfigured = false;
+    if (row?.encryptedPassword && app.env.APP_ENCRYPTION_KEY) {
+      try {
+        decryptSecret(row.encryptedPassword, app.env.APP_ENCRYPTION_KEY);
+        passwordConfigured = true;
+      } catch {
+        passwordConfigured = false;
+      }
+    }
+    if (!row) return { data: row };
+    const { encryptedPassword: _encryptedPassword, ...data } = row;
+    return { data: { ...data, passwordConfigured } };
   });
 
   app.put('/', async (request, reply) => {
@@ -45,9 +57,19 @@ export async function smtpSettingsRoutes(app: FastifyInstance) {
     );
 
     const cleanPassword = b.password ? b.password.replace(/\s+/g, '') : null;
+    const currentPassword = current.rows[0]?.password;
+    if (b.enabled && !cleanPassword && currentPassword && app.env.APP_ENCRYPTION_KEY) {
+      try {
+        decryptSecret(currentPassword, app.env.APP_ENCRYPTION_KEY);
+      } catch {
+        return reply.code(409).send({
+          error: 'A senha armazenada pertence a uma configuração anterior. Digite uma nova senha de aplicativo para substituí-la antes de salvar.'
+        });
+      }
+    }
     const password = cleanPassword
       ? encryptSecret(cleanPassword, app.env.APP_ENCRYPTION_KEY!)
-      : current.rows[0]?.password;
+      : currentPassword;
 
     if (b.enabled && !password) {
       return reply.code(400).send({ error: 'Informe a senha de app do Gmail/SMTP antes de ativar o envio.' });
