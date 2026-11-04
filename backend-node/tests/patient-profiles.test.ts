@@ -34,8 +34,8 @@ test('patient profiles are persisted only from an explicit request', async () =>
     payload: { name: 'maria silva', profiles: ['ADULT_WOMAN', 'PREGNANT'], profileNotes: 'Perfil informado durante o cadastro.' }
   });
   assert.equal(response.statusCode, 201);
-  assert.deepEqual(inserted[7], ['ADULT_WOMAN', 'PREGNANT']);
-  assert.equal(inserted[8], 'Perfil informado durante o cadastro.');
+  assert.deepEqual(inserted[6], ['ADULT_WOMAN', 'PREGNANT']);
+  assert.equal(inserted[7], 'Perfil informado durante o cadastro.');
   await app.close();
 });
 
@@ -47,7 +47,7 @@ test('patient profile is not inferred from name or birth date', async () => {
     payload: { name: 'João Adulto', birthDate: '1990-01-01' }
   });
   assert.equal(response.statusCode, 201);
-  assert.deepEqual(inserted[7], []);
+  assert.deepEqual(inserted[6], []);
   await app.close();
 });
 

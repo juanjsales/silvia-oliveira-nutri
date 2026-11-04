@@ -145,8 +145,8 @@ export async function encounterRoutes(app: FastifyInstance) {
         return reply.send({ data: { id: existingDirect.rows[0].id, resumed: true } });
       }
     }
-    const result = await app.db.query<{id:string}>(`INSERT INTO clinical_encounters(tenant_id, patient_id, appointment_id, opened_by, video_room_token)
-      VALUES ($1,$2,$3,$4, encode(gen_random_bytes(18), 'hex')) RETURNING id`, [request.auth!.userId, body.patientId, body.appointmentId ?? null, request.auth!.userId]);
+    const result = await app.db.query<{id:string}>(`INSERT INTO clinical_encounters(patient_id, appointment_id, opened_by, video_room_token)
+      VALUES ($1,$2,$3, encode(gen_random_bytes(18), 'hex')) RETURNING id`, [body.patientId, body.appointmentId ?? null, request.auth!.userId]);
     const id = result.rows[0]!.id;
     if (body.appointmentId) await app.db.query("UPDATE appointments SET status='IN_PROGRESS', updated_at=now() WHERE id=$1", [body.appointmentId]);
     await notifyPatientCall(body.patientId,id,body.appointmentId);

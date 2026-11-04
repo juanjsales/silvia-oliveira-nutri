@@ -61,9 +61,9 @@ export async function appointmentRoutes(app: FastifyInstance) {
         }
       }
       const result = await client.query<{id:string}>(`INSERT INTO appointments
-        (tenant_id, patient_id,appointment_date,appointment_time,duration_minutes,appointment_type,price,status,notes,meeting_url)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
-        [request.auth!.userId, body.patientId, body.date, body.time, body.durationMinutes, body.type, body.price ?? null, body.status, body.notes || null, body.meetingUrl || null]);
+        (patient_id,appointment_date,appointment_time,duration_minutes,appointment_type,price,status,notes,meeting_url)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+        [body.patientId, body.date, body.time, body.durationMinutes, body.type, body.price ?? null, body.status, body.notes || null, body.meetingUrl || null]);
       id = result.rows[0]!.id;
       if (body.requestId) await client.query(`UPDATE appointment_requests SET status='APPROVED' WHERE id=$1`, [body.requestId]);
       await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)

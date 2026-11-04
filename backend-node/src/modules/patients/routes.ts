@@ -51,24 +51,11 @@ export async function patientRoutes(app: FastifyInstance) {
 
   app.post('/', async (request, reply) => {
     const body = patientSchema.parse(request.body);
-    const tenantId = request.auth!.userId;
-
     const result = await app.db.query<{ id: string }>(
-      `INSERT INTO patients(tenant_id, cpf, name, email, whatsapp, birth_date, objective, profiles, profile_notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-      [
-        tenantId,
-        body.cpf || null,
-        body.name,
-        body.email || null,
-        body.whatsapp || null,
-        body.birthDate || null,
-        body.objective || null,
-        body.profiles,
-        body.profileNotes || null
-      ]
+      `INSERT INTO patients(cpf, name, email, whatsapp, birth_date, objective, profiles, profile_notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+      [body.cpf || null, body.name, body.email || null, body.whatsapp || null, body.birthDate || null, body.objective || null, body.profiles, body.profileNotes || null]
     );
-
     const id = result.rows[0]!.id;
     await audit(app.db, 'PATIENT_CREATED', 'patient', { actorUserId: request.auth!.userId, entityId: id });
     return reply.code(201).send({ data: { id } });
