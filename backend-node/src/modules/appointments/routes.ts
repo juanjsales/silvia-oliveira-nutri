@@ -1,98 +1,267 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../../shared/audit.js';
-import { createOpaqueToken, hashPassword, hashToken } from '../../shared/crypto.js';
-import { sendPatientInvitationEmail } from '../../integrations/email.js';
-import { capitalizePersonName } from '../../shared/formatters.js';
+import { cancelAppointmentCharge, ensureAppointmentCharge, syncOpenAppointmentCharge } from '../../shared/finance.js';
+import { canTransitionAppointment, hasAppointmentScheduleChanged, type AppointmentStatus } from '../../shared/appointment-status.js';
+import { appointmentEmailKey, enqueueAppointmentEmail, processAppointmentEmail } from '../../shared/appointment-email-outbox.js';
 
-const patientProfile = z.enum([
-  'CHILD', 'ADOLESCENT_YOUNG', 'ADULT_MAN', 'ADULT_WOMAN', 'PREGNANT',
-  'POSTPARTUM_BREASTFEEDING', 'OLDER_ADULT', 'ATHLETE', 'VEGETARIAN_VEGAN',
-  'BARIATRIC_CARE', 'OTHER'
-]);
-
-const patientSchema = z.object({
-  name: z.string().trim().min(2).max(160).transform(capitalizePersonName),
-  cpf: z.string().transform(v => v.replace(/\D/g, '')).refine(v => !v || v.length === 11, 'CPF inválido').optional(),
-  email: z.string().trim().toLowerCase().email().optional(),
-  whatsapp: z.string().transform(v => v.replace(/\D/g, '')).optional(),
-  birthDate: z.iso.date().optional(),
-  objective: z.string().trim().max(500).optional(),
-  profiles: z.array(patientProfile).max(11).default([]),
-  profileNotes: z.string().trim().max(500).optional()
+const statusSchema = z.enum(['CONFIRMED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW']);
+const appointmentSchema = z.object({
+  patientId: z.uuid(), date: z.iso.date(), time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  durationMinutes: z.number().int().min(15).max(480).default(60), type: z.string().trim().min(2).max(100),
+  price: z.number().nonnegative().max(99999999).optional(), status: statusSchema.default('CONFIRMED'),
+  notes: z.string().trim().max(1000).optional(), meetingUrl: z.url().max(1000).optional(), requestId: z.uuid().optional()
 });
 
-export async function patientRoutes(app: FastifyInstance) {
+const appointmentSelect = `SELECT a.id, a.patient_id AS "patientId", p.name AS "patientName", p.whatsapp,
+  a.appointment_date AS date, to_char(a.appointment_time, 'HH24:MI') AS time,
+  a.duration_minutes AS "durationMinutes", a.appointment_type AS type, a.price::float8 AS price,
+  a.patient_response AS "patientResponse", a.patient_response_note AS "patientResponseNote",
+  a.status, a.notes, a.meeting_url AS "meetingUrl", a.created_at AS "createdAt",
+  e.id AS "encounterId", e.status AS "encounterStatus"
+  FROM appointments a JOIN patients p ON p.id = a.patient_id
+  LEFT JOIN clinical_encounters e ON e.appointment_id=a.id`;
+
+export async function appointmentRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAdmin);
 
   app.get('/', async request => {
-    const query = z.object({ q: z.string().trim().max(100).optional() }).parse(request.query);
-    const term = query.q ? `%${query.q.toLowerCase()}%` : null;
-    const result = await app.db.query(
-      `SELECT p.id, p.cpf, p.name, COALESCE(u.email, p.email) AS email, p.whatsapp, p.birth_date AS "birthDate",
-              p.objective, p.profiles, p.profile_notes AS "profileNotes", p.active, p.created_at AS "createdAt", (p.user_id IS NOT NULL AND u.active) AS "hasPortalAccess"
-       FROM patients p LEFT JOIN users u ON u.id = p.user_id
-       WHERE ($1::text IS NULL OR lower(p.name) LIKE $1 OR p.cpf LIKE $1)
-       ORDER BY p.name LIMIT 100`,
-      [term]
-    );
+    const query = z.object({
+      from: z.iso.date().optional(),
+      to: z.iso.date().optional(),
+      date: z.iso.date().optional(),
+    }).parse(request.query);
+    const from = query.from || query.date || new Date().toISOString().slice(0, 10);
+    const to = query.to || query.date || from;
+    const result = await app.db.query(`${appointmentSelect} WHERE a.appointment_date BETWEEN $1 AND $2 ORDER BY a.appointment_date, a.appointment_time`, [from, to]);
     return { data: result.rows };
   });
 
-  app.get('/:id', async (request, reply) => {
-    const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const result = await app.db.query(
-      `SELECT p.id, p.cpf, p.name, COALESCE(u.email, p.email) AS email, p.whatsapp, p.birth_date AS "birthDate",
-              p.objective, p.profiles, p.profile_notes AS "profileNotes", p.active, p.created_at AS "createdAt"
-       FROM patients p LEFT JOIN users u ON u.id = p.user_id WHERE p.id = $1`, [id]
-    );
-    return result.rows[0] ? { data: result.rows[0] } : reply.code(404).send({ error: 'Paciente não encontrado.' });
+  app.get('/requests', async () => {
+    const result = await app.db.query(`SELECT r.id,r.patient_id AS "patientId",p.name AS "patientName",to_char(r.preferred_date,'YYYY-MM-DD') AS "preferredDate",r.preferred_period AS "preferredPeriod",r.appointment_type AS "appointmentType",r.notes,r.status,r.created_at AS "createdAt" FROM appointment_requests r JOIN patients p ON p.id=r.patient_id WHERE r.status='PENDING' ORDER BY r.created_at DESC LIMIT 50`);
+    return { data: result.rows };
   });
 
   app.post('/', async (request, reply) => {
-    const body = patientSchema.parse(request.body);
-    const tenantId = request.auth!.userId;
-    const result = await app.db.query<{ id: string }>(
-      `INSERT INTO patients(tenant_id, cpf, name, email, whatsapp, birth_date, objective, profiles, profile_notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-      [tenantId, body.cpf || null, body.name, body.email || null, body.whatsapp || null, body.birthDate || null, body.objective || null, body.profiles, body.profileNotes || null]
-    );
-    const id = result.rows[0]!.id;
-    await audit(app.db, 'PATIENT_CREATED', 'patient', { actorUserId: request.auth!.userId, entityId: id });
-    return reply.code(201).send({ data: { id } });
+    const body = appointmentSchema.parse(request.body);
+    if (!['CONFIRMED', 'WAITING'].includes(body.status)) return reply.code(400).send({ error: 'Uma nova consulta deve iniciar como confirmada ou aguardando.' });
+    const patient = await app.db.query<{id:string;name:string;email:string|null}>('SELECT id,name,email FROM patients WHERE id=$1 AND active=true', [body.patientId]);
+    if (!patient.rows[0]) return reply.code(404).send({ error: 'Paciente não encontrado ou inativo.' });
+
+    const client = await app.db.connect();
+    let id: string;
+    let deliveryId: string | null = null;
+    try {
+      await client.query('BEGIN');
+      if (body.requestId) {
+        const requestResult = await client.query<{patient_id:string}>(`SELECT patient_id FROM appointment_requests WHERE id=$1 AND status='PENDING' FOR UPDATE`, [body.requestId]);
+        if (!requestResult.rows[0] || requestResult.rows[0].patient_id !== body.patientId) {
+          await client.query('ROLLBACK');
+          return reply.code(409).send({ error: 'Solicitação não encontrada, já processada ou vinculada a outro paciente.' });
+        }
+      }
+      const result = await client.query<{id:string}>(`INSERT INTO appointments
+        (patient_id,appointment_date,appointment_time,duration_minutes,appointment_type,price,status,notes,meeting_url)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+        [body.patientId, body.date, body.time, body.durationMinutes, body.type, body.price ?? null, body.status, body.notes || null, body.meetingUrl || null]);
+      id = result.rows[0]!.id;
+      if (body.requestId) await client.query(`UPDATE appointment_requests SET status='APPROVED' WHERE id=$1`, [body.requestId]);
+      await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)
+        VALUES($1,'Consulta agendada',$2,'APPOINTMENT','NORMAL','appointment',$3,'/portal/consultas','appointment:scheduled:'||$3,$4::date+interval '7 days')
+        ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE'
+        DO UPDATE SET title=EXCLUDED.title,body=EXCLUDED.body,action_url=EXCLUDED.action_url,expires_at=EXCLUDED.expires_at,read_at=NULL`,
+        [body.patientId, `Sua consulta foi confirmada para ${body.date.split('-').reverse().join('/')} às ${body.time}.`, id, body.date]);
+      if (patient.rows[0].email) {
+        const queued = await enqueueAppointmentEmail(client, {
+          appointmentId: id, eventType: 'SCHEDULED', recipient: patient.rows[0].email,
+          payload: { name: patient.rows[0].name, date: body.date, time: body.time, type: body.type, durationMinutes: body.durationMinutes },
+          deduplicationKey: appointmentEmailKey(id, 'SCHEDULED', 'created'),
+          deliverBefore: `${body.date}T${body.time}:00-03:00`
+        });
+        deliveryId = queued.id;
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+
+    const delivery = deliveryId ? await processAppointmentEmail(app, deliveryId) : null;
+    const emailSent = delivery?.sent ?? false;
+    await audit(app.db, 'APPOINTMENT_CREATED', 'appointment', { actorUserId: request.auth!.userId, entityId: id, metadata: { patientId: body.patientId, emailSent, emailDeliveryId: deliveryId } });
+    return reply.code(201).send({ data: { id, emailSent, emailDeliveryId: deliveryId, warning: emailSent ? null : patient.rows[0].email ? 'Consulta criada; o e-mail ficou registrado para nova tentativa automática.' : null } });
+  });
+
+  app.patch('/requests/:id', async (request, reply) => {
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    const { status } = z.object({ status: z.literal('DECLINED') }).parse(request.body);
+    const result = await app.db.query<{patient_id:string}>(`UPDATE appointment_requests SET status=$1 WHERE id=$2 AND status='PENDING' RETURNING patient_id`, [status,id]);
+    if (!result.rows[0]) return reply.code(404).send({ error: 'Solicitação pendente não encontrada.' });
+    await app.db.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)
+      VALUES($1,'Solicitação de consulta atualizada','Entre em contato com o consultório para escolhermos uma nova data.','APPOINTMENT','NORMAL','appointment_request',$2,'/portal/consultas','appointment_request:update:'||$2,$3)
+      ON CONFLICT(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status='ACTIVE' DO NOTHING`, [result.rows[0].patient_id,id, new Date(Date.now()+7*24*60*60*1000)]);
+    return { data: { id } };
   });
 
   app.patch('/:id', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const body = patientSchema.partial().parse(request.body);
-    const current = await app.db.query('SELECT * FROM patients WHERE id = $1', [id]);
-    if (!current.rows[0]) return reply.code(404).send({ error: 'Paciente não encontrado.' });
-    const p = { ...current.rows[0], ...body };
-    await app.db.query(
-      `UPDATE patients SET cpf=$1, name=$2, email=$3, whatsapp=$4, birth_date=$5, objective=$6,
-       profiles=$7, profile_notes=$8, updated_at=now() WHERE id=$9`,
-      [p.cpf || null, p.name, p.email || null, p.whatsapp || null, p.birthDate ?? p.birth_date ?? null, p.objective || null,
-       p.profiles ?? [], body.profileNotes !== undefined ? body.profileNotes || null : p.profile_notes ?? null, id]
-    );
-    await audit(app.db, 'PATIENT_UPDATED', 'patient', { actorUserId: request.auth!.userId, entityId: id, metadata: { fields: Object.keys(body) } });
-    return { data: { id } };
-  });
+    const body = appointmentSchema.partial().parse(request.body);
+    let financeCreated = false;
+    const client = await app.db.connect();
+    let deliveryId: string | null = null;
+    let scheduleChanged = false;
+    try {
+      await client.query('BEGIN');
+      const current = await client.query<Record<string, unknown>>(`SELECT *,to_char(appointment_date,'YYYY-MM-DD') AS current_date,
+        to_char(appointment_time,'HH24:MI') AS current_time FROM appointments WHERE id=$1 FOR UPDATE`, [id]);
+      if (!current.rows[0]) {
+        await client.query('ROLLBACK');
+        return reply.code(404).send({ error: 'Agendamento não encontrado.' });
+      }
+      const a = current.rows[0];
+      scheduleChanged = hasAppointmentScheduleChanged(
+        {date:String(a.current_date),time:String(a.current_time),durationMinutes:Number(a.duration_minutes)},body,
+      );
+      const currentStatus = a.status as AppointmentStatus;
+      const nextStatus = (body.status ?? currentStatus) as AppointmentStatus;
+      if (!canTransitionAppointment(currentStatus,nextStatus,scheduleChanged)) {
+        await client.query('ROLLBACK');
+        return reply.code(409).send({ error: 'Alteração de status incompatível com o estado atual da consulta.' });
+      }
+      const reopening = scheduleChanged && ['CANCELLED','NO_SHOW'].includes(currentStatus) && ['CONFIRMED','WAITING'].includes(nextStatus);
+      const changesBusinessData = body.patientId !== undefined || body.date !== undefined || body.time !== undefined
+        || body.durationMinutes !== undefined || body.type !== undefined || body.price !== undefined;
+      if (['COMPLETED','CANCELLED','NO_SHOW'].includes(currentStatus) && changesBusinessData && !reopening) {
+        await client.query('ROLLBACK');
+        return reply.code(409).send({ error: 'Consultas encerradas preservam seus dados históricos. Reagende uma consulta cancelada ou crie um novo agendamento.' });
+      }
+      if (body.patientId !== undefined && body.patientId !== a.patient_id) {
+        const patient = await client.query('SELECT id FROM patients WHERE id=$1 AND active=true',[body.patientId]);
+        if (!patient.rows[0]) {
+          await client.query('ROLLBACK');
+          return reply.code(404).send({ error: 'Paciente não encontrado ou inativo.' });
+        }
+      }
+      if ((nextStatus === 'COMPLETED' || nextStatus === 'CANCELLED') && nextStatus !== currentStatus) {
+        const encounter = await client.query<{status:string}>('SELECT status FROM clinical_encounters WHERE appointment_id=$1 FOR UPDATE', [id]);
+        if (encounter.rows[0]?.status === 'IN_PROGRESS') {
+          await client.query('ROLLBACK');
+          return reply.code(409).send({ error: 'Existe um atendimento em andamento. Finalize-o pela sala de atendimento antes de alterar a consulta.' });
+        }
+      }
+      const updated = await client.query<{revision:Date}>(`UPDATE appointments SET patient_id=$1,appointment_date=$2,appointment_time=$3,
+        duration_minutes=$4,appointment_type=$5,price=$6,status=$7,notes=$8,meeting_url=$9,
+        patient_response=CASE WHEN $11 THEN 'PENDING' ELSE patient_response END,
+        patient_response_at=CASE WHEN $11 THEN NULL ELSE patient_response_at END,
+        patient_response_note=CASE WHEN $11 THEN NULL ELSE patient_response_note END,updated_at=now()
+        WHERE id=$10 RETURNING updated_at AS revision`,
+        [body.patientId??a.patient_id,body.date??a.appointment_date,body.time??a.appointment_time,
+         body.durationMinutes??a.duration_minutes,body.type??a.appointment_type,body.price??a.price,
+         body.status??a.status,body.notes??a.notes,body.meetingUrl??a.meeting_url,id,scheduleChanged]);
+      if (scheduleChanged || body.status === 'CANCELLED') {
+        await client.query(`UPDATE professional_notifications SET status='RESOLVED',resolved_at=COALESCE(resolved_at,now()),read_at=COALESCE(read_at,now()),updated_at=now() WHERE dedupe_key='appointment:'||$1::text`, [id]);
+        await client.query(`INSERT INTO patient_notifications(patient_id,title,body,kind,priority,entity_type,entity_id,action_url,dedupe_key,expires_at)
+          SELECT patient_id,CASE WHEN status='CANCELLED' THEN 'Consulta cancelada' ELSE 'Novo horário da consulta' END,
+          CASE WHEN status='CANCELLED' THEN 'Sua consulta foi cancelada pelo consultório.' ELSE 'Sua consulta foi atualizada para '||to_char(appointment_date,'DD/MM/YYYY')||' às '||to_char(appointment_time,'HH24:MI')||'.' END,
+          'APPOINTMENT',CASE WHEN status='CANCELLED' THEN 'HIGH' ELSE 'NORMAL' END,'appointment',id,'/portal/consultas',
+          'appointment:update:'||id||':'||extract(epoch FROM updated_at)::bigint,(appointment_date+interval '7 days')
+          FROM appointments WHERE id=$1`, [id]);
+        const target = (await client.query<{email:string|null;name:string;date:string;time:string;type:string}>(`SELECT p.email,p.name,to_char(a.appointment_date,'YYYY-MM-DD') AS date,to_char(a.appointment_time,'HH24:MI') AS time,a.appointment_type AS type FROM appointments a JOIN patients p ON p.id=a.patient_id WHERE a.id=$1`, [id])).rows[0];
+        if (target?.email) {
+          const eventType = body.status === 'CANCELLED' ? 'CANCELLED' : 'RESCHEDULED';
+          const queued = await enqueueAppointmentEmail(client, {
+            appointmentId: id, eventType, recipient: target.email,
+            payload: { name: target.name, date: target.date, time: target.time, type: target.type },
+            deduplicationKey: appointmentEmailKey(id,eventType,updated.rows[0]!.revision.toISOString()),
+            deliverBefore: eventType === 'CANCELLED' ? new Date(Date.now()+7*24*60*60*1000) : `${target.date}T${target.time}:00-03:00`
+          });
+          deliveryId = queued.id;
+        }
+      }
+      if (body.status === 'COMPLETED') {
+        const finance = await ensureAppointmentCharge(client,id,request.auth!.userId);
+        financeCreated = finance.created;
+      } else if (body.status === 'CANCELLED') {
+        await cancelAppointmentCharge(client,id);
+      } else if (scheduleChanged || body.price !== undefined || body.type !== undefined || body.patientId !== undefined) {
+        await syncOpenAppointmentCharge(client,id);
+      }
+      await audit(client,'APPOINTMENT_UPDATED','appointment',{ actorUserId:request.auth!.userId,entityId:id,metadata:{fields:Object.keys(body),financeCreated,scheduleChanged,emailDeliveryId:deliveryId}});
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
 
-  app.post('/:id/access', async (request, reply) => {
-    const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const patient = await app.db.query<{email:string|null;user_id:string|null;name:string}>('SELECT email,user_id,name FROM patients WHERE id=$1 AND active=true',[id]);
-    const row=patient.rows[0];if(!row)return reply.code(404).send({error:'Paciente não encontrado.'});if(!row.email)return reply.code(400).send({error:'Cadastre o e-mail do paciente antes de criar o acesso.'});
-    const rawToken=createOpaqueToken();const expiresAt=new Date(Date.now()+app.env.PATIENT_INVITATION_TTL_HOURS*3_600_000);const client=await app.db.connect();let userId=row.user_id;let createdUser=false;try{await client.query('BEGIN');if(userId){await client.query('UPDATE users SET email=$1,updated_at=now() WHERE id=$2',[row.email.toLowerCase(),userId])}else{const placeholderHash=await hashPassword(createOpaqueToken());const created=await client.query<{id:string}>(`INSERT INTO users(email,password_hash,role,active) VALUES($1,$2,'PATIENT',false) RETURNING id`,[row.email.toLowerCase(),placeholderHash]);userId=created.rows[0]!.id;createdUser=true;await client.query('UPDATE patients SET user_id=$1,updated_at=now() WHERE id=$2',[userId,id])}await client.query('DELETE FROM password_reset_tokens WHERE user_id=$1 AND used_at IS NULL',[userId]);await client.query('INSERT INTO password_reset_tokens(user_id,token_hash,expires_at) VALUES($1,$2,$3)',[userId,hashToken(rawToken),expiresAt]);await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
-    try{const emailSent=await sendPatientInvitationEmail(app.env,app.db,{to:row.email,name:row.name,token:rawToken});if(!emailSent)throw new Error('SMTP não configurado ou desativado.')}catch(err){if(createdUser){try{await app.db.query('DELETE FROM users WHERE id=$1',[userId]);await app.db.query('UPDATE patients SET user_id=NULL,updated_at=now() WHERE id=$2',[id]);}catch{}}throw err}
-    await audit(app.db,'PATIENT_ACCESS_INVITED','patient',{actorUserId:request.auth!.userId,entityId:id,metadata:{emailSent:true}});return{data:{id,email:row.email,emailSent:true}};
+    const shouldEmail = scheduleChanged || body.status === 'CANCELLED';
+    const delivery = deliveryId ? await processAppointmentEmail(app,deliveryId) : null;
+    const emailSent = shouldEmail ? delivery?.sent ?? false : null;
+    const warning = !shouldEmail || emailSent ? null : deliveryId ? 'Consulta atualizada; o e-mail ficou registrado para nova tentativa automática.' : 'Consulta atualizada, mas o paciente não possui e-mail cadastrado.';
+    return { data: { id, financeCreated, emailSent, emailDeliveryId: deliveryId, warning } };
   });
 
   app.delete('/:id', async (request, reply) => {
     const { id } = z.object({ id: z.uuid() }).parse(request.params);
-    const result = await app.db.query('UPDATE patients SET active=false, updated_at=now() WHERE id=$1 RETURNING id', [id]);
-    if (!result.rows[0]) return reply.code(404).send({ error: 'Paciente não encontrado.' });
-    await audit(app.db, 'PATIENT_DEACTIVATED', 'patient', { actorUserId: request.auth!.userId, entityId: id });
-    return reply.code(204).send();
+    const client = await app.db.connect();
+    try {
+      await client.query('BEGIN');
+      const apptRes = await client.query<{id:string;patient_id:string;status:string}>(
+        `SELECT id, patient_id, status FROM appointments WHERE id=$1 FOR UPDATE`,
+        [id]
+      );
+      if (!apptRes.rows[0]) {
+        await client.query('ROLLBACK');
+        return reply.code(404).send({ error: 'Agendamento não encontrado.' });
+      }
+      const appt = apptRes.rows[0];
+
+      const dependencies = await client.query<{has_encounter:boolean;has_checkin:boolean;has_paid_transaction:boolean}>(
+        `SELECT
+          EXISTS(SELECT 1 FROM clinical_encounters WHERE appointment_id=$1) AS has_encounter,
+          EXISTS(SELECT 1 FROM preconsult_checkins WHERE appointment_id=$1) AS has_checkin,
+          EXISTS(SELECT 1 FROM financial_transactions WHERE appointment_id=$1 AND status='PAID') AS has_paid_transaction`,
+        [id]
+      );
+      const linked = dependencies.rows[0];
+      if (linked?.has_encounter || linked?.has_checkin || linked?.has_paid_transaction) {
+        await client.query('ROLLBACK');
+        return reply.code(409).send({
+          error: 'Este agendamento possui histórico clínico, pré-check-in ou pagamento confirmado e não pode ser descartado. Cancele a consulta para preservar o registro.'
+        });
+      }
+
+      await client.query(`DELETE FROM financial_transactions WHERE appointment_id = $1`, [id]);
+      await client.query(`DELETE FROM teleconsultation_sessions WHERE source_id = $1`, [id]);
+      await client.query(`DELETE FROM patient_notifications WHERE entity_id = $1 OR dedupe_key = 'appointment:'||$1::text OR dedupe_key LIKE '%'||$1::text||'%'`, [id]);
+      await client.query(`DELETE FROM professional_notifications WHERE entity_id = $1 OR dedupe_key = 'appointment:'||$1::text OR dedupe_key LIKE '%'||$1::text||'%'`, [id]);
+      await client.query(`DELETE FROM appointment_email_events WHERE appointment_id = $1`, [id]);
+      await client.query(`DELETE FROM appointment_email_outbox WHERE appointment_id = $1`, [id]);
+      await client.query(`DELETE FROM teleconsultation_consents WHERE source_id = $1`, [id]);
+      await client.query(`DELETE FROM appointments WHERE id = $1`, [id]);
+
+      await audit(client, 'APPOINTMENT_DISCARDED', 'appointment', {
+        actorUserId: request.auth!.userId,
+        entityId: id,
+        metadata: { patientId: appt.patient_id, previousStatus: appt.status }
+      });
+
+      await client.query('COMMIT');
+      return reply.code(204).send();
+    } catch (error) {
+      await client.query('ROLLBACK');
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23503') {
+        return reply.code(409).send({
+          error: 'Este agendamento possui informações vinculadas e não pode ser descartado. Cancele a consulta para preservar o histórico.'
+        });
+      }
+      throw error;
+    } finally {
+      client.release();
+    }
   });
 }
 
