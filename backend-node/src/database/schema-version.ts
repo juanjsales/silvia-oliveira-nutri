@@ -1,6 +1,6 @@
 import type { Database } from './pool.js';
 
-export const REQUIRED_SCHEMA_MIGRATION = '046_add_three_fit_recipes.sql';
+export const REQUIRED_SCHEMA_MIGRATION = '047_multi_tenant_fix.sql';
 
 export async function schemaStatus(db: Database) {
   try {
