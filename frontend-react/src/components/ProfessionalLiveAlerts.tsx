@@ -150,7 +150,7 @@ export function ProfessionalLiveAlerts() {
   const now = new Date();
   const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const imminent = data.todayAppointments.find((appt) => {
+  const imminent = (data?.todayAppointments ?? []).find((appt) => {
     if (appt.id === dismissedApptId) return false;
     if (isCallActiveFor(appt.id)) return false;
     if (data.activeEncounter?.appointmentId === appt.id) return false;
