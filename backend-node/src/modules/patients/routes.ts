@@ -101,7 +101,6 @@ export async function patientRoutes(app: FastifyInstance) {
     const expiresAt = new Date(Date.now() + app.env.PATIENT_INVITATION_TTL_HOURS * 3_600_000);
     const client = await app.db.connect();
     let userId = row.user_id;
-    let createdUser = false;
 
     try {
       await client.query('BEGIN');
@@ -117,7 +116,6 @@ export async function patientRoutes(app: FastifyInstance) {
           [row.email.toLowerCase(), placeholderHash]
         );
         userId = created.rows[0]!.id;
-        createdUser = true;
         await client.query('UPDATE patients SET user_id=$1, updated_at=now() WHERE id=$2', [userId, id]);
       }
 
@@ -128,21 +126,22 @@ export async function patientRoutes(app: FastifyInstance) {
         [userId, hashToken(rawToken), expiresAt]
       );
 
-      try {
-        const emailSent = await sendPatientInvitationEmail(app.env, app.db, { to: row.email, name: row.name, token: rawToken });
-        if (!emailSent) throw new Error('SMTP não configurado ou desativado.');
-      } catch (error) {
-        await client.query('ROLLBACK');
-        throw error;
-      }
+      const emailSent = await sendPatientInvitationEmail(app.env, app.db, { to: row.email, name: row.name, token: rawToken });
+      if (!emailSent) throw new Error('SMTP não configurado ou desativado.');
 
-            await audit(client, 'PATIENT_ACCESS_INVITED', 'patient', {
+      await audit(client, 'PATIENT_ACCESS_INVITED', 'patient', {
         actorUserId: request.auth!.userId,
         entityId: id,
         metadata: { emailSent: true }
       });
       await client.query('COMMIT');
       return { data: { id, email: row.email, emailSent: true } };
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
   });
 
   app.delete('/:id', async (request, reply) => {
