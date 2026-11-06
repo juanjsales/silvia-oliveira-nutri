@@ -136,11 +136,13 @@ export async function patientRoutes(app: FastifyInstance) {
         throw error;
       }
 
-      await audit(app.db, 'PATIENT_ACCESS_INVITED', 'patient', { actorUserId: request.auth!.userId, entityId: id, metadata: { emailSent: true } });
+            await audit(client, 'PATIENT_ACCESS_INVITED', 'patient', {
+        actorUserId: request.auth!.userId,
+        entityId: id,
+        metadata: { emailSent: true }
+      });
+      await client.query('COMMIT');
       return { data: { id, email: row.email, emailSent: true } };
-    } finally {
-      client.release();
-    }
   });
 
   app.delete('/:id', async (request, reply) => {
